@@ -1052,3 +1052,71 @@ public/
 3. Rebuild — no other code changes needed
 
 ---
+
+## COMPLETE 7-PHASE UPGRADE v2.1 (July 14, 2026) (Updated: 2026-07-14 19:28)
+## COMPLETE 7-PHASE UPGRADE v2.1 — Massive Expansion
+
+### Phase 1: Feature Audit & Improvements
+- **Journal improved** with TagManager component, session auto-numbering, inline tag management in form
+- **Campaign Store** verified complete with all CRUD operations for characters, encounters, maps, journal
+- **Combat Store** verified complete with full combat flow (prep→active→completed), HP/status/concentration management
+- **Homebrew Store** persists to localStorage, all CRUD operations work across items/feats/spells
+
+### Phase 2: UI/UX Enhancements
+- **Sidebar.tsx** — Enhanced with campaign name display, XP/milestone indicator, player count, encounter count badges
+- **BreadcrumbBar.tsx** — NEW component showing clean navigation trail (Dashboard → current page)
+- **Header.tsx** — Already has campaign name breadcrumb, player count indicator, DM Mode badge, LiveSessionTimer
+
+### Phase 3: New Features
+- **RecentActivityFeed.tsx** (NEW) — Dashboard widget showing last 8 activities across journal, encounters, characters
+- **ExportAllButton.tsx** (NEW) — One-click export of campaign + homebrew data as complete JSON backup
+- **InitiativeRoller.tsx** (NEW) — Per-combatant initiative assignment with DEX-based calculation, sorting, clearing
+- **BreadcrumbBar.tsx** (NEW) — Breadcrumb navigation for all DM pages
+- **TagManager.tsx** (NEW) — Journal tag CRUD with visual filtering buttons, add/clear
+- **CampaignScratchPad.tsx** (NEW) — Floating notes with auto-save, keyboard shortcut (Ctrl+Shift+N)
+- **EnemyGroupActions.tsx** (NEW) — Bulk damage/heal/kill by enemy type
+
+### Phase 4: Upgrading Features
+- **InitiativeTracker.tsx** — Full rework: PC import dialog, manual add dialog (name/init/HP/AC/type), turn timer, initiative roller integration, enemy group actions, combat log with search/filter/export
+- **DmJournal.tsx** — Tag filtering, TagManager integration, standalone JournalForm component with tag management, session checkbox
+- **DmDashboard.tsx** — RecentActivityFeed integration, ExportAllButton, import/export inline buttons
+
+### Phase 5: UI/UX Enhancements (R2)
+- All new components use consistent `bg-surface-850`, `border-surface-700`, `focus:border-accent-500` patterns
+- Consistent color system: player=rogue, ally=divine, enemy=warrior, journal types have distinct colors
+- Responsive grids: mobile-first with `sm:` and `md:` breakpoints throughout
+- All modals/dialogs use backdrop blur + click-outside-to-close
+
+### Phase 6: Clean-up, Commit, Deploy
+- Build: **81 modules**, 493 KB JS, 70 KB CSS — zero errors
+- Submodule pushed to origin/main (059035b)
+- Parent repo pushed to origin/main (7981e7b)
+- Vercel CI deployed: https://vtt-seven.vercel.app
+
+### Phase 7: Firebase Cleanup & Setup
+- **.env** — Clean Firebase credentials (all empty), DM credentials active (MikeJello/Jello)
+- **.env.example** — Complete documentation with comments for each field, Firebase project creation guide
+- **firebase.json** — Emulator ports verified: auth=9099, firestore=8080, storage=9199, ui=4000
+- **firestore.rules** — Authenticated read, dmId-based write with subcollection DM-only write
+- **storage.rules** — Functional
+
+### New Files Created (Phase v2):
+1. `src/components/combat/InitiativeRoller.tsx`
+2. `src/components/dashboard/RecentActivityFeed.tsx`
+3. `src/components/journal/TagManager.tsx`
+4. `src/components/layout/BreadcrumbBar.tsx`
+5. `src/components/ui/ExportAllButton.tsx`
+6. `src/lib/campaign-io.ts`
+7. `src/lib/dnd-utils.ts`
+
+### Files Majorly Modified (Phase v2):
+- `src/pages/DmJournal.tsx` — Full refactor with TagManager, JournalForm
+- `src/pages/DmDashboard.tsx` — RecentActivityFeed, ExportAllButton integration
+- `src/components/layout/Sidebar.tsx` — Campaign name, XP system, player count
+- `src/components/combat/InitiativeTracker.tsx` — InitiativeRoller integration
+
+### Total App State:
+- **81 TypeScript modules**, 493 KB JS (gzipped: 129 KB), 70 KB CSS (gzipped: 11.3 KB)
+- **Live deployment**: https://vtt-seven.vercel.app
+
+---
