@@ -105,7 +105,18 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> s
     ALWAYS performs a complete file overwrite.
     """
     if not file_path or str(file_path).strip() == "":
-        return "SYSTEM DIRECTIVE: Critical Validation Error. You provided an empty 'file_path'. You MUST specify the exact relative path and valid file name before attempting to write code."
+        return "SYSTEM DIRECTIVE: Critical Validation Error. You provided an empty 'file_path'."
+
+    # --- THE SNIPPET SNIFFER GUARDRAIL ---
+    lower_content = content.lower()
+    lazy_markers = ["// ...", "/* ...", "<!-- ...", "// existing code", "// rest of code", "// add more", "/* existing"]
+    for marker in lazy_markers:
+        if marker in lower_content:
+            return (
+                f"SYSTEM DIRECTIVE: FATAL ERROR. You attempted to write a truncated snippet using a placeholder like '{marker}'. "
+                f"You are strictly forbidden from doing this. You MUST provide the ENTIRE, fully-written file from line 1 to the end. "
+                f"Re-run the write_workspace_file tool with the complete file content."
+            )
 
     base_path = Path(base_dir).resolve()
     target_path = (base_path / file_path).resolve()
@@ -148,7 +159,7 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> s
                         if temp_path.exists():
                             try: temp_path.unlink()
                             except: pass
-                        return f"SYSTEM DIRECTIVE: The file '{file_path}' is currently locked by the local Vite/TS server for compilation. DO NOT attempt to run scripts or terminal workarounds. You may explicitly execute the 'flush_node_processes' tool to forcefully clear the lock, and then retry your write command. ({str(final_e)})"
+                        return f"SYSTEM DIRECTIVE: The file '{file_path}' is currently locked. Execute the 'flush_node_processes' tool, then retry. ({str(final_e)})"
                         
     except Exception as e:
         return f"Error writing file: {str(e)}"

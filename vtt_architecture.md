@@ -521,3 +521,72 @@ We will upgrade the BattleMaps page and its supporting components:
 5. Clear button removes the image entirely
 
 ---
+
+## New 6-Phase Plan — Highly Detailed Changes (Updated: 2026-07-14 16:29)
+## New 6-Phase Plan — Highly Detailed Changes
+
+### Phase 1: Adding Features
+1. **Initiative Roll Integration** — Add a "Roll Initiative" button in the tracker that auto-rolls for all combatants (player+enemy) with a fun animation. Store rolled value vs manual override.
+2. **Combatant Drag Reorder** — Allow manual reordering of combatants in InitiativeTracker before starting combat (for when players roll live and the DM needs to adjust).
+3. **Session-to-Encounter Linking** — In LiveSessionView, show a list of saved encounters and allow the DM to "Load into Combat" directly from the session view.
+4. **Homebrew Image Upload** — Add image upload capability to the Item/Feat/Spell forms (base64 or data URL stored in the homebrew object).
+5. **DM Scratch Pad Persistence** — The DmQuickReference scratch pad currently uses in-memory state. Add localStorage persistence.
+
+### Phase 2: Review UI/UX and Refine
+1. **Modal Stacking** — Fix nested modals. When clicking "Edit" inside a detail modal, the new form modal should close the old one gracefully.
+2. **Mobile Combat View** — Make InitiativeTracker responsive: combatants stack vertically, log collapses to a slide-up panel on mobile.
+3. **Empty State Pass** — Audit all 8 pages for helpful empty states with contextual guidance.
+4. **Skeleton Loading** — Add skeleton screens for data-dependent pages (PlayerCards, BattleMaps, Encounters, Journal).
+5. **Toast Animation** — Ensure toasts have enter/exit animations and stack properly.
+
+### Phase 3: Refining Features
+1. **Encounter Load → Full Combatants** — When loading an encounter, auto-create combatants with correct HP, AC, names, and sort-ready initiatives (set to 0, user rolls).
+2. **HP Auto-Clamp** — Prevent HP from going below 0 or above max in the HP inputs.
+3. **Combat Log Timestamps** — Show relative time ("2m ago") instead of absolute timestamps.
+4. **Live Session Map URL** — Add ImagePicker support to the LiveSessionView map URL field.
+5. **Homebrew Deletion Confirmation** — Add confirm dialog for deleting homebrew items/feats/spells.
+
+### Phase 4: Adding Features (Round 2)
+1. **Quick NPC Builder** — A lightweight form in the InitiativeTracker to quickly build NPC statblocks (name, AC, HP, init mod) and add them directly to combat.
+2. **Combatant Groups** — Allow grouping identical enemies (e.g., "Bandit x4") and applying damage/heals to all at once.
+3. **Turn Timer** — Add a per-turn countdown timer that can be toggled (optional, for timed rounds).
+4. **Campaign Notes Encryption** — Add a "Lock" button on DM notes that toggles between plain text and a simple visual obfuscation (for screen-sharing scenarios).
+5. **Journal Entry Enhancement** — Add ability to edit/delete journal entries (currently missing).
+
+### Phase 5: Review UI/UX and Refine (Round 2)
+1. **Color System Audit** — Verify all 7 Badge variants, status effect colors, and token colors are consistent with the design system.
+2. **Focus States** — Ensure all interactive elements have visible focus-visible outlines.
+3. **Touch Targets** — Ensure all interactive elements are at least 44×44px on mobile.
+4. **Accessibility Labels** — Add aria-labels to icon-only buttons.
+5. **Loading State for All Data Operations** — Ensure every add/save action shows a brief loading indicator.
+
+### Phase 6: Refining Features (Round 2) + Cleanup
+1. **Undo Toast** — Allow dismissing toasts with a click.
+2. **Consistent Empty State Pattern** — Standardize empty state components across all pages.
+3. **Remove Dead Code** — Scan for unused imports, components, and functions.
+4. **Build Check** — Verify clean tsc + vite build.
+5. **Git Commit + Vercel Deploy**
+
+---
+
+## Phase 1 Complete — New Features Added (Updated: 2026-07-14 16:33)
+## Phase 1: Adding Features ✓
+
+1. **Initiative Roll Integration**
+   - `combatStore.ts`: Added `rollInitiative()` helper, `rollAllInitiatives()` and `rerollInitiative()` actions with logging
+   - `InitiativeTracker.tsx`: Added "🎲 Roll All" button in prep phase, per-combatant 🎲 reroll button, drag handle (⠿) for reordering
+
+2. **Combatant Drag Reorder**
+   - `InitiativeTracker.tsx`: Combatants draggable during prep phase, `onDragStart/Over/End` callbacks, visual feedback (dashed border during drag), reorderCombatants dispatched
+
+3. **Group HP Operations**
+   - `combatStore.ts`: Added `damageGroup()`, `healGroup()`, `toggleDeadGroup()` for multi-target operations
+   - `InitiativeTracker.tsx`: Enemy combatants show "All [name]s −5/+5" group buttons
+
+4. **DM Scratch Pad Persistence**
+   - `DmQuickReference.tsx`: Notes now persist to localStorage key `str-vtt-scratch-pad`, save on every change, clear button
+
+5. **Relative Timestamps in Combat Log**
+   - `InitiativeTracker.tsx`: Changed from absolute timestamps to relative ("5s ago", "3m ago")
+
+---
