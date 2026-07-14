@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Campaign documents
+    match /campaigns/{campaignId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == resource.data.dmId;
+
+      // Subcollections: characters, encounters, maps, journal
+      match /{document=**} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/campaigns/$(campaignId)).data.dmId;
+      }
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
