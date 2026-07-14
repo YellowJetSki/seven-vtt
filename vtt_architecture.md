@@ -1120,3 +1120,83 @@ public/
 - **Live deployment**: https://vtt-seven.vercel.app
 
 ---
+
+## COMPLETE 7-PHASE UPGRADE v3.0 (July 14, 2026) (Updated: 2026-07-14 19:38)
+## COMPLETE 7-PHASE UPGRADE v3.0 — Major Expansion
+
+### Total Modules & Build
+- **85 TypeScript modules**, 507 KB JS (gzipped: 133 KB), 71 KB CSS (gzipped: 11.4 KB)
+- **Build errors**: 0 | **TypeScript errors**: 0 | **Deploy**: Live at https://vtt-seven.vercel.app
+
+### Phase 1: Functionality Audit & Improvements
+- **BattleMaps** — Full CRUD rewrite with create/edit form, image preview, confirm delete dialog, search
+- **PlayerCards** — Complete rework with party stats bar (avg level, classes, races), HP bars, ability score grid, inline edit/export overlay, detail modal with skill display
+- **CampaignSettings** — Fixed LockableNotes integration (child-based instead of value prop), save/dirty state, scratch pad auto-save
+- **Encounters** — Integrated SessionNotesTimeline, EncounterDifficulty, DmQuickReferencePanel
+
+### Phase 2: UI/UX Enhancements
+- **PageHeader** — NEW reusable component with title/subtitle/icon/actions pattern used across ALL pages
+- **AnimatedPage** — NEW fade+slide-up transition wrapper for page navigation
+- **EmptyState** — Enhanced with secondary action support (used in PlayerCards, BattleMaps, HomebrewPanel)
+- **PageSkeleton** — NEW loading skeleton with 4 variants (card, list, table, detail)
+
+### Phase 3: New Features
+- **EncounterDifficulty** — Full D&D 5e XP-based difficulty calculator (DMG p. 82-83):
+  - Party level analysis from player characters
+  - CR-based enemy XP with count multiplier
+  - Easy/Medium/Hard/Deadly thresholds with color-coded results
+  - Per-player XP breakdown, adjusted XP for group size
+- **SessionNotesTimeline** — Auto-timestamped notes during live sessions:
+  - Linked to combat round/phase
+  - Delete individual notes
+  - Export all notes as JSON
+  - Collapsible panel on Encounters page
+- **DmQuickReferencePanel** — Searchable conditions + actions reference:
+  - 20 D&D 5e conditions with full descriptions
+  - 13 combat actions with rules text
+  - Tab-based navigation between conditions/actions
+  - Search filtering
+
+### Phase 4: Upgrading Features
+- **PlayerCards**: Grid cards with HP bars, ability score arrays, party stats summary bar, bulk export
+- **BattleMaps**: Cleaner gallery with hover edit, map form with image URL preview, confirm delete
+- **HomebrewPanel**: Unified PageHeader with proper total-item count
+- **CampaignSettings**: LockableNotes used correctly as wrapper, dirty-state tracking
+
+### Phase 5: UI/UX Enhancements (R2)
+- Consistent `PageHeader` component across all 6 content pages
+- `PageSkeleton` loaders as reusable pattern
+- All modals use backdrop blur + click-outside-to-close
+- Color-coded HP bars (green→yellow→red)
+- Party stats bar with class/race distribution
+
+### Phase 6: Clean-up, Commit, Deploy
+- Build: 85 modules, 507 KB JS — zero errors
+- Submodule pushed (2c321be), parent pushed (7e0c8ff)
+- Vercel: https://vtt-seven.vercel.app (production alias)
+
+### Phase 7: Firebase Full Setup
+- **firestore.rules**: Authenticated read, dmId-based write with subcollection DM-only write
+- **storage.rules**: Authenticated read, authenticated write with 10MB limit for images only
+- **.env**: Fresh Firebase config (all empty), DM credentials active (MikeJello/Jello)
+- **.env.example**: Complete documentation with Firebase project creation guide
+- **firebase.json**: Emulator ports: auth=9099, firestore=8080, storage=9199, ui=4000
+- **Architecture**: Full campaign schema with subcollections for characters, encounters, maps, journal
+
+### New Files Created (Phase v3):
+1. `src/components/ui/PageHeader.tsx`
+2. `src/components/ui/PageSkeleton.tsx`
+3. `src/components/layout/AnimatedPage.tsx`
+4. `src/components/combat/DmQuickReferencePanel.tsx`
+5. `src/components/combat/EncounterDifficulty.tsx`
+6. `src/components/combat/SessionNotesTimeline.tsx`
+
+### Files Majorly Modified (Phase v3):
+- `src/pages/PlayerCards.tsx` — Complete rework (grid, party stats, detail modal, bulk export)
+- `src/pages/BattleMaps.tsx` — Full CRUD rewrite (form, confirm delete, gallery improvements)
+- `src/pages/HomebrewPanel.tsx` — PageHeader, ImageViewerModal fix
+- `src/pages/CampaignSettings.tsx` — LockableNotes fix, save state
+- `src/pages/Encounters.tsx` — Difficulty calc, session notes, quick ref integration
+- `src/components/ui/EmptyState.tsx` — Added secondaryAction support
+
+---
