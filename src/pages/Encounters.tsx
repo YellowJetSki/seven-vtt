@@ -1,4 +1,11 @@
-/* ── Premium Encounters & Combat Center ──────────────────────── */
+/* ── Premium Encounters & Combat Center ────────────────────────
+ * Unified combat management hub with:
+ *  - Initiative Tracker with combatant management
+ *  - Session controls and notes timeline
+ *  - DM Quick Reference (conditions, actions)
+ *  - Encounter builder with difficulty calculator
+ *  - Saved encounters list and encounter CRUD
+ * ─────────────────────────────────────────────────────────────── */
 
 import { useState } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
@@ -8,6 +15,9 @@ import { InitiativeTracker } from "@/components/combat/InitiativeTracker";
 import { LiveSessionView } from "@/components/combat/LiveSessionView";
 import { DmQuickReference } from "@/components/combat/DmQuickReference";
 import { EncounterBuilder } from "@/components/combat/EncounterBuilder";
+import { EncounterDifficulty } from "@/components/combat/EncounterDifficulty";
+import { SessionNotesTimeline } from "@/components/combat/SessionNotesTimeline";
+import { DmQuickReferencePanel } from "@/components/combat/DmQuickReferencePanel";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
@@ -44,7 +54,6 @@ export function Encounters() {
   };
 
   const handleLoadIntoCombat = (encounter: Encounter) => {
-    // Create a combat encounter from this campaign encounter
     const combatId = createEncounter(encounter.name);
     setActiveEncounter(combatId);
     setSubTab("combat");
@@ -162,10 +171,24 @@ export function Encounters() {
             </section>
           )}
           <InitiativeTracker />
+          <EncounterDifficulty />
         </div>
       )}
-      {subTab === "session" && <LiveSessionView />}
-      {subTab === "reference" && <DmQuickReference />}
+
+      {subTab === "session" && (
+        <div className="space-y-6">
+          <LiveSessionView />
+          <SessionNotesTimeline />
+        </div>
+      )}
+
+      {subTab === "reference" && (
+        <div className="space-y-4">
+          <DmQuickReference />
+          <DmQuickReferencePanel />
+        </div>
+      )}
+
       {subTab === "build" && (
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-5">
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-surface-400">
@@ -199,18 +222,18 @@ export function Encounters() {
                       <p className="text-xs text-surface-500 mt-1 line-clamp-1">{enc.description}</p>
                     )}
                   </div>
-                  <div className="flex gap-2 shrink-0 ml-2">
-                    <Button size="xs" variant="secondary" onClick={() => handleLoadIntoCombat(enc)}>
-                      Load to Combat
+                  <div className="flex gap-1 shrink-0">
+                    <Button size="xs" variant="ghost" onClick={() => handleLoadIntoCombat(enc)}>
+                      Load
                     </Button>
                     <Button size="xs" variant="ghost" onClick={() => { setEditingEncounter(enc); setShowBuilder(true); }}>
                       Edit
                     </Button>
                     <Button size="xs" variant="ghost" onClick={() => {
                       removeEncounter(enc.id);
-                      showToast({ message: `Removed "${enc.name}"`, type: "info" });
+                      showToast({ message: `"${enc.name}" deleted.`, type: "info" });
                     }}>
-                      ✕
+                      Del
                     </Button>
                   </div>
                 </div>

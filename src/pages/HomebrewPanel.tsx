@@ -3,6 +3,7 @@ import { useHomebrewStore } from "@/stores/homebrewStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { ItemForm } from "@/components/homebrew/ItemForm";
 import { FeatForm } from "@/components/homebrew/FeatForm";
 import { SpellForm } from "@/components/homebrew/SpellForm";
@@ -199,21 +200,24 @@ export function HomebrewPanel() {
     ? spells.filter((s) => s.name.toLowerCase().includes(query) || s.school.toLowerCase().includes(query) || s.tags.some((t) => t.toLowerCase().includes(query)))
     : spells;
 
+  const totalItems = items.length + feats.length + spells.length;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-surface-100 md:text-2xl">Homebrew Library</h2>
-          <p className="mt-1 text-sm text-surface-400">Create and manage custom items, feats, and spells</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={handleImport}>📥 Import</Button>
-          <input ref={importInputRef} type="file" accept=".json" className="hidden" onChange={handleImportFile} />
-          <Button variant="secondary" size="sm" onClick={handleExport}>📤 Export</Button>
-          <Button onClick={openCreateForm} size="md">+ New {activeTab === "items" ? "Item" : activeTab === "feats" ? "Feat" : "Spell"}</Button>
-        </div>
-      </div>
+      {/* Page Header */}
+      <PageHeader
+        title="Homebrew Library"
+        subtitle={totalItems > 0 ? `${totalItems} custom ${totalItems === 1 ? "item" : "items"} in your library` : "Create and manage custom items, feats, and spells"}
+        icon="⚗️"
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={handleImport}>📥 Import</Button>
+            <input ref={importInputRef} type="file" accept=".json" className="hidden" onChange={handleImportFile} />
+            <Button variant="secondary" size="sm" onClick={handleExport}>📤 Export</Button>
+            <Button size="sm" onClick={openCreateForm}>+ New {activeTab === "items" ? "Item" : activeTab === "feats" ? "Feat" : "Spell"}</Button>
+          </div>
+        }
+      />
 
       {/* Stats Bar */}
       <div className="grid grid-cols-3 gap-3">
@@ -279,7 +283,13 @@ export function HomebrewPanel() {
       </Modal>
 
       {/* Image Viewer */}
-      {viewingImage && <ImageViewerModal imageUrl={viewingImage.url} itemName={viewingImage.name} onClose={() => setViewingImage(null)} />}
+      {viewingImage && (
+        <ImageViewerModal
+          imageUrl={viewingImage.url}
+          itemName={viewingImage.name}
+          onClose={() => setViewingImage(null)}
+        />
+      )}
     </div>
   );
 }

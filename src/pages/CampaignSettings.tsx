@@ -7,12 +7,12 @@ import { useState, useEffect } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { LockableNotes } from "@/components/ui/LockableNotes";
 
 export function CampaignSettings() {
   const campaign = useCampaignStore((s) => s.campaign);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
-  const updateSettings = useCampaignStore((s) => s.updateSettings);
   const showToast = useUiStore((s) => s.showToast);
 
   const [campaignName, setCampaignName] = useState(campaign?.name ?? "");
@@ -79,13 +79,14 @@ export function CampaignSettings() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-surface-100 md:text-2xl">Campaign Settings</h2>
           <p className="mt-1 text-sm text-surface-400">Manage your campaign details and DM tools</p>
         </div>
         <Button size="sm" onClick={handleSave} disabled={!isDirty}>
-          {isDirty ? "Save Changes" : "Saved ✓"}
+          {isDirty ? "💾 Save Changes" : "Saved ✓"}
         </Button>
       </div>
 
@@ -129,39 +130,23 @@ export function CampaignSettings() {
         </div>
       </section>
 
-      {/* DM Private Notes */}
+      {/* DM Notes (Lockable) */}
       <section className="rounded-xl border border-surface-700 bg-surface-850 p-5 space-y-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-surface-400">Private DM Notes</h3>
-        <p className="text-xs text-surface-500">These notes are for your eyes only. Use the lock to hide content during screen-sharing.</p>
         <LockableNotes>
           <textarea value={dmNotes} onChange={(e) => { setDmNotes(e.target.value); markDirty(); }} rows={6}
+            placeholder="Your secret campaign notes &mdash; use the lock button to hide during screen-sharing..."
             className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none resize-y min-h-[120px]" />
         </LockableNotes>
       </section>
 
       {/* Scratch Pad */}
       <section className="rounded-xl border border-surface-700 bg-surface-850 p-5 space-y-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-surface-400">Session Scratch Pad</h3>
-        <p className="text-xs text-surface-500">Jot down quick notes during the session. Auto-saved locally.</p>
-        <textarea value={scratchPad} onChange={(e) => setScratchPad(e.target.value)} rows={4}
-          placeholder="Your session scratch pad..."
-          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none resize-y min-h-[100px]" />
-        <div className="flex justify-end">
-          <Button variant="ghost" size="xs" onClick={() => { setScratchPad(""); localStorage.removeItem("vtt-scratch-pad"); }}>
-            Clear Scratch Pad
-          </Button>
-        </div>
-      </section>
-
-      {/* Exported Campaign Info */}
-      <section className="rounded-xl border border-surface-700 bg-surface-850 p-5 space-y-3">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-surface-400">Campaign Info</h3>
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="rounded-lg bg-surface-800 px-3 py-2"><span className="text-surface-500">Campaign ID</span><p className="text-surface-300 font-mono">{campaign.id}</p></div>
-          <div className="rounded-lg bg-surface-800 px-3 py-2"><span className="text-surface-500">Created</span><p className="text-surface-300">{new Date(campaign.createdAt).toLocaleDateString()}</p></div>
-          <div className="rounded-lg bg-surface-800 px-3 py-2"><span className="text-surface-500">Players</span><p className="text-surface-300">{campaign.playerCharacters.length}</p></div>
-          <div className="rounded-lg bg-surface-800 px-3 py-2"><span className="text-surface-500">Last Updated</span><p className="text-surface-300">{new Date(campaign.updatedAt).toLocaleDateString()}</p></div>
-        </div>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-surface-400">Scratch Pad</h3>
+        <p className="text-xs text-surface-500">Quick notes that auto-save. Press Ctrl+Shift+N to toggle the floating scratch pad.</p>
+        <textarea value={scratchPad} onChange={(e) => setScratchPad(e.target.value)} rows={6}
+          placeholder="Jot down quick notes, encounter ideas, or loot..."
+          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none resize-y min-h-[120px]" />
       </section>
     </div>
   );
