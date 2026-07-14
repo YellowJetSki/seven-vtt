@@ -1,9 +1,22 @@
+/* ── Battle Maps ───────────────────────────────────────────────
+ * Full battle map management with grid overlay, token placement,
+ * fog of war, and map CRUD. Uses the MapEditor for interactive
+ * editing and a card view for gallery-style browsing.
+ * ─────────────────────────────────────────────────────────────── */
+
 import { useState, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { MapEditor } from "@/components/maps/MapEditor";
 import type { BattleMap, MapToken } from "@/types";
+
+function uid(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
 
 const TOKEN_TYPE_LABELS: Record<MapToken["type"], string> = {
   player: "PC",
@@ -14,251 +27,246 @@ const TOKEN_TYPE_LABELS: Record<MapToken["type"], string> = {
 
 export function BattleMaps() {
   const maps = useCampaignStore((s) => s.campaign?.battleMaps ?? []);
+  const addBattleMap = useCampaignStore((s) => s.addBattleMap);
+  const updateBattleMap = useCampaignStore((s) => s.updateBattleMap);
+  const removeBattleMap = useCampaignStore((s) => s.removeBattleMap);
+  const showToast = useUiStore((s) => s.showToast);
 
   const [selectedMap, setSelectedMap] = useState<BattleMap | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingMap, setEditingMap] = useState<BattleMap | undefined>();
 
   const filteredMaps = useMemo(() => {
     if (!searchQuery.trim()) return maps;
     const q = searchQuery.toLowerCase();
-    return maps.filter(
-      (m) =>
-        m.name.toLowerCase().includes(q) ||
-        (m.notes && m.notes.toLowerCase().includes(q)),
-    );
+    return maps.filter((m) => m.name.toLowerCase().includes(q));
   }, [maps, searchQuery]);
+
+  const handleCreateOrUpdate = (data: Partial<BattleMap> & { name: string }) => {
+    if (editingMap) {
+      updateBattleMap(editingMap.id, data);
+      showToast({ message: `"${data.name}" updated.`, type: "success" });
+    } else {
+      const newMap: BattleMap = {
+        id: uid("map"),
+        name: data.name,
+        imageUrl: data.imageUrl ?? "",
+        imageFit: data.imageFit ?? "cover",
+        gridWidth: data.gridWidth ?? 24,
+        gridHeight: data.gridHeight ?? 18,
+        gridSize: data.gridSize ?? 50,
+        gridColor: data.gridColor ?? "#444",
+        fogOfWar: data.fogOfWar ?? [],
+        tokens: data.tokens ?? [],
+        notes: data.notes ?? "",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      addBattleMap(newMap);
+      showToast({ message: `"${newMap.name}" created!`, type: "success" });
+    }
+    setShowCreateForm(false);
+    setEditingMap(undefined);
+  };
+
+  const handleDeleteMap = (map: BattleMap) => {
+    removeBattleMap(map.id);
+    setSelectedMap(null);
+    showToast({ message: `"${map.name}" deleted.`, type: "info" });
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-surface-100 md:text-2xl">
-            Battle Maps
-          </h2>
-          <p className="mt-1 text-sm text-surface-400">
-            {maps.length} map{maps.length !== 1 ? "s" : ""} · Deploy tactical encounters
-          </p>
+          <h2 className="text-xl font-bold text-surface-100 md:text-2xl">Battle Maps</h2>
+          <p className="mt-1 text-sm text-surface-400">{maps.length} map{maps.length !== 1 ? "s" : ""} in your campaign</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm">
-            Secondary Display
-          </Button>
-          <Button size="sm">+ New Map</Button>
+        <div className="flex items-center gap-2">
+          {searchQuery && (
+            <Button variant="ghost" size="xs" onClick={() => setSearchQuery("")}>Clear</Button>
+          )}
+          <Button size="sm" onClick={() => { setEditingMap(undefined); setShowCreateForm(true); }}>+ New Map</Button>
         </div>
       </div>
 
       {/* Search */}
       <div className="relative max-w-md">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-surface-500 text-sm">
-          🔍
-        </span>
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search maps..."
-          className="w-full rounded-lg border border-surface-700 bg-surface-800 py-2 pl-9 pr-3 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none"
-        />
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-surface-500 text-sm">🔍</span>
+        <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search maps..."
+          className="w-full rounded-lg border border-surface-700 bg-surface-800 py-2 pl-9 pr-3 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
       </div>
 
-      {/* Map Grid */}
+      {/* Map Gallery or Empty State */}
       {filteredMaps.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-700 bg-surface-850 py-16">
-          <span className="text-4xl text-surface-600">
-            {searchQuery ? "🔍" : "🗺"}
-          </span>
-          <p className="mt-3 text-sm text-surface-500">
-            {searchQuery
-              ? `No maps matching "${searchQuery}".`
-              : "No battle maps yet. Create a map for your next encounter!"}
-          </p>
-        </div>
+        <EmptyState
+          icon={searchQuery ? "🔍" : "🗺️"}
+          title={searchQuery ? "No maps found" : "No battle maps yet"}
+          description={searchQuery ? `No maps match "${searchQuery}".` : "Create your first battle map to get started with tactical combat."}
+          action={!searchQuery ? { label: "Create Map", onClick: () => { setEditingMap(undefined); setShowCreateForm(true); } } : undefined}
+        />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredMaps.map((map) => (
-            <button
-              key={map.id}
-              onClick={() => setSelectedMap(map)}
-              className="group relative overflow-hidden rounded-xl border border-surface-700 bg-surface-850 text-left transition-all hover:border-surface-600 hover:bg-surface-800 focus-visible:outline-2 focus-visible:outline-accent-500"
-            >
-              {/* Mini Preview Grid */}
-              <div className="aspect-video bg-surface-800 p-2">
-                <div className="relative h-full w-full">
-                  <div
-                    className="absolute inset-0 gap-px opacity-20"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `repeat(${Math.min(map.gridWidth, 8)}, 1fr)`,
-                      gridTemplateRows: `repeat(${Math.min(map.gridHeight, 6)}, 1fr)`,
-                    }}
-                  >
-                    {Array.from({
-                      length: Math.min(map.gridWidth * map.gridHeight, 48),
-                    }).map((_, i) => (
-                      <div key={i} className="bg-surface-500 rounded-sm" />
-                    ))}
+            <button key={map.id} onClick={() => setSelectedMap(map)}
+              className="group relative w-full text-left rounded-xl border border-surface-700 bg-surface-850 overflow-hidden transition-all hover:border-accent-500/30 hover:-translate-y-0.5 active:translate-y-0">
+              {/* Thumbnail placeholder */}
+              <div className="relative h-36 w-full bg-surface-800 flex items-center justify-center">
+                {map.imageUrl ? (
+                  <img src={map.imageUrl} alt={map.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-surface-500">
+                    <span className="text-3xl">🗺️</span>
+                    <span className="text-[10px]">No image set</span>
                   </div>
-                  <div className="absolute inset-0 p-1">
-                    {map.tokens.slice(0, 8).map((token) => (
-                      <div
-                        key={token.id}
-                        className="absolute h-3 w-3 rounded-full border border-white/30"
-                        style={{
-                          left: `${(token.x / map.gridWidth) * 100}%`,
-                          top: `${(token.y / map.gridHeight) * 100}%`,
-                          backgroundColor: token.color || "#8b30ff",
-                        }}
-                        title={token.label}
-                      />
-                    ))}
-                    {map.tokens.length > 8 && (
-                      <span className="absolute bottom-1 right-1 rounded bg-surface-900/80 px-1.5 py-0.5 text-[10px] text-surface-400">
-                        +{map.tokens.length - 8} more
-                      </span>
-                    )}
-                  </div>
+                )}
+                {/* Token count badge */}
+                <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-surface-900/70 px-2 py-0.5 text-[10px] text-surface-300 backdrop-blur-sm">
+                  <span>{map.tokens.length}</span>
+                  <span>tokens</span>
                 </div>
               </div>
-
               <div className="p-3">
-                <h3 className="font-semibold text-surface-100 group-hover:text-accent-300 transition-colors">
-                  {map.name}
-                </h3>
-                <div className="flex gap-2 mt-1.5">
-                  <Badge size="xs" variant="neutral">
-                    {map.gridWidth}×{map.gridHeight}
-                  </Badge>
-                  <Badge size="xs" variant="neutral">
-                    {map.tokens.length} token{map.tokens.length !== 1 ? "s" : ""}
-                  </Badge>
-                </div>
+                <h3 className="text-sm font-semibold text-surface-200 group-hover:text-accent-300 transition-colors">{map.name}</h3>
+                <p className="text-xs text-surface-500 mt-0.5">{map.gridWidth}×{map.gridHeight} grid</p>
               </div>
             </button>
           ))}
         </div>
       )}
 
-      {/* Map Detail Modal */}
+      {/* Map Editor Modal */}
       {selectedMap && (
-        <Modal
-          modalId="map-detail"
-          title={selectedMap.name}
-          size="xl"
-        >
-          <MapDetail map={selectedMap} />
+        <Modal modalId="map-editor" title={selectedMap.name} size="xl">
+          <div className="space-y-4">
+            <MapEditor
+              map={selectedMap}
+              onUpdate={(updates) => updateBattleMap(selectedMap.id, updates)}
+            />
+            <div className="flex justify-between border-t border-surface-700 pt-3">
+              <div className="flex gap-2">
+                <Button variant="ghost" size="xs" onClick={() => handleDeleteMap(selectedMap)}>🗑️ Delete Map</Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="xs" onClick={() => { setEditingMap(selectedMap); setShowCreateForm(true); setSelectedMap(null); }}>⚙️ Edit Details</Button>
+                <Button variant="ghost" size="xs" onClick={() => setSelectedMap(null)}>Close</Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Create/Edit Map Form */}
+      {showCreateForm && (
+        <Modal modalId="map-form" title={editingMap ? `Edit: ${editingMap.name}` : "New Battle Map"} size="md">
+          <MapForm
+            initialData={editingMap}
+            onSubmit={handleCreateOrUpdate}
+            onCancel={() => { setShowCreateForm(false); setEditingMap(undefined); }}
+          />
         </Modal>
       )}
     </div>
   );
 }
 
-/* ── Map Detail (Interactive Grid Preview) ──────────────────── */
+/* ── Map Form ───────────────────────────────────────────────── */
 
-function MapDetail({ map }: { map: BattleMap }) {
-  const { gridWidth, gridHeight, tokens } = map;
-  const previewWidth = Math.min(gridWidth * 12, 600);
+interface MapFormData {
+  name: string;
+  imageUrl?: string;
+  imageFit?: "cover" | "contain" | "stretch";
+  gridWidth: number;
+  gridHeight: number;
+  gridSize: number;
+  notes?: string;
+}
+
+function MapForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: {
+  initialData?: BattleMap;
+  onSubmit: (data: MapFormData) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [imageUrl, setImageUrl] = useState(initialData?.imageUrl ?? "");
+  const [imageFit, setImageFit] = useState(initialData?.imageFit ?? "cover");
+  const [gridWidth, setGridWidth] = useState(initialData?.gridWidth ?? 24);
+  const [gridHeight, setGridHeight] = useState(initialData?.gridHeight ?? 18);
+  const [gridSize, setGridSize] = useState(initialData?.gridSize ?? 50);
+  const [notes, setNotes] = useState(initialData?.notes ?? "");
+
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+    onSubmit({
+      name: name.trim(),
+      imageUrl: imageUrl || undefined,
+      imageFit: imageFit as "cover" | "contain" | "stretch",
+      gridWidth: Math.max(4, Math.min(100, gridWidth)),
+      gridHeight: Math.max(4, Math.min(100, gridHeight)),
+      gridSize: Math.max(20, Math.min(100, gridSize)),
+      notes: notes.trim() || undefined,
+    });
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-xl border border-surface-700 bg-surface-900 p-4">
-        <div
-          className="relative mx-auto"
-          style={{
-            width: `${previewWidth}px`,
-            maxWidth: "100%",
-            aspectRatio: `${gridWidth}/${gridHeight}`,
-          }}
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${gridWidth}, 1fr)`,
-              gridTemplateRows: `repeat(${gridHeight}, 1fr)`,
-              gap: "1px",
-            }}
-          >
-            {Array.from({ length: gridWidth * gridHeight }).map((_, i) => (
-              <div
-                key={i}
-                className="bg-surface-800 transition-colors hover:bg-surface-700"
-                style={{ aspectRatio: "1" }}
-              />
-            ))}
-          </div>
-
-          {tokens.map((token) => (
-            <div
-              key={token.id}
-              className="absolute flex items-center justify-center rounded-full border-2 border-white/40 text-[10px] font-bold text-white shadow-lg"
-              style={{
-                left: `${(token.x / gridWidth) * 100}%`,
-                top: `${(token.y / gridHeight) * 100}%`,
-                width: `${(token.size / gridWidth) * 100}%`,
-                height: `${(token.size / gridHeight) * 100}%`,
-                backgroundColor: token.color || "#8b30ff",
-                transform: "translate(-50%, -50%)",
-                zIndex: 10,
-              }}
-              title={token.label}
-            >
-              {token.type === "player" ? "⚔" : token.type === "enemy" ? "💀" : token.type === "npc" ? "👤" : "?"}
-            </div>
+    <div className="space-y-4">
+      <div>
+        <label className="mb-1 block text-xs font-medium text-surface-400">Map Name</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Merchant's Way Crossroads"
+          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-surface-400">Image URL (optional)</label>
+        <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/map.png"
+          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-surface-400">Grid Width</label>
+          <input type="number" min={4} max={100} value={gridWidth} onChange={(e) => setGridWidth(parseInt(e.target.value) || 24)}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-surface-400">Grid Height</label>
+          <input type="number" min={4} max={100} value={gridHeight} onChange={(e) => setGridHeight(parseInt(e.target.value) || 18)}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-surface-400">Pixel Size</label>
+          <input type="number" min={20} max={100} value={gridSize} onChange={(e) => setGridSize(parseInt(e.target.value) || 50)}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+        </div>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-surface-400">Image Fit</label>
+        <div className="flex gap-2">
+          {(["cover", "contain", "stretch"] as const).map((fit) => (
+            <button key={fit} onClick={() => setImageFit(fit)}
+              className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                imageFit === fit ? "border-accent-500 bg-accent-500/10 text-accent-300" : "border-surface-700 bg-surface-800 text-surface-400 hover:text-surface-200"
+              }`}>
+              {fit.charAt(0).toUpperCase() + fit.slice(1)}
+            </button>
           ))}
         </div>
       </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-lg bg-surface-800 p-3 text-center">
-          <p className="text-xs text-surface-500">Dimensions</p>
-          <p className="text-lg font-bold text-surface-100">{gridWidth}×{gridHeight}</p>
-        </div>
-        <div className="rounded-lg bg-surface-800 p-3 text-center">
-          <p className="text-xs text-surface-500">Tokens</p>
-          <p className="text-lg font-bold text-surface-100">{tokens.length}</p>
-        </div>
-        <div className="rounded-lg bg-surface-800 p-3 text-center">
-          <p className="text-xs text-surface-500">Grid Size</p>
-          <p className="text-lg font-bold text-surface-100">{map.gridSize}px</p>
-        </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-surface-400">Notes (optional)</label>
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Terrain notes, room descriptions, etc."
+          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none resize-none" />
       </div>
-
-      {tokens.length > 0 && (
-        <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-surface-400">
-            Tokens
-          </h4>
-          <div className="space-y-1.5">
-            {tokens.map((token) => (
-              <div
-                key={token.id}
-                className="flex items-center gap-3 rounded-lg bg-surface-800 px-3 py-2"
-              >
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: token.color || "#8b30ff" }}
-                />
-                <span className="text-sm text-surface-200 flex-1">{token.label}</span>
-                <Badge size="xs" variant="neutral">{TOKEN_TYPE_LABELS[token.type]}</Badge>
-                <span className="text-xs text-surface-500">
-                  ({token.x}, {token.y})
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {map.notes && (
-        <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-surface-400">
-            DM Notes
-          </h4>
-          <p className="text-sm text-surface-400 leading-relaxed whitespace-pre-wrap">
-            {map.notes}
-          </p>
-        </div>
-      )}
+      <div className="flex justify-end gap-3 pt-2 border-t border-surface-700">
+        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+        <Button size="sm" onClick={handleSubmit} disabled={!name.trim()}>
+          {initialData ? "Update Map" : "Create Map"}
+        </Button>
+      </div>
     </div>
   );
 }
