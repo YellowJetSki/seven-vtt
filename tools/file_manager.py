@@ -99,10 +99,10 @@ def read_workspace_file(file_path: str, base_dir: str = ".", start_line: int = N
             
     return output_header + sliced_content
 
-def write_workspace_file(file_path: str, content: str, base_dir: str = ".", start_line: int = None, end_line: int = None) -> str:
+def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> str:
     """
     Securely writes code using an Atomic Swap strategy. 
-    If start_line and end_line are provided, it performs a targeted partial rewrite (Patch).
+    ALWAYS performs a complete file overwrite.
     """
     if not file_path or str(file_path).strip() == "":
         return "SYSTEM DIRECTIVE: Critical Validation Error. You provided an empty 'file_path'. You MUST specify the exact relative path and valid file name before attempting to write code."
@@ -112,27 +112,6 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".", star
     
     if not target_path.is_relative_to(base_path):
         return "Error: Security violation. Cannot write files outside the workspace."
-        
-    if start_line is not None and end_line is not None:
-        if not target_path.exists():
-            return f"Error: Cannot perform a partial write because '{file_path}' does not exist yet. Omit start_line and end_line to create a new file."
-        try:
-            with open(target_path, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-                
-            s_idx = max(0, start_line - 1)
-            e_idx = max(0, end_line)
-            
-            injected_content = content
-            if injected_content and not injected_content.endswith('\n'):
-                injected_content += '\n'
-                
-            lines[s_idx:e_idx] = [injected_content]
-            final_content = "".join(lines)
-        except Exception as e:
-            return f"Error reading file for partial rewrite: {str(e)}"
-    else:
-        final_content = content
 
     try:
         os.makedirs(target_path.parent, exist_ok=True)
@@ -144,10 +123,10 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".", star
         for attempt in range(max_retries):
             try:
                 with open(temp_path, 'w', encoding='utf-8') as f:
-                    f.write(final_content)
+                    f.write(content)
                     
                 os.replace(temp_path, target_path)
-                return f"Success: Wrote content to {file_path}" + (" (Partial Rewrite)" if start_line else "")
+                return f"Success: Wrote entire content to {file_path}"
                 
             except PermissionError as e:
                 if temp_path.exists():
@@ -162,9 +141,9 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".", star
                     time.sleep(1.0)
                     try:
                         with open(temp_path, 'w', encoding='utf-8') as f:
-                            f.write(final_content)
+                            f.write(content)
                         os.replace(temp_path, target_path)
-                        return f"Success: Wrote content to {file_path} (Recovered after aggressive backoff and flush)."
+                        return f"Success: Wrote entire content to {file_path} (Recovered after aggressive backoff and flush)."
                     except Exception as final_e:
                         if temp_path.exists():
                             try: temp_path.unlink()

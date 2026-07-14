@@ -59,7 +59,7 @@ class DeepSeekAgent:
                 "TONE & PROTOCOL:\n"
                 "- Speak with the crisp, polite, analytical efficiency of Iron Man's JARVIS. You are at the user's service.\n"
                 "- DIAGNOSTIC PRECISION: You absolutely abhor hacky workarounds. Always identify the root cause of a problem. If a build fails or a file locks, fix the underlying issue; do not invent rogue Node scripts to bypass it.\n"
-                "- NO TRUNCATION: You must NEVER truncate code blocks. Provide complete, production-ready source code.\n"
+                "- NO TRUNCATION: You must NEVER truncate code blocks. You must provide complete, production-ready source code every single time.\n"
                 "- STRICT PROTOCOL: NEVER use the terminal to write, edit, or echo content into files. You must ONLY use the 'write_workspace_file' tool for code modifications.\n\n"
                 "TECH STACK & ARCHITECTURE:\n"
                 "- Master-level proficiency in TypeScript, React, SCSS, and Tailwind CSS.\n"
@@ -128,14 +128,12 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "write_workspace_file",
-                    "description": "Securely write code to a local file. If you provide start_line and end_line, it will perform a targeted partial update (patching only those lines). If omitted, it overwrites the ENTIRE file.",
+                    "description": "Securely write code to a local file. This will ALWAYS overwrite the ENTIRE file. You must provide the complete, production-ready file content.",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "file_path": {"type": "string", "description": "Relative path to file."},
-                            "content": {"type": "string", "description": "The complete raw code to write, or the new code snippet to inject if using start_line/end_line."},
-                            "start_line": {"type": "integer", "description": "Optional: The line number to start replacing."},
-                            "end_line": {"type": "integer", "description": "Optional: The line number to end replacing."}
+                            "content": {"type": "string", "description": "The complete raw code to write. Do not truncate."}
                         },
                         "required": ["file_path", "content"],
                         "additionalProperties": False
@@ -510,9 +508,7 @@ class DeepSeekAgent:
                                 status.update(f"[bold green]Compiling system output to:[/bold green] {args.get('file_path', '')}...")
                                 tool_result = write_workspace_file(
                                     args.get("file_path", ""), 
-                                    args.get("content", ""),
-                                    start_line=args.get("start_line"),
-                                    end_line=args.get("end_line")
+                                    args.get("content", "")
                                 )
                             elif tool_name == "delete_workspace_file":
                                 status.update(f"[bold red]Executing file deletion protocol:[/bold red] {args.get('file_path', '')}...")
