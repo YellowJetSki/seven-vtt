@@ -29,6 +29,7 @@ export function Sidebar() {
   const campaign = useCampaignStore((s) => s.campaign);
 
   const playerCount = campaign?.playerCharacters.length ?? 0;
+  const encounterCount = campaign?.encounters.length ?? 0;
 
   const handleNavClick = () => {
     if (window.innerWidth < 768) {
@@ -41,12 +42,15 @@ export function Sidebar() {
     if (item.path === "/players" && playerCount > 0) {
       return { ...item, badge: playerCount };
     }
+    if (item.path === "/encounters" && encounterCount > 0) {
+      return { ...item, badge: encounterCount };
+    }
     return item;
   });
 
   return (
     <>
-      {/* Mobile Overlay — improved with fade transition */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
@@ -66,9 +70,16 @@ export function Sidebar() {
         <div className="flex h-14 items-center gap-2 border-b border-surface-700/80 px-4">
           <span className="text-accent-400 text-xl font-bold tracking-tighter">Sᚱ</span>
           {sidebarOpen && (
-            <span className="text-sm font-semibold tracking-wide text-surface-200">
-              VTT · Arkla
-            </span>
+            <div className="min-w-0 flex-1">
+              <span className="text-sm font-semibold tracking-wide text-surface-200">
+                {campaign?.name ?? "VTT"}
+              </span>
+              {campaign && (
+                <p className="text-[10px] text-surface-500 truncate leading-tight">
+                  {campaign.settings.experienceSystem === "xp" ? "XP System" : "Milestone"} · {campaign.playerCharacters.length} PC{campaign.playerCharacters.length !== 1 ? "s" : ""}
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -94,11 +105,13 @@ export function Sidebar() {
               {sidebarOpen && (
                 <span className="truncate flex-1">{item.label}</span>
               )}
+              {/* Badge in expanded state */}
               {sidebarOpen && item.badge !== undefined && (
                 <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-500/20 px-1.5 text-[10px] font-bold text-accent-400">
                   {item.badge}
                 </span>
               )}
+              {/* Badge in collapsed state */}
               {!sidebarOpen && item.badge !== undefined && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent-500 text-[9px] font-bold text-white">
                   {item.badge}
@@ -110,7 +123,6 @@ export function Sidebar() {
 
         {/* User Info + Logout */}
         <div className="border-t border-surface-700/80">
-          {/* DM Badge */}
           {sidebarOpen && username && (
             <div className="px-3 py-2">
               <div className="flex items-center gap-2 rounded-lg bg-surface-800/80 px-3 py-2">
@@ -118,9 +130,7 @@ export function Sidebar() {
                   👑
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-surface-200 truncate">
-                    {username}
-                  </p>
+                  <p className="text-xs font-medium text-surface-200 truncate">{username}</p>
                   <p className="text-[10px] text-surface-500">Dungeon Master</p>
                 </div>
               </div>
@@ -133,9 +143,7 @@ export function Sidebar() {
             }`}
             title="Sign Out"
           >
-            <span className="flex h-6 w-6 items-center justify-center text-base shrink-0">
-              ⟐
-            </span>
+            <span className="flex h-6 w-6 items-center justify-center text-base shrink-0">⟐</span>
             {sidebarOpen && <span>Sign Out</span>}
           </button>
         </div>
@@ -146,9 +154,7 @@ export function Sidebar() {
           className="hidden border-t border-surface-700/80 p-3 text-surface-500 hover:text-surface-300 md:flex items-center justify-center transition-colors"
           aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
-          <span className={`text-xs transition-transform duration-200 ${sidebarOpen ? "" : "rotate-180"}`}>
-            ◀
-          </span>
+          <span className={`text-xs transition-transform duration-200 ${sidebarOpen ? "" : "rotate-180"}`}>◀</span>
         </button>
       </aside>
     </>

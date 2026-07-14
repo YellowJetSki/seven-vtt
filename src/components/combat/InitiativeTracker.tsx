@@ -8,6 +8,7 @@
  *  • Combat log with search, filter, and JSON export
  *  • Quick-add combatants from player roster
  *  • Enemy group actions (bulk damage/heal)
+ *  • Initiative management tools (DEX-based assignment, sort)
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -19,9 +20,11 @@ import type { Combatant, StatusEffect, CombatLogEntry } from "@/types/combat";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { EnemyGroupActions } from "./EnemyGroupActions";
+import { InitiativeRoller } from "./InitiativeRoller";
 
 export function InitiativeTracker() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
+  const combatLog = useCombatStore((s) => s.combatLog);
   const createEncounter = useCombatStore((s) => s.createEncounter);
   const startEncounter = useCombatStore((s) => s.startEncounter);
   const endEncounter = useCombatStore((s) => s.endEncounter);
@@ -127,7 +130,7 @@ export function InitiativeTracker() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between rounded-xl border border-surface-700 bg-surface-850 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-surface-700 bg-surface-850 p-4">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-warrior-500/10 text-lg">⚔️</span>
           <div>
@@ -142,19 +145,19 @@ export function InitiativeTracker() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isActive && (
             <>
               <div className="rounded-md bg-warrior-500/15 px-3 py-1.5 text-center">
                 <p className="text-xs text-surface-500">Round</p>
                 <p className="text-lg font-bold text-warrior-400">{activeEncounter.round}</p>
               </div>
-              {/* Turn Timer */}
               <TurnTimer isPaused={activeEncounter.isPaused} />
             </>
           )}
           {activeEncounter.phase === "prep" && (
             <>
+              <InitiativeRoller />
               <Button size="xs" variant="ghost" onClick={() => setShowPlayerImport(true)}>
                 📥 Import PCs
               </Button>
@@ -190,7 +193,7 @@ export function InitiativeTracker() {
             <EnemyGroupActions />
           )}
         </div>
-        <CombatLogPanel log={[]} />
+        <CombatLogPanel log={combatLog} />
       </div>
 
       {/* Player Import Modal */}
@@ -449,10 +452,8 @@ function CombatantActions({ combatant }: { combatant: Combatant }) {
 }
 
 /* ── Combat Log Panel ────────────────────────────────────────── */
-function CombatLogPanel({ log: _log }: { log: CombatLogEntry[] }) {
-  const combatLog = useCombatStore((s) => s.combatLog);
+function CombatLogPanel({ log }: { log: CombatLogEntry[] }) {
   const clearLog = useCombatStore((s) => s.clearLog);
-  const log = _log.length > 0 ? _log : combatLog;
   const [filter, setFilter] = useState<"all" | "damage" | "heal" | "status" | "round">("all");
   const [searchQuery, setSearchQuery] = useState("");
 

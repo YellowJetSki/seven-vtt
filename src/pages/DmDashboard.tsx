@@ -1,6 +1,6 @@
 /* ── DM Command Center ─────────────────────────────────────────
  * Full dashboard with campaign management, quick stats,
- * live session status, and quick-action navigation.
+ * live session status, quick-action navigation, and recent activity.
  * ─────────────────────────────────────────────────────────────── */
 
 import { Link } from "react-router-dom";
@@ -9,6 +9,8 @@ import { useCombatStore } from "@/stores/combatStore";
 import { useUiStore } from "@/stores/uiStore";
 import { createDemoCampaign } from "@/data/demoCampaign";
 import { useState } from "react";
+import { RecentActivityFeed } from "@/components/dashboard/RecentActivityFeed";
+import { ExportAllButton } from "@/components/ui/ExportAllButton";
 
 export function DmDashboard() {
   const campaign = useCampaignStore((s) => s.campaign);
@@ -64,17 +66,6 @@ export function DmDashboard() {
     input.click();
   };
 
-  const handleExportCampaign = () => {
-    if (!campaign) return;
-    const blob = new Blob([JSON.stringify(campaign, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${campaign.name.replace(/\s+/g, "-").toLowerCase()}-campaign.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   // ── No Campaign State ──
   if (!campaign) {
     return (
@@ -87,22 +78,17 @@ export function DmDashboard() {
           </p>
         </div>
 
-        {/* Create/Import Campaign Cards */}
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-6">
           {!showNewCampaign ? (
             <div className="space-y-4">
-              <button
-                onClick={() => setShowNewCampaign(true)}
-                className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-accent-500/40 hover:bg-surface-700"
-              >
+              <button onClick={() => setShowNewCampaign(true)}
+                className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-accent-500/40 hover:bg-surface-700">
                 <span className="text-3xl">✨</span>
                 <p className="mt-2 font-semibold text-surface-200">New Campaign</p>
                 <p className="text-xs text-surface-500">Creates a new Arkla campaign with demo data</p>
               </button>
-              <button
-                onClick={handleImportCampaign}
-                className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-mage-500/40 hover:bg-surface-700"
-              >
+              <button onClick={handleImportCampaign}
+                className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-mage-500/40 hover:bg-surface-700">
                 <span className="text-3xl">📥</span>
                 <p className="mt-2 font-semibold text-surface-200">Import Campaign</p>
                 <p className="text-xs text-surface-500">Load a campaign from a JSON file</p>
@@ -149,10 +135,9 @@ export function DmDashboard() {
           <h2 className="text-xl font-bold text-surface-100 md:text-2xl">{campaign.name}</h2>
           <p className="mt-1 text-sm text-surface-400">{campaign.description ?? "No description set."}</p>
         </div>
-        <button onClick={handleExportCampaign}
-          className="self-start rounded-lg border border-surface-700 bg-surface-800 px-3 py-1.5 text-xs font-medium text-surface-400 hover:bg-surface-700 hover:text-surface-200 transition-colors">
-          📤 Export Campaign
-        </button>
+        <div className="flex items-center gap-2 self-start">
+          <ExportAllButton variant="secondary" size="sm" label="📦 Full Backup" />
+        </div>
       </section>
 
       {/* Quick Stats */}
@@ -161,7 +146,7 @@ export function DmDashboard() {
         <StatCard label="Combatants" value={combatants.length} icon="⚡" color="border-l-divine-500" />
         <StatCard label="Alive" value={aliveCount} icon="❤️" color="border-l-divine-400" detail={deadCount > 0 ? `${deadCount} down` : undefined} />
         <StatCard label="Round" value={activeEncounter?.round ?? 0} icon="🔄" color="border-l-mage-500" />
-        <StatCard label="Session" value={liveSession.sessionStartedAt ? "Live" : "\u2014"} icon="🎙️" color={sessionBorderColor} />
+        <StatCard label="Session" value={liveSession.sessionStartedAt ? "Live" : "—"} icon="🎙️" color={sessionBorderColor} />
       </section>
 
       {/* Live Status Bar */}
@@ -194,16 +179,58 @@ export function DmDashboard() {
         </div>
       </section>
 
-      {/* Campaign Summary */}
-      <section className="rounded-xl border border-surface-700 bg-surface-850 p-5">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-surface-400">Campaign Summary</h3>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-          <SummaryItem label="Encounters" value={campaign.encounters.length} />
-          <SummaryItem label="Battle Maps" value={campaign.battleMaps.length} />
-          <SummaryItem label="Journal Entries" value={campaign.journal.length} />
-          <SummaryItem label="Homebrew Items" value={0} />
-        </div>
-      </section>
+      {/* Recent Activity + Campaign Summary */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RecentActivityFeed />
+        <section className="rounded-xl border border-surface-700 bg-surface-850 p-5">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-surface-400">Campaign Summary</h3>
+          <div className="grid grid-cols-2 gap-6">
+            <SummaryItem label="Encounters" value={campaign.encounters.length} />
+            <SummaryItem label="Battle Maps" value={campaign.battleMaps.length} />
+            <SummaryItem label="Journal Entries" value={campaign.journal.length} />
+            <SummaryItem label="Homebrew Items" value={0} />
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button onClick={() => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = ".json";
+              input.onchange = async (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (!file) return;
+                try {
+                  const text = await file.text();
+                  const data = JSON.parse(text);
+                  if (!data.name || !data.id) {
+                    showToast({ message: "Invalid campaign file.", type: "error" });
+                    return;
+                  }
+                  setCampaign(data);
+                  showToast({ message: `Imported "${data.name}"!`, type: "success" });
+                } catch {
+                  showToast({ message: "Failed to parse campaign file.", type: "error" });
+                }
+              };
+              input.click();
+            }} className="text-xs text-surface-500 hover:text-surface-300 transition-colors">
+              📥 Import
+            </button>
+            <span className="text-xs text-surface-600">·</span>
+            <button onClick={() => {
+              const blob = new Blob([JSON.stringify(campaign, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${campaign.name.replace(/\s+/g, "-").toLowerCase()}-campaign.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              showToast({ message: `"${campaign.name}" exported.`, type: "success" });
+            }} className="text-xs text-surface-500 hover:text-surface-300 transition-colors">
+              📤 Export
+            </button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
