@@ -3,6 +3,7 @@ import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { ToastContainer } from "@/components/ui/ToastContainer";
 import { KeyboardShortcutsOverlay } from "@/components/ui/KeyboardShortcutsOverlay";
+import { CampaignScratchPad } from "./CampaignScratchPad";
 
 export function AppShell() {
   return (
@@ -14,6 +15,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <CampaignScratchPad />
       <ToastContainer />
       <KeyboardShortcutsOverlay />
     </div>
