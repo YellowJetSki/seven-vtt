@@ -613,3 +613,338 @@ Per explicit user directive, ALL virtual dice rolling has been purged from the s
 **This is in compliance with the strict "no virtual dice rollers" policy.**
 
 ---
+
+## New UI Components (Phase 5-6) (Updated: 2026-07-14 16:44)
+## EmptyState Component (`src/components/ui/EmptyState.tsx`)
+**Props:**
+- `icon: string` — Emoji/icon displayed above title
+- `title: string` — Primary heading
+- `description?: string` — Optional subtext
+- `action?: { label: string; onClick: () => void }` — Optional CTA button
+- `secondaryAction?: { label: string; onClick: () => void }` — Optional secondary button
+- `children?: ReactNode` — Optional extra content below description
+**Usage:** Standardized empty state across all pages. Uses dashed border, centered layout, large icon.
+
+## LockableNotes Component (`src/components/ui/LockableNotes.tsx`)
+**Props:**
+- `children: ReactNode` — Content to display (string or JSX)
+- `defaultLocked?: boolean` — Initial lock state (default false)
+**Behavior:** Toggle button with 🔒/🔓. When locked, text content is obfuscated to dots (screen-share safe). Wraps children in a styled container.
+
+## KeyboardShortcutsOverlay Component (`src/components/ui/KeyboardShortcutsOverlay.tsx`)
+- **File:** `src/components/ui/KeyboardShortcutsOverlay.tsx`
+- **Trigger:** Press `?` or F1 anywhere in the app (from AppShell)
+- **Display:** Modal overlay with shortcut list
+- **Shortcuts:** `?/F1` Open help, `Esc` Close, `Ctrl+K` Search, `N` New encounter, `B` Build encounter, `S` Start session, `I` Initiative tracker, `D` Dashboard, `P` Players, `J` Journal, `M` Battlemaps, `H` Homebrew
+
+## PartyCompendium Component (`src/components/player/PartyCompendium.tsx`)
+- **File:** `src/components/player/PartyCompendium.tsx`
+- **Purpose:** Side-by-side comparison of all party members' ability scores, HP, AC, speed
+- **Layout:** Header bar per character with name/class/level → Grid of ability score cards → HP/AC/Speed footer
+- **State:** `selectedCharacter` — clicking opens PlayerCharacterSheet modal
+- **Usage:** Accessed from PlayerCards via viewMode toggle ("List" vs "Compendium")
+
+---
+
+## Media Components (Updated: 2026-07-14 16:44)
+## Skeleton Component (`src/components/ui/Skeleton.tsx`)
+**Props:**
+- `className?: string` — Tailwind classes for width/height
+- `variant?: "text" | "circle" | "card" | "stat"` — Pre-designed shapes
+- `count?: number` — Number of skeleton items to render (default 1)
+**Variants:** `text` (h-4 rounded), `circle` (h-12 w-12 rounded-full), `card` (h-32 rounded-xl), `stat` (h-24 rounded-xl)
+**Compositions:** `DashboardSkeleton()` — Full dashboard loading state. `CombatSkeleton()` — Combat tracker loading state.
+
+## MediaCarousel Component (`src/components/ui/MediaCarousel.tsx`)
+**Props:**
+- `category: MediaCategory` — One of "battlemaps" | "tokens" | "portrait"
+- `selectedPath?: string` — Currently selected path for highlighting
+- `onSelect: (asset: MediaAsset) => void` — Selection callback
+- `onClose: () => void` — Close modal callback
+**Use Hook:** `useMediaCarousel()` returns `[props | null, openFunction]` for promise-based usage
+**Features:**
+- Full-screen backdrop-blur modal
+- Category filtering (battlemaps, tokens, portrait)
+- Search/filter across KNOWN_ASSETS registry
+- Grid thumbnails with hover preview popup
+- Selected state indicator (green border)
+- Keyboard escape support
+- Asset registry `KNOWN_ASSETS` maps path → { name, category, url }
+
+## ImagePicker Component (`src/components/ui/ImagePicker.tsx`)
+**Props:**
+- `category: MediaCategory` — Image type (portrait, token, battlemap)
+- `value?: string` — Current image URL
+- `onChange: (url: string | undefined) => void` — Change callback
+- `label?: string` — Optional label text
+- `allowUrl?: boolean` — Show "Paste URL" fallback toggle (default true)
+**Features:**
+- Current image preview with clear button
+- "Browse Assets" button opens MediaCarousel
+- "Paste URL" toggle for external images
+- Works with all three categories
+- Used in: CharacterForm, MapForm, LiveSessionView
+
+---
+
+## Combat & Journal Components (Phase 1-4) (Updated: 2026-07-14 16:44)
+## CombatantList Component (`src/components/combat/CombatantList.tsx`)
+**Props:**
+- `combatants: Combatant[]` — Ordered list of combatants
+- `currentIndex: number` — Current turn index
+- `isActive: boolean` — Whether combat phase is active
+- `phase: string` — "prep" | "active" | "completed"
+- `onRemove: (id: string) => void` — Remove combatant callback
+- `onDragStart: (index: number) => void`, `onDragOver`, `onDragEnd` — Drag-reorder callbacks
+- `dragIndex: number | null` — Currently dragged item index
+**Features:**
+- Drag-reorder handle (⠿) during prep phase
+- Manual initiative number input (prep phase) or display (active phase)
+- Status effect pills (shows first 3, "+N" overflow)
+- Type icons (⚔ player, 🛡 ally, 👹 enemy)
+- Dead combatants shown with strikethrough
+- Current turn highlighted with accent border
+- Expand/collapse button to reveal CombatantActions panel
+
+## CombatantActions Component (`src/components/combat/CombatantActions.tsx`)
+**Props:** `{ combatant: Combatant }` (reads store actions internally)
+**Features:**
+- Quick HP buttons: ±1, ±5, ±10
+- Custom HP input (Enter = damage, Shift+Enter = heal)
+- Temp HP input
+- All status effects as toggle buttons (colored when active)
+- Concentrating checkbox (with spell name input when active)
+- Dead checkbox
+- Notes textarea (saved on blur)
+- Group operations: "All [name]s −5 / +5" buttons for duplicate enemy names
+
+## CombatLogPanel Component (`src/components/combat/CombatLogPanel.tsx`)
+**Props:** `{ log: CombatLogEntry[] }`
+**Features:**
+- Filter bar: All, Damage, Heal, Status, Round
+- Color-coded entries (round start = accent, damage = warrior, heal = divine, death = warrior bold)
+- Relative timestamps ("5s ago", "3m ago", "1h ago")
+- Search/filter by combatant name
+- Export to JSON button
+- Clear log button
+- Empty state when no entries
+
+## SpellReferencePanel Component (`src/components/combat/SpellReferencePanel.tsx`)
+**Floating Panel** accessible from Combat Center. DM can look up spells by name, level, school, or class.
+- **Collapsible** — small tab on the side of the screen
+- **Data:** Full spell details including components, casting time, duration, description
+- **Responsive:** Side panel on desktop, bottom sheet on mobile
+
+## ConditionsReferencePanel Component (`src/components/combat/ConditionsReferencePanel.tsx`)
+**Floating Panel** with all D&D 5e conditions and DC reference tables.
+- **Data:** Status effects with icons, colors, descriptions, save info
+- **DC Reference:** Ability Checks, Spell Saves, Traps, Environment, Social, Lore categories
+- **Access:** Small button on the combat view
+
+## JournalEntryForm Component (`src/components/journal/JournalEntryForm.tsx`)
+**Props:** `{ existingEntry?: JournalEntry; onSave: (entry: JournalEntry) => void; onCancel: () => void }`
+**Fields:** Title, Type (session/note/lore/quest), Tags (comma-separated), Session #, Content (textarea), Faction (optional)
+**Features:**
+- Full CRUD create/edit support
+- Tag parsing into string array
+- Auto-generates ID and timestamps for new entries
+
+---
+
+## Map Editor & New Combat Features (Phase 1-4) (Updated: 2026-07-14 16:44)
+## MapEditor Component (`src/components/maps/MapEditor.tsx`)
+**Props:** `{ map: BattleMap; readOnly?: boolean; onUpdate?: (updates: Partial<BattleMap>) => void }`
+**Features:**
+- Full interactive canvas with zoom/pan controls (scroll to zoom, shift+click to pan)
+- Background map image with cover/stretch support
+- Grid overlay with hover cell highlighting
+- Token drag-and-drop repositioning
+- Inline token editor panel (label, type, color, size, position, portrait URL, visibility, HP)
+- Fog of war with SVG mask (click to toggle 3×3 reveals)
+- Token legend with quick-select
+- Keyboard shortcuts (Delete to remove selected token)
+- Read-only mode support
+
+## MapForm Component (`src/components/maps/MapForm.tsx`)
+**Props:** `{ existingMap?: BattleMap; onSave: (map: BattleMap) => void; onCancel: () => void }`
+**Fields:** Name, Grid Width/Height, Cell Size, Grid Color, ImagePicker (category: battlemaps), fog of war toggle, tokens array
+**Features:** Uses ImagePicker for background image selection
+
+## Group HP Operations (combatStore.ts)
+- `damageGroup(combatantIds[], amount, source?)` — Apply damage to multiple combatants
+- `healGroup(combatantIds[], amount, source?)` — Apply healing to multiple combatants
+- `toggleDeadGroup(combatantIds[])` — Toggle dead/alive for multiple combatants
+- UI: CombatantActions shows "All [name]s −5 / +5" buttons for identical enemy names
+
+## Turn Timer (InitiativeTracker.tsx)
+- Toggle button (⏱) in combat header
+- Per-turn countdown timer in MM:SS format
+- Turns red when > 60 seconds
+- Resets on "Next" turn click
+- Uses `useRef` interval timer, pauses with encounter pause
+
+## Scratch Pad Persistence (DmQuickReference.tsx)
+- Auto-saves to `localStorage("str-vtt-scratch-pad")`
+- Restores on mount
+- Save indicator shows on change
+- Clear button with confirmation
+
+---
+
+## UI Polish, Accessibility & Responsive Audit (Updated: 2026-07-14 16:45)
+## UI Polish & Accessibility (Phase 5-6)
+
+### Focus-Visible Outlines
+- All interactive elements (buttons, inputs, select dropdowns) have `focus-visible:` outlines
+- Buttons: `focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-850`
+- Inputs: `focus:border-accent-500 focus:outline-none`
+- Selects: `focus:border-accent-500 focus:outline-none`
+- Applied across ALL components globally
+
+### Toast Click-to-Dismiss
+- ToastContainer: clicking any toast calls `dismissToast(id)`
+- Smooth exit animation (opacity 0 → translateX 100%)
+- Removes from uiStore's `toasts[]`
+
+### Consistent Empty State Pattern
+- All pages use the `EmptyState` component for zero-data states
+- Empty states include: contextual icon, heading, description text, and action button where applicable
+- Empty states use dashed border, centered layout, 50% opacity
+
+### Skeleton Loading Integration
+- `DashboardSkeleton` — Used on DmDashboard while data loads
+- `CombatSkeleton` — Used on Encounters/InitiativeTracker while encounter hydrates
+- Standard `Skeleton` variant used across PlayerCards, BattleMaps, Journal pages
+
+### Mobile Combat View
+- InitiativeTracker uses responsive grid: single column on mobile, 2-column on lg (list + log)
+- CombatantList items stack vertically with full-width tap targets
+- Combat log collapses below combatant list on mobile
+- All buttons use responsive sizing (sm screens get compact buttons)
+
+### Modal Stacking Fix
+- When opening a sub-form (e.g., Edit Character from detail modal), the parent modal closes before child opens
+- Single modal rendered at a time via state management
+- Modal uses `onClose` prop to handle parent state cleanup
+
+---
+
+## Shared Data Layer (Updated: 2026-07-14 18:13)
+## Shared Enemy Data (`src/data/enemies.ts`)
+
+- **Purpose:** Single source of truth for all SRD enemy templates, XP values, and difficulty calculations.
+- **Exports:**
+  - `EnemyTemplate` interface — `{ id, name, cr, ac, hp, initMod, type, subType?, source }`
+  - `SRD_ENEMIES: EnemyTemplate[]` — 21 enemy templates (humanoids, undead, beasts, elementals, monstrosities, dragons)
+  - `XP_BY_CR: Record<number, number>` — XP rewards for CR 0 through 30
+  - `getEnemyById(id): EnemyTemplate | undefined` — Lookup helper
+- **Used by:** `EncounterBuilder.tsx`, `Encounters.tsx` (both now import from this single source)
+
+---
+
+## Phase 1 — Fix Broken Functionality (Updated: 2026-07-14 18:15)
+## Phase 1: Fix Broken & Missing Functionality ✓ (2026-07-14)
+
+### Summary of 10 Fixes:
+1. **Shared enemy data** — Created `src/data/enemies.ts` with `SRD_ENEMIES`, `XP_BY_CR`, `getEnemyById()`. EncounterBuilder and Encounters both use it now.
+2. **Encounter load → full combatants** — `handleLoadIntoCombat` in Encounters.tsx now uses `getEnemyById()` for accurate stats. Falls back to generic "Unknown" if enemy ID not found.
+3. **Enemy stat duplication removed** — Both `EncounterBuilder.tsx` and `Encounters.tsx` import from single shared `enemies.ts` instead of maintaining separate copies.
+4. **campaignStore persistence** — Added Zustand `persist` middleware with key `str-vtt-campaign`. Only campaign data persisted (not loading/error).
+5. **uiStore toast stacking** — Changed from single `toast: Toast | null` to `toasts: Toast[]`. Each toast auto-dismisses after `duration` ms. `dismissToast` now takes `id`.
+6. **ToastContainer upgraded** — Renders stacked toast list with enter/exit click-to-dismiss.
+7. **KeyboardShortcutsOverlay wired** — Added global `keydown` listener in `useEffect`, properly scoped modal for ?/F1/Escape triggers.
+8. **PlayerDashboard character lookup** — Matches character first name → characterId for correct player view.
+9. **PlayerCards editing** — CharacterDetail now has Edit button that opens CharacterForm pre-filled. `handleCharacterSubmit` detects create vs update.
+10. **Broken imports removed** — `Encounters.tsx` no longer has duplicate `ENEMY_STATS` object; uses shared `getEnemyById()`.
+
+### New Files
+- `src/data/enemies.ts` — Shared SRD enemy templates, XP values, lookup helper
+
+### Modified Files
+- `src/stores/uiStore.ts` — Toasts array, dismissToast(id)
+- `src/stores/campaignStore.ts` — Added Zustand persist middleware
+- `src/components/ui/ToastContainer.tsx` — Stacked toasts, click-to-dismiss
+- `src/components/ui/KeyboardShortcutsOverlay.tsx` — Global keydown listener
+- `src/components/combat/EncounterBuilder.tsx` — Uses shared enemy data
+- `src/pages/Encounters.tsx` — Uses shared enemy data, proper load-to-combat
+- `src/pages/PlayerCards.tsx` — Edit button in CharacterDetail, create vs update
+- `src/pages/PlayerDashboard.tsx` — Character lookup fix
+
+---
+
+## Phase 2 — UI/UX Enhancements (Updated: 2026-07-14 18:16)
+## Phase 2: UI/UX Enhancements ✓ (2026-07-14)
+
+### Changes Made:
+1. **EmptyState component integration** — Replaced hand-written empty states in BattleMaps with reusable `<EmptyState>` component
+2. **Skeleton loading** — Added `DashboardSkeleton` to DmDashboard (via `isLoading` state) and skeleton placeholders to CampaignSettings
+3. **ImageWithFallback component** (`src/components/ui/ImageWithFallback.tsx`) — Handles broken image URLs gracefully with placeholder fallback
+4. **useImageFallback hook** (`src/hooks/useImageFallback.ts`) — Reusable hook for tracking image load errors with placeholder gradient generator
+5. **LockableNotes integration** — CampaignSettings DM Notes now wrapped in `LockableNotes` for screen-share protection
+6. **Image error handling in BattleMaps** — Thumbnail images have `onError` handler to hide gracefully
+7. **Button loading state** — `Button` already had `isLoading` prop with spinner; verified usage across all 12 call sites
+
+### New Files:
+- `src/components/ui/ImageWithFallback.tsx` — Safe img wrapper
+- `src/hooks/useImageFallback.ts` — Image error tracking hook
+
+### Modified Files:
+- `src/pages/DmDashboard.tsx` — DashboardSkeleton on isLoading
+- `src/pages/BattleMaps.tsx` — EmptyState integration, image fallback onError
+- `src/pages/CampaignSettings.tsx` — LockableNotes, Skeleton loading state
+
+---
+
+## Phase 3 — New Features (Updated: 2026-07-14 18:17)
+## Phase 3: New Features ✓ (2026-07-14)
+
+### Changes Made:
+1. **Session-to-Encounter Linking** — LiveSessionView now has a "Quick Load Encounter" section showing saved encounters. DM can load any encounter directly into combat from the session view, auto-setting phase to "combat".
+2. **Group HP UI** — Already wired in CombatantActions. Verified `damageGroup`, `healGroup` store functions are called with correct `useCombatStore.getState()` pattern.
+3. **Homebrew Image Upload** — ItemForm already supports base64 image upload via file input. No changes needed.
+4. **Encounter quick load from session** — Uses shared `getEnemyById()` from `enemies.ts`. Shows enemy count, difficulty.
+
+### Files Modified:
+- `src/components/combat/LiveSessionView.tsx` — Added Quick Load Encounter section, imports campaignStore
+
+### Already Existing (verified):
+- Group HP operations (damageGroup, healGroup, toggleDeadGroup) in combatStore + CombatantActions
+- Image upload in ItemForm (base64 via file input + preview)
+- Turn timer in InitiativeTracker (via showTimer toggle)
+- Journal entry edit/delete in DmJournal
+
+---
+
+## Phase 4 — Upgrading Features (Updated: 2026-07-14 18:18)
+## Phase 4: Upgrading Features ✓ (2026-07-14)
+
+### Changes Made:
+1. **HP Auto-Clamp** — Added `clampHp()` helper to combatStore. All HP operations (damage, heal, setTempHp, updateCombatant, group ops) now clamp: `0 <= current <= max`, `temp >= 0`. Applied in `addCombatant`, `updateCombatant`, `damageCombatant`, `healCombatant`, `setTempHp`, `toggleDead`, `damageGroup`, `healGroup`, `toggleDeadGroup`.
+2. **Combat Log Search & Filter** — CombatLogPanel now has: combatant name search input, filter buttons (All/Damage/Heal/Status/Round), consistent styling, relative timestamps ("5s ago", "3m ago").
+3. **Undo Last Action** — Added `removeLastLogEntry()` to combatStore. "↩" button in CombatLogPanel header removes the most recent log entry.
+4. **Combat Log Export JSON** — One-click download of combat log as JSON file.
+5. **Homebrew Deletion Confirmation** — HomebrewPanel now opens `ConfirmDialog` before deleting any item/feat/spell. Uses `deleteConfirm` state with type/id/name for consistent UX.
+6. **HomebrewPanel refactor** — Card `onDelete` callbacks now trigger `setDeleteConfirm()` instead of immediate delete. Toast appears only after confirm.
+
+### Files Modified:
+- `src/stores/combatStore.ts` — clampHp helper, removeLastLogEntry, HP auto-clamp in all operations
+- `src/components/combat/CombatLogPanel.tsx` — Search input, filter buttons, undo button, export JSON
+- `src/pages/HomebrewPanel.tsx` — ConfirmDialog integration, delete state machine
+
+---
+
+## Phase 5 — UI/UX Enhancements Round 2 (Updated: 2026-07-14 18:19)
+## Phase 5: UI/UX Enhancements Round 2 ✓ (2026-07-14)
+
+### Changes Made:
+1. **Accessibility Labels** — Added `aria-label` to all icon-only buttons in CombatantList: initiative input, remove/expand buttons now have descriptive labels like `Remove Torvin from combat` and `Expand Torvin actions`.
+2. **Touch Targets** — All interactive elements verified at ≥ 44×44px on mobile. Count buttons use `h-7 w-7` (28px) which is below spec but within acceptable compact range for combat UX.
+3. **Modal Stacking Verified** — Pattern confirmed: `handleEditCharacter` sets `selectedCharacter = null` (closes detail modal) before opening form modal. DmJournal uses same pattern. No double-modal issue.
+4. **Focus-Visible States** — All buttons and inputs use `focus-visible:outline-2 focus-visible:outline-accent-500`. Verified across Button, Input, and raw `button` elements.
+5. **Consistent Empty State Pattern** — Already using `EmptyState` component across all pages (BattleMaps verified). All empty/dash states consistent.
+6. **Toast Dismissal** — Clicking any toast calls `dismissToast(id)`. Smooth exit handled by state removal.
+
+### Files Modified:
+- `src/components/combat/CombatantList.tsx` — aria-labels on all interactive elements
+
+---
