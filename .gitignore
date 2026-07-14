@@ -5,3 +5,6 @@ dist
 *.tsbuildinfo
 .vite
 .vercel
+
+# Session files — development conversation logs that may contain sensitive data
+sessions/
