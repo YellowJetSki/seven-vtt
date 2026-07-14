@@ -1,0 +1,2331 @@
+﻿Arkla
+
+
+Session 4
+SESSION 4: THE SCALES OF BASILIA
+PART 1: THE MORNING AFTER & TIZZLE’S WARNING
+The Scene: The party wakes up at the Rusty Hook Inn. They have an impending court date today for Toern’s crimes.
+* Optional Visit (Tizzle's Shop): If the players visit Tizzle before court, he reveals he has been stealing the strange potions but wants nothing to do with them anymore.
+* Tizzle's Warning: He explains that one of his munchkins drank a stolen potion and mutated into something monstrous. Tizzle had to kill the creature himself (casually implying Tizzle possesses immense physical strength). This plants the seed for the dangerous anomalies.
+PART 2: THE COURT OF COUNSELOR QUESSEL
+The Scene: The party arrives at the Basilia Manor for Toern’s hearing. The courtroom is lavish, but the air is tense.
+* NPC Roster:
+   * Counselor Quessel: Smug, corrupt, and entirely in the pocket of the Jewl Pirates. He wants to make an example of Toern.
+   * Captain Pavel: Stands in the gallery. He looks regretful and gives the party a knowing, helpless glance. He cannot interfere here.
+* The Trial (Roleplay): Allow Kehrfuffle to step up and represent Toern. Run this as a skill challenge (Persuasion/Deception/Performance).
+* The Branching Verdict:
+   * If the Party Wins (Innocent): Quessel sighs in frustration, legally forced to clear Toern's name. The courtroom doors immediately burst open.
+   * If the Party Loses (Guilty): Quessel smugly sentences the party to the Manor cellars. Before the guards can take them, the courtroom doors burst open.
+PART 3: THE WRATH OF JEWL (NON-LETHAL BRAWL)
+The Scene: Dreaded Pirate Jewl and her massive goons enter the courtroom. Leeta is with her and points the party out.
+* Jewl's Motivation: * (If Innocent): Jewl is furious that Quessel failed to imprison them and decides to put the party in their place herself.
+   * (If Guilty): Jewl wants to personally humiliate them and take a souvenir before they rot in the cellars.
+* The Combat (Unwinnable): Jewl and her goons are ridiculously strong. Jewl casually dismisses the party's strength. She is not trying to kill them; she is establishing dominance.
+* The Theft Mechanic (Crucial): The moment a PC is reduced to 0 Hit Points, Jewl uses her turn to walk over, snatch a valuable item/weapon from their unconscious body, and laugh.
+* The Blackout: Once the point is made (or the party is wiped out), Jewl's crew swarms them. The party blacks out.
+PART 4: THE MANOR CELLARS (DUNGEON CRAWL)
+The Scene: The players wake up at 1 HP (or after a Short Rest) locked in the dark, confusing tunnels beneath the Manor. It serves as both a prison and the Jewl Pirates' secret smuggling vault.
+* The Objective: Break out of the cell, navigate the dungeon, and find Lord Pooty.
+* Stealth & Puzzles: The players must use skill checks and thieves tools to bypass security and sneak past Crown Guards/Pirates. (Insert your specific puzzles/patrols here).
+PART 5: THE EXECUTIONER KORT (BOSS FIGHT)
+The Scene: The party reaches the deepest hold. Lord Pooty is locked in a cell. Standing outside is the massive Orc, Kort, accompanied by his goons.
+* The Hostage Trigger (Crucial): At the top of initiative, Kort makes his terms clear. If the party kills a goon, Kort will immediately turn and attack Lord Pooty. * The Combat: The party must carefully focus-fire Kort (dealing with his hook-hand and weapon-swapping mechanics) while enduring damage from the goons to keep Pooty safe. Kort fights dirty.
+* The Fate of Lord Pooty:
+   * If Pooty is rescued: He reveals the critical clue—the cane stolen from Mayor Tudul contains the location of a dormant Nevari. Jewl wants it to trade to Arteme.
+   * If Pooty is killed by Kort: Pooty delivers this exact same information to the party with his dying breath.
+PART 6: THE ESCAPE & PAVEL’S CLOAK
+The Scene: The party flees the Manor and slips out of the city limits, successfully completing the prison break.
+* The Rendezvous: They run into Captain Pavel outside of town.
+* The Warning: Pavel emphasizes that they are now wanted fugitives. They have drawn the ire of both the Crown and the Jewl Pirates. If they split up, they will die.
+* The Cloak: Pavel gifts them an item/scroll of cloaking magic to help them evade capture. He urges them to run far away from Basilia.
+* The Player Choice: The party has true agency. They can use the cloak to flee into the wilderness (ending the session), or use it to sneak back into Basilia to regroup at Armand's Inn.
+PART 7: THE CONSULATE CRUSADE (THE NEXT DAY)
+The Scene: If the party sneaks back into the Rusty Hook Inn using Pavel's magic, Armand ushers them into the back room.
+* The Reveal: Armand drops the bartender act. He reveals his true identity as Envoy Shass, a high-ranking assassin for the Consulate Crusade.
+* The Lore Drop: Shass acknowledges the anomalies happening around the city. He hints at Doctor Tonn's underground experiments.
+* The Mission: Shass sees that the party just survived the Jewl Pirates and broke out of the Manor. He hires them. Counselor Quessel is setting sail for the capital (Auralis) tomorrow. Shass wants them to stow away on Quessel's ship and assassinate him at sea. (He notes there are Consulate members on board to help).
+* The Reward (Dramatic Irony): Shass promises to reward them with potions that will "make them immensely powerful."
+   * DM Note: The players should immediately realize that Shass is offering them the dangerous Doctor Tonn mutation potions!
+DM POST-SESSION WRAP UP: End the session on the players accepting or debating Shass's offer. If they accept, Session 4 will begin with a stealth-heist to board Quessel's ship!
+
+
+Arkla world map
+Crown Provinces
+-Auralis (capital, prominent port)
+-Dagend (key city)
+-Shantrangh
+-Claura (key location prominent)
+-Deseeree
+-Foarn (closer to mountainous region but still in Crown provinces)
+-Ivory Hollow (heavily forested area)
+-Basilia (just west of Chauzy, coastal, prominent port)
+-Chauzy
+-Eustra
+-Boogen Trove
+-Old Pallaway
+-New Pallaway
+-Happ’s End
+-Vouseltoft
+-Moora
+-Hantathorpe
+-Damudtoft
+-Goolpen Ward
+-Xanthra’s Court
+-Loftengard
+-Zantara
+-Vavara Bay
+-Ros
+-Quirinthor
+-Dyngaror
+-Yorkavgar
+-Pallisa
+-Heevdale
+-Whyrhydentyl
+-Dale Groval
+-Bants Keep
+-Glaring Trove
+-Jualden Haven
+-Thaon
+-North Gilly
+-South Gilly
+-Birch Ward
+-Cedar Pong
+-Nanihaim
+-Lodsherd
+-Wava
+-Woltesia
+-Carenisia
+-Helmstyrgad
+-Saswa
+-Port Ivt
+-Ivy Pond
+-Ciska (bird place)
+
+
+Quaspian Hills (hilly region near the Quaspian Hills mountain range):
+-Kapik-ra
+-Quaspia
+-Ipik-ta
+-Boagga-tu
+-Zana-xa
+-Masi-tra
+-Xan-ta
+
+
+Bakuna's Territories (northern coastal area in western Arkla and inland western arkla in the north)
+-Oohoalan
+-Baahna
+-Tatatal
+-Navoohla
+-Pashaata
+-Byraa
+-Nor Haala
+-Sor Haala
+The Quasabian Territories
+
+
+Ahelszarime region
+Rumored location of imprisoned Dragons (large spanning area) (Clarion does rest here)
+The Arkla Sea
+
+
+The Crown Provinces
+
+
+Ivory Hollow
+WIP
+
+
+Gesma’s temple. Elf sanctuary. Hometown of Kehrfuffle. He left under terrible circumstances but everyone will be very happy to see him. His wife’s family lives here still torn up by the loss of their daughter
+Auralis
+WIP
+
+
+Capital
+
+
+Emperor Hearn
+
+
+Haven Tudul homebase
+Shantrangh
+
+
+Claura
+WIP
+
+
+Hometown of Lord Pooty. Crab people live here. Various fish people too. Coastal town.
+Basilia
+BASILIA (BAS-IL-YA)
+
+
+The city itself is only enterable by sea or through 2 gates, one on the northern side and one on the southern side of the town. The players must be officially recognized by the Crown to enter. But of course Jewl pirates are also more than welcome (Tudul ring will grant entry - or a symbol of the Jewl pirates). Set up mechanics before session
+
+
+Allegiance: The Crown (openly) / The Consulate Crusade (secret)
+
+
+Description: A massive bustling city. Consists of Port Basilia, Loft Basilia, Lower Basilia and the secret Basilia cellar (underground). The city has massive towering walls of stone. They seem impenetrable. They bear the mark of the crown. And the walls loft the flag of the crown. As the players enter there is next to no more indication of allegiance to the crown. Paintings of the Jewl diamond are visible on many buildings with a large mural dedicated to the pirate herself is plainly seen upon entry. 
+
+
+Session 2 - visit 1 to Basilia.
+
+
+* Many clues regarding the Tuduls can be found
+* Envoy Shass is present in the underground here
+* Pooty managed to leave the cane with someone secret (a Lizard of the Lacerta), but was arrested upon entry to Basilia - rescuing him does wonders for the player
+* ‘It’s a bargain’ ship is present - Hanz uncles looking for his killer…
+* Corruption can be uncovered and exposed if the players want
+* Certain districts of the city are heavily oppressed by a sub-group of the Jewl pirates known as Kort’s goons. Kort’s goons can be expelled for reward
+* Various taverns boasting the best SPICED rum
+* Port Bailia, Loft Basilia (like a loft in a house but for a whole city - it’s raised up and players need to board an airship / a magical elevator to enter) it’s the government district overrun by pirates and corrupt crowns guard, Lower Basilia - standard city living, Underlayer - the underground of Basilia
+* Players will encounter a Crown Guard captain depressed about the corruption
+
+
+Port Basilia
+Port Basilia
+
+
+“As you walk through the opened golden gates to Port Basilia, you immediately feel a sense of calm. You hear the crashing of waves, the yelling of sailors trying to come into port. You smell the incredibly fresh air tinted with the subtle scent of saltwater. You see the Crown's guard stationed throughout the Port itself. Bright red wood planks make up a beautiful maze of board walks and docks and the street is lined with quartz. You see why this port is famous throughout Arkla as a beautiful sight. Under your feet the sun is causing the beautiful limestone to shimmer, bringing out the subtle green. The beautiful port is lined with rows of ships bearing the immense mark of the crown. Although as you look further, certain portions on the north end of the port are covered with immense block-like buildings which serve as covered port entries, likely meant for disembarking and unloading ships rain or shine. This covered area of the port looks a little more run down and ragged and contrasts with the pristine and fabled main Basilia port which is pristine.”
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The Crown Jewl :
+* Sensory: Polished boat. Deck seems extremely wet despite the heavy sunlight. 
+* NPC: Hansel, powerful admiral of Jewl Pirates. Insanely strong and confident. Dumb.
+* Utility: If players arrive here they will be strip searched and told they can’t leave Basilia until the Cane is discovered
+
+
+Hansel: Mighty second in command for the Jewl pirates. Hansel is an incredibly muscular human man. He wears brown gloves. A red shirt ripped open to expose his hairy chest. His hair is glistening and formed into a perfect quaff. He wears short brown pants. 
+
+
+He fights like a boxer. His punches HURT a lot. His key moves are grappling players to the ground. He also is resistant to magic mysteriously. 
+
+
+Allegiance: Jewl pirates - whatever Jewl says. He doesn’t think for himself.
+
+
+Voice: Like Gaston from disney
+
+
+Lines + Stat block under session NPCs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Scant’s houseboat : At the far end of the open port lies Scant’s shack. Scant is desperate for business since he has been losing it all to Pirates. He hates the Crown since they’ve been giving business away from honest folk. His room will contain a pamphlet with a knife through a Crown on it. The Consulate Crusade is introduced. Possible encounter: injected by Doctor Tonn, Scant turns into a massive wolf and begins to attack the players. He has moments of clarity. If the players render him unconscious and track down Doctor Tonn they may be able to barter for an antidote. (Balanced fight for level 2) Defeating Scant should somehow point the players to the underground - location of Doctor Tonn.
+
+
+Scant:  A pale elven man from Ivory Hollow. He knows and respects Kehrfuffle and doesn’t want him to see him like this. He was once highly respected in Ivory Hollow as well but his desire for wealth led to his move to Basilisa where he met his love Woola. Woola is a halfling woman. He was a merchant doing illegal trade in Basilia for years, getting spices and weaponry for incredibly cheap. As a result he was highly successful when he met Woola. But the pirates he did business with are now working with the Crown. His business is suffering. He is desperate and seeing as he hates the Crown for taking his business, which led to his wife leaving him for a Crown officer named Buck, he now wants to see it brought down. He is entertaining the idea of joining the Consulate Crusade. He has a vial he received from a strange doctor in the underground. Drinking this transforms him into a vicious wolf man. 
+
+
+Allegiance: Neutral but leaning to Consulate Crusade
+
+
+From: Ivory Hollow
+
+
+Voice: Sad british man
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Shell-house : Lord Pooty’s Crown ship. It is docked prominently. It’s Crown Symbol is interwoven with a Crab symbol. The boat is painted bright red and has pincers. Guarded by Crown guard but the boat can be accessed by charm. On board Pooty junior is worried about his dad. He hasn’t returned despite saying he would. Clues will point to Pooty’s good nature.
+
+
+Pooty Junior: Young crab man. He is neurotic and nerdy. He bears a resemblance to his father but you can tell he’s more bookish then he is a knight. At his side he has a thin rapier. He wears a hat with a blue feather in it. 
+
+
+If he were to engage in combat he wields the rapier clumsily, though is adept at identifying weaknesses in his enemies and can exploit it through his ice magic. He shoots shards of ice from his claws.
+
+
+Allegiance: The Crown
+
+
+From: Claura
+
+
+Voice: Nerdy kid
+
+
+Lines + Stat block under session NPCs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+‘It’s a Bargain’ : Run by Hanz wife Pala.
+
+
+Pala: Reminiscent of Hanz. She asks if they know Hanz. She asks how he’s doing. Players can break the news to her or not. Hearing Hanz died she starts crying and is an inconsolable mess. 
+From: Chauzy
+Allegiance: Neutral
+
+
+
+
+
+
+‘Shore-sd Locally’ : Run by Tizzle, a halfling. Sells potions of the sea. Mostly ones that prevent sea-sickness. Some mysterious ones, not sure what they do.
+
+
+Tizzle: A thieving and tricky halfling. Tizzle’s shop is full of stolen items. A stolen guard’s sword. A stolen guard’s helm. All can be bought. Stolen items are likely to be hunted for by the Crown's guard. Tizzle operates a ring of thieves throughout Lower Basilia ranging from pickpockets to mercenaries who steal from incoming ships. 
+From: Deseeree
+Allegiance: His own interests. His street kids.
+
+
+
+
+
+
+‘Tackle and more’ : Close to the covered portion of the port. While it masquerades as a fishing shop, weaponry can be bought. The pirate owner Cleavus is looking for the password: ‘This tackle is a bore.. Can you show me more’
+
+
+Cleavus: A pirate of the Jewl Pirates that does business with pretty much anyone. Cleavus will not recognize Toern because he had an encounter with him at sea. Cleavus is a Chimpanzee man. Suspiciously masquerades as a fishing shop. If provided the password ‘This tackle is a bore.. Can you show me more’ he takes users into his wine cellar. This wine cellar is connected to the Basilia cellar. Here he sells more expensive and magical items.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Loft Basilia
+Loft Basilia
+
+
+“As you rise above the cliff the view of Basilia is stunning. The sun glimmers bouncing off the tops of the colorful roofs. The port itself stands out beautifully. From so far away the marble and red wood blends with a beautiful artistry and you soon realize it was built to resemble a majestic sailing ship. The Crown ships adorned in their Crown regalia meant to resemble the sails. It just works. Before you know it you’re deposited at the top. There’s no station building at the top just a few Crown Guards allowing those descending to board before relaying a message down to the operator. You are struck with the quiet grace of this higher area. A large sign reads “Loft Basilia - your safe keepers”. At the far end of this land mass is an intimidating mansion. The building towers up high. It’s adorned with massive glass windows. Large marble columns give the building an almost coliseum like appearance, but a beautiful pointed roof adorns the top.  You now see that the tower you saw peeking above the immense walls was part of this building. Seemingly a watchtower of some kind. The mansion has two massive wooden doors. The streets are wide and paved with flecks of gold amongst the cobble stones. You have a direct path to this mansion. Lining the road are various other buildings that on their own would be incredibly impressive but pale in comparison to this mansion. It’s quiet up here. Anyone walking around is dressed fancy and seems to be hushed in doing whatever their business might be. Crown guards are stationed nearly everywhere, their appearance much more like what you would expect”
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Basilia Manor : A massive castle-like mansion belonging to Quessel the Counselor of Basilia. 
+Desc: A massive and impressive building. Massive ceilings. Large marble pillars. Various rooms are heavily guarded by Crowns guard, although these do not appear as regal as those outside the Manor. Two large massive red doors lead to Quessel’s office. Players need an audience to enter unless they choose to use force. Two massive statues of Emperor Hearn give the impression he is holding up the ceiling. Centrally is the office of the Counselor, his living quarters and his main office and court. To the right is the Crown holding of Basilia where Lord Pooty is being heavily guarded in a basement prison. To the left is the Crown banquet hall.
+* Quessel offers a banquet to the players for visiting Basilia
+* Quessel discusses Haven Tudul’s rise to fame with the Crown and him feeling like a lapdog
+* Quessel indicates his allegiance to Jewl
+* Indicates everyone wants to tell Quessel what to do
+* Players can choose to be hostile and be faced with hostility from his guards or can take a stealthy approach during dinner
+
+
+Counselor Quessel : Deeply corrupt, member of the Jewl pirates but masquerading as a counselor of the Crown. You notice letters from H.T. litter his desk. A listening device is seen in the corner of his office openly. He thinks he recognizes Strider. Can be seen mouthing off about how Haven Tudul says to do this, and to do that.. Blah blah blah.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VIP Quarters: A tavern reserved for the more respected characters in Basilia. This place seems fancy. It’s less of a pub and more of a sit down restaurant. Its chef Pascal claims he has worked in every notable restaurant in Arkla. 
+Desc: A dimly lit room with several tables adorned in white tablecloths. The cutlery glistens at each table. The bar itself has a few seats as well and you see a few well dressed older men sitting together huddled in a corner. You hear the faint din of some light flute being played and soon realize a little mouse man is playing the flute in the corner of the room. He is a tiny little brown mouse in a nice black suit with a black tie. Behind the bar stands a thin man with a long moustache and a chefs hat. He bows as you enter. UNLESS PLAYERS ARE WITH CAPTAIN PAVEL, they cannot dine here.
+* Mouse man named Palch offers to teach a song to Kehrfuffle
+* Wendy sees an old Kolari monk sitting there, and can speak to him. He has no info on Duku’s wearabout but admits he has seen him in Basilia
+
+
+Monk Hane: A kind monk from Foarn. Clothed in Kolari robes with a nice belt featuring an H on it. He is tired and old but happy to meet a young Kolari. He asks about Foarn, how it is. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Basilia Printing Press: A large printing press. Complaining about their being used to print propaganda against the Crown. Owned by Oakleff Ogdemire and Orc. The Orc is very loyal to the crown and is outraged at how his business has been used.
+
+
+Oakleff Ogdemire: A pale blue skinned Orc. This Orc wears little spectacles and despite his imposing size seems more polished and studious than any Orc you’ve met before. He wears a brown vest over his white shirt and tie. 
+Allegiance: The Crown
+
+
+
+
+
+
+
+
+Shops
+
+
+* Basilian Antiques: Strange quarterstaff that can be split in half, an ornate vase featuring 6 giants, a coin featuring a reptilian eye
+
+
+* Sky high sales: A health potion, a longbow with wind carvings, a vial of strange goo
+
+
+* Carter the Charter: A map shop, however the best he can do is a map of the surrounding area or a sea chart if the players explain where they’d like to go. He is however out of charcoal as it has been stolen recently. He’ll need it back to provide the map. Charcoal can be recovered from Doctor Tonn’s lab.
+
+
+Lower Basilia
+Lower Basilia
+
+
+If entering through South/North gate read below just switch direction of Loft Basilia vs Lower Basilia :
+“As you enter Basilia you are overwhelmed by the immense metropolis that it is.You’re hit with the smell of spices and fish, although the fish smell melts into the air and isn’t overly pungent. The limestone street in front of you slopes down towards what looks like a merchant district.  Little children run through the street chasing each other. People go about their business. Various merchants line the streets selling rare spices, some fishmongers have giant blocks of ice covered with incredible colorful fish. You all see some game stands set up near a slightly bigger shack. A banner reads “Tickets for Treasure!”. Throughout the market all these men and women are trying to sell their wares or draw people to their booth. They are yelling at passersby, and you hear many different languages melding into one loud chorus. Their little stands waving various flags, some wave the crown flag others wave different varied flags. The town is bustling. You see a clear division through the metropolis though. Looking to your left/right (depends where entered) you see an immense cliff towering over Basilia. Suddenly you understand why the wall towered so high. A piece of land seemingly elevated above the rest of Basilia.  On this highly elevated piece of land you can’t see much but what you do see is eyecatching, gold and quartz pillars are seen supporting a building that seems to overlook all Basilia, and you can tell there are other elegant buildings around it as well. This piece of land slightly overhangs the lower portion of Basilia which you are standing in and casts a shadow over it. In this lower portion of Basilia you can tell there are less buildings under that shadow as it seems the population gets more dense closer to the port. Along the cliff you see golden rails leading all the way from the lower land mass to the higher one. And as you look something that appears like a giant glass bubble slowly rises from the Lower land mass and follows the rails up.”
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The Rusty Hook : A tavern owned by Armand the boisterous. This Tavern's front area is filled with Crown's guards. The back room is reserved for various card games, where Guards and Pirates can be seen mingling and betting on games. Unsavory characters typically stay here. Armand is very discreet.
+Desc: “As you enter the Rusty Hook you are smacked in the face with warm inviting  light immediately calming any nerves you might feel. You see a bustling place, many Crowns guard sit gathered at tables. The smell of fish and beer, an odd combo smacks you in the face. Other travelers intermingle too. A crackling fire roars and a young human kid chucks more logs on it to keep it going. Behind the bar stands a large human man with dark skin. On his head rests a purple turban. His clothes strike you as odd for this area, he wears bandages wrapped around both arms, and a leather vest. He seems taller than most and has an intimidating although inviting presence. He is sliding steins of beer down the granite bar to a few Crown guards sitting at the end of the bar while regaling a few dwarven women sitting at the bar with a story. The furniture is all standard wooden furniture and seemingly is scattered haphazardly throughout the room. At the back of the bar are two barn doors that are slid shut. A young elven woman with braided white hair holding a tray with multiple steins walks up to the door, knocks a pattern on it and it opens.”
+
+
+Armand the boisterous: A large human desert man. He has dark skin. He wears a turban and silk clothes. He is very welcoming to all. He is loud and gregarious. He keeps secrets. But for the right price he might sell information. Armand actually recruits for the Jewl Pirates and the Consulate Crusade.
+
+
+Allegiance: Consulate Crusade
+
+
+* Gambling in back
+* A character in here was injured and his injury looks like he was pinched by a claw
+* If the players go in the back room Armand does try to recruit them for Consulate Crusade
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Crown Bubble service : Transport from lower Basilia to Loft Basilia. The operator in the eastern one is Eustace Hampton. A human Crown operative. In the western one it's his twin brother Austace Hampton. The two haven't seen each other in years and wonder what their twin is up to. Hopefully something better than this.
+Desc: “A very elegant and simple room. Eerily quiet as you enter. White floors. Glass walls. White ceiling. At the back of the room is a very long, almost comically long desk with just one figure sitting behind it. An older looking man in Crown’s guard armor, adorned with a white cape. His head bald as his helmet rests on the desk next to him. His white moustache droops off the edge of his face. Next to the long desk he sits at you see a small metal gate with a walkway leading to the entrance to the strange glass bubble contraption. A pure sphere of thick glass. The sphere is affixed to the golden rails you saw running up and down the cliff face.”
+
+
+Eustace/Austice Hamton: Two twin brothers opposing Crown Bubble stations. Both haven’t seen their brother in years and wonder what they’re up to. Both resemble an older man with white hair. Crown's guard armor and a white cape. A Crown's guard helmet sits. Long white moustache that dangles off the bottom of their face.
+
+
+Allegiance: The Crown
+
+
+* 10 Assarions a trip
+* Reason for visiting the loft required
+* Both of them comment on the sad state of Basilia
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Grifter Alley: An inconspicuous alleyway. Locals know not to enter Grifter Alley. Entering it means definitively the person will be mugged or worse. Local street urchins and thieves frequent this alley as it's essentially their turf. Kort’s goons run this alley.
+Desc: “A fairly nondescript alley. It looks like it’s completely empty to you but it does turn sharp to the left after about 20 feet or so. (Perception can reveal that it seems to not be as traveled as the other main portions of Basilia)
+
+
+Reece: Street urchin. Little ginger boy with dirty skin. He has very shaggy hair and tattered clothes. He runs past the players and tries to pickpocket something. After taking it he runs directly for Grifter Alley. 
+
+
+* Full of various traps
+* Leads players into Port Basilia right by Tizzle’s shop
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+‘Spice shack’ : In the Market district this is a shack next to all the other merchants selling spices. Magdooga, a fish person, owns this shack. Magdooga complains that someone mixed up all his spices and ransacked the place recently. They took his prized Quaspian spice blend which took him months to source. Doctor Tonn was in here and took the spices to aid him in the mixing of his concoctions.
+Desc: Just a basic shack
+Stock: Spices of various kinds, buns, flask
+
+
+Magdooga: A swordfish-person. Magdooga stands at a distance so as not to poke players. His spices are in disarray. He is upset that someone broke into his shop last night and took his Quaspian spices. If players pry he mentions the doctor that was weirdly interested in those spices the other day.
+
+
+
+
+
+
+‘Punch and Kick’ : In the Market district. Outside two young male students stand in Homulian monk robes demonstrating their martial arts skills. Their teacher, a bird person named Peck resembling a crow, offers if passersby can beat their students they may browse their wares at a discount. 
+Desc: Basic shack but mention martial arts banners (Kolari symbol but a different element - Kolari symbol is an iron bar, this one could be a mountain)
+* Notices Wendy’s attire and comments on the Kolari
+
+
+
+
+
+
+‘Basilia Market game shop’ : Tickets earned from market games can be redeemed for some impressive items.
+   * Archery range (run by a Crown Guard named Heest)
+      * Archer shoots for the 4 targets, progressively further. Wind. (Add a factor to each shot)
+   * Find the ball (run by Gabby - an old woman)
+      * 3 strangers are pulled in. One of them is given the ball. If they fool you they each get a ticket. You need to find the right one to get 3 tickets.
+   * Arm wrestle Gambango (big fish man - resembles a muscular goldfish humanoid)
+      * Simple d20 check but with dc20
+   * Plinky’s card game (little mouse guy - little brown mouse in a very nice tunic, no pants)
+      * Roll all dice. You get to keep 2, rest need to be rerolled. Each round until last dice. Best rolls. Straight. Same color. Same number. High number.
+   * Card tower game (Tinko the gnome)
+      * Build a card tower faster than Tinko. D4 roll until you get a 4. D6 roll until you get a 6 keep going until all dice done.
+Deseeree
+
+
+Foarn
+WIP
+
+
+Wendy hometown
+
+
+Kolari temple - injured Kol
+
+
+Monk Wando (jerk)
+Dagend
+WIP
+
+
+Hometown of Toern. Monk Wando. Wizardry lives here. Treetap family is fabled, although after the accident Toern is not really welcome.
+Hantathorpe
+WIP
+
+
+Arteme’s birthplace. He was a very reclusive man obsessed with dragons. (Should be full of info on Arteme “the stranger”.
+
+
+PCs
+Wendy Warmwind:
+Wendy begins as a level 1 Monk. She is a Rock Gnome.
+Age: 20
+Hometown: Foarn
+
+
+Wendy trained in the way of the Kolari in the fortress town of Foarn. While training there she grew attached to her master Monk Duku. Their relationship stemmed from their loner nature, both of them being the quiet type and preferring to blend into the background and avoid notice. Monk Duku saw this as a strength and trained her to be stealthy and to use this to her advantage in life. He proved to be like a father to Wendy, who had lost both of her sailor parents at sea. But he always had an air of mystery about him. He was clearly not from the town of Foarn and often received suspicious courier mail and visits from dark strangers. On one occasion Wendy was able to intercept a courier and steal a single letter. It featured a drawing of a beautiful restaurant by the sea, signed with a monogram of a lizard seemingly in the shape of the letter S. Briefly after that Monk Duku disappeared without a trace, leaving behind only his large belt with a similar monogram of a lizard, this one in the shape of an H.
+
+
+After Duku’s departure the new Monk in charge was Monk Wando, who came from the upscale town of Dagend. Monk Wando was a pretentious gnome, he held other students in much higher esteem than Wendy and seemed to ignore her altogether. Her feelings about the Kolari soured.
+
+
+One day while Wendy was keeping watch she noticed a small party of Brevar approaching Foarn. In her hubris and frankly because she didn’t want to interact with anyone she chose to take on the party herself. Quickly she realized she was outmatched and outnumbered as this party proved to be a full scale raid, which was unprecedented in Foarn. Managing to sound the alarm bell, all but too late, Wendy dreads the memories of the many Kolari pupils that laid their life down to protect her hometown. Among them her cousin and good friend Quill. While the attack was warded off the town of Foarn would never be the same. Wendy primarily was embittered against Monk Wando who refused to help the town and pupils and chose instead to remain north of the town protecting the Kolari temple. Had the Monk in charge been in town many lives could have been spared. The town of Foarn now is a constant reminder of Wendy’s failure and guilt. 
+
+
+Armed with her lethal fists and quarter staff Wendy has decided to run away from her hometown. Her goal: Find that restaurant by the sea, and discover where her beloved Master might have gone.
+
+
+In her off time Wendy tinkers with little gizmos and gadgets, typically trying to invent new light weaponry to enhance her own attacks. For instance forming caltrops or shurikens out of little gears. 
+
+
+Her appearance:
+Reddish slight curly hair. Pretty features. Wears a monogrammed belt with a Lizard on it, which was left behind by Monk Duku her beloved master.
+
+
+--
+
+
+
+
+Kehrfuffle Songroot
+Kehrfuffle begins as a Level 1 Bard. He is a Wood Elf.
+Age: 30
+Hometown: Ivory Hollow
+
+
+Kehrfuffle grew up in the quiet village of Ivory Hollow, a beautiful town of Wood Elves that often saw visitors seeking tranquility. Kehrfuffle sought fame as an accordionist and often played at the local tavern. His charm brought many to his shows but he was often left dissatisfied feeling that he was not getting his big break as an artist, which he felt he deserved. Despite feeling disappointed by his own lack of fame, he found love in a beautiful wood elf named Caroline who truly loved his music and believed in him. She was beloved in Ivory Hollow, known for her sympathy for the worn down and weary. She had a beautiful singing voice which she was shy of sharing with anyone other than Kehrfuffle himself. While Kehrfuffle himself could draw a crowd, Caroline was even more immensely charming and it led to the two being a highly respected couple, even being appointed to the town council in Ivory Hollow. Kehrfuffle had a good life, but he failed to recognize that at the time, driven by his own ambition. 
+
+
+Until a night that changed everything.
+
+
+Finishing up a gig at the Root pub, a local tavern to Ivory Hollow, Kehrfuffle was beckoned to a dimly lit table at the back of the pub. There sat a hooded man who seemed small in stature. The man’s voice seemed like a whisper and yet every word hit Kehrfuffle’s ears clearly. He offered Kehrfuffle a deal: “Undeniable musical talent in exchange for the most charming thing he had.”
+Kehrfuffle laughed it off thinking the man to be a strange fan of his, but on the off chance this mysterious stranger had a prestigious job to offer him Kehrfuffle was willing to accept, believing he was merely trading a physical object this man had his eye on. When his hand met the stranger’s in agreement he felt a grip he had never felt before. The man was instantly gone and Kehrfuffle was instantly transported back to his home. On the floor in front of him lay his wife’s apron next to a beautiful accordion. The accordion pulsing as if it were alive. The painful moments that followed led to the grave realisation that the man had taken the most charming thing about him, his beloved wife Caroline. Even now the accordion occasionally plays a sad song of its own, the notes humming in the key of his missing wife. Kehrfuffle proceeded to live for years fueled by anger and a desire for vengeance. He hunted the mysterious man, occasionally hearing talk of the shrouded man who appears where ambition and desperation meet, the same verse always recited:
+
+“A lover desperate for a bride.”
+“A warrior desperate for victory.”
+“A singer desperate for fame.”
+
+
+His search led him back to the ancient druidic ruins of the Weeping Grove, just outside Ivory Hollow. The wild magic of the grove reacted negatively to the presence of Caroline’s accordion. The shrine that had stood for years, an attraction drawing many passersby, collapsed, crushing Kehrfuffle’s left leg entirely. After coming to, he discovered his leg had been mysteriously replaced by a thick branch, being gnawed on by an unnaturally small bear cub. The cub has never left his side since. Additionally, a large and somewhat rusty Sicle lay in the dirt next to him, while holding the Sickle it feels as though Kerfuffle can hear the heartbeat or the vegetation around him and he notices a faint glow the symbols carved into the blade’s hilt. Taking this event as a sign from the druidic force Gesma whom the shrine had been made for, Kehrfuffle re-assessed his approach. While he works to increase in strength, he also looks for allies or heroes he can manipulate into helping him, alongside his quest for clues.
+
+
+It has been a while since Kehrfuffle has heard talk of the shrouded stranger. While his approach may have changed, his goal remains the same and continues to consume him. Find the stranger. Bring Caroline back.
+
+
+His appearance: 
+Appears to have given up caring for himself, but was once a handsome wood elf. Piercing grieving eyes. Dark hair and a beard. Slightly tattered clothes that were once nice. A locket with Caroline’s picture. Left leg is a budding thick branch. A leather bag which he often uses for carrying the little bear which he refuses to name. A branch as a peg leg that seems to be budding. And a core feature, the sandy accordion bearing the color of his wife’s hair.
+
+
+--
+
+
+Edmund “Strider” Tudul
+Strider begins as a Level 1 Ranger. He is a human.
+Age: 20
+Hometown: Auralis
+
+
+Edmund Tudul is a royal, born to Lord Henry Tudul and Wendy Tudul of the crown. Edmund was the eldest of three children. 2 years the senior of his brother Haven. 5 years the senior of his younger sister Ruth. Edmund loved his siblings very much. His brother Haven was much better in their combat classes despite being younger in years, Edmund could only best him in Archery class. In time Edmund and Haven developed a bit of a rivalry, Edmund proving to be a more compassionate and kind man and Haven proving to be more athletic and courageous. Their father never being in town for long, he and Haven often spent time with Emperor Hearn and Commander Goron listening to the two Limestone Goliath’s tell stories from the ancient war. Their imposing size yet kind manner left an immense impression on Edmund. They taught him the value of having a good name with others, as the two commanding brothers were beloved to everyone in Auralis.
+
+
+As he grew and trained in the court of the Crown, Prince Edmund began to develop a distaste for nobility. His access to the Emperor and Commander seemed to be restricted now, only catching sight of them from afar during imperial events. The Tudul family name didn’t carry admiration but instead carried fear. His father made attempts to connect with him, but Edmund was disgusted by his family’s low moral compass and lack of compassion for the weak. As a result Edmund refused to join company outings with his father, seeding his place to Haven who seemed to love the thrill of going on these trips.
+
+
+On one occasion Edmund and his sister Princess Ruth were excited to welcome their brother home from a company trip. Seeking to surprise him the princess ran ahead of Edmund to sneak aboard the ship, her goal to scare Haven which always brought her great delight. Edmund waited by the shore. Soon everything would change.
+
+
+A loud crash was heard on board the ship, followed by Haven’s disembarking. Haven seemed a shell of himself, making no response as his brother greeted him. Edmund was curious to his sister’s whereabouts and asked his brother, only to be met with a swift punch to the head that knocked him to the ground. Haven stood over him, merely repeating the words: “We can’t change what we are.” There Edmund lay for some time, shock racing through his mind. As he rose from the ground to his horror he saw his father disembarking from the ship, his sister Ruth’s limp body held in his arms. His father’s face showed no sign of grief as he tossed her body to the sea.
+
+
+This grim memory continues to play out in Edmund’s mind. A story with many questions but no answers. Filled with grief at the loss of his beloved sister, and confusion at the circumstances that led to her death Edmund fled to Chauzy, leaving his royal life behind. There he knew his outcast uncle Byron Tudul would take him in. As the Mayor of Chauzy Byron Tudul seeks to redeem the Tudul name, an idea that Edmund finds humorous. Edmund instead rejects his nobility and the Tudul family name and now goes by the name Strider, his uncle agreeing to protect his identity. While he trains and pretends to be a nonchalant powerful Ranger he is still very much a spoiled prince, but he’s learning to fake it until it becomes his reality. If he truly learns to stop caring then maybe he’ll never have to face his brother or father again, and can make his own name in the world of Arkla. 
+
+Fueled by the Emperor’s stories which he once held so dear, Strider seeks to have stories of his own so people will admire who he is now, and forget who he once was. In his mind Prince Edmund Tudul died the same day that his sister Ruth did. He’ll make a name for himself that would've made her proud.
+
+
+--
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name: Toern Treetap
+Level 1 Artificier. Salt Gnome
+Age: 31
+Hometown: Dagend
+
+
+Toern loves explosives. His entire life revolved around experiments and gadgets, much to the chagrin of his wizard family. The Treetap family line has long been revered in not only Dagend but all of Arkla as a family of powerful wizards. At a young age though Toern realized this was not the path for him. While his brothers Tulip and Tomper mastered powerful elemental magic, Toern preferred to spend his time harnessing magic into other things, at first experimenting with putting it inside various pond creatures from the local Markel Bog. His experimentation often ended in some sort of explosion, highly disruptive to the amphibian wildlife.
+
+
+Despite not fitting in, Toern loved his family deeply and felt their support as he continued to tinker with explosives. He quickly became adept at making powerful mining bombs, protective magical mines and imbuing magic into various little gadgets and inventions. These were distributed far and wide throughout Dagend and contributed greatly to the prosperous nature of a somewhat pretentious and affluent city, stemming from its successful mines and trade agreement with the Crown.
+
+
+One day, while working on a bomb that he claimed would instantaneously clear a tunnel without bringing any harm to miners, precious jewels or mineral veins, Toern’s life changed completely. The bomb he was proudly unveiling to the world went off. The result was a real mess, his family, friends and many local residents of Dagend were blown into magical goo. Where they once stood was only a pile of gelatinous matter. Toern was convinced he had built the bomb well, as he always did. A perfectionist, he had checked it over many times. How could this have happened?
+
+
+In his grief, while collecting the goo of his loved ones into an assortment of jars, to pay his respects, he noticed something truly mysterious, his elder brother Tulin’s goo was gone. Where his powerful wizard brother had one stood, right at Toern’s side, was merely a singed patch of grass and tucked into the dirt was a metal pin, the pin featured two lizards in the shape of two Ts and was far too tacky for his brother’s taste. 
+
+
+Armed with hope that his powerful brother had somehow survived this horrible accident and with ambition to redeem himself as a successful inventor and not a crazed scientist, Toern set out to sea with a crew of Gnome friends in search of answers. The crew quickly crowned Toern their captain after his bombs aided them in dissuading many pirate attacks and other ocean threats. His first mate Bolan, a powerful quartz-stone Goliath quickly became Toern’s dearest friend and together the two commanded their Gnome crew successfully for a while, though they often faced conflict as Bolan wanted them to turn to piracy while Toern’s moral compass kept him strictly working under the Crown’s flag.
+
+
+Now Toern realizes how significant that conflict really was. One night he was rudely awoken by Bolan, a strange look on his face. Bolan bound Toern and threw him overboard. The crew had mutinized against him. That day was the birth of the Quartz pirates. At the brink of drowning the ocean around Toern began to glow. Suddenly it felt as though a giant hand ripped him from the ocean and plopped him on the deck of Captain Screwbeard, a fat and stupid Dwarf admiral of the Jewl pirates. Screwbeard kept Toern locked up. After hearing grumblings of a new letter from the boss, and a mysterious clue to a weapon held by the Mayor of Chauzy, Toern has been relocated to Poll cave where he is currently held, under lock and key by Screwbeard, now apparently the first mate of the Jewl pirates, and his goblin underlings.
+
+
+Enemies
+Threats:
+
+
+1. Clarion the dragon:
+   1. Uses hooded man to offer deals to people
+   2. These deals are an opening for Clarion to gain some power over them
+   3. Corruption begins as a result of them wielding power from a Dragon
+   4. PCs affected occasionally lose control (comabt + outside combat
+
+
+2. Balak’tarii
+   1. A very powerful monster that can destroy Arkla
+   2. A cult following from the Quaspians
+   3. The Quaspians seek to release it
+   4. They search for the means to do so
+
+
+3. Civil unrest (Consulate Crusade + Old Crown)
+   1. Two seemingly rebellious groups
+   2. Old crown hates Empire because of how Hearn has changed and how Tudul’s are given free reign
+   3. Consulate Crusade seeks to enthrone Haven over Hearn
+
+
+Threat 1: Clarion, Haven and Jewl
+MAIN FOE
+
+
+Clarion: Imprisoned by the Nevari Giants in tandem with Emperor Hearn and his heroes. Clarion is a powerful Dragon seeking to free himself and destroy the world. Horribly injured and unable to heal himself, seeks the aid of 6 other imprisoned Dragons to not only free himself but also heal himself through their combined magic. Clarion is currently paralyzed in a cave. Both wings are torn off. Clarion is insane and is prejudiced against all life forms other than Dragons. He now wants revenge on Emperor Hearn and all the Nevari. And he desires to be King of Dragons and ruler of Arkla. He has his minions such as Arteme leave magical coins from his treasury in certain areas so that he can speak with mortals and convince them into doing his bidding.
+
+
+MAIN GENERAL
+
+
+Arteme “the stranger” Dagelaise: A zealot of Clarion, once a normal halfling with an immense interest in the history of Dragons. Arteme went exploring the areas fabled to be where the Dragons were imprisoned in the Ahelszarime region. While there Arteme utilized the little magic he knew to listen in on the thoughts around him. One faint thought seemed to stand out to him as different and led him to a hidden cave. In this cave Arteme came face to face with the imprisoned Dragon Clarion. Due to their proximity, Arteme’s already willing and open disposition Clarion easily infested his mind. Now Arteme is assigned to humble any in whom Clarion identifies potential as a threat, since Clarion doesn’t want anyone attaining the strength Emperor Hearn once held. Arteme offers magical deals, when accepted they grant him immense magical power over the subject of that deal. He can enter their head as he pleases and since he has their loved ones imprisoned can threaten their lives. He does Clarion’s bidding. His goal is to free Clarion. Currently those he has offered deals to:
+-Pierre Lafroche (deceased): Arteme took his family in reward for exceptional cooking talent. 
+-Jewl the pirate: “The treasure of highest value to you, for the power you seek for your crew”. Arteme took her love, Herald, which was the highest value treasure in her life. Bestowed her with Cleopas emerald which has the power to communicate and lull sea monsters into service. Herald is imprisoned in the necklace.
+-PC: Kehrfuffle: “The most charming thing about you, for the immense talent you seek.” He took Caroline, his wife. He made her into his magical accordion, where she is imprisoned.
+
+
+Desc: Often appears magically distorting his appearance, his face can’t be remembered except by those with powerful resistance to illusionary magic.
+He is a halfling man. Bald head. Gold teeth. Scar across the top of his head.
+He is a zealot of Clarion.
+
+
+Origin: Hantathorpe
+
+
+Clarion & Arteme Goals:
+1. Recover Dragon Talons (build weaponry that can kill Nevari)
+2. Discover and kill the dormant Nevari (with each death the imprisonment weakens - after 3 dead Nevari the uninjured dragons are freed)
+3. Free remaining heavily injured imprisoned Dragons (4 more left: Vizzarel, Ghanparra, Tykala and Larandin)
+4. Free and heal Clarion (required the powers of Tykala and Ghanparra since these are the healing dragons)
+5. Enslave all of Arkla to Clarion the dragon King
+
+
+
+
+OTHER RELATED FOES:
+
+
+Haven Tudul: Communicates with Clarion, not knowing it is him. All this because on one illegal trade run he picked up a strange coin bearing a reptilian eye. This coin spoke to him. He keeps it on him and is Clarion’s eyes and ears in return for information. Haven wields magical arms that are incredibly strong and have a long reach. He is lulled by the promise of great power from the voice in his head, Clarion, who tells him the Nevari stand in his way because they will just take the throne from him when they arise. Clarion tips him off to the locations of the Nevari and Haven seeks to kill them. He uses the Tudul family’s illegal funding of Pirates to scour Arkla for the rumored Dragon talons. It’s rumored this is the only material that can be used to forge weaponry that can puncture Nevari skin. Immensely charming, primarily through his Charisma and secondarily through powerful charm magic which he is constantly using with Emperor Hearn. Haven is the right hand man of the Crown while also being the current chief officer of the Tuduls. He employs Jewl and her pirates as well as various less significant pirate crews. Clarion doesn’t view Haven as a threat because he senses the evil in him, feeling their plans will align. After Haven kills the first Nevari he will feel Clarion’s strength growing as the voice in his head becomes clearer leading to him beginning to clue in to Clarion’s identity as a Dragon. Haven will force Clarion out of his head, tossing the coin away. 
+
+
+Desc: A handsome human male. Nicely groomed long brown hair. Expensive robes. Haven often walks around with a cane as is the Tudul custom.
+
+
+Origin: Auralis
+
+
+Goals:
+1) Recover Talons
+2) Kill dormant Nevari
+3) Assassinate Emperor Hearn
+4) Take the throne
+5) Establish the Tudul family as the rulers of Arkla
+
+
+
+
+
+
+
+
+
+
+
+
+Dreaded Pirate Jewl - Her ship is the crown Jewel. The meadhead pirates aside from her and Hansel are not that impressive. Jewl wields water magic, which includes an ability to communicate with sea monsters and command them at will, this power tied to an amulet she wears around her neck which she received after making a deal with Arteme (her greatest treasure for the power she seeked - her love herald for this immense power). She agreed to Arteme’s second offer to work with him and currently she takes orders from both Haven Tudul and Arteme. Having been loyal for some time Arteme has given her his name after much pleading on her part.
+
+
+Desc: A pretty red-headed pirate woman. She wears a large straw hat and a Jade amulet around her neck. She wears light armor, utilizes a flint-lock pistol and a pirate’s scimitar. She has a large scar on the left side of her face caused by a run in with a Kraken which she successfully slayed. A small squid rests on her shoulder, somehow alive despite being out of water (drawing from her water magic)
+
+
+Origin: Basilia
+
+
+Turncoat: Jewl can be convinced to work with the players to hunt down Arteme. She knows name but still not his origin.
+
+
+Goals:
+1. Get Herald back at all cost. She is told once her mission is completed he will be returned.
+2. Become Queen of all pirates.
+
+
+Threat 2: Balak-aptari and the Consulate Crusade
+Chief Holl: A barbarian indigenous Quaspian chief. He commands hordes of Brevars and Boar-like warriors known as the Pasari. He is questing for the rumored Balak eggs. The Quaspians believe that these eggs can hatch the Balak-aptari. The Balak-aptari is what they believe controls the population, which the Quaspian’s feel is necessary. They believe Arkla to be rightfully theirs but they recognize the right of the Balak-aptari to choose. The Balak-aptari is a scorpion-like monster, it has hatched once previously under the Quaspian chief Brung. That event was solved quickly by the Nevari but not before the Balak-aptari entered the Arkla sea, wrecked Havoc on outskirts towns and returned to the Quaspian region wiping out thousands of Quaspians including chief Brung. Holl believes it lays eggs before it begins its feasting, since his history claims it only develops an appetite after it gives birth, and that it gives birth in the water. Notably the Quasipians know those eggs lie dormant somewhere in the Arkla sea because they require boiling water and heat provided by the mother’s fire breath to actually hatch. He plans to kill the powerful deity Gesma, nature’s hero of the Ivory Hollow. Harnessing the essence of Gesma, Doctor Tonn promises to create a magical serum that will enslave the Balak-aptari to the Quaspians After hatching the Balak-aptari Chief Holl plans to raise it and feed it using his own Brevar hordes and Pasari hordes, key being - not Quaspians. He then plans to unleash Balak-aptari on the crown provinces to aid the Quaspians in an all out war.
+
+
+Desc: Indigenous human chief. He wears the head of a boar on his left shoulder and the head of a Bear on his right. He is prominently covered in white paint, painted lines and circles all along his body. He wears fur garments. He carries a very long and incredibly sharp spear and rides a Gundrug (giant war-pig).
+
+
+Origin: Quaspia
+
+
+Goals:
+1. Hire Quartz Pirates to uncover egg
+2. Locate and kill Gesma
+3. Hatch the egg
+4. Release the Balak-aptari on Arkla
+5. Take down the Crown via the Consulate Crusade
+
+
+MAIN GENERALS:
+
+
+Doctor Tonn: A barbarian doctor. Tonn utilizes poisons and deadly toxins in fighting. Doctor Tonn is a Quaspian that travels searching for various interesting people to conduct experiments on. Doctor Tonn is trying to turn Quaspians into a more powerful creature but he must experiment first on other humanoids.
+
+
+Desc: Indigenous Quaspian human. Hunched back. Goggles. Dark skin with white painted circles and lines all over his body. He wears white feathers in his hair. He wears fur clothes. Various vials line the inside of his coat. Poison, paralysis, confusion, blinding and laughing concoctions. 
+
+
+Origin: Quaspia
+
+
+Goals:
+1. Find interesting people.
+2. Bring them back to Quaspia voluntarily or by force.
+3. Experiment on them.
+4. Discover something that empowers Quaspians.
+5. Start raiding the Crown Provinces.
+
+
+Envoy Shass: Chief Holl’s appointed representative for the Consulate. A conspiracy against the Crown. Shass is a dangerous assassin who hides in the shadows of Basilia primarily. He stows Consulate recruits onboard various Crown or Pirate vessels to wreck havoc. The Consulate Crusade feels they are on the side of what is right. They seek to expose the corruption of the Tudul’s and take down the Crown. They spread propaganda about the Crown and it’s employment of Pirates (which is actually just the Tudul family’s business). Envoy Shass stows various Crusaders on board Crown boats and Pirate boats when he can for them to recruit for the Consulate Crusade or if unsuccessful wreck havoc before biting down on a cyanide pill. 
+
+
+Desc: Tall indigenous man. Tries to hide/cover his Quaspian symbols. He wears bandages around his arms and face only revealing his eyes. Blonde and white hair. He wears a leather cap. He wields two strange looking daggers (poisoned). Appears young despite his white hair.
+
+
+Origin: Quaspia
+
+
+Goals:
+1. Recruit for the Crusade. 
+2. Spread propaganda.
+3. Win over more cities / disrupt crown operations
+4. Overthrow the Crown
+
+
+OTHER RELATED FOES:
+
+
+Captain Bolan: Captain of the Quartz pirates. Mutinized against PC Toern. A strong and stubborn pirate, Bolan is embittered against the Crown which he blames for the destruction of his hometown and death of other Quartz goliaths like himself since they were meant to be under Crown protection. He hates Emperor Hearn who he views as a traitors amongst stone Goliaths. He now works for Cheif Holl and fully supports the crusade he plans to launch.
+
+
+Desc: A large Quartz stone goliath. His skin is pure white and resembles Quartz stone with a single black streak running from head to toe. It goes between his eyes. He towers over most. He wears chainmail armor. He bears the crest of the Quartz pirates which is a fist with a singular eye on it. He uses his fists rather than any weapon. In addition he utilizes some sort of strange speed magic making his movements appear slower than they are.
+
+
+Origin: Dale Grovar
+
+
+Goals:
+1. Loyal to the Crusade, does their bidding
+2. See the Crown overthrown.
+
+
+The Great Arkla War
+The Nevari were once viewed as the gardeners of Arkla. They kept the peace between the various races. The way they did this was through the outlawing of magic of any kind regardless of a creature’s species. There were 6 Nevari known in Arkla. Demud, Kola, Tharo, Amia, Homul and Lod. They each wielded powerful magic.
+
+
+Dragons were scarce but also co-existed peacefully with everyone for a time. However tension had built up over years and Dragons felt their magical ‘wings’ were clipped by Nevari, who had a strict ban on any magic being wielded other than their own.
+
+
+A dark blue dragon by the name of Clarion was born to Hesala, the Dragon queen at the time. Clarion had immense magical power from birth, his body pulsing with a magic aura unlike anything seen before. 
+
+
+Concerned by this the Nevari kept a careful eye on Clarion, but this interest was misconstrued as oppressive. Clarion as he grew felt these imposing figures were holding him back and began to reach out using his magical charm to various weaker life forms. He practiced manipulating their minds, which seemed to cause an increase in lawlessness that the Nevari noticed. Demud, viewed as the wisest and most insightful Nevari despite being the smallest and weakest physically, discovered this magic to be emanating from Clarion’s nest. Attempting to confront Clarion alone, this led to a drawn out battle during which Clarion crossed a line that had never been crossed in Arkla’s history. Clarion killed Demud, a Nevari.
+
+
+This led to the Nevari attempting to seal away all Dragons, which eventually they were successful in doing with the assistance of Hearn and his heroes. Each Nevari was heavily injured during this, but seeing Emperor Hearn crowned and seeing his power the Nevari agreed Arkla was in good hands. In order to prevent anything like the Dragon rebellion occurring again they decided to withdraw from Arkla, they went dormant. Before going Dormant the powerful Lod was able to obscure knowledge of their wearabout from all minds and Homul was able to encase them each in rock.
+
+
+Kol was left as a watchman and is awake - although heavily injured in the Nevari temple. His location is a secret from all except the Kolari monks who are sworn to secrecy and enter a magical agreement with Kol that forbids them from uttering his location to anyone under threat of death.
+The Nevari
+Homul: Leader of the Nevari. Magic could reform the ground. Powerful earth-magic.
+Large bearded giant. Big smile. Giant staff. Wears large robes.
+
+
+Tharo: Incredible illusionist
+Large bald man. Grumpy. Wears tattered tunic and pants.
+
+
+Amia: Nature magic, summon powerful creatures
+Large happy giant lady. Black hair. Wears a straw hat. Often accompanied by many animals.
+
+
+Demud: Wise Nevari. Small in stature. Magical power that allowed him to enter minds and communicate with others.
+Killed by Clarion
+
+
+Lod: Powerful fire and water magic. Frizzy hair. Fat giant old man. Wears robes much like Homul, could be viewed as his second in command. The most powerful magician among the Nevari.
+
+
+Kola: Could enhance his body and turn it into other elements. His fists could become steel and so on. His magical ability made him the most powerful fighter among the Nevari. He remains alert despite the others going dormant. Though deeply injured as both his legs are broken with no means of healing, he remains powerful and optimistic. He hides out in the Kolari temple.
+Non-enemy Factions/Families
+
+
+The Crown
+The Crown is the current dominant rulership in Arkla. It is an empire under the rulership of Emperor Hearn. His chief advisor is Haven Tudul. Haven Tudul uses his charm magic to disrupt and cloud Emperor Hearn’s judgement and ability to discern the nefarious actions of the Consulate, a secret organization with members stationed in each Crown city to oversee their underground efforts. 
+
+
+The Crown as a whole rules over the cities in the Crown provinces.
+Lacerta
+Symbolized by a lizard. Immensely powerful members.
+
+
+Monk Duku is the head of the lizard - referencing his immense wisdom. His identity is known to the consulate.
+
+
+It’s other members include the tail (Cat-person named Anorie Hoone)
+
+
+The spine, a friend of Duku and beloved Chef Dwarf Gooly Gloop.
+
+
+The scales. A small dragon-person, Azuna. 
+
+
+They have recruited a few ‘Lizards’ including Tulip Treetap, Toern’s brother. A group they are training to replace them and keep order to the world.
+
+
+--
+
+
+
+
+The Kolari
+Kolari temple: Injured Nevari Kol
+Past Sessions
+
+
+Basilia Nodes
+Node: Pooty is missing
+* The Core Purpose: Will the Party choose to rescue Lord Pooty or allow his execution? Will the party discover what happened to the cane?
+* The Branches (Player Choices):
+   * Prison break Lord Pooty? Stealth their way into his holding cell in the Manor and break him out. 
+   * Allow his death? Await the public execution in 2 days, wherein he sees them locks eyes and yells, “The Lacerta!”
+* The Three Clues:
+   * Clue 1: At the gate if players are recognized they are asked ‘You have any affiliation with that Pooty fellow?
+   * Clue 2: Charming a guard might lead to them trying to impress the PC and saying they were one of the guards to arrest the great Pooty!
+   * Clue 3: At the tavern they notice a guard with a claw mark across their chest.
+
+
+Node: Anomalies and missing people
+* The Core Purpose: What is the cause of these anomalies? Introduce the idea of Doctor Tonn and the Consulate Crusade
+* The Branches (Player Choices):
+   * Investigate the anomalies.. Trace things back to Tizzle’s shop?
+   * Ignore the anomalies.. Doctor Tonn makes a kidnapping attempt on Wendy
+* The Three Clues:
+   * Clue 1: The scorpion anomaly was drinking a potion from a Tizzle shop display (employee)
+   * Clue 2: Scant if subdued while in his anomaly state can reveal where he got the potion from
+   * Clue 3: Tizzle himself is walking about Basilia making shady sales offers, and his street urchins can be seen stealing various things
+
+
+Node: Jewl Pirate corruption
+
+
+* The Core Purpose: Basilia isn’t truly loyal to the Crown but instead slipping towards allegiance to the Jewl Pirates. Counselor Quessel is deeply corrupt.
+* The Branches (Player Choices):
+   * Fight the corruption found in Basilia.. remove Quessel from office
+   * Ignore the corruption.. Jewl strengthens her command of Basilia and eventually it leaves the Crown Provinces
+* The Thee Clues:
+   * Clue 1: Various marks of the Jewl adorn the streets of Lower Basilia
+   * Clue 2: Captain Pavel once befriended complains about the deep corruption in Basilia and spits at the mention of Counselor Quessel
+   * Clue 3: Quessel if pressured admits to his deep corruption
+
+
+Session 3
+* Start having beers in Loft Basilia with Pavel
+* Pavel discusses counselor Quessell. 
+* Pavel discusses Jewl.
+* Jewl has been winning over a lot of people in Basilia. Quessell likely in her pocket.
+* Old Crown. Society of old knights of the crown. Not fans of the new Crown. Tudul family including Haven. 
+* Pavel is sad about Lord Pooty
+
+
+
+
+* Counselor Quessell wants to see Pooty hang for high treason against the Crown
+* Counselor Quessell fears Jewl shutting down business with Basilia if the cane is not delivered to her.
+* Counselor Quessell represents the Crown and would recognize Edmund Tudul
+
+
+* Pooty is stuck in a maze in the cellar of the Villa. If they attempt to escape through a chute they slide directly into Basilia cellar
+* Pooty is heavily injured. In combat with Jewl pirates Pooty dies.
+
+
+* Jewl pirates confront players led by Kort and his goons. Kort is a strong headed Orc
+
+
+
+
+
+
+
+
+
+
+NODE 1: THE VIP QUARTERS (Exposition & Roleplay)
+Sensory Anchors:
+* Sight: Dimly lit room with white tablecloths and glistening cutlery. A glass jar featuring a single rose sits at each table.
+* Smell: The rich, mouth-watering scent of fine cuisine.
+* Sound: A tiny mouse man in a black suit (Palch) playing the flute in the corner. Note: The notes he plays are strangely familiar to the party.
+The Private Room (Pavel's Briefing):
+* The Symbol: The door bears a symbol of a Crown with a crack in it.
+* The Old Crown: Pavel explains this symbol belongs to an allegiance of old knights (including Lord Pooty) who are deeply loyal to the Emperor but despise the rising corruption. They pick and choose their missions for the Crown/Haven Tudul.
+* Quessel & Jewl: Pavel reveals Counselor Quessel is deeply corrupt and in Jewl's pocket. Quessel claims the Jewl pirates are "loyal compatriots."
+* The Anomalies: Pavel admits Jewl's strength is unmatchable, but he doubts she is causing the anomalies—she wouldn't attack Basilia since its corruption serves her.
+* The Scant Breadcrumb (The Clue): Pavel notes Basilia's real wealth comes from secret trade offloaded by pirates and stored in the Manor's highly secured vault. He mentions Quessel used to utilize a respected (if rough) elven trader named Scant.
+Wendy's Hook (Monk Hane):
+* Hane is an old, tired monk from Foarn.
+* He asks about Foarn and confirms he has seen Monk Duku in Basilia.
+* When told Wando is now in charge, he gets a bad feeling and abruptly declares he must head to Foarn immediately.
+NODE 2: "IN THE MEANTIME" (Accommodations)
+Give your players agency to choose where they rest before their court appearance the next day.
+Location
+	Cost / Entry Method
+	Vibe & Encounters
+	VIP Quarters
+	Barter with Pavel, or leverage the Tudul family signet ring.
+	Safe, luxurious. A chance to heal up and plan without looking over their shoulders.
+	The Rusty Hook
+	Assarions.
+	Bustling, smells of fish and beer. Armand the boisterous owner keeps secrets but recruits for the Consulate Crusade.
+	Scant's Houseboat
+	Free (Trespassing/Investigating).
+	Smells of alcohol, cluttered with crates. Warning: Scant may be in his wolf anomaly state, triggering combat.
+	NODE 3: BASILIA MANOR COURT (The Chokepoint)
+The Scene:
+* A massive room with high ceilings, large marble pillars, and two imposing statues of Emperor Hearn seemingly holding up the ceiling.
+* A listening device sits openly in the corner of Quessel's office.
+* Counselor Quessel sits at his desk, being advised by a red-headed woman wearing a large straw hat (Pirate Jewl).
+The Event (The Trial):
+* Jewl whispers in Quessel's ear, glances dismissively at the party, and takes her leave. She leaves a strange crystal on Quessel's desk as she exits.
+* Quessel immediately orders the party's execution/imprisonment.
+Branching Outcomes (Transitioning to the Dungeon):
+* If the players surrender/go quietly: The guards heavily escort them down into the cellar and throw them directly into the prison cell next to Lord Pooty.
+* If the players fight: The sheer number and strength of the Crown Guards in the courtroom is overwhelming. They are forcefully subdued (captured, not killed) and dragged down to the cell next to Lord Pooty.
+* If the players skipped court and snuck in: They must rely on Pavel's earlier comments about the Manor's layout and the strange crystal Jewl left on the desk to guide them down to the cellar.
+NODE 4: THE CELLAR & VAULT (The Climax)
+The Scene:
+* A confusing network of tunnels and dungeons beneath the Manor.
+* It serves as both a prison for Lord Pooty and a highly secured vault for the Jewl Pirates' secret trade.
+* The vault area is swarming with Crown guards and a pirate/guard hybrid named Sqand.
+The Boss Encounter (Kort):
+* Position: The strong-headed Orc, Kort, stands directly outside Lord Pooty's cell, casually flipping a coin.
+* Motivation: Kort is not on a timer to execute Pooty. He has been stationed here as heavy muscle to ensure Pooty is absolutely not rescued by anyone.
+* The Setup: If the players were captured, they start this encounter locked in the cell adjacent to Pooty, meaning they must break out to engage Kort. If they snuck in, they arrive in the open area facing Kort.
+
+
+
+
+Session 2
+* Players left Rusty Acorn
+* Kehrfuffle now has a crossbow thingy (grappling) - stolen from the 3 pig men by Wendy
+* Encountered two Gnome detectives: Leevy and Chonko
+* Tamed horse Hansel and Jamal
+* Wendy learned about 6 schools of Monk (each relates to a Nevari)
+* Players fought Scorpion w/ Pavel
+* Defeated Scorpion and were shown a few cool items in the treasure vault:
+        > Quarterstaff that splits into two
+> Book of songs, Ivory Hollow
+> Bunch of different bows with carvings
+> Some gems
+
+
+   * Pavel invited them to join him for a pint in Loft Basilia
+   * Toern is under Pavel’s command
+   * Toern must appear before Counselor Quessell
+   * Strider was offered the deal and for now refused
+   * Pavel mentioned these anomalies have been occurring regularly
+
+
+
+
+
+
+
+
+Anomaly Encounter
+Players can enjoy the marketplace, enjoy the games. If they spend a while here after playing approx 2 or so games, LOUD SCREAM is heard, they turn. They see a young street urchin holding an empty vial. Suddenly they start transforming. Their arms meld into two pincer-like claws, they fall flat on the face and their head and body transform into the shape of a scorpion. A long stringer grows out of their back. Suddenly their skin malts and a giant sandy colored scorpion stands there. People begin running but not before the scorpion manages to pierce two with its stinger. As you see it lunge for a child with its pincers outstretched, a large broad shouldered heroic looking man jumps in front of the child. He parries both claws with one swing. He yells back to some nervous looking Crown guards behind him: “Get everyone to safety don’t engage”. The child behind him scampers away tears in its eyes. As you look closer you realize this impressive man has only one arm wielding what would usually be considered a two-handed longsword. He scans the crowd and his eyes land on you. With his gaze still on you he is knocked away from the scorpion as it swings its stringer directly at him. “A little help! I’ll treat you for it!” What do you do?
+
+
+Allies: Captain Pavel
+
+
+Enemies: Scorpion Anomaly
+
+
+Tons of bystanders
+Environment Hazard: The Potion Stand
+During the chaos, the nearby stand of strange potions can be knocked over or utilized. If a player grabs and drinks a random potion as a Bonus Action (or if the Scorpion smashes the cart and splashes players within 5 feet), roll a 1d3:
+d3 Roll
+	Potion Effect
+	1
+	The liquid is caustic or foul. The creature takes 3 damage.
+	2
+	The liquid is soothing. The creature is healed for 3 HP.
+	3
+	This creature transforms into a rabbit. This lasts approx 5 turns.
+	
+
+Rusty Acorn
+THE RUSTY ACORN
+The Situation: The players just finished a long rest and leveled up to Level 2.
+NPC Roster:
+   * Crust: Bird-man bartender. Can offer info on the Arkla war, how to enter Basilia, and Governor Holl. (Can be charmed to borrow/steal horses; packs meals).
+   * Helga: Barmaid.
+   * Pavel the Honest: Bar-goer who lies about the history of Arkla.
+   * Boone, Goone, Poone: Pig-men offering a side quest to clear a giant weevil infestation from their house.
+   * Leevy and Chonko: Two Gnome cops investigating Hanz's murder.
+Event Triggers / Nodes:
+   * The Detectives: Leevy and Chonko slam the door open, announcing Chauzy was ravaged but Hanz's wound was "too clean." Crust steps in to calm things down. (Potential encounter if players engage).
+   * The Crates (Time mechanic): Crust asks the players to move crates in his basement. It will take a day. Note: If they skip this, Pooty's execution is in 2 days. If they do it, it takes 1 day, but pushes forward the severity level of the Jewl pirates hunting them.
+________________
+
+
+Basilia Gate
+Read as players approach: 
+“Before you’re even remotely close to Basilia you already see evidence of it. These IMMENSE walls tower up very high into the sky. You had heard rumors that at one time the Nevari themselves had built up these walls to protect a crucial city. The walls are pure dark stone with various beautiful veins running through it, but adorned with many symbols and flags of the Crown. Despite their immense size a singular tower seems to poke just above the wall. At the top of the tower a pole seemingly of solid gold with a large flag bearing the symbol of crown flags in the wind. The road you are on winds down towards an area you assume to be an entrance to this town.”
+
+
+GATE: 
+“As you approach you quickly realize this town doesn’t let just anyone in. The immense gold gates sit fully open but a wooden border shack blocks the way. A couple of Crown guards seem to sit in the shack. As you approach you see these are not your ordinary regal Crown guards. The one currently manning the blockade has his uniform cut off at the sleeves, revealing immense arms bearing tattoos of various symbols. The man is a human male seemingly in his 40s. He has brown hair that pokes out of his askew helmet. He’s a stout man. As you approach you notice he adjusts his helmet to sort of give some appearance of order, despite his outfit. His friend is leaning back in a chair playing with a long curved blade. His uniform is resting next to him on the table, he is shirtless and across his chest he bears a massive tattoo of a symbol. He is missing an eye. An eyepatch clearly typically worn over it is pulled aside. He sort of looks at you with one good eye, snickers, then returns to his business with his sword.”
+
+
+   * Guards ask for official Crown papers or evidence of Crown business in Basilia
+   * Guards will also accept a heavy bribe
+   * The one with one eye will at a certain point say, eh.. Don’t I recognize you to Toern.
+   * If Toern admits to his piracy in any way the Jewl Pirates will be tipped off to his presence
+   * One tattoo on the arms of the main Guard is of a lizard with a knife through it. He asks Wendy where she got her belt.
+   * Their names are Chess and Barth, both are Jewl pirates in reality although they have jobs are Crown Guards in Basilia to facilitate their efforts
+   * Chess is the one manning the border
+Session 1
+Wendy was staying with Megda a local Bovine (double-uddered cow) farmer in Chauzy. Wendy awoke to find Megda upset that one of her cows was torn apart by something odd. Upon investigating Wendy rolled a discovered it was Goblins. She was then told to go inform Mayor Byron Tudul.
+
+
+At Tudul's she met both Strider and Kehrfuffle. They were both tasked with investigating a death threat note Tudul had been receiving telling him to return something he had stolen. He didn't know what it was. They asked around the different town members. They realized Poll Cave was the location on the note where Tudul was to drop off the item so they decided to head there.
+
+
+Along the way to the cave they encountered a knight of the Crown, Lord Pooty. Lord Pooty seemed a little suspicious to them but he claimed he was there to protect his friend Mayor Tudul. 
+
+
+Behind the scenes while the players remained in the forest, Lord Pooty met with Tudul. He revealed that Tudul's cane contained a map to a rumored resting place of a Nevari. In the wrong hands this cane was a powerful weapon for evil as it could lead a person to an immense source of power (a dormant Nevari). He revealed a listening device by casting detect magic. Tudul then realized that he was being listened to. He had recently commented on the curious engravings on his cane out loud not knowing what they were. He had taken this cane from the Tudul family vault before he defected. Byron somberly gave the cane to Lord Pooty, knowing it was too late for him. Lord Pooty quickly took his leave with the cane. Knowing he had been heard talking to Tudul he fetched a plan to immediately dump it with allies loyal to the Lacerta (a secret organization Lord Pooty was aquainted with although not part of).
+
+
+While this was happening the players raided Poll Cave. In Poll Cave they encountered Toern and untied him. They also took on Screwbeard and 3 Goblin admirals. They killed Screwbeard of the Jewl pirates along with 2 Goblin admirals but the third 'Leeta' escaped. On Screwbeards body Wendy Warmwind discovered a coin with a reptilian eye (one of Clarion's coins).
+
+
+After leaving the cave they smelt burning. They ran to Chauzy to see it fully inflames, the Goblin horde escaping. Tudul made comments with tears in his eyes about how they took it, all part of him trying to keep the trail off Pooty (hoping perhaps his listener would be fooled). He gave the party some parting words of wisdom. He handed them his signet ring and demanded that they make Jewl pay. He also told them his ring would get them into places both with the Crown and in the underground. 
+
+
+After this the players tried to salvage what they could from Chauzy but there was not much to be had. They killed an NPC, Hanz because they got annoyed with him (which I plan to tie in with a couple gnome detectives on the case - for some humor). They then searched Tudul's place discovering the listening device still active. Kehrfuffle spied out Pierre Lafroche entering a hidden compartment which led to another listening device. In that room he essentially told a story of how he made a deal with a mysterious man in exchange for the promise he would have his family returned to him. He owned up that a mysterious man by the name of 'Haven or Hazel' told him to set these up. The listening device was making no response. Then after some time had passed a magical arm came through the device and choked Pierre to death. A raspy voice said "I think I've heard enough. Brother, if you're there, which I think you are, I miss you." Following that the machine shut off.
+
+
+The players left Chauzy and entered a tavern just to the west called the Rusty Acorn, there they met the Bar owner Crust, a bird man. Crust offered them logging and food for cheap. Scant a shady elven aquaintance of Kehrfuffle from his hometown Ivory Hollow was spotted but he quickly took his leave on seeing Kehrfuffle. 
+
+
+Crust gave Kehrfuffle info on Scant that his business had seemingly fallen on hard times recently. Scant is involved in illegal trade, cheap spices for Crust but also dabbles in fancy weaponry. He seems to have been replaced though. He lives in Basilia on a boat shack apparently.
+
+
+The players then took a rest and leveled up to level 2.
+Kehrfuffle Dream
+Perception check (hoping for success):
+
+
+The trees surrounding you seem to clump up to create a wall.
+You hears whispers:
+“Danger! Danger!”
+“He approaches”
+“Alert Gesma at once..”
+After hearing his he sees a branch break off an seemingly scurry away into the forest before the wall of trees closes up again..
+“Danger!”
+“How could we let this happen”
+
+
+Strength save with disadvantage
+-success, you snap awake, and the dream waits for next rest
+
+
+You are instantly in a field, devoid of grass, just red dirt. It is deafeningly quiet.
+Suddenly you hear a deep voice:
+“A lover desperate for a bride.”
+“A warrior desperate for victory.”
+“A singer desperate for fame.”
+
+
+You see a man, short in stature, concealed in a cloak cresting the hill walking towards you. Immediately you recognize him. You see no face, just as you saw no face the night your world changed.
+
+
+He is still at quite a distance but he approaches you non-chalantly. 
+
+
+What would you like to do?
+
+
+   * Make it fun, but here’s what must be communicated:
+   * Something’s been making it hard for me to get to you… but alas I’m always up for a challenge
+   * One of your fellow travelers would be the perfect candidate for me…
+   * So much ambition.. So much wasted potential..
+   * You can’t stop me. It’s been a while since I’ve had some fun.
+   * Of all the people I’ve helped to humble, you’re my favorite
+   * Maybe our goals could align, either way
+
+
+Dream ends with the man being gone and Caroline cresting the hill, she starts to wave
+
+
+   * Oh.. you’re too easy to mess with
+
+
+WAKES UP - Sickle it glowing red, not green as it has in the past. Before eventually it stops
+Forest conversation
+Clomping of horses as a cart approaches Chauzy
+(hide or no)
+
+
+Cart:
+
+
+Driver: Wendell (british chap)
+(not much info)
+Passenger: Pooty
+Humanoid crab man, knight of the Crown.
+Large longsword
+Pooty was called for by Mayor Tudul, a few days ago when he started receiving the threats.
+
+
+Pooty mentions another defector of the Tudul family in his hometown Claura was found killed, it was on the day of a town festival, much like the anniversary party Mayor Tudul is throwing soon.
+
+
+Pooty enquires about adventures. Asks if adventurers are really ready to take on Poll Cave? He says local residents abandoned it after multiple of them were harassed by a strange cloaked man.
+
+
+Any mention of Pierre brings up his guard.. Pierre has tried to cook him.
+
+
+He knows Chauzy well and can give an inside scoop on it’s town members.
+
+
+Suspicious of Pierre
+
+
+Entrance to Poll Cave
+As you approach Poll Cave you find a clearing, from your position at it’s edge you see a tall, very hunched figure in a large hooded cloak. The character looks unfamiliar to you all and their body shape seems really lumpy and unnatural. It has not noticed you yet and begins panning the clearing. 
+
+
+Stealth checks.
+
+
+Notices you, a creakly voice:
+“Mayur Tudul, ees that yuh?”
+
+
+(Two goblins on each others shoulders in a long coat - giving appearance of being a mysterious humanoid)
+
+
+Skitter inside or scatter outside - too nimble to get hit
+Poll Cave
+Act 4: The Ambush at Poll Cave
+Location: Poll Cave 
+“You enter Poll Cave, the stone is almost blue in color. The corridor you walk through seems unnatural as if it had been hand carved out of the stone. An odor hits your nose.. It smells rotten. Suddenly you approach a fork in the road. The left tunnel seems to descend, it has a couple crates stacked on top of each other right at its entrance, the other section seems to ascend and is clear.”
+Upper exit
+-exit
+-single goblin scout - runs away to warn or is killed
+Lower down (Room 1)
+-rope trap (1d4)
+-brown schmear
+-torch, desk two closed drawers, one with a lock (half-eaten roasted Bovine leg), two bovine corpses
+-creat filled with gunpowder
+-open map of Chauzy, circle town hall: The date of the event (Sonnel 3) is written next to it and in the same script as the upper portion of your note “Tudul dies” is written. 
+-locked desk drawer, a letter with a Jewel on it can be read:
+“Screwbeard, consider this your trial run as first mate. Prove you're not as dumb as your underlings often say you are. Fetch me the item the fat Mayor stole. That should be all the info you need. Don’t make me come get it myself.” It’s signed with a stamp of a diamond. Recognize it from the Goblins you fought. A set of keys is found as well.
+-unlocked desk drawer, looks like a makeshift trash can, inside it you actually see what looks like some fine dining that was not touched, mashed potatoes with chives, a nice looking rack of lamb (implicates pierres restaurant)
+Tunnel
+“IT SMEWWS FUNNY IN HERE DON’T IT LEETA?” - screwbeard
+
+
+They could wait here and eventually the voice would boom out of the left.
+
+
+Right tunnel (treasure room)
+-false pit (falls and gets stuck)
+- ‘screwbeard’s captain log’
+Left tunnel (Another fork)
+Coughing can be heard from the right side.
+Laughing can be heard from the left side.
+Right side: 
+“I SMEW SOMETHING FISHY - BATTLE POSITHUNS PLEASE GOBBIES”
+In corner of room a man (MARC PC) is tied up. Laying there. Cut up, bruised. Cuffs require a key. 
+Left side:
+Main Encounter chamber
+
+
+
+
+Encounter
+The Environment: Moonlight shines through a natural skylight. A deep pool of crystal-clear water glows faintly from algae. 
+The Hazard: The cave walls are slippery saltstone. Climbing requires a Dexterity (Acrobatics) check; failure means falling into the deep water.
+   * The Setup: The goblin crew is skulking in the dark edges. Ask for a Wisdom (Perception) check to spot them before Screwbeard steps out. (If the players chased Screwbeard from Pierre's window, they arrive right on his heels as he runs into the cave!)
+   * The Confrontation: Screwbeard (Dwarf Boss): Wears a hood, chainmail, and a helmet. His chainmail doesn't quite fit over his belly, revealing a prominent tattoo of a Jewel perfectly circling his belly button. His beard is completely unkempt with no braids. Extremely dim-witted.
+   * The Mistake: Screwbeard assumes one of the PCs is Tudul. When he realizes the cane is missing, he gets frustrated and accidentally reveals his plan: He works for Pirate Jewl, and the metal plate on the cane is 1/3 of a treasure map.
+   * The Pre-Fight Cutscene: Screwbeard calls Leeta a goblin. Highly offended, Leeta stabs/smacks him in the leg. Announce to the players that the boss just took 1 point of damage from his own minion.
+   * “Wittle gobwin dont get in the way”
+   * “Ugh. Stop telling people that I’m a goblin, I’m trying to be so much more.”
+   * “Ever since Pirate Jewl made that special deal with that weird little wizard she’s been grumpier than usual.. So I gotta do good here..”
+Combat Tactics & Mechanics
+   * The Enemies: Screwbeard + 3 Goblin Admirals (Geepo, Bengo, Leeta). Each of the goblins has a crude little shoulder patch sewn onto their rags bearing the exact same Jewel image as Screwbeard's belly tattoo.
+   * Geepo: Has a black eye (from Loof's punch). Wields a pointed stick.
+   * Bengo: Scrawny, pale green, wears a massive pirate hat.
+   * Leeta: Female goblin, hates Screwbeard.
+   * Combat Balance (Level 1 Survival):
+   * If the PCs are taking too much damage early on, Leeta says, "I don't get paid enough for this," uses Disengage, and flees the cave.
+   * If Screwbeard is killed or pushed into the deep water, the remaining goblins break morale and immediately flee.
+   * Loot: Screwbeard: 4 Assarions, 1 Healing Potion, and a strange gold coin with an eye on it. Admirals: 3 Quadrans each.
+Chauzy - post encounter
+Act 5: The Ashes of Chauzy (Climax)
+   * The Return: The players rush back toward town to find the sky glowing orange. Chauzy is completely engulfed in flames.
+   * The Retreat: Over the roar of the fire, they hear a goblin yell: "Grab the loot and fall back to Basilia! The Captain's waiting!"
+   * The Aftermath: Loof the Gnome is dead outside his bakery, surrounded by two dead goblins (he went down swinging). The PCs can salvage a fresh loaf of bread from the ruins. Mayor Tudul lies bleeding out at the bottom of the Town Hall's marble steps, a massive gash in his belly, his purple tuxedo ruined. The cane is gone.
+   * Tudul's Dying Breath: "Kiddo... they took it. If I had known what that cane truly was... I would have burned it myself."
+        “Truth is, I always suspected my family was as bad as the rumors paint them. Mom and Dad were never to be seen when I was little. I just hoped there was a good reason…”
+        “I tried to be good. I swear.. I tried to be good. Never hurt noone.”
+        “If I had known what I was carrying with me.. Not just my family name but the cane.. I would’ve burned it long ago.”
+        "Take this... my family's signet ring. It will open doors for you in Basilia. Get you an audience with the Republic... or the underground. I don't care what you two are searching for, use my name to find it. Show it to Arman at the Rusty Hook… he’ll take care of you. Just... if you ever cross paths with Pirate Jewl... make her bleed for Chauzy."
+   * The Gift: He presses a silver signet ring bearing the Tudul family crest, a lizard, into their hands, then succumbs to his wounds.
+Fade to Black The session ends with Wendy and Kehrfuffle standing in the smoking, quiet ruins of Chauzy as the sun rises, taking their first heavy step down the dirt road toward the sea-side town of Basilia.
+OLD SESSION
+
+
+Tudul family tree
+
+
+Father:
+PC: Edmund “Strider” Tudul
+Brother: Haven Tudul
+Optional session
+Session 0.5: The Shores of Omease
+Goal: Hook the PC into the overarching dragon/pirate mystery, test stealth and 1v1 combat mechanics, and point them toward the main city of Basilia to meet Player 1. PC Level: 1
+Act 1: The Nightmare & The Theft
+Location: The Beach of Omease (Just outside the city of Basilia)
+The Opening Cinematic (Read Aloud)
+"You are floating in an endless, suffocating darkness. Suddenly, the void is broken by a massive, roaring circle of flame. The heat is almost unbearable. Inside the ring of fire, a colossal, reptilian slit-eye snaps open. As the pupil dilates, focusing directly on your soul, the eye begins to weep. Solid gold coins pour from the tear duct like a waterfall, clinking loudly as they vanish into the dark. > A voice that rumbles in your very chest, ancient and heavy, whispers three words: 'Gold. Glory. Power.' > As the gold coins bury you, you gasp for air... and wake up violently coughing seawater onto a sandy beach."
+The Ambush
+   * The Vibe: The PC wakes up disoriented, wet, and surrounded by 4 or 5 goblins who are giggling and poking them with sticks.
+   * NPC - Steegy: A Gnome who is unusually short even for a gnome, but ridiculously ripped. He has a peg leg and carries no weapons.
+   * The Interaction: Steegy leans over, flexes slightly, and demands, "Where the heck did you come from?"
+   * The Theft: While the PC is distracted and prone, Steegy snatches a highly important item from them (DM Note: Work with the player beforehand to decide what this is—a spellbook, a family heirloom, or a letter). * The Exit: Steegy laughs, tosses the item to a goblin, and yells, "Drinks on me, boys! To the Mosshouse!" They leave the PC in the sand.
+Act 2: The Beach Grove of Omease (Exploration)
+The PC is left on the beach. They can explore the grove to gather clues before trying to get their item back.
+Location A: The Campfire
+   * The Vibe: A dying fire a short walk down the beach.
+   * NPC - The Old Man: Completely out of his mind. He immediately asks the PC if they want to see his foot fungus, and begs them to heal it.
+   * The Lore Drop (Reward for humoring him):
+   * He complains that Steegy always forces the crew to hide out here in Omease instead of going into Basilia because Steegy is terrified of running into "The Captain" (Pirate Jewl) when she's in town.
+   * He notes Steegy drinks excessively to wash away horrible nightmares.
+   * The Big Clue: The old man mentions the nightmares started right after the crew sailed east to Rudard (a large town across the sea) and pillaged the town vault.
+   * The Objective: He mutters that Steegy leaves his beached ship mostly unguarded, and they likely tossed the PC's stuff aboard.
+Location B: The Mosshouse Tavern
+   * The Vibe: A rowdy, hijacked beach bar. Goblins are trashing the place and drinking heavily.
+   * NPC - The Barkeep: A terrified Elf whimpering behind the bar, sliding free mead to the goblins so they don't kill him.
+   * The Clue: The tavern walls are heavily vandalized with crude symbols.
+   * DM Mechanic: Roll an Intelligence (Investigation) or Intelligence (History) check. Success: The PC recognizes these symbols as the dreaded mark of Pirate Jewl.
+Act 3: The Ship Heist
+Location: Steegy's Beached Ship
+On Steegy's ship, describe the smell. It shouldn't just smell like salt; it should smell like stale mead and cheap lilac perfume. This implies the pirates have been celebrating their "Rudard" heist recently. Mention a discarded, half-burnt map of the "Rudard Town Vault" on the floor to reward the player for looking around.
+   * The Setup: A surprisingly small ship rests in the shallows. Two goblins are lazily guarding the boarding ramp.
+   * DM Mechanic (Infiltration): The PC must make a Dexterity (Stealth) check to slip past them, or come up with a creative distraction (like throwing a rock or using a minor spell).
+   * The Captain's Cabin: Below deck, the PC finds Steegy's quarters. It is cramped, shifting slightly with the waves.
+   * The Loot: The PC finds their stolen item, along with:
+   * Their starting weapon/equipment (if Steegy took all of it).
+   * A small pouch with a few silver and gold pieces.
+   * A single, strange gold coin with a dragon's eye etched into it. (This will immediately connect to their opening nightmare!).
+Act 4: The Cabin Brawl (Boss Fight)
+   * The Trigger: Just as the PC pockets their stolen item and the gold coin, the cabin door kicks open. Steegy is standing there, looking furious. Roll for Initiative!
+Steegy (Level 1 Boss Stats)
+   * AC: 13 (Unarmored Defense) | HP: 18 | Speed: 25 ft.
+   * Passive Perception: 10 | Saves: STR +3, CON +2, CHA +2
+DM Tactics & Flow:
+   * Round 1 (The Flex): Steegy doesn't attack first. He uses his Action to use Intimidating Flex. He strikes a bodybuilding pose and kisses his biceps.
+   * Mechanic: The PC must make a DC 12 Wisdom Saving Throw. On a failure, they are Frightened (Disadvantage on attacks/checks) until the end of Steegy's next turn.
+   * Round 2+ (The Beatdown): Steegy moves in for close-quarters combat.
+   * Haymaker Punch: +5 to hit. Hit: 5 (1d4 + 3) bludgeoning.
+   * Peg-Leg Roundhouse: +5 to hit. Hit: 6 (1d6 + 3) bludgeoning.
+   * The Environment: Remind the player it is a cramped room. They can use the desk, chairs, or hammock to their advantage.
+   * The Escape Clause: If Steegy is losing badly (drops below 5 HP), he will smash a lantern, grab a handful of loot, and dive out the cabin window into the ocean, shouting a curse about Pirate Jewl.
+Act 5: Fade to Black
+   * The Aftermath: With Steegy defeated or fleeing, the ship is quiet. The PC has their gear, the mysterious dragon coin, and a massive lore drop about Pirate Jewl and the Rudard vault.
+   * The Transition: The PC looks out the porthole window. Just a short walk up the coastline, the massive, sprawling sea-side city of Basilia looms on the horizon. It's time to head into the city to find some answers.
+
+
+BackupJSON
+export const PREMADE_CHARACTERS = {
+  'wendy': {
+    name: 'Wendy Warmwind',
+    species: 'Rock Gnome',
+    theme: 'rose',
+    class: 'Monk',
+    classes: [{ name: 'Monk', level: 1 }],
+    level: 1,
+    exp: 0,
+    alignment: 'Chaotic Good',
+    hp: 11,
+    maxHp: 11,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, type: 'd8' },
+    ac: 16,
+    initiative: '--', 
+    spellSave: '13',
+    spellAttack: '+5',
+    combatInitiative: null,
+    speed: 25,
+    inspiration: false,
+    isConcentrating: false,
+    conditions: [],
+    hasCompletedTutorial: false, 
+    hasFetchedSpecies: false,
+    hasFetchedClass: false,
+    journal: '',
+    stats: { STR: 10, DEX: 17, CON: 16, INT: 15, WIS: 16, CHA: 11 },
+    currency: { assarions: 5, quadrans: 10, leptons: 15 },
+    imageUrl: '', 
+    deathSaves: { successes: 0, failures: 0 },
+    resources: [], 
+    spellSlots: {},
+    spells: [],
+    dmNotes: '',
+    attacks: [
+      { name: 'Unarmed Strike', hit: '--', damage: '1d4', type: 'Bludgeoning', notes: 'Finesse' },
+      { name: 'Quarterstaff', hit: '--', damage: '1d6', type: 'Bludgeoning', notes: 'Finesse' },
+      { name: 'Shurikens', hit: '--', damage: '1d4', type: 'Piercing', notes: 'Range: 20/60ft, Finesse' }
+    ],
+    proficiencies: {
+      skills: 'Acrobatics (+5), Insight (+5), Investigation (+4), Stealth (+5)',
+      tools: 'Tinker’s Tools',
+      weapons: 'Simple weapons, shortswords',
+      languages: 'Common, Gnomish'
+    },
+    features: [
+      { name: 'Dark Secret (Flaw)', desc: 'It was my watch when the Brevants attacked... I cost my fellow pupils their lives.' },
+      { name: 'Background: Fly on the Wall', desc: 'People gloss over your presence. Easily eavesdrop or observe details in crowds if quiet. You have advantage when doing so.' },
+      { name: 'Not so Brevar (Trait)', desc: 'Wendy is Frightened when faced by Brevars or anything that reminds her of them. She hates bears.' }
+    ],
+    inventory: "• 1x Quarterstaff\n  A simple, sturdy wooden staff.\n• 10x Shurikens\n  Custom-made gear-shaped throwing stars.\n• 1x Bag of Caltrops\n  Self-made traps to slow enemies.\n• 1x Tinkerer’s Tools\n  Used to craft tiny clockwork devices.\n• 1x Worn Overalls & Gnome cap\n  Comfortable and unassuming.\n• 1x Faded Picture\n  A picture of mom, dad and uncle.\n• 1x Coastal Sketch\n  A drawing of a beautiful restaurant by the sea.\n• 1x Duku’s Belt\n  Monogrammed with a mysterious lizard symbol.\n• 1x Explorer’s pack\n  Contains a backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days of rations, and a waterskin.",
+    traits: {
+      personality: 'I prefer to watch and listen rather than speak. I tinker with small gears when I’m nervous.',
+      ideal: 'Loyalty. True teachings come from the bond between master and student, not titles.',
+      bond: 'I will stop at nothing to find Monk Duku and uncover the truth behind his mysterious letters...',
+      flaws: 'Distrusts authority, troubled past, fear of Brevants.'
+    },
+    backstory: "Grew up as a reclusive tinkerer in the town of Foarn, learning to blend into the shadows and avoid drawing attention. These skills proved useful when training in the way of the Kolari under monk Duku. I mastered stealth under his training. He quickly became like family to me, someone who saw immense potential in me and viewed me as his prodigious pupil. Monk Duku was foreign to my hometown of Foarn and never quite fit in. He often received messages and letters from shady individuals. The only one I ever caught a glimpse of depicted a beautiful restaurant by the sea which I swiftly sketched down from memory. One day Duku mysteriously disappeared without a trace, only leaving behind his monogrammed belt which he left next to my cot. He was replaced by the pretentious Monk Wando, who was nothing like Duku. Wando came from the wealthy city of Dagend and he acted as such. Then a life changing incident occurred. A large army of Brevants raided our town of Foarn. It was my watch. Thinking it was just a few Brevants at first, I decided to take them on myself. That decision haunts me to this day. Realizing I was heavily outnumbered I sounded the alarm very late. Monk Wando refused to come help the town, he remained at the entrance of the Kolari temple protecting it, rather than aid the townsfolk. As a result me and my fellow pupils were left to defend the town ourselves. Many died. My only real friend, Quill among them. Burdened by guilt and realizing I could no longer stay in a town that was a shadow of it’s former self, eternally scarred, I packed my bags, including Duku’s belt and left home to find my true master and uncover his secrets.",
+    notes: ''
+  },
+  'kehrfuffle': {
+    name: 'Kehrfuffle Songroot',
+    species: 'Wood Elf',
+    theme: 'amber',
+    class: 'Bard',
+    classes: [{ name: 'Bard', level: 1 }],
+    level: 1,
+    exp: 0,
+    alignment: 'Chaotic Neutral',
+    hp: 10,
+    maxHp: 10,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, type: 'd8' },
+    ac: 14,
+    initiative: '--', 
+    spellSave: '13', 
+    spellAttack: '+5', 
+    combatInitiative: null,
+    speed: 35,
+    inspiration: false,
+    isConcentrating: false,
+    conditions: [],
+    hasCompletedTutorial: false, 
+    hasFetchedSpecies: false,
+    hasFetchedClass: false,
+    journal: '',
+    stats: { STR: 10, DEX: 17, CON: 14, INT: 10, WIS: 16, CHA: 17 },
+    currency: { assarions: 0, quadrans: 5, leptons: 10 },
+    imageUrl: '', 
+    deathSaves: { successes: 0, failures: 0 },
+    resources: [],    
+    spellSlots: {
+      "1": { current: 2, max: 2 }
+    },
+    spells: [
+      { 
+        name: 'Mending', 
+        level: 0, 
+        castTime: '1 Minute', 
+        desc: 'A practical tune used to magically fix small breaks or tears in clothes, gear, or your peg leg.' 
+      },
+      { 
+        name: 'Minor Illusion', 
+        level: 0, 
+        castTime: '1 Action', 
+        desc: 'A melancholic chord that bends reality to create a faint, fake sound or a small, translucent image.' 
+      },
+      { 
+        name: 'Caroline’s Laughter', 
+        level: 1, 
+        castTime: '1 Action', 
+        desc: 'Play a jaunty tune. One enemy makes a Wisdom save (DC 13). If they fail, they fall prone in fits of uncontrollable laughter, losing their turn.' 
+      },
+      { 
+        name: 'Charm Person', 
+        level: 1, 
+        castTime: '1 Action', 
+        desc: 'One person makes a Wisdom save (DC 13). If they fail, they view you as a trusted friend for 1 hour.' 
+      },
+      { 
+        name: 'Sleep', 
+        level: 1, 
+        castTime: '1 Action', 
+        desc: 'Play Caroline\'s lullaby. Roll 5d8. Put that many hit points worth of enemies into a deep magical slumber. Their hp must be lower than the number rolled. No save required!' 
+      },
+      { 
+        name: 'Earth Tremor', 
+        level: 1, 
+        castTime: '1 Action', 
+        desc: 'Hit a resonant bass note. Enemies within 10ft make a Dexterity save (DC 13). If they fail, they take 1d6 Bludgeoning damage and fall prone.' 
+      }
+    ],
+    dmNotes: '',
+    attacks: [
+      { name: 'The Great Sickle', hit: '--', damage: '1d6', type: 'Slashing', notes: 'Finesse' },
+      { name: 'Dagger', hit: '--', damage: '1d4', type: 'Piercing', notes: 'Range: 20/60ft, Finesse' }
+    ],
+    proficiencies: {
+      skills: 'Insight (+5), Investigation (+2), Perception (+5), Performance (+5), Persuasion (+5), Survival (+5)',
+      tools: 'Accordion, Lute, Flute',
+      weapons: 'Simple weapons, longswords, shortswords, shortbows, longbows, hand crossbows, rapiers',
+      languages: 'Common, Elvish, Sylvan'
+    },
+    features: [
+      { name: 'Dark Secret (Flaw)', desc: 'I traded the most charming thing about me to a dark stranger for musical fame. He took my wife Caroline and bound her soul to my accordion.' },
+      { name: 'Haunted by your past (Trait)', desc: 'Commoners will afford you every courtesy and do their utmost to help you.' },
+      { name: 'The Tiny Bear (Dormant)', desc: 'An unusually tiny bear that refuses to leave your side.' },
+      { name: 'The Peg Leg', desc: 'Your leg was crushed in the Weeping Grove. You rely on your wooden peg leg to stand your ground.' }
+    ],
+    inventory: "• 1x The Cursed Accordion\n  A magical instrument. Caroline's soul is bound to the wood and bellows.\n• 1x Rusty Great Sickle\n  A heavy, intimidating farming implement repurposed for combat.\n• 1x Dagger\n  A simple, sharp blade.\n• 1x Leather Armor\n  Light and flexible defense.\n• 1x Wooden Peg Leg\n  Replaces the leg crushed in the Weeping Grove.\n• 1x The Tiny Bear\n  A strangely small, loyal companion.\n• 1x Entertainer’s Pack\n  Contains a backpack, a bedroll, 2 costumes, 5 candles, 5 days of rations, a waterskin, and a disguise kit.\n• 1x Locket\n  Contains a faded picture of Caroline.",
+    traits: {
+      personality: 'I project a gruff, cynical exterior to keep people at arm\'s length... I complain about the tiny bear constantly, but I will viciously attack anyone who tries to hurt it.',
+      ideal: 'Restitution. I will find the man who tricked me and free Caroline\'s spirit, at all cost.',
+      bond: 'My accordion is my greatest treasure and my deepest torment.',
+      flaws: 'Music often makes me sentimental. If it means getting Caroline back I\'d do almost anything.'
+    },
+    backstory: `Grew up in the quiet village of Ivory Hollow, playing my accordion in the local tavern. I was a rough guy, but my wife, Caroline, believed in my music. She was my biggest supporter and, looking back, easily the most charming thing in my life. One night, a calm, strange traveler offered me a deal: unforgettable musical talent in exchange for "the most charming thing I had." Foolishly ambitious, I shook his hand. I felt a surge of what felt like lightning surge through me. When I went home, Caroline was gone, and my accordion hummed with a new, haunting harmony—her spirit was bound to the wood and bellows. I left Ivory Hollow to hunt the dark stranger down. I heard talk of an unnamed and unidentifiable man who enshrouds himself in magic. He appears where ambition and desperation meet: 
+    
+    A warrior wanting victory.
+    A dreamer wanting recognition.
+    A singer wanting fame.
+
+
+My search led me to the ancient druidic ruins of the Weeping Grove. The untended wild magic there violently reacted to the curse on my accordion, causing the shrine to collapse and crush my leg. I awoke with a mysterious wooden peg leg and an unnaturally small bear who now refuses to leave my side. Occasionally I feel a strange pulsing coming from trees and plants, as if I can feel their life force coursing through me. I no longer hear talk of the stranger and my trail has run cold. Regardless, I know I could never face this powerful man alone, so I now search for powerful heroes alongside my quest for clues. Ones I could manipulate into helping me accomplish my one goal, revenge on that evil stranger.`,
+    notes: ''
+  },
+  'strider': {
+    name: 'Edmund "Strider" Tudul',
+    species: 'Human',
+    theme: 'sky',
+    class: 'Ranger',
+    classes: [{ name: 'Ranger', level: 1 }],
+    level: 1,
+    exp: 0,
+    alignment: 'Chaotic Good',
+    hp: 12,
+    maxHp: 12,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, type: 'd10' },
+    ac: 15,
+    initiative: '+3', 
+    spellSave: '9',
+    spellAttack: '+1',
+    combatInitiative: null,
+    speed: 30,
+    inspiration: false,
+    isConcentrating: false,
+    conditions: [],
+    hasCompletedTutorial: false, 
+    hasFetchedSpecies: false,
+    hasFetchedClass: false,
+    journal: '',
+    stats: { STR: 16, DEX: 16, CON: 14, INT: 10, WIS: 9, CHA: 12 },
+    currency: { assarions: 45, quadrans: 20, leptons: 0 },
+    imageUrl: '/strider_bm.png', 
+    deathSaves: { successes: 0, failures: 0 },
+    resources: [], 
+    spellSlots: {
+      "1": { current: 2, max: 2 }
+    },
+    spells: [
+      { 
+        name: 'Hunter\'s Mark', 
+        level: 1, 
+        castTime: '1 Bonus Action', 
+        desc: 'Concentration, up to 1 hour. Choose a creature you can see within 90 feet. You deal an extra 1d6 damage to the target whenever you hit it with a weapon attack. If the target drops to 0 HP, you can use a bonus action on a subsequent turn to mark a new creature.' 
+      },
+      {
+        name: 'Cure Wounds',
+        level: 1,
+        castTime: '1 Action',
+        desc: 'A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier (+1).'
+      }
+    ],
+    dmNotes: '',
+    attacks: [
+      { name: 'Strider\'s Longsword', hit: '--', damage: '1d10', type: 'Slashing', notes: '2-Handed' },
+      { name: 'Masterwork Longbow', hit: '--', damage: '1d8', type: 'Piercing', notes: 'Range: 150/600ft' }
+    ],
+    proficiencies: {
+      skills: 'Stealth (+5), Athletics (+5), Persuasion (+3), History (+2), Nature (+2)',
+      tools: 'Dragonchess Set',
+      weapons: 'Simple Weapons, Martial Weapons',
+      armor: 'Light Armor, Medium Armor, Shields',
+      languages: 'Common, Elvish, Hisma'
+    },
+    features: [
+      { name: 'Feat: Actor', desc: 'Advantage on Deception and Performance checks when trying to pass yourself off as a different person. Can perfectly mimic speech and sounds.' }
+    ],
+    inventory: "• 1x Custom-Distressed Studded Leather Armor\n  Looks battle-worn, but the stitching is flawless and very expensive.\n• 1x Strider's Longsword\n  Perfectly balanced. Hasn't seen much real combat.\n• 1x Masterwork Longbow\n  Carved from rare imported wood.\n• 20x Premium Arrows\n  Fletched with swan feathers.\n• 1x Tudul Family Signet Ring\n  Buried at the very bottom of the pack. He adamantly refuses to wear it.\n• 5x Truffle-Infused Trail Rations\n  Delicious, but terrible for actual wilderness survival.\n• 1x Woven Silk Bedroll\n  Extremely soft.\n• 1x Imported Mustache Wax & Silver Mirror\n  Gotta look the part.\n• 1x Leather-bound Bestiary\n  Heavily bookmarked at the 'Bears' section.",
+    traits: {
+      personality: 'I insist everyone calls me "Strider" in a deep, gravelly voice. I lean against walls in the shadows whenever possible to look mysterious.',
+      ideal: 'Idealism. I want to be the ultimate cool, mysterious ranger that saves the day.',
+      bond: 'I am running from my boring, lame family to make a real name for myself in the wilds.',
+      flaws: 'I have zero actual survival instincts and terrible intuition. I rely entirely on acting to seem tough.'
+    },
+    backstory: "Edmund Tudul is the scion of the affluent Tudul family, whose patriarch, Mayor Tudul, secretly runs the criminal underworld of the Republic. Unaware of his family's true, dangerous nature and viewing them as 'boring and lame,' Edmund despised his pampered nobility. Craving the gritty idealism of a hardened ranger, he spent a fortune outfitting himself with custom-distressed armor, masterwork weapons, and truffle-infused rations. Adopting the alias 'Strider' and faking a deep, raspy voice, he set out to make his own name. While his survival skills are laughably non-existent (relying entirely on his expensive acting tutors to pull off the persona), his fencing and archery lessons genuinely paid off, making him accidentally dangerous in a fight.",
+    notes: ''
+  }
+};
+Session 0.5 part 1
+Session 0.5: The Ashes of Chauzy (capital of Arkla - Auralis)
+Goal: Introduce Wendy and Kehrfuffle to the world, test basic mechanics, and provide a tragic, compelling hook to travel to Basilia and hunt Pirate Jewl. PC Level: 1
+“Arkla. A world once tormented by nefarious dragons and powerful magic wielding giants known as the Tenari, now enjoying a period of peace brought to it by powerful heroes under the command of Emperor Hearn. Under his banner The republic of the crown, many cities today sit unharmed by evil forces, not daring to incur the wrath of the emperor. But tension is brewing primarily in the port towns which see their trade heavily taxed. As a result many from these port towns take to the sea, the result being a new age of Piracy. Some towns now beginning to dare flying the flag of notorious local pirate crews...
+Our story begins in a much quieter place. The town of Chauzy. Settled by the powerful Tudul family just decades ago, this peaceful farming village boasts a small population. Mayor Tudul continues to host extravagant events carrying on the family name, and successfully drawing a crowd on occasion to his peaceful farming town. His town hall stands out amongst the wooden farmhouses like a sore thumb.
+On the outskirts of the town sits a cattle ranch run by a tiny aging widow named Megda. Her farm provides milk to many, a special breed of double uddered Covine’s makes her production twice as efficient. Although these days she’s a bit short of hands on teats. Her beloved husband passed not too long ago. It’s here on this cattle ranch that Wendy has been staying. Her family had often stayed with Megda on their way to the family’s sailboat in the port town of Basilia, just a day’s journey from here. Before heading to this hub Wendy wanted to make a few Assarions working for Megda as she had done even as a young child when traveling with her parents, before she started her training as a Kolari. And a village like this would give some time to lay low after running away from her home town of Foarn”
+“Hunter, would you please describe your character”
+   * Why Wendy is here: Family friend’s farm. Making Assarions. Time to breathe and keep on the down low.
+   * Why Kerfuffle is here: He’s heard the Tudul’s were a powerful family. Reading a posting looking for a performer for an event held by Mayor Tudul he couldn’t pass up the opportunity to scope him out. Hoping to find a powerful ally he instead finds a fat Mayor. Not the hardened man he was expecting. Now he prepares to perform for a quick Assarion, while also hoping for an in with Mayor Tudul’s hopefully more powerful relatives.
+Act 1: The Morning Hook
+Location: Megda's Farm The Vibe: Cozy, worn-down, smelling of woodsmoke. Creaky floors and a patched roof. NPC - Megda: A kind, exhausted widow.
+   * The Incident: We zoom in on Wendy Warmwind. Megda has warm food ready but is distressed. She asks Wendy to check on her herd of Covines (two-uddered cows). Two were found dead this morning, "torn open."
+   * DM Mechanic: Have Wendy roll a Wisdom (Medicine) or Wisdom (Survival) check.
+   * Success: The cuts are jagged and precise—made by crude blades, not animal claws.
+   * Next Step: Megda asks Wendy to go to the Town Hall to inform Mayor Tudul.
+The Establishing Shot (Read Aloud): "As you step out of Megda's farmhouse, the morning air is crisp. Chauzy isn't much more than a smattering of wooden buildings hugging a dirt road. It's quiet, save for the distant sound of someone chopping wood."
+The Anchors (Read Aloud): "As you make your way toward the large stone-and-wood Town Hall in the center of town, three things catch your attention. To your left, the incredible smell of fresh bread is wafting out of a small bakery with a jammed door. Up ahead, a booming, beautiful singing voice is echoing out of a modest house. And just to your right, an old man in a tiny supply shack is loudly yelling 'WHAT?' at a passing farmer. A little further down, a slightly upscale-looking restaurant sits quietly."
+Passing the Baton: "You know Mayor Tudul is waiting for you at the Town Hall, but you have some time. What would you like to do?"
+Act 2: The Town Hall Meet-Cute & The Threat
+Location: Chauzy Town Hall The Vibe: A massive wooden cottage with stone accents, high ceilings, bear rugs, and hunting trophies. Currently set up like a grand tavern for the Tudul family's 30th Anniversary.
+   * The Environment: Describe a series of 30 hand-painted wooden portraits of the Tudul family. The early ones look stern and military; as the years go on they look more nefarious. The one on the end doesn’t fit in.. much too "jolly" and clearly Mayor Tudul.
+   * The Secret: The back area is roped off. Tudul actually lives in a hilariously cramped room behind the curtain.
+   * NPC - Mayor Tudul: Fat, jolly, optimistic. Calls people "kiddo." Wearing a slightly tattered purple tuxedo. Flourishes a solid wood cane with an inscribed metal plate at the base, which he clearly doesn't need for walking.
+   * The Introduction: Kehrfuffle Songroot is already here, hired by Mayor Tudul to perform for the upcoming anniversary. Tudul is paying him a small advance in Assarions. Wendy enters to deliver Megda's news, bringing the two characters together.
+   * The Hook: Tudul shows Wendy and Kehrfuffle a note written in the local dialect of Hisma. He translates it: "Deliver us what you stole. Or your head will end up on a pole." It demands he leave "what he stole" at Poll Cave.
+   * The Objective: Tudul has no idea what they want. He promises to double Kehrfuffle's pay and offers Wendy a handsome reward of Assarions if they investigate WHO this might be from before tonight.
+Act 3: Investigating Chauzy
+Give the players the freedom to explore any of these locations before heading out to the cave.
+Location A: Loof's Bakery (The Tinkerer's Puzzle)
+   * The Vibe: Smells of fresh bread, completely empty until Loof emerges. The front door is jammed shut.
+   * The Puzzle: Players need to figure out how to get in. Wendy can use her Tinker’s Tools or Tinkerer’s Knowledge feature to examine the locking mechanism and pop it open.
+   * NPC - Loof (Gnome): Grumpy, short-tempered, hates questions.
+   * The Clue: Brags about fighting off feral, "growling kids" trying to break in last night. He jammed the door shut and is proud he landed a solid punch on one of them.
+   * “Aye aye. Real eager customers messing with my door. What do ye want?”
+   * “Fresh bread available. No answers.”
+   * “Actually.. (flexes) had a pretty good evening yesterday. I was about to step outside.. Three feral green looking brats trying to steal me bread. They were growling at me and I everything. I landed a good clean shot on one of em before I managed to jam the door shut.. Protected my lil ladies (pats bread loaves).”
+Location B: Golva & Hugh's House (The Bard's Puzzle)
+   * The Vibe: Modest home filled with the sound of marital bickering.
+   * NPC - Golva: A large woman with a booming voice (the town singer). Completely dismisses her husband's claims.
+   * NPC - Hugh: Scrawny, exhausted insomniac.
+   * The Puzzle: Golva won't let Hugh speak. Kehrfuffle might need to use his Charm or Persuasion/Performance skills to flatter her or harmonize with her so she backs down.
+   * The Clue: Hugh saw a masked figure (bigger than Tudul) sneaking around last night. The figure was terrible at stealth, clattering loudly with heavy armor. He watched the figure saunter toward Poll Cave.
+   * “MY HUGHEY DIDN’T SEE ANYTHING” (he’s visibly annoyed)
+   * “Actually Golva”
+   * “OH HUSH SWEETHEART REMEMBER YOU WERE GOING TO WORK ON NOT INTERRUPTING”
+   * “WOULD YOU LIKE TO HEAR ME.. I HIT Cflat PERFECTLY”
+Location C: Pierre's Restaurant (The Infiltration Puzzle)
+   * The Vibe: A slightly upscale, out-of-place town restaurant.
+   * NPC - Pierre LeFronche (Human): Has a long French moustache. Very dismissive of everything and a little shifty. Openly complains that someone has stolen his favorite chef's knife.
+   * The Clue: If prompted, he complains about his recent tenants: a mysterious man and his three children. Players with high perception might notice bags of Assarions behind the counter. Pierre can be paid off, or persuaded/charmed by Kehrfuffle to talk.
+   * The Sneak: If they sneak upstairs, they find evidence the goblins were there: a completely ransacked room and old bones (explaining the dead Covines). HOWEVER, if they triggered the Leo Encounter first (see below), they catch Screwbeard upstairs! As they enter, he is actively trying to squeeze his belly out the window and escape down a rope, triggering a chase sequence to Poll Cave!
+   * “Didn’t you read the sign! OUT OF MY RESTAURANT” - points to sign that says no pets
+   * “Oh.. it is the dirty peasant gnome Wanda. Back for more bread and mead I suppose..”
+   * “I prefer the flute to this noisy cacophony”
+   * “A note.. Why would I send Mayor a note when I could just avoid having any interaction with him altogether..”
+   * “And on top of it all, my absolute best chef's knife has vanished! This town is full of thieves!”
+Location D: Hanz's General Store (Walk-through Window)
+   * NPC - Hanz: An old man who is extremely hard of hearing. Yells "WHAT?" to everything unless currency is mentioned.
+   * The Transaction: Hanz offers a dusty Healing Potion for 10 Assarions.
+   * DM Mechanic: If the players negotiate or even scoff at the price, Hanz's perfect "money hearing" kicks in and he immediately drops the price to 5 Assarions just to make the sale.
+   * “WHAT?”
+   * “SPEAK UP YOUNGUNS”
+   * “YOU SAY ASSARION? HOW MANY YE GOT?”
+Optional Encounter: Leo the Kid (Trigger: Leaving town too early)
+   * The Setup: If the PCs decide to skip town and head towards the cave too soon, they encounter a young boy named Leo on the dirt road.
+   * The Encounter: Leo is wearing makeshift, homemade armor and wielding what looks exactly like Pierre's missing chef's knife. He is completely freaked out by the players and immediately attacks them in a panic!
+   * The Attack: He does 1d4 slashing damage if he hits.
+   * The Resolution: Once the players talk him down or disarm him, he realizes they aren't enemies. He gives them a health potion he "found" as an apology.
+   * The Clue: He tells them someone in town is hiding a pirate. He knows because he was watching the cave, saw the pirate leave, and watched him go back into town—but Leo can't find him anywhere now. (This directs the players straight to Pierre's upstairs room for the chase sequence!)
+Act 4: The Ambush at Poll Cave
+Location: Poll Cave The Environment: Moonlight shines through a natural skylight. A deep pool of crystal-clear water glows faintly from algae. The Hazard: The cave walls are slippery saltstone. Climbing requires a Dexterity (Acrobatics) check; failure means falling into the deep water.
+   * The Setup: The goblin crew is skulking in the dark edges. Ask for a Wisdom (Perception) check to spot them before Screwbeard steps out. (If the players chased Screwbeard from Pierre's window, they arrive right on his heels as he runs into the cave!)
+   * The Confrontation: Screwbeard (Dwarf Boss): Wears a hood, chainmail, and a helmet. His chainmail doesn't quite fit over his belly, revealing a prominent tattoo of a Jewel perfectly circling his belly button. His beard is completely unkempt with no braids. Extremely dim-witted.
+   * The Mistake: Screwbeard assumes one of the PCs is Tudul. When he realizes the cane is missing, he gets frustrated and accidentally reveals his plan: He works for Pirate Jewl, and the metal plate on the cane is 1/3 of a treasure map.
+   * The Pre-Fight Cutscene: Screwbeard calls Leeta a goblin. Highly offended, Leeta stabs/smacks him in the leg. Announce to the players that the boss just took 1 point of damage from his own minion.
+   * “Wittle gobwin dont get in the way”
+   * “Ugh. Stop telling people that I’m a goblin, I’m trying to be so much more.”
+   * “Ever since Pirate Jewl made that special deal with that weird little wizard she’s been grumpier than usual.. So I gotta do good here..”
+Combat Tactics & Mechanics
+   * The Enemies: Screwbeard + 3 Goblin Admirals (Geepo, Bengo, Leeta). Each of the goblins has a crude little shoulder patch sewn onto their rags bearing the exact same Jewel image as Screwbeard's belly tattoo.
+   * Geepo: Has a black eye (from Loof's punch). Wields a pointed stick.
+   * Bengo: Scrawny, pale green, wears a massive pirate hat.
+   * Leeta: Female goblin, hates Screwbeard.
+   * Combat Balance (Level 1 Survival):
+   * If the PCs are taking too much damage early on, Leeta says, "I don't get paid enough for this," uses Disengage, and flees the cave.
+   * If Screwbeard is killed or pushed into the deep water, the remaining goblins break morale and immediately flee.
+   * Loot: Screwbeard: 4 Assarions, 1 Healing Potion, and a strange gold coin with an eye on it. Admirals: 3 Quadrans each.
+Act 5: The Ashes of Chauzy (Climax)
+   * The Return: The players rush back toward town to find the sky glowing orange. Chauzy is completely engulfed in flames.
+   * The Retreat: Over the roar of the fire, they hear a goblin yell: "Grab the loot and fall back to Basilia! The Captain's waiting!"
+   * The Aftermath: Loof the Gnome is dead outside his bakery, surrounded by two dead goblins (he went down swinging). The PCs can salvage a fresh loaf of bread from the ruins. Mayor Tudul lies bleeding out at the bottom of the Town Hall's marble steps, a massive gash in his belly, his purple tuxedo ruined. The cane is gone.
+   * Tudul's Dying Breath: "Kiddo... they took it. If I had known what that cane truly was... I would have burned it myself."
+        “Truth is, I always suspected my family was as bad as the rumors paint them. Mom and Dad were never to be seen when I was little. I just hoped there was a good reason…”
+        “I tried to be good. I swear.. I tried to be good. Never hurt noone.”
+        “If I had known what I was carrying with me.. Not just my family name but the cane.. I would’ve burned it long ago.”
+        "Take this... my family's signet ring. It will open doors for you in Basilia. Get you an audience with the Republic... or the underground. I don't care what you two are searching for, use my name to find it. Show it to Arman at the Rusty Hook… he’ll take care of you. Just... if you ever cross paths with Pirate Jewl... make her bleed for Chauzy."
+   * The Gift: He presses a silver signet ring bearing the Tudul family crest, a lizard, into their hands, then succumbs to his wounds.
+Fade to Black The session ends with Wendy and Kehrfuffle standing in the smoking, quiet ruins of Chauzy as the sun rises, taking their first heavy step down the dirt road toward the sea-side town of Basilia.
+
+
+
+
+Session
+Kehrfuffle prayed to Gesma
+
+
+Toern gave all his money to Kehrfuffle
+
+
+Pooty took the cane (or did he?)
+
+
+Goblins burnt down Chauzy
+
+
+Hugh survived (of hugh and golva)
+
+
+Kehrfuffle put those listening to Mayor Tudul to sleep 
+
+
+Listening device in Mayors room, underneath
+
+
+Pierre at listening device - working for Haven Tudul (and Arteme)
+
+
+Pierre killed by Haven - Hand came through
+
+
+Toern thinks Haven was his brother.. we can use that
+
+
+Receivers for two listening devices
+
+
+Crust the bird
+
+
+The rusty acorn
+
+
+Shack house on a boat - Scant's house
+hard times. Weapon trade. Spice trade. Recently bad business
+
+
+Scant galloped away from Tavern (Aquaintance of Kehfuffle)
+
+
+
+
+Old NPC list
+ANIMALS
+
+
+Covine - Cow like creature, with two pairs of udders.
+
+
+Brevar - Bi-pedal bear-like warriors. They are savage. They ravage small towns for meat.
+
+
+PEOPLE - by location
+
+
+CHAUZY (small town often passed by as travelers approach Basilia - about a days journey away. Chauzy boasts the impressive and beautiful Poll cave a local swimming hole. The city itself was settled by the Tuduls only 25 years ago. It’s Mayor Edwin Tudul is a kind man and hosts impressive parties. This location will serve as a starting point for 3 players: Wendy, Strider and Kehrfuffle. In this location they will meet certain townsfolk to solve a mysterious note sent to Mayor Tudul. They will have their first run in with members of the Jewl pirates. They will enter Poll cave and face their first dungeon and finally face Screwbeard and his admirals. The climax of Chauzy will see it burned to the ground, it’s inhabitants killed and Mayor Tudul entrusting them with his ring and his quest… to redeem the Tudul name)
+
+
+Mayor Tudul - A kind and optimistic fat human man. He is somewhat tacky and always throws lavish events. Flourishes a cane with a metal inscription on it. He is somewhat aware of his family’s dealings. His goal is to clear his family name.
+Voice: Happy
+
+
+Screwbeard - First mate of Notorious pirate Jewl. A dwarf with ill-fitting armor. He’s stupid. And only recently became a first mate. Giant tattoo of a jewel (diamond) on his belly. Commands a horde of goblins with 3 admirals, Leeta, Bengo and Geepo. All of which are actually smarter than him. Leeta hates Screwbeard and truly is the one that commands the goblin hoard, planning a mutiny whenever she gets the chance. Bengo and Geepo are just lackeys. Geepo has a black eye from Loof’s right hook. Killed by party in Chauzy.
+
+
+Loof - A gruff gnome baker who is beloved by those who enjoy his bread. Hated by some. Having an affair with Golva, Hugh’s wife. Loof is tough, but he is small. He has a deep history as a freedom fighter. And even was a part of the notorious Gnome wars. Proudly delivered a left hook to Geepo when they were trying to break in to steal his bread. Died in Chauzy.
+
+
+Golva - A horrible singer. She is extremely fat. She wears tacky outfits. She is married to Hugh whom she bosses around. Died in Chauzy.
+
+
+Hugh - A kleptomaniac, insomniac, all the acs. He is bored by pretty much everything except Golva who he pretty much worships. He knows her singing is bad. He is scared of her and pretends to enjoy it. Survived Chauzy, left to find his new Golva.
+
+
+Hanz - Greedy merchant. Killed by Kehrfuffle in Chauzy
+
+
+Pierre LeFroche -  French restaurant owner. Speaks Hisma. He is from Basilia. He hosted Screwbeard and the admirals unknowingly although they were clearly suspicious, but he was paid off. He thinks he’s too classy for this town, but moved here to make bank when events were held. He is disgusted by dirty travel worn clothes. He is always prim and proper.
+Pierre was killed off by Haven Tudul (players only aware of the name Haven). Pierre had made a deal with Arteme and had been instructed to work with Havenl.
+
+
+FOARN (Wendy’s hometown - Kolari sanctuary and location of Kolari temple)
+
+
+Monk Wando -
+
+
+Abilus Arbucle - Rival of Wendy. Prized pupil of Monk Wando. Annoying little newt of a Gnome.
+
+
+Cecilia Coolage - Pretentious female gnome. She’s a diva.
+Voice: Jennifer Coolige
+
+
+
+
+DAGEND (a wealthy city under the Crown’s banner - Monk Wando’s origin - pretentious, Toarn’s origin)
+
+
+CLAURA (sir Pooty’s hometown - crab man central - Crown’s banner)
+
+
+Sir Pooty - a high class knight of the Crown. Travels keeping peace in local towns. He himself isn’t a great fighter but is a very wise crab man. He seems to constantly evade danger
+
+
+ARKLA SEA
+
+
+Bolan - Captain of the Quartz pirates. Mutinized against PC Toern. A strong and stubborn pirate, Bolan is embittered against the Crown which he blames for the destruction of his hometown and death of other Quartz goliaths like himself since they were meant to be under Crown protection.
+
+
+BASILIA
+
+
+Dreaded Pirate Jewl - Personal vendetta against the Tuduls. Once a business partner of Strider’s father, she has a moral compass that didn’t allow her to trade the sort of parts the Tudul’s were after. Magic devices that she knew could easily lead them to building a weapon that could harm entire villages. Her ship is the crown Jewel. The medhead pirates aside from her and Hansel are not that impressive. Jewl wields water magic, which includes an ability to communicate with sea monsters and command them at will, power tied to an amulet she wears around her neck. (Her secret is she made a deal to give up the thing of highest value to her - thinking it was her treasure for the power she seeked, it ended up being her previous first mate and love Herald, a kind fisherman who was skilled with a dagger. Her deal was made with Arteme, the same man who made a deal with Kehrfuffle - although neither Jewl nor Kehrfuffle know his identity yet)
+Desc: A pretty red-headed pirate woman. She wears a large straw hat. She wears light armor, utilizes a flint-lock pistol and a pirate’s scimitar. She has a large scar on the left side of her face caused by a run in with a Kraken which she successfully slayed. A small squid rests on her shoulder, somehow alive despite being out of water (drawing from her water magic)
+Voice: Pirate Jargon
+
+
+Hansel - The best warrior on the Jewl pirates. Hansel is handsome. Strong. Stupid. But a heck of a fighter.
+Desc: Human man. Red shirt with sleeves clearly cut off crudely. Plunging neckline. Bulging muscles. Long black hair slicked back.
+Voice: Gaston
+
+
+Barkeep Stall - A large Goliath with dark obsidian skin. He is slow speaking but wise. He is slow moving but efficient. He offers good information to those who spend time drinking in his bar the Creaky Creek. 
+Voice: Korg
+
+
+Sailor Toll - Old turtle man sailor. Offers passage aboard his ship Shell-house. Toll is a fisherman. Toll is a little intimidating, he actually typically sails alone in pirate-infested sease and promises those that board his ship safe passage. His secret is his immense magical prowess which he uses to completely enshroud his ship at sea. 
+
+
+AURALIS
+
+
+Emperor Hearn - A Goliath emperor. A good man influenced by a wicked council. Lord Haven Tudul is his right hand advisor. Emperor Hearn is the leader of The Consolate, an organization built to bring peace and comfort to the land. An organization secretly a front for terrible things, unbeknownst to the Emperor. Under the banner of the crown Emperor Hearn boasts protection for all cities under the crown’s flag and it’s allies. The Crown actively employs Consolate ships to fight against Pirates and confiscate their powerful weaponry. Emperor Hearn wields powerful nature magic. While he is primarily a good character certain actions by the players could prompt him into becoming a focal opponent of theirs. 
+Desc: A large Goliath with limestone skin. A grey trimmed beard. An opal crown. Wears fine purple robes and a Kings cape. Wield an intimidatingly large sword that appears to be forged of vine and stone and clearly contains some powerful magic.
+Voice: Emperor
+
+
+Goron - Goliath brother of Emperor Hearn. Another good natured character. Has an iron will. Has fought in the great Nevari war. Goron is rarely in the same room as Haven and isn’t under his magic influence, however he is aware that standing up to Haven would not end well for him. Goron is a skill fighter and wields a large mace. He will always be an ally from the players and is definitely their ‘way in’ to the Consolate. He will be an ally once he sees someone has the power to stand up to Haven. He does however hate Pirates.
+Desc: Heavily armored. Limestone skin. Giant mace strapped to his back.
+Voice: Emperor but more casual
+
+
+IVORY HOLLOW (Kehrfuffle’s hometown - also home to the Weeping Grove)
+
+
+
+
+
+
+
+
+FUTURE LOCATIONS (currently on the move - highly a secret from players)
+
+
+Arteme - A focal villain of the world of Arkla. He appears as a humanoid to many making deals based on ambition. “A warrior seeking victory. A singer seeking fame. A dreamer wanting recognition.” Arteme is in fact an illusion and magical apparition doing the bidding of a nefarious Dragon. This dragon wields powerful illusions along with charm magic. It was once known as Clarion and commanded many evil factions to do it’s bidding. It was rumored to have been slain by the Nevari Giant Homul.
+
+
+Monk Duku - Wendy’s beloved master. Extremely powerful Kolari master. Went missing on Wendy. The reality is he knew Arteme would send Brevar hordes to attack Foarn if he was there, he did not realize Arteme’s cruelty would lead to him attacking Foarn regardless. Duku leads a group of rebels fighting against the Consolate. Duku is the head of the lizard - referencing his immense wisdom. It’s other members include the tail. The spine. The scales. Each member brings a vast amount of power. While Arteme is aware of Monk Duku’s existence the other members successfully maintain anonymity.
+
+
+The tail -
+
+
+The spine - 
+
+
+The scales -
+
+
+
+
+
+
+FACTIONS
+
+
+The Crown -
+
+
+The Meadheads - Notorious pirates Jewl’s pirate crew. Featuring Goblin admirals. 
+
+
+The Consolate -
+
+
+The Lizard -
+
+
+The Kolari - Monks trained in the town of Foarn. They worship a powerful being known as Kola. Kola is said to be a Nevari Giant that fought for peace during the time of Dissaray when Arkla was torn. The Kolari are said to channel the power of the Giant by enforcing their fists to withstand damage of any kind. These hardened fists hit harder than some metal weaponry might. The Kolari temple is a building of great mystery, as only the active Monk in charge can enter the building.
+
+
+The Tuduls - An affluent family. Mayor Tudul was not like the rest. This family is notorious for building powerful weaponry and utilizing it to neutralize entire civilizations. They masquerade as spice traders and are a family of nobility but the reality is they are

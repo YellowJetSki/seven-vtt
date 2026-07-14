@@ -1,0 +1,22 @@
+# Subject: Arkla Burgs Full Index - Appendix
+System Log Initialized: 2026-07-07 10:48:28
+
+
+## APPENDIX: IDs 446–805 (Compressed Reference)
+*Full extraction complete. See notes/arkla_full_burg_data_446-805.txt for detailed listing.*
+
+### Notable additions from IDs 446–805
+
+**Major Cities (Pop >15,000):**
+- ID 454: Kowinthor (WCP) — Pop 15,735
+- ID 491: Kogasztamias (WCP) — Citadel+Walls, Pop 18,589
+- ID 593: Nilesiag (WCP) — Port+Citadel+Walls, Pop 15,492
+- ID 656: Lisiagrad (WCP) — Port+Walls, Pop 18,122
+- ID 737: Glaliamud (ECP) — Citadel+Walls+Temple, Pop 21,938
+- ID 738: Wolagend (ECP) — Port+Citadel+Walls, Pop 16,234
+- ID 761: Inat (Bakuna) — Port+Citadel+Walls+Shantytown, Pop 21,257
+
+**Final Burg — ID 805: Auralis (WCP)** — The only burg with Plaza+Temple+Shantytown outside a capital. Pop 4,000. Port, citadel, walls.
+
+**Duplicate names noted:** ID 659 "Dagend" (town, ECP) shares name with capital ID 398. Both genuine.
+
