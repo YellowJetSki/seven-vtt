@@ -590,3 +590,26 @@ We will upgrade the BattleMaps page and its supporting components:
    - `InitiativeTracker.tsx`: Changed from absolute timestamps to relative ("5s ago", "3m ago")
 
 ---
+
+## Dice Roller Removal — Compliance Report (Updated: 2026-07-14 16:42)
+## CRITICAL CORRECTION — Virtual Dice Rollers Removed (2026-07-14)
+
+Per explicit user directive, ALL virtual dice rolling has been purged from the system:
+
+### Removed from `combatStore.ts`:
+- `rollInitiative()` RNG function (was using `Math.floor(Math.random() * 20) + 1`)
+- `rollAllInitiatives` action (auto-rolled all combatants)
+- `rerollInitiative` action (auto-rolled one combatant)
+
+### Removed from UI:
+- `InitiativeTracker.tsx` — Removed "🎲 Roll All" button and `rollAllInitiatives`/`rerollInitiative` imports
+- `CombatantList.tsx` — Removed per-combatant 🎲 auto-reroll button
+
+### Replaced with:
+- Manual initiative number input in each combatant row (visible during prep phase)
+- Number input with `onBlur` and Enter-key commit to `updateCombatant`
+- Encounters toast message changed: "Enter initiative values and drag to reorder" instead of "Roll Initiative to begin"
+
+**This is in compliance with the strict "no virtual dice rollers" policy.**
+
+---
