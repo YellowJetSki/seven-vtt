@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { registerHpSyncCallback } from "@/stores/combatStore";
+import type { Combatant } from "@/types/combat";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppShell } from "@/components/layout/AppShell";
 import { LoginPage } from "@/pages/LoginPage";
@@ -14,6 +16,72 @@ import { DmJournal } from "@/pages/DmJournal";
 import { CampaignSettings } from "@/pages/CampaignSettings";
 import { PlayerDashboard } from "@/pages/PlayerDashboard";
 import type { PlayerIdentifier } from "@/stores/authStore";
+
+/* ── HP Sync: Combat Tracker → Campaign Store ────────────────
+ * This callback is registered once at app bootstrap. Every time
+ * a player combatant takes damage or is healed in the combat
+ * tracker, their HP is automatically propagated to the campaign
+ * store's PlayerCharacter record. This ensures HP is consistent
+ * between the PC sheet, DM view, and battle map tokens.
+ * ─────────────────────────────────────────────────────────────── */
+
+function syncPlayerHpToCampaign(combatants: Combatant[]) {
+  try {
+    const campaignState = useCampaignStore.getState();
+    if (!campaignState.campaign) return;
+
+    const characters = campaignState.campaign.playerCharacters;
+    let hasChanges = false;
+
+    const updatedChars = characters.map((pc) => {
+      const matchingCombatant = combatants.find(
+        (c) => c.type === "player" && c.name.toLowerCase() === pc.name.toLowerCase()
+      );
+      if (!matchingCombatant) return pc;
+
+      if (
+        pc.hitPoints.current === matchingCombatant.hitPoints.current &&
+        pc.hitPoints.max === matchingCombatant.hitPoints.max &&
+        (pc.hitPoints.temporary || 0) === matchingCombatant.hitPoints.temporary
+      ) {
+        return pc;
+      }
+
+      hasChanges = true;
+      return {
+        ...pc,
+        hitPoints: {
+          current: matchingCombatant.hitPoints.current,
+          max: matchingCombatant.hitPoints.max,
+          temporary: matchingCombatant.hitPoints.temporary,
+        },
+        updatedAt: Date.now(),
+      };
+    });
+
+    if (hasChanges) {
+      updatedChars.forEach((pc) => {
+        const original = characters.find((c) => c.id === pc.id);
+        if (!original) return;
+        if (
+          original.hitPoints.current !== pc.hitPoints.current ||
+          original.hitPoints.max !== pc.hitPoints.max ||
+          (original.hitPoints.temporary || 0) !== (pc.hitPoints.temporary || 0)
+        ) {
+          campaignState.updatePlayerCharacter(pc.id, {
+            hitPoints: pc.hitPoints,
+            updatedAt: Date.now(),
+          });
+        }
+      });
+    }
+  } catch {
+    // Silently fail — stores might not be ready yet
+  }
+}
+
+// Register the sync callback at module level (runs once on import)
+registerHpSyncCallback(syncPlayerHpToCampaign);
 
 export default function App() {
   const state = useAuthStore((s) => s.state);

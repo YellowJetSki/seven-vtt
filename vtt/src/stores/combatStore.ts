@@ -29,6 +29,18 @@ import type {
   LiveConditions,
 } from "@/types/combat";
 
+// Lazy reference to campaign store — set at runtime after all modules are loaded.
+// This avoids circular dependency issues during initialization.
+let _syncPlayerHp: ((combatants: Combatant[]) => void) | null = null;
+
+/**
+ * Register the HP sync callback. Called once from App.tsx or a bootstrap
+ * module after both stores are initialized.
+ */
+export function registerHpSyncCallback(fn: (combatants: Combatant[]) => void) {
+  _syncPlayerHp = fn;
+}
+
 /* ── Helpers ────────────────────────────────────────────────── */
 
 let _combatantIdCounter = 0;
@@ -102,62 +114,6 @@ interface CombatStoreState {
   setDmAnnouncement: (msg: string) => void;
   setConditions: (conditions: Partial<LiveConditions>) => void;
   recordRest: (type: "short" | "long") => void;
-}
-
-/* ── Sync Combatant HP to Campaign PlayerCharacter ──────────── */
-
-function syncPlayerHpToCampaign(combatants: Combatant[]) {
-  // Dynamically import the campaign store only when needed
-  // to avoid circular dependencies at module load time.
-  try {
-    // Lazy-require via dynamic import pattern — we access the store
-    // object directly since zustand stores are singletons.
-    const { useCampaignStore } = require("@/stores/campaignStore");
-    const campaignState = useCampaignStore.getState();
-    if (!campaignState.campaign) return;
-
-    const updatedChars = campaignState.campaign.playerCharacters.map((pc) => {
-      const matchingCombatant = combatants.find(
-        (c) => c.type === "player" && c.name.toLowerCase() === pc.name.toLowerCase()
-      );
-      if (!matchingCombatant) return pc;
-      // Only sync if HP actually changed
-      if (
-        pc.hitPoints.current === matchingCombatant.hitPoints.current &&
-        pc.hitPoints.max === matchingCombatant.hitPoints.max &&
-        pc.hitPoints.temporary === matchingCombatant.hitPoints.temporary
-      ) {
-        return pc;
-      }
-      return {
-        ...pc,
-        hitPoints: { ...matchingCombatant.hitPoints },
-        updatedAt: Date.now(),
-      };
-    });
-
-    // Only trigger update if something changed
-    const hasChanges = updatedChars.some((pc, i) => {
-      const original = campaignState.campaign!.playerCharacters[i];
-      return (
-        original.hitPoints.current !== pc.hitPoints.current ||
-        original.hitPoints.temporary !== pc.hitPoints.temporary
-      );
-    });
-
-    if (hasChanges) {
-      campaignState.updateCharacter = campaignState.updateCharacter || campaignState.updatePlayerCharacter;
-      updatedChars.forEach((pc) => {
-        useCampaignStore.getState().updatePlayerCharacter(pc.id, {
-          hitPoints: pc.hitPoints,
-          updatedAt: Date.now(),
-        });
-      });
-    }
-  } catch {
-    // Silently fail if campaign store isn't available yet
-    // (e.g., during initial module loading)
-  }
 }
 
 /* ── Store Definition ───────────────────────────────────────── */
@@ -333,8 +289,8 @@ export const useCombatStore = create<CombatStoreState>()(
           combatLog: [logEntry, ...get().combatLog],
         });
 
-        // Sync PC HP back to campaign store
-        syncPlayerHpToCampaign(updatedCombatants);
+        // Sync PC HP back to campaign store via registered callback
+        if (_syncPlayerHp) _syncPlayerHp(updatedCombatants);
       },
 
       healCombatant: (id, amount, source) => {
@@ -372,8 +328,8 @@ export const useCombatStore = create<CombatStoreState>()(
           combatLog: [logEntry, ...get().combatLog],
         });
 
-        // Sync PC HP back to campaign store
-        syncPlayerHpToCampaign(updatedCombatants);
+        // Sync PC HP back to campaign store via registered callback
+        if (_syncPlayerHp) _syncPlayerHp(updatedCombatants);
       },
 
       setTempHp: (id, amount) => {
@@ -390,7 +346,7 @@ export const useCombatStore = create<CombatStoreState>()(
             combatants: updatedCombatants,
           },
         });
-        syncPlayerHpToCampaign(updatedCombatants);
+        if (_syncPlayerHp) _syncPlayerHp(updatedCombatants);
       },
 
       toggleStatus: (id, effect) => {
@@ -438,7 +394,7 @@ export const useCombatStore = create<CombatStoreState>()(
             combatants: updatedCombatants,
           },
         });
-        syncPlayerHpToCampaign(updatedCombatants);
+        if (_syncPlayerHp) _syncPlayerHp(updatedCombatants);
       },
 
       /* ── Combat Flow ── */
