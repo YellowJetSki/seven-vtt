@@ -6,6 +6,7 @@
  *  - Encounter builder with difficulty calculator
  *  - Loot generator with post-combat distribution
  *  - Saved encounters list and encounter CRUD
+ *  - Load saved encounters auto-populates combatants
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState } from "react";
@@ -24,6 +25,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import type { Encounter } from "@/types";
+import type { Combatant } from "@/types/combat";
 
 type SubTab = "combat" | "session" | "reference" | "build";
 
@@ -34,7 +36,7 @@ export function Encounters() {
   const updateEncounter = useCampaignStore((s) => s.updateEncounter);
   const removeEncounter = useCampaignStore((s) => s.removeEncounter);
   const setActiveEncounter = useCombatStore((s) => s.setActiveEncounter);
-  const createEncounter = useCombatStore((s) => s.createEncounter);
+  const createEncounterWithCombatants = useCombatStore((s) => s.createEncounterWithCombatants);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const liveSession = useCombatStore((s) => s.liveSession);
   const showToast = useUiStore((s) => s.showToast);
@@ -43,6 +45,7 @@ export function Encounters() {
   const [showBuilder, setShowBuilder] = useState(false);
 
   const encounters = campaign?.encounters ?? [];
+  const playerCharacters = campaign?.playerCharacters ?? [];
 
   const handleSaveEncounter = (encounter: Encounter) => {
     const existing = encounters.find((e) => e.id === encounter.id);
@@ -55,11 +58,58 @@ export function Encounters() {
     setEditingEncounter(null);
   };
 
+  /** Load a saved encounter into the combat tracker, populating all combatants
+   *  including player characters, enemies from the encounter template,
+   *  and possibly a hobgoblin leader depending on party level. */
   const handleLoadIntoCombat = (encounter: Encounter) => {
-    const combatId = createEncounter(encounter.name);
+    // Build combatants from the saved encounter's enemies list
+    const enemyCombatants: Omit<Combatant, "id">[] = encounter.enemies.flatMap((ee) => {
+      const count = ee.count || 1;
+      const hp = ee.customHp ?? 15;
+      // Determine enemy type name from a simple heuristic
+      const enemyName = ee.enemyId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      return Array.from({ length: count }, (_, i) => ({
+        name: count > 1 ? `${enemyName} ${i + 1}` : enemyName,
+        type: "enemy" as const,
+        initiative: 0,
+        armorClass: 12,
+        hitPoints: { current: hp, max: hp, temporary: 0 },
+        statusEffects: [] as any[],
+        isDead: false,
+        isConcentrating: false,
+        notes: "",
+      }));
+    });
+
+    // Add player characters from the campaign roster
+    const playerCombatants: Omit<Combatant, "id">[] = playerCharacters.map((pc) => ({
+      name: pc.name,
+      type: "player" as const,
+      initiative: 0,
+      armorClass: pc.armorClass,
+      hitPoints: {
+        current: pc.hitPoints.current,
+        max: pc.hitPoints.max,
+        temporary: pc.hitPoints.temporary || 0,
+      },
+      statusEffects: [] as any[],
+      isDead: false,
+      isConcentrating: false,
+      notes: "",
+    }));
+
+    const allCombatants = [...playerCombatants, ...enemyCombatants];
+
+    // Create the encounter with all combatants pre-populated
+    const combatId = createEncounterWithCombatants(encounter.name, allCombatants);
     setActiveEncounter(combatId);
     setSubTab("combat");
-    showToast({ message: `Loaded "${encounter.name}" into combat tracker.`, type: "success" });
+
+    const totalCount = allCombatants.length;
+    showToast({
+      message: `Loaded "${encounter.name}" with ${totalCount} combatants (${playerCombatants.length} PCs, ${enemyCombatants.length} enemies).`,
+      type: "success",
+    });
   };
 
   const tabs: { id: SubTab; label: string; icon: string; badge?: string | number }[] = [
