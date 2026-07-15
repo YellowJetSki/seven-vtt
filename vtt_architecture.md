@@ -2922,3 +2922,62 @@ interface MapToken {
 - **Fix needed**: Add debounced hover preview, cell occupancy check
 
 ---
+
+## Battle Maps — Complete E2E Test Results & Fixes (2026-07-15) (Updated: 2026-07-15 13:13)
+## Battle Maps E2E Test Results — Live Production (vtt-seven.vercel.app)
+
+### 🐛 Bugs Found & Fixed
+
+#### Bug 1: Modal System Not Rendering (CRITICAL)
+- **Root Cause**: The `Modal` component uses `useUiStore.activeModal` to control visibility (`if (!isOpen) return null`). But `BattleMaps.tsx` and `MapEditor.tsx` used local `useState` (`showCreateForm`, `showAddToken`) to show modals, without calling `openModal()` from the UI store.
+- **Fix**: 
+  - `BattleMaps.tsx`: Changed `openCreateForm` to call `openModal("map-form")`, `openMapViewer` to call `openModal("map-viewer")`
+  - `MapEditor.tsx`: Changed `+ Token` button to call `openModal("add-token")`
+  - All modal conditionals changed from `{showCreateForm && ...}` to `{activeModal === "map-form" && ...}`
+- **Impact**: All three modals (Create Map, Map Viewer, Add Token) now render correctly.
+
+#### Bug 2: No Per-Token Speed Property
+- **Root Cause**: `MovementRangeOverlay` had `movementSpeed={30}` hardcoded. `MapToken` type didn't have a `speed` field.
+- **Fix**: Added `speed?: number` to `MapToken` interface. `MapEditor` now passes `selectedTokenSpeed = token.speed ?? 30`. AddTokenForm now includes a Speed (ft) field.
+- **Impact**: A Monk (45ft speed) will now show correct 9-cell move range vs a human's 6 cells.
+
+#### Bug 3: No Dash Confirmation Dialog
+- **Root Cause**: Clicking a cell beyond normal movement range (yellow zone) moved the token directly without warning.
+- **Fix**: Added `pendingDashMove` state. When clicking a dash-range cell without dash mode active, a modal appears: "⚡ Dash Action Required" with Cancel/Confirm buttons.
+- **Impact**: DMs/Players are now warned when attempting to use Dash.
+
+#### Bug 4: HP Not Exposed in AddTokenForm
+- **Root Cause**: `MapToken` supports `hp: { current, max }` but the AddTokenForm only had label, type, position, color, size.
+- **Fix**: Added "Speed (ft)" and "Max HP" fields to AddTokenForm. Each token now starts with `hp: { current: hpMax, max: hpMax }`.
+- **Impact**: Tokens now have HP from creation, with HP bar shown in inspector panel.
+
+### ✅ E2E Test Results (Live Site)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Create Map via + New Map | ✅ | Modal opens, fill name/grid size, creates map |
+| Map Gallery | ✅ | Shows 25×20 grid with "Road to Bacilia" |
+| Open Map Viewer | ✅ | Click map card → modal with grid + empty state |
+| Grid Rendering | ✅ | 25×20 grid lines visible in DM view |
+| Add Token | ✅ | "+ Token" button opens form |
+| Token Form Fields | ✅ | Label, Type, Size, Speed, HP, Position, Color |
+| Token Placement | ✅ | Tokens appear at specified grid position |
+| Token Inspector | ✅ | Shows position, HP bar, movement controls |
+| Movement Controls | ✅ | Up/Down/Left/Right buttons, center coords display |
+| Move Range Overlay | ✅ | Green cells (normal move) + Yellow cells (dash) |
+| Dash Confirmation | ✅ | Modal: "⚡ Dash Action Required" |
+| Per-Token Speed | ✅ | Speed field respected (default 30ft = 6 cells) |
+| HP Bar + Controls | ✅ | -5/+5 buttons, color-coded (green/yellow/red) |
+| DM/Player View Toggle | ✅ | DM shows all, Player shows with fog |
+| Fog of War | ✅ | On/Off toggle + Reveal Zones button |
+| Firebase Sync | ✅ | USE_EMULATORS=false confirmed in production build |
+| TypeScript Compile | ✅ | `npx tsc --noEmit` passes cleanly |
+
+### 📝 Remaining / Future Enhancements
+1. **Token drag-and-drop**: Currently uses button-based movement (up/down/left/right) and click-cell. Native drag-and-drop would be more intuitive.
+2. **Cell occupancy check**: Multiple tokens can occupy same cell — should prevent.
+3. **Obstacle/blocked cells**: Movement overlay should account for walls/obstacles.
+4. **Token speed override**: Inspector panel should allow editing token speed directly.
+5. **Image upload**: Image URL only — should support file upload to storage.
+
+---

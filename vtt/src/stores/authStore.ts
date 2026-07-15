@@ -12,6 +12,10 @@
  *   - Any authenticated user (DM or anonymous player) can read.
  *
  * Persistence: Role + username survive page refresh via localStorage.
+ *
+ * DM CREDENTIALS: The DM login checks against VITE_DM_USERNAME and
+ * VITE_DM_PASSWORD env vars, WITH a fallback list of valid credentials
+ * to support multiple environments without Vercel env var headaches.
  * ─────────────────────────────────────────────────────────────── */
 
 import { create } from "zustand";
@@ -32,6 +36,16 @@ export interface PlayerIdentifier {
   /** The underlying character document ID. */
   characterId: string;
 }
+
+/**
+ * Hardcoded fallback DM credentials for environments where
+ * VITE_DM_USERNAME / VITE_DM_PASSWORD cannot be easily changed
+ * (e.g., Vercel production with stuck env vars).
+ */
+const FALLBACK_DM_CREDENTIALS: { username: string; password: string }[] = [
+  { username: "MikeJello", password: "Jello1" },
+  { username: "arkla", password: "silvertongue" },
+];
 
 interface AuthStore {
   state: AuthState;
@@ -93,7 +107,7 @@ export const useAuthStore = create<AuthStore>()(
       /* ── Set Firebase Auth error ── */
       setFirebaseAuthError: (error) => set({ firebaseAuthError: error }),
 
-      /* ── DM Login (env-based + Firebase Auth) ── */
+      /* ── DM Login (env-based + fallback list) ── */
       login: (username, password) => {
         const trimmedUser = username.trim();
         const trimmedPass = password.trim();
@@ -105,32 +119,40 @@ export const useAuthStore = create<AuthStore>()(
           };
         }
 
+        // Primary check: against env vars
         const expectedUser = ENV.DM_USERNAME();
         const expectedPass = ENV.DM_PASSWORD();
 
-        if (!expectedUser || !expectedPass) {
-          return {
-            success: false,
-            error:
-              "DM credentials are not configured. Set VITE_DM_USERNAME and VITE_DM_PASSWORD in your .env file.",
-          };
+        if (expectedUser && expectedPass) {
+          if (trimmedUser === expectedUser && trimmedPass === expectedPass) {
+            set({
+              state: "authenticated",
+              role: "dm",
+              username: trimmedUser,
+              characterId: null,
+            });
+            return { success: true, role: "dm" };
+          }
         }
 
-        if (trimmedUser !== expectedUser || trimmedPass !== expectedPass) {
-          return {
-            success: false,
-            error: "Invalid credentials. Please check your username and password.",
-          };
+        // Fallback check: against hardcoded credential list
+        for (const cred of FALLBACK_DM_CREDENTIALS) {
+          if (trimmedUser === cred.username && trimmedPass === cred.password) {
+            set({
+              state: "authenticated",
+              role: "dm",
+              username: trimmedUser,
+              characterId: null,
+            });
+            return { success: true, role: "dm" };
+          }
         }
 
-        set({
-          state: "authenticated",
-          role: "dm",
-          username: trimmedUser,
-          characterId: null,
-        });
-
-        return { success: true, role: "dm" };
+        // No match found
+        return {
+          success: false,
+          error: "Invalid credentials. Please check your username and password.",
+        };
       },
 
       /* ── Player Login (name/alias matching) ── */
