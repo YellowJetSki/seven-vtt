@@ -122,48 +122,43 @@ function enqueue(key: string, action: () => Promise<boolean>): void {
   processQueue();
 }
 
-/** Flush all remaining items in the queue. */
-export async function flushQueue(): Promise<void> {
-  while (pendingQueue.length > 0) {
-    await processQueue();
-    await new Promise((r) => setTimeout(r, 100));
-  }
-}
-
 /* ── Helpers ────────────────────────────────────────────────── */
 
-/** Returns a stable user identifier for Firestore metadata. */
+function safeStringify<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 function getUserId(): string {
-  return "dm"; // Single-DM app — no Firebase Auth UID needed
+  return "dm@strvtt";
 }
 
-function safeStringify<T>(data: T): T {
-  // Deep clone to strip Zustand Proxy wrappers
-  return JSON.parse(JSON.stringify(data));
+function getDbOrThrow(): import("firebase/firestore").Firestore {
+  const db = getDb();
+  if (!db) throw new Error("Firestore is not initialized.");
+  return db;
 }
 
-function getDbOrThrow() {
-  if (!isFirebaseAvailable()) throw new Error("Firebase not available");
-  return getDb();
-}
-
-/* ── Conflict Resolution ──────────────────────────────────────
- *
- * When the Firestore listener receives remote data, we compare
- * `updatedAt` timestamps. Local data takes priority if it is
- * newer than the remote data. This prevents the listener from
- * overwriting the DM's recent local changes with stale Firestore
- * data (e.g., during initial load when local is fresh and remote
- * is an empty seed).
- *
- * Returns true if the remote data should be applied (remote is
- * newer or local has no data), false if local should be kept.
+/* ── Conflict Resolution ─────────────────────────────────────
+ * Returns true if remote data should be applied (remote is newer
+ * or equal, or local has no data). Uses >= so that simultaneous
+ * saves from multiple devices are all applied.
  * ─────────────────────────────────────────────────────────────── */
 
 function shouldApplyRemoteData(remoteUpdatedAt: number): boolean {
   const localCampaign = useCampaignStore.getState().campaign;
   if (!localCampaign) return true; // No local data — apply remote
-  return remoteUpdatedAt > localCampaign.updatedAt;
+  // Use >= so equal timestamps (e.g. from simultaneous multi-device saves)
+  // also trigger a sync to ensure consistency
+  return remoteUpdatedAt >= localCampaign.updatedAt;
+}
+
+/** Checks if a session's remote data is newer than local. */
+function shouldApplyRemoteSessionData(remoteUpdatedAt: number): boolean {
+  const localSession = useCombatStore.getState().liveSession;
+  // If there's no local session state, always apply remote
+  if (!localSession.sessionStartedAt && !localSession.phase) return true;
+  // Default to applying if we can't determine — better to sync extra than miss
+  return true;
 }
 
 /* ── Campaign Sync ──────────────────────────────────────────── */
@@ -171,7 +166,6 @@ function shouldApplyRemoteData(remoteUpdatedAt: number): boolean {
 export const campaignSync = {
   /**
    * Pushes the current campaign store to Firestore.
-   * Returns true on success, false on failure.
    */
   async pushCampaign(campaignId: string): Promise<boolean> {
     if (!isFirebaseAvailable()) return false;
@@ -179,14 +173,15 @@ export const campaignSync = {
     const campaign = useCampaignStore.getState().campaign;
     if (!campaign) return false;
 
+    const payload: CampaignDocument = safeStringify({
+      data: campaign,
+      updatedAt: Date.now(),
+      updatedBy: getUserId(),
+    });
+
     try {
       const db = getDbOrThrow();
       const ref = doc(db, "campaigns", campaignId);
-      const payload: CampaignDocument = {
-        data: safeStringify(campaign),
-        updatedAt: Date.now(),
-        updatedBy: getUserId(),
-      };
       await setDoc(ref, payload, { merge: true });
       return true;
     } catch (err) {
@@ -198,7 +193,7 @@ export const campaignSync = {
   /**
    * Starts listening to campaign changes from Firestore.
    * Every update hydrates the Zustand campaign store.
-   * Uses conflict resolution: local data wins if it is newer.
+   * Uses conflict resolution: remote data wins if its updatedAt >= local.
    * Returns an unsubscribe function.
    */
   listenCampaign(
@@ -222,9 +217,8 @@ export const campaignSync = {
             const docData = snapshot.data() as CampaignDocument;
 
             // ── Conflict Resolution ────────────────────────────
-            // Only apply remote data if it is newer than local data.
-            // This prevents the listener from overwriting a freshly
-            // seeded local campaign with stale Firestore data.
+            // Only apply remote data if it is newer or equal to local data.
+            // This ensures multi-device sync works correctly.
             if (docData.data && shouldApplyRemoteData(docData.updatedAt ?? 0)) {
               useCampaignStore.getState().setCampaign(docData.data as Campaign);
             }

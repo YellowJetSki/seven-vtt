@@ -3071,3 +3071,34 @@ MapForm now uses `<ImagePicker libraryCategory="battlemaps" />` which:
 Registered in `App.tsx` as a top-level `<Route>` outside the DM routes.
 
 ---
+
+## Theatric Tab — Firebase Real-Time Sync Architecture (Updated: 2026-07-15 13:54)
+## Theatric Tab — Firebase Real-Time Sync Architecture (Revised)
+
+### Data Flow
+1. **BattleMaps** (`handleOpenTheatric`):
+   - Stores TINY payload `{ mapId: string, tokenId: string }` into `localStorage` under `THEATRIC_STORAGE_KEY = "str-vtt:theatric-data"`
+   - Opens `/theatric` via `window.open(theatricUrl, "str-vtt-theatric", "noopener,noreferrer")`
+
+2. **TheatricPage** (standalone route `/theatric`, no auth guard, no sidebar):
+   - Reads the minimal `{ mapId, tokenId }` from localStorage on mount
+   - Subscribes to **Firestore** `campaigns/arkla` document via `onSnapshot`
+   - When DM moves a token → campaignStore pushes to Firebase → Firestore snapshot fires → TheatricPage updates map state → re-renders with new position
+   - **Fallback**: If Firebase is not available, falls back to reading the full map from localStorage (which includes the `map` field for offline scenarios)
+
+### Real-Time Sync Features
+- Cross-browser tab (main tab + theatric tab)
+- Cross-device (laptop DM-ing, tablet as player display)
+- Works with same Firebase data that `useFirebaseSync` pushes
+
+### Token Image Support
+- `AddTokenForm` includes `ImagePicker` with `libraryCategory="tokens"` pointing to `/public/images/tokens/`
+- `MapToken.imageUrl` stored on token creation
+- `MapEditor` renders token images as circular `<img>` elements in the grid and inspector panel
+- `TheatricPage` renders token images in the zoomed view and in the bottom info card
+
+### AppIcon
+- `index.html` now includes **all favicon variants** (16, 32, 192, 512, apple-touch, shortcut icon, ms-TileImage) pointing to `/images/AppIcon.png`
+- Theme color set to `#0a0a1a` (surface-950)
+
+---

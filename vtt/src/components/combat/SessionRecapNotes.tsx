@@ -1,10 +1,14 @@
 /* ── Session Recap & Notes ─────────────────────────────────────
  * A sidebar panel for the DM to quickly jot session notes,
  * then generate a formatted recap for the players.
- * Data is stored in localStorage + synced to Firebase via campaignStore.
+ *
+ * FIREBASE SYNC: Notes are stored in the campaign store's
+ * privateDmNotes field, which is pushed to Firebase via
+ * useFirebaseSync. This makes notes available across all
+ * DM devices in real-time.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
@@ -15,59 +19,86 @@ interface SessionBullet {
   timestamp: number;
 }
 
-const STORAGE_KEY = "vtt-session-recap-bullets";
-
 function uid(): string {
   return `sr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function loadBullets(): SessionBullet[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function saveBullets(bullets: SessionBullet[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(bullets));
-}
-
 export function SessionRecapNotes() {
   const campaign = useCampaignStore((s) => s.campaign);
+  const setCampaign = useCampaignStore((s) => s.setCampaign);
   const showToast = useUiStore((s) => s.showToast);
 
-  const [bullets, setBullets] = useState<SessionBullet[]>(loadBullets);
+  // Parse bullets from campaign's privateDmNotes (JSON-encoded array)
+  const [bullets, setBullets] = useState<SessionBullet[]>([]);
   const [newBullet, setNewBullet] = useState("");
   const [recapText, setRecapText] = useState("");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-save bullets
+  // Load bullets from campaign store (synced from Firebase)
   useEffect(() => {
-    saveBullets(bullets);
-  }, [bullets]);
+    if (campaign?.settings.privateDmNotes) {
+      try {
+        const stored = campaign.settings.privateDmNotes;
+        // Check if stored data is a JSON array
+        if (stored.startsWith("[")) {
+          const parsed = JSON.parse(stored) as SessionBullet[];
+          setBullets(parsed);
+        }
+      } catch {
+        // Not JSON-array format — probably plain text from scratch pad
+      }
+    }
+  }, [campaign?.id, campaign?.settings.privateDmNotes]);
+
+  // Persist bullets to campaign store (syncs to Firebase)
+  const persistBullets = useCallback(
+    (updatedBullets: SessionBullet[]) => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        if (campaign) {
+          const notesJson = JSON.stringify(updatedBullets);
+          setCampaign({
+            ...campaign,
+            settings: {
+              ...campaign.settings,
+              privateDmNotes: notesJson,
+            },
+            updatedAt: Date.now(),
+          });
+        }
+      }, 800);
+    },
+    [campaign, setCampaign],
+  );
 
   const addBullet = () => {
     const text = newBullet.trim();
     if (!text) return;
-    const bullet: SessionBullet = {
-      id: uid(),
-      text,
-      timestamp: Date.now(),
-    };
-    setBullets((prev) => [...prev, bullet]);
+    const updated = [
+      ...bullets,
+      { id: uid(), text, timestamp: Date.now() } as SessionBullet,
+    ];
+    setBullets(updated);
+    persistBullets(updated);
     setNewBullet("");
   };
 
   const removeBullet = (id: string) => {
-    setBullets((prev) => prev.filter((b) => b.id !== id));
+    const updated = bullets.filter((b) => b.id !== id);
+    setBullets(updated);
+    persistBullets(updated);
   };
 
   const clearBullets = () => {
     setBullets([]);
     setRecapText("");
-    localStorage.removeItem(STORAGE_KEY);
+    if (campaign) {
+      setCampaign({
+        ...campaign,
+        settings: { ...campaign.settings, privateDmNotes: "" },
+        updatedAt: Date.now(),
+      });
+    }
     showToast({ message: "Session notes cleared.", type: "info" });
   };
 

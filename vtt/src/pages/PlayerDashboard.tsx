@@ -1,5 +1,10 @@
 /* ── Player Dashboard ──────────────────────────────────────────
- * Player-facing view with real-time DM updates.
+ * Player-facing view with real-time DM updates synced via Firebase.
+ *
+ * FIREBASE SYNC: This page uses usePlayerFirebaseSync to subscribe
+ * to Firestore. All data (campaign state, live session, combat)
+ * is delivered in real-time via onSnapshot listeners. No localStorage
+ * caching — the DM's changes reflect instantly across all devices.
  *
  * UPGRADED FEATURES:
  *  • Live session status bar (phase, timer, scene)
@@ -8,8 +13,6 @@
  *  • Initiative tracker preview (in combat phase)
  *  • Character sheet with full stats
  *  • Party overview card
- *  • Loading state that waits for campaign store rehydration
- *  • Fallback to campaign from localStorage if store is empty
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect } from "react";
@@ -25,10 +28,9 @@ export function PlayerDashboard() {
   const characterName = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
   const campaign = useCampaignStore((s) => s.campaign);
-  const setCampaign = useCampaignStore((s) => s.setCampaign);
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
 
-  // Subscribe to real-time updates from the DM
+  // Subscribe to real-time updates from the DM via Firebase
   usePlayerFirebaseSync();
 
   // Live session state from combatStore (hydrated by Firebase listener)
@@ -46,40 +48,23 @@ export function PlayerDashboard() {
 
   const sessionActive = liveSession.sessionStartedAt !== null;
 
-  // Loading state: wait for campaign store to hydrate from localStorage
+  // Loading state: wait for Firebase + campaign store to hydrate
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if campaign data is available immediately (Zustand persist might
-    // have already rehydrated by the first render).
+    // Wait for campaign data to arrive from Firebase (via onSnapshot)
     if (campaign) {
       setIsLoading(false);
       return;
     }
 
-    // If not, try to seed from localStorage directly
-    try {
-      const raw = localStorage.getItem("str-vtt-campaign");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        const storedCampaign = parsed?.state?.campaign;
-        if (storedCampaign && !campaign) {
-          setCampaign(storedCampaign);
-          setIsLoading(false);
-          return;
-        }
-      }
-    } catch {
-      // localStorage read failed, continue to wait
-    }
-
-    // Fallback: wait up to 3 seconds for Zustand persist to rehydrate
+    // Fallback: wait up to 5 seconds for first data from Firebase
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timer);
-  }, [campaign, setCampaign]);
+  }, [campaign]);
 
   // Session timer
   const [timer, setTimer] = useState(0);
@@ -91,274 +76,159 @@ export function PlayerDashboard() {
     return () => clearInterval(interval);
   }, [sessionActive, liveSession.sessionStartedAt]);
 
-  const hours = Math.floor(timer / 3600);
-  const minutes = Math.floor((timer % 3600) / 60);
-
-  // Phase styling
-  const phaseMeta: Record<string, { icon: string; bg: string; text: string }> = {
-    exploration: { icon: "🧭", bg: "bg-mage-500/20", text: "text-mage-400" },
-    combat: { icon: "⚔️", bg: "bg-warrior-500/20", text: "text-warrior-400" },
-    rest: { icon: "🛏️", bg: "bg-divine-500/20", text: "text-divine-400" },
-    downtime: { icon: "🏙️", bg: "bg-surface-800", text: "text-surface-400" },
+  const formatTime = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    return `${m}m ${s}s`;
   };
 
-  const phaseStyle = phaseMeta[liveSession.phase] ?? phaseMeta.downtime;
+  const phaseMeta: Record<string, { icon: string; label: string; color: string }> = {
+    combat: { icon: "⚔️", label: "Combat", color: "text-warrior-400" },
+    exploration: { icon: "🧭", label: "Exploration", color: "text-rogue-400" },
+    rest: { icon: "🏕️", label: "Rest", color: "text-divine-400" },
+    downtime: { icon: "🏙️", label: "Downtime", color: "text-surface-400" },
+  };
+  const phaseInfo = phaseMeta[liveSession.phase] ?? { icon: "❓", label: "Unknown", color: "text-surface-400" };
 
-  // Combat data
-  const combatants = activeEncounter?.combatants ?? [];
-  const aliveCombatants = combatants.filter((c) => !c.isDead);
-  const currentCombatantIdx = activeEncounter?.currentCombatantIndex ?? 0;
-  const currentCombatant = combatants[currentCombatantIdx];
-  const isInCombat = activeEncounter?.phase === "active";
-
-  // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-900">
-        <div className="flex flex-col items-center gap-3">
-          <span className="animate-pulse text-3xl text-accent-400">Sᚱ</span>
-          <p className="text-sm text-surface-500">Loading your character...</p>
-        </div>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+        <p className="text-sm text-surface-400">Connecting to DM's session...</p>
       </div>
     );
   }
 
-  // Character not found (after loading completed)
+  if (!campaign) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <span className="text-5xl">📡</span>
+        <h2 className="text-lg font-semibold text-surface-200">Waiting for DM...</h2>
+        <p className="max-w-sm text-sm text-surface-500">
+          The DM hasn't started a campaign session yet. Check back when the game begins!
+        </p>
+        <Button variant="ghost" size="sm" onClick={logout}>Logout</Button>
+      </div>
+    );
+  }
+
   if (!character) {
     return (
-      <div className="min-h-screen bg-surface-900">
-        <header className="sticky top-0 z-10 border-b border-surface-700/50 bg-surface-900/80 backdrop-blur-lg">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-accent-400">Sᚱ</span>
-              <span className="text-xs text-surface-500">{campaign?.name ?? "Campaign"}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-surface-400">
-                <span className="font-medium text-surface-200">{characterName ?? "Character"}</span>
-              </span>
-              <Button variant="ghost" size="sm" onClick={logout}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </header>
-        <main className="mx-auto max-w-4xl px-4 py-6 md:px-6">
-          <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-2xl border border-dashed border-surface-700 bg-surface-850 py-20 text-center">
-            <span className="mb-4 text-5xl text-surface-600">🔍</span>
-            <h2 className="mb-2 text-lg font-semibold text-surface-200">
-              Character Not Found
-            </h2>
-            <p className="mb-6 max-w-sm text-sm text-surface-500">
-              Your character "{characterName ?? ""}" hasn't been added to this campaign yet.
-              Please ask your DM to create your character card.
-            </p>
-            {characters.length > 0 && (
-              <p className="mb-6 text-xs text-surface-500">
-                Available characters: {characters.map((c) => c.name).join(", ")}
-              </p>
-            )}
-            <Button variant="ghost" size="sm" onClick={logout}>
-              Sign Out
-            </Button>
-          </div>
-        </main>
-        <footer className="border-t border-surface-800 py-4 text-center">
-          <p className="text-[10px] text-surface-600">
-            STᚱ VTT · Player View · ⏸️ Offline
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div className="rounded-xl border border-surface-700 bg-surface-850 p-6 text-center">
+          <span className="text-4xl">👤</span>
+          <h2 className="mt-2 text-lg font-semibold text-surface-200">Character Not Found</h2>
+          <p className="mt-1 text-sm text-surface-500">
+            No character named "{characterName}" found in the campaign.
           </p>
-        </footer>
+          <Button variant="ghost" size="sm" className="mt-4" onClick={logout}>Logout</Button>
+        </div>
       </div>
     );
   }
 
+  const currentCombatant = activeEncounter?.combatants[activeEncounter.currentCombatantIndex ?? 0];
+
   return (
-    <div className="min-h-screen bg-surface-900">
-      {/* ── Top Bar ── */}
-      <header className="sticky top-0 z-10 border-b border-surface-700/50 bg-surface-900/80 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-accent-400">Sᚱ</span>
-            <span className="text-xs text-surface-500">{campaign?.name ?? "Campaign"}</span>
-            {sessionActive && (
-              <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${phaseStyle.bg} ${phaseStyle.text}`}>
-                {phaseStyle.icon} {liveSession.phase}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            {characterName && (
-              <span className="text-xs text-surface-400">
-                <span className="font-medium text-surface-200">{characterName}</span>
-              </span>
-            )}
-            <Button variant="ghost" size="sm" onClick={logout}>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Live Session Banner ── */}
+    <div className="mx-auto max-w-4xl space-y-6">
+      {/* Live Session Status Bar */}
       {sessionActive && (
-        <div className="border-b border-surface-700/30 bg-surface-850/50">
-          <div className="mx-auto max-w-4xl px-4 py-3">
-            <div className="flex items-start gap-4">
-              {/* Phase + Timer */}
-              <div className="flex shrink-0 items-center gap-2">
-                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${phaseStyle.bg}`}>
-                  <span className={phaseStyle.text}>{phaseStyle.icon}</span>
-                </span>
-                <div className="text-center">
-                  <p className="text-[10px] text-surface-500">{liveSession.phase}</p>
-                  <p className="font-mono text-xs font-bold text-surface-300">
-                    {hours > 0 ? `${hours}h ` : ""}{minutes}m
-                  </p>
-                </div>
-              </div>
-
-              {/* Scene Description */}
-              <div className="min-w-0 flex-1">
-                {liveSession.currentScene ? (
-                  <p className="line-clamp-2 text-sm leading-relaxed text-surface-200">{liveSession.currentScene}</p>
-                ) : (
-                  <p className="text-sm italic text-surface-500">Awaiting DM's scene description...</p>
-                )}
-              </div>
-
-              {/* Battle Map Thumbnail */}
-              {liveSession.currentMapUrl && (
-                <div className="hidden shrink-0 sm:block">
-                  <img src={liveSession.currentMapUrl} alt="Map"
-                    className="h-14 w-20 rounded-lg border border-surface-700 object-cover" />
-                </div>
-              )}
+        <div className="rounded-xl border border-accent-500/20 bg-accent-500/5 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-divine-400 animate-pulse" />
+              <span className="text-sm font-medium text-surface-200">
+                Session Active
+              </span>
+              <span className={`text-sm font-semibold ${phaseInfo.color}`}>
+                {phaseInfo.icon} {phaseInfo.label}
+              </span>
+              <span className="text-xs text-surface-500">
+                ⏱️ {formatTime(timer)}
+              </span>
             </div>
-
-            {/* DM Announcement */}
-            {liveSession.dmAnnouncement && (
-              <div className="mt-2 rounded-lg border border-accent-500/20 bg-accent-500/10 p-3">
-                <p className="mb-0.5 text-xs font-medium text-accent-400">📢 DM Announcement</p>
-                <p className="text-sm text-accent-200">{liveSession.dmAnnouncement}</p>
-              </div>
-            )}
-
-            {/* Environmental Conditions */}
-            {liveSession.conditions && (
-              <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-surface-400">
-                {liveSession.conditions.weather !== "clear" && (
-                  <span>{liveSession.conditions.weather}</span>
-                )}
-                {liveSession.conditions.lighting !== "bright" && (
-                  <span>{liveSession.conditions.lighting}</span>
-                )}
-                {liveSession.conditions.terrain !== "normal" && (
-                  <span>{liveSession.conditions.terrain}</span>
-                )}
-              </div>
-            )}
+            <span className="text-xs text-surface-500">
+              {liveSession.currentScene && `📍 ${liveSession.currentScene}`}
+            </span>
           </div>
         </div>
       )}
 
-      {/* ── Combat Status Bar ── */}
-      {isInCombat && (
-        <div className="border-b border-warrior-500/20 bg-warrior-500/5">
-          <div className="mx-auto max-w-4xl px-4 py-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="rounded bg-warrior-500/20 px-2 py-0.5 text-[11px] font-bold text-warrior-400">
-                  R{activeEncounter?.round}
-                </span>
-                <span className="text-sm font-medium text-surface-200">
-                  ⚔️ {activeEncounter?.name}
-                </span>
-                <span className="text-xs text-surface-500">
-                  {aliveCombatants.length} alive
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 text-[9px] font-bold text-white">▶</span>
-                <span className="text-xs font-medium text-accent-400">
-                  {currentCombatant?.name}'s Turn
-                </span>
-              </div>
-            </div>
+      {/* DM Announcement */}
+      {liveSession.dmAnnouncement && (
+        <div className="animate-slide-up rounded-xl border border-rogue-500/20 bg-rogue-500/5 px-4 py-3">
+          <p className="flex items-center gap-2 text-sm text-rogue-300">
+            <span>📢</span>
+            <span>{liveSession.dmAnnouncement}</span>
+          </p>
+        </div>
+      )}
 
-            {/* Initiative Order (compact) */}
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {combatants.slice(0, 10).map((c, i) => (
-                <span key={c.id}
-                  className={`rounded px-2 py-0.5 text-[10px] font-medium ${
-                    i === currentCombatantIdx
-                      ? "bg-accent-500/20 text-accent-300 ring-1 ring-accent-500"
-                      : c.isDead
-                        ? "bg-surface-800 text-surface-600 line-through"
-                        : i < currentCombatantIdx
-                          ? "bg-surface-800 text-surface-500"
-                          : "bg-surface-800 text-surface-300"
+      {/* Current Battle Map (if DM has one open) */}
+      {liveSession.currentMapUrl && (
+        <div className="overflow-hidden rounded-xl border border-surface-700">
+          <div className="flex items-center justify-between bg-surface-850 px-4 py-2">
+            <span className="text-xs font-medium text-surface-400">Current Battle Map</span>
+            <span className="text-[10px] text-surface-500">🗺️</span>
+          </div>
+          <div className="relative">
+            <img src={liveSession.currentMapUrl} alt="Battle Map"
+              className="h-48 w-full object-cover" />
+          </div>
+        </div>
+      )}
+
+      {/* Initiative Tracker (during combat phase) */}
+      {sessionActive && liveSession.phase === "combat" && activeEncounter && (
+        <div className="rounded-xl border border-surface-700 bg-surface-850">
+          <div className="flex items-center justify-between border-b border-surface-700 px-4 py-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-surface-400">
+              ⚔️ Initiative — Round {activeEncounter.round}
+            </span>
+            {currentCombatant && (
+              <span className="text-xs text-accent-400">
+                Current: {currentCombatant.name}
+              </span>
+            )}
+          </div>
+          <div className="divide-y divide-surface-700">
+            {activeEncounter.combatants.slice(0, 10).map((c, i) => {
+              const isCurrent = i === (activeEncounter.currentCombatantIndex ?? 0);
+              return (
+                <div key={c.id}
+                  className={`flex items-center justify-between px-4 py-2.5 ${
+                    isCurrent ? "bg-accent-500/10" : ""
                   }`}>
-                  {c.isDead ? "💀" : c.type === "player" ? "⚔" : "👹"} {c.name.split(" ")[0]}
-                </span>
-              ))}
-              {combatants.length > 10 && (
-                <span className="text-[10px] text-surface-500">+{combatants.length - 10} more</span>
-              )}
-            </div>
+                  <div className="flex items-center gap-2">
+                    {isCurrent && <span className="text-xs text-accent-400">▶</span>}
+                    <span className="text-sm text-surface-200">{c.name}</span>
+                    <span className="text-[10px] text-surface-500">{c.type}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {c.initiative && (
+                      <span className="rounded bg-surface-800 px-1.5 py-0.5 text-[11px] font-mono text-surface-300">
+                        {c.initiative}
+                      </span>
+                    )}
+                    {c.hp !== undefined && (
+                      <span className={`text-xs ${
+                        c.hp > 0 ? 'text-surface-400' : 'text-warrior-400'
+                      }`}>
+                        {c.hp}/{c.maxHp}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* ── Main Content ── */}
-      <main className="mx-auto max-w-4xl px-4 py-6 md:px-6">
-        <div className="space-y-6">
-          {/* Party Overview */}
-          {characters.length > 1 && (
-            <div className="rounded-xl border border-surface-700 bg-surface-850 p-4">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-surface-400">
-                🏰 Party ({characters.length})
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {characters.map((pc) => {
-                  const isYou = pc.id === character.id;
-                  return (
-                    <div key={pc.id}
-                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${
-                        isYou
-                          ? "border-accent-500/40 bg-accent-500/10"
-                          : "border-surface-700 bg-surface-800"
-                      }`}>
-                      <span className="text-xs">{isYou ? "⚔" : "🛡"}</span>
-                      <div>
-                        <p className="text-sm font-medium text-surface-200">{pc.name}</p>
-                        <p className="text-[10px] text-surface-500">{pc.race} {pc.class} · Lvl {pc.level}</p>
-                      </div>
-                      <div className="ml-3 text-right">
-                        <p className={`text-xs font-bold ${
-                          pc.hitPoints.current <= 0 ? "text-warrior-400" :
-                          pc.hitPoints.current <= pc.hitPoints.max * 0.25 ? "text-warrior-500" :
-                          "text-surface-200"
-                        }`}>
-                          ❤️ {pc.hitPoints.current}/{pc.hitPoints.max}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Character Sheet */}
-          <PlayerCharacterSheet character={character} />
-        </div>
-      </main>
-
-      <footer className="border-t border-surface-800 py-4 text-center">
-        <p className="text-[10px] text-surface-600">
-          STᚱ VTT · Player View · ⏸️ Offline
-        </p>
-      </footer>
+      {/* Character Sheet */}
+      <PlayerCharacterSheet character={character} />
     </div>
   );
 }

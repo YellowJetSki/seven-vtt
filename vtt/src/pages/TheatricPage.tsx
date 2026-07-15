@@ -10,7 +10,7 @@
  * 2. On mount, this page reads the payload from localStorage.
  * 3. It subscribes to the Firestore campaign document via
  *    onSnapshot. When the DM moves a token in the main tab,
- *    the campaignStore pushes to Firestore → the snapshot
+ *    the campaignStore pushes to Firebase → the snapshot
  *    listener fires here → the view updates in real time.
  * 4. Works across devices — open the theatric URL on a tablet
  *    or second monitor, and it stays in sync.
@@ -24,17 +24,23 @@ import { THEATRIC_STORAGE_KEY, type TheatricPayload } from "@/pages/BattleMaps";
 
 const CAMPAIGN_ID = "arkla";
 
-/** Polling interval (ms) for localStorage refresh (fallback). */
-const POLL_INTERVAL = 1000;
+/** Polling interval (ms) for localStorage refresh — only used when Firebase is unavailable. */
+const FALLBACK_POLL_INTERVAL = 2000;
 
 export function TheatricPage() {
   const [payload, setPayload] = useState<TheatricPayload | null>(null);
   const [map, setMap] = useState<BattleMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [firebaseReady, setFirebaseReady] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const firebaseUnsubRef = useRef<(() => void) | null>(null);
+
+  // Detect if Firebase is available
+  useEffect(() => {
+    setFirebaseReady(isFirebaseAvailable());
+  }, []);
 
   /* ── Read initial payload from localStorage ────────────── */
   useEffect(() => {
@@ -59,8 +65,8 @@ export function TheatricPage() {
 
     loadFromStorage();
 
-    // Fallback polling for localStorage updates
-    pollingRef.current = setInterval(() => {
+    // Poll localStorage for new payloads (in case the user opens a different map)
+    const quickPoll = setInterval(() => {
       const raw = localStorage.getItem(THEATRIC_STORAGE_KEY);
       if (raw) {
         try {
@@ -75,10 +81,10 @@ export function TheatricPage() {
           /* skip */
         }
       }
-    }, POLL_INTERVAL);
+    }, FALLBACK_POLL_INTERVAL);
 
     return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      clearInterval(quickPoll);
     };
   }, []);
 
@@ -92,8 +98,8 @@ export function TheatricPage() {
       firebaseUnsubRef.current = null;
     }
 
-    if (!isFirebaseAvailable()) {
-      // Firebase not configured — use polling fallback
+    if (!firebaseReady) {
+      // Firebase not configured — use polling fallback below
       return;
     }
 
@@ -110,7 +116,11 @@ export function TheatricPage() {
             const maps: BattleMap[] = campaign?.battleMaps ?? [];
             const foundMap = maps.find((m: BattleMap) => m.id === payload.mapId);
             if (foundMap) {
-              setMap(foundMap);
+              // Deep compare to avoid unnecessary re-renders
+              setMap((prev) => {
+                if (JSON.stringify(prev) === JSON.stringify(foundMap)) return prev;
+                return foundMap;
+              });
               setError(null);
             } else {
               setError(`Map "${payload.mapId}" not found in campaign.`);
@@ -119,7 +129,6 @@ export function TheatricPage() {
         },
         (err) => {
           console.error("[Theatric] Firestore listener error:", err);
-          // Don't set error — let localStorage polling handle fallback
         },
       );
 
@@ -134,22 +143,22 @@ export function TheatricPage() {
         firebaseUnsubRef.current = null;
       }
     };
-  }, [payload]);
+  }, [payload, firebaseReady]);
 
-  /* ── Fallback: also poll localStorage for the full map data
-   *    (used when Firebase is not available) ──────────────── */
+  /* ── Fallback: poll localStorage for full map data (Firebase unavailable) ─ */
   useEffect(() => {
-    if (!payload || isFirebaseAvailable()) return;
+    if (!payload || firebaseReady) return;
 
-    // When Firebase is unavailable, read full map data from localStorage
-    // (the BattleMaps page stores the full payload there)
     function loadFullFromStorage() {
       try {
         const raw = localStorage.getItem(THEATRIC_STORAGE_KEY);
         if (!raw) return;
         const parsed: TheatricPayload = JSON.parse(raw);
         if (parsed.map && parsed.map.id === payload.mapId) {
-          setMap(parsed.map);
+          setMap((prev) => {
+            if (JSON.stringify(prev) === JSON.stringify(parsed.map)) return prev;
+            return parsed.map;
+          });
           setError(null);
         }
       } catch {
@@ -159,9 +168,9 @@ export function TheatricPage() {
 
     loadFullFromStorage();
 
-    const interval = setInterval(loadFullFromStorage, POLL_INTERVAL);
+    const interval = setInterval(loadFullFromStorage, FALLBACK_POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, [payload]);
+  }, [payload, firebaseReady]);
 
   /* ── Fade-in on mount ─────────────────────────────────── */
   useEffect(() => {
@@ -180,10 +189,8 @@ export function TheatricPage() {
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
-      setFullscreen(true);
     } else {
       document.exitFullscreen().catch(() => {});
-      setFullscreen(false);
     }
   }, []);
 
@@ -276,7 +283,7 @@ export function TheatricPage() {
           return (
             <div
               key={t.id}
-              className={`absolute flex items-center justify-center rounded-full transition-all duration-300 ${
+              className={`absolute flex items-center justify-center rounded-full transition-all duration-300 overflow-hidden ${
                 isActive
                   ? "ring-3 ring-accent-400 ring-offset-4 ring-offset-surface-950 z-20 scale-110 shadow-2xl"
                   : t.visible
@@ -288,7 +295,7 @@ export function TheatricPage() {
                 top: `${(t.y / map.gridHeight) * 100}%`,
                 width: `${((t.size * 1.2) / map.gridWidth) * 100}%`,
                 height: `${((t.size * 1.2) / map.gridHeight) * 100}%`,
-                backgroundColor: t.color,
+                backgroundColor: t.imageUrl ? 'transparent' : t.color,
                 minWidth: "24px",
                 minHeight: "24px",
               }}
@@ -299,6 +306,7 @@ export function TheatricPage() {
                   src={t.imageUrl}
                   alt={t.label}
                   className="h-full w-full rounded-full object-cover"
+                  style={{ backgroundColor: t.color }}
                 />
               ) : t.icon ? (
                 <span className="text-sm">{t.icon}</span>
@@ -342,13 +350,14 @@ export function TheatricPage() {
           <div className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden"
-              style={{ backgroundColor: currentToken.color }}
+              style={{ backgroundColor: currentToken.imageUrl ? 'transparent' : currentToken.color }}
             >
               {currentToken.imageUrl ? (
                 <img
                   src={currentToken.imageUrl}
                   alt={currentToken.label}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full rounded-full object-cover"
+                  style={{ backgroundColor: currentToken.color }}
                 />
               ) : (
                 <span className="text-lg font-bold text-white">
@@ -393,15 +402,17 @@ export function TheatricPage() {
 
         {/* Live indicator */}
         <div className="hidden sm:flex items-center gap-1.5 rounded-lg bg-surface-900/60 px-3 py-1.5 text-[10px] text-surface-500 backdrop-blur-md">
-          <span className={`h-1.5 w-1.5 rounded-full ${isFirebaseAvailable() ? 'bg-divine-400 animate-pulse' : 'bg-surface-600'}`} />
-          {isFirebaseAvailable() ? 'Live' : 'Local'}
+          <span className={`h-1.5 w-1.5 rounded-full ${
+            firebaseReady ? 'bg-divine-400 animate-pulse' : 'bg-surface-600'
+          }`} />
+          {firebaseReady ? 'Firebase Live' : 'Local Fallback'}
         </div>
       </div>
 
       {/* ── Keyboard shortcuts hint ────────────────────────── */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
         <div className="rounded-full bg-surface-900/40 px-3 py-1 text-[10px] text-surface-600 backdrop-blur-md">
-          DM moves tokens in main tab · this view updates via {isFirebaseAvailable() ? 'Firebase' : 'localStorage'}
+          DM moves tokens in main tab · synced via {firebaseReady ? 'Firebase' : 'localStorage'}
         </div>
       </div>
     </div>

@@ -2,6 +2,10 @@
  * Auto-timestamped note-taking panel for live sessions.
  * Each note is tagged with the current round/phase and timestamp.
  *
+ * FIREBASE SYNC: Notes are synced to the combat store's combatLog,
+ * which is pushed to Firestore via useFirebaseSync. This ensures
+ * session notes are available across all DM devices in real-time.
+ *
  * UPGRADED:
  *  • Search/filter across notes
  *  • Phase and round filters
@@ -36,16 +40,12 @@ function uid(): string {
 export function SessionNotesTimeline() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const liveSession = useCombatStore((s) => s.liveSession);
+  const combatLog = useCombatStore((s) => s.combatLog);
+  const addNote = useCombatStore((s) => s.addNote);
   const showToast = useUiStore((s) => s.showToast);
 
-  const [notes, setNotes] = useState<SessionNote[]>(() => {
-    try {
-      const saved = localStorage.getItem("vtt-session-notes");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Derive notes from the combat log (which is synced to Firebase)
+  const [notes, setNotes] = useState<SessionNote[]>([]);
   const [newNoteText, setNewNoteText] = useState("");
   const [showPanel, setShowPanel] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,10 +54,20 @@ export function SessionNotesTimeline() {
 
   const isActive = liveSession.sessionStartedAt;
 
-  // Persist notes to localStorage
+  // Sync notes from combatLog (Firebase-synced source of truth)
   useEffect(() => {
-    localStorage.setItem("vtt-session-notes", JSON.stringify(notes));
-  }, [notes]);
+    const sessionNotes: SessionNote[] = combatLog
+      .filter((entry) => entry.type === "note")
+      .map((entry) => ({
+        id: entry.id,
+        text: entry.detail,
+        timestamp: entry.timestamp,
+        round: entry.round,
+        phase: entry.phase ?? "exploration",
+        author: "DM",
+      }));
+    setNotes(sessionNotes);
+  }, [combatLog]);
 
   // Keyboard shortcut: Ctrl+Shift+T to toggle
   useEffect(() => {
@@ -74,18 +84,11 @@ export function SessionNotesTimeline() {
   const handleAddNote = useCallback(() => {
     const text = newNoteText.trim();
     if (!text) return;
-    const note: SessionNote = {
-      id: uid(),
-      text,
-      timestamp: Date.now(),
-      round: activeEncounter?.round ?? 0,
-      phase: activeEncounter?.phase ?? liveSession.phase ?? "exploration",
-      author: "DM",
-    };
-    setNotes((prev) => [note, ...prev]);
+    // Use the combat store's addNote which pushes to combatLog (synced to Firebase)
+    addNote(text);
     setNewNoteText("");
     showToast({ message: "Note added to timeline.", type: "success" });
-  }, [newNoteText, activeEncounter, liveSession, showToast]);
+  }, [newNoteText, addNote, showToast]);
 
   const handleExportNotes = useCallback(() => {
     if (notes.length === 0) {
@@ -103,14 +106,10 @@ export function SessionNotesTimeline() {
   }, [notes, showToast]);
 
   const handleClearAll = useCallback(() => {
-    setNotes([]);
+    useCombatStore.getState().clearLog();
     setShowClearConfirm(false);
     showToast({ message: "All session notes cleared.", type: "info" });
   }, [showToast]);
-
-  const handleDeleteNote = useCallback((id: string) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-  }, []);
 
   // Filtered notes
   const filteredNotes = useMemo(() => {
@@ -158,133 +157,111 @@ export function SessionNotesTimeline() {
       </button>
 
       {showPanel && (
-        <div className="border-t border-surface-700">
-          {/* Input */}
-          <div className="border-b border-surface-700/50 p-3">
-            <div className="flex gap-2">
-              <input
-                value={newNoteText}
-                onChange={(e) => setNewNoteText(e.target.value)}
-                placeholder="Type a session note..."
-                className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAddNote();
-                  }
-                }}
-              />
-              <Button size="sm" onClick={handleAddNote} disabled={!newNoteText.trim()}>
-                Add
-              </Button>
-            </div>
-            {activeEncounter && (
-              <p className="mt-1 text-[10px] text-surface-500">
-                Round {activeEncounter.round} · {activeEncounter.phase} phase
-              </p>
-            )}
+        <div className="border-t border-surface-700 p-3 space-y-3">
+          {/* New Note Input */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newNoteText}
+              onChange={(e) => setNewNoteText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
+              placeholder="Type a session note..."
+              className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
+            />
+            <Button size="sm" onClick={handleAddNote} disabled={!newNoteText.trim()}>
+              + Add
+            </Button>
           </div>
 
-          {/* Search + Filters */}
-          {notes.length > 0 && (
-            <div className="border-b border-surface-700/50 p-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes..."
-                className="w-full rounded-md border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-xs text-surface-200 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-              />
-              <div className="mt-1.5 flex flex-wrap gap-1">
-                {(["all", "combat", "exploration", "rest", "downtime"] as const).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setPhaseFilter(f)}
-                    className={`rounded px-2 py-0.5 text-[10px] transition-colors ${
-                      phaseFilter === f
-                        ? "bg-accent-500/20 text-accent-300"
-                        : "bg-surface-800 text-surface-400 hover:bg-surface-700"
-                    }`}
-                  >
-                    {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
-                  </button>
-                ))}
-              </div>
+          {/* Filters Row */}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {(["all", "combat", "exploration", "rest", "downtime"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setPhaseFilter(f)}
+                  className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                    phaseFilter === f
+                      ? "bg-accent-500/20 text-accent-400"
+                      : "text-surface-500 hover:text-surface-300"
+                  }`}
+                >
+                  {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
             </div>
-          )}
+            <div className="flex-1" />
+            <button
+              onClick={handleExportNotes}
+              disabled={notes.length === 0}
+              className="text-[10px] text-surface-500 hover:text-surface-300 transition-colors disabled:opacity-50"
+            >
+              Export
+            </button>
+          </div>
+
+          {/* Search */}
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search notes..."
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-1.5 text-xs text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
+          />
 
           {/* Notes List */}
-          <div className="max-h-[300px] space-y-1 overflow-y-auto p-2">
+          <div className="max-h-64 space-y-1 overflow-y-auto">
             {filteredNotes.length === 0 ? (
-              <p className="py-6 text-center text-xs text-surface-500">
-                {notes.length === 0
-                  ? "No notes yet. Start typing above."
-                  : "No notes match your filter."}
+              <p className="py-4 text-center text-xs text-surface-500">
+                {searchQuery || phaseFilter !== "all"
+                  ? "No matching notes."
+                  : "No session notes yet. Start typing above!"}
               </p>
             ) : (
               filteredNotes.map((note) => (
-                <div key={note.id} className="group rounded-lg bg-surface-800/50 px-3 py-2">
-                  <p className="text-xs leading-relaxed text-surface-300">{note.text}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="rounded bg-surface-700 px-1.5 py-0.5 text-[9px] font-medium text-accent-400">
+                <div
+                  key={note.id}
+                  className="group flex items-start gap-2 rounded-lg bg-surface-800/50 px-3 py-2"
+                >
+                  <div className="flex shrink-0 flex-col items-center gap-0.5 pt-0.5">
+                    <span className="text-[9px] font-medium text-surface-500">
                       R{note.round}
                     </span>
-                    <span className="text-[10px] text-surface-500">{note.phase}</span>
-                    <span className="text-[10px] text-surface-500">·</span>
-                    <span className="text-[10px] text-surface-500">
-                      {new Date(note.timestamp).toLocaleTimeString()}
+                    <span className="text-[8px] text-surface-600">
+                      {new Date(note.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
-                    <span className="text-[10px] text-surface-600">· {note.author}</span>
-                    <button
-                      onClick={() => handleDeleteNote(note.id)}
-                      className="ml-auto text-[10px] text-warrior-400 opacity-0 transition-all hover:text-warrior-300 group-hover:opacity-100"
-                    >
-                      Delete
-                    </button>
                   </div>
+                  <p className="flex-1 text-xs text-surface-200 leading-relaxed">
+                    {note.text}
+                  </p>
+                  <span className="shrink-0 rounded bg-surface-700 px-1.5 py-0.5 text-[8px] text-surface-400">
+                    {note.phase}
+                  </span>
                 </div>
               ))
             )}
           </div>
 
-          {/* Footer */}
+          {/* Clear All */}
           {notes.length > 0 && (
-            <div className="flex items-center justify-between border-t border-surface-700/50 px-3 py-2">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-surface-500">
-                  {filteredNotes.length}/{notes.length} note{notes.length !== 1 ? "s" : ""}
-                </span>
-                {showClearConfirm ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-warrior-400">Clear all?</span>
-                    <button
-                      onClick={handleClearAll}
-                      className="text-[10px] font-medium text-warrior-400 hover:text-warrior-300"
-                    >
-                      Yes
-                    </button>
-                    <button
-                      onClick={() => setShowClearConfirm(false)}
-                      className="text-[10px] text-surface-500 hover:text-surface-300"
-                    >
-                      No
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowClearConfirm(true)}
-                    className="text-[10px] text-surface-500 hover:text-warrior-400"
-                  >
-                    🗑️ Clear
-                  </button>
-                )}
-              </div>
-              <button
-                onClick={handleExportNotes}
-                className="text-[10px] text-surface-500 transition-colors hover:text-surface-300"
-              >
-                📥 Export
-              </button>
+            <div className="flex justify-end">
+              {showClearConfirm ? (
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="xs" onClick={() => setShowClearConfirm(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="danger" size="xs" onClick={handleClearAll}>
+                    Confirm Clear
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="ghost" size="xs" onClick={() => setShowClearConfirm(true)}>
+                  Clear All Notes
+                </Button>
+              )}
             </div>
           )}
         </div>
