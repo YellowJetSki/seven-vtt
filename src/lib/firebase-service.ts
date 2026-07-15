@@ -10,7 +10,6 @@
  *   import { campaignSync } from "@/lib/firebase-service";
  *   await campaignSync.pushCampaign("arkla");
  *   const unsub = campaignSync.listenCampaign("arkla");
- *
  * ─────────────────────────────────────────────────────────────── */
 
 import {
@@ -18,11 +17,10 @@ import {
   getDoc,
   setDoc,
   onSnapshot,
-  serverTimestamp,
   type DocumentData,
   type Unsubscribe,
 } from "firebase/firestore";
-import { db, isFirebaseAvailable } from "@/lib/firebase";
+import { getDb, isFirebaseAvailable } from "@/lib/firebase";
 import { getCurrentUser } from "@/lib/firebase-auth";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatStore } from "@/stores/combatStore";
@@ -47,21 +45,20 @@ export interface HomebrewDocument extends HomebrewLibrary {
 
 type SyncStatus = "idle" | "syncing" | "error" | "listening";
 
-function getStatusStore() {
-  // Reactive sync status is tracked via a simple callback pattern.
-  // Callers can pass onStatusChange to monitor sync health.
-  return { status: "idle" as SyncStatus, error: null as string | null };
-}
-
 /* ── Helpers ────────────────────────────────────────────────── */
 
 function getUserId(): string {
   return getCurrentUser()?.uid ?? "unknown";
 }
 
-function safeStringify(data: unknown): Record<string, unknown> {
+function safeStringify<T>(data: T): T {
   // Deep clone to strip Zustand Proxy wrappers
   return JSON.parse(JSON.stringify(data));
+}
+
+function getDbOrThrow() {
+  if (!isFirebaseAvailable()) throw new Error("Firebase not available");
+  return getDb();
 }
 
 /* ── Campaign Sync ──────────────────────────────────────────── */
@@ -78,7 +75,8 @@ export const campaignSync = {
     if (!campaign) return false;
 
     try {
-      const payload = safeStringify({
+      const db = getDbOrThrow();
+      const payload = safeStringify<Record<string, unknown>>({
         ...campaign,
         updatedAt: Date.now(),
       });
@@ -105,6 +103,7 @@ export const campaignSync = {
       return null;
     }
 
+    const db = getDbOrThrow();
     const ref = doc(db, "campaigns", campaignId);
     onStatusChange?.("listening");
 
@@ -141,6 +140,7 @@ export const campaignSync = {
     if (!isFirebaseAvailable()) return null;
 
     try {
+      const db = getDbOrThrow();
       const snapshot = await getDoc(doc(db, "campaigns", campaignId));
       if (!snapshot.exists()) return null;
       return snapshot.data() as Campaign;
@@ -170,6 +170,7 @@ export const sessionSync = {
     });
 
     try {
+      const db = getDbOrThrow();
       await setDoc(doc(db, "liveSessions", campaignId), payload, { merge: true });
       return true;
     } catch (err) {
@@ -190,6 +191,7 @@ export const sessionSync = {
       return null;
     }
 
+    const db = getDbOrThrow();
     const ref = doc(db, "liveSessions", campaignId);
     onStatusChange?.("listening");
 
@@ -232,6 +234,7 @@ export const sessionSync = {
     if (!isFirebaseAvailable()) return null;
 
     try {
+      const db = getDbOrThrow();
       const snapshot = await getDoc(doc(db, "liveSessions", campaignId));
       if (!snapshot.exists()) return null;
       return snapshot.data() as LiveSessionDocument;
@@ -260,6 +263,7 @@ export const homebrewSync = {
     });
 
     try {
+      const db = getDbOrThrow();
       await setDoc(doc(db, "homebrew", campaignId), payload, { merge: true });
       return true;
     } catch (err) {
@@ -280,6 +284,7 @@ export const homebrewSync = {
       return null;
     }
 
+    const db = getDbOrThrow();
     const ref = doc(db, "homebrew", campaignId);
     onStatusChange?.("listening");
 
@@ -292,7 +297,6 @@ export const homebrewSync = {
         const store = useHomebrewStore.getState();
 
         // Only sync if remote is newer than local
-        // We compare using the homebrew store's internal updatedAt
         // Since homebrew doesn't track a single updatedAt, we check
         // if the remote has data and local doesn't
         if (data.items && data.items.length > 0 && store.items.length === 0) {
@@ -318,6 +322,7 @@ export const homebrewSync = {
     if (!isFirebaseAvailable()) return null;
 
     try {
+      const db = getDbOrThrow();
       const snapshot = await getDoc(doc(db, "homebrew", campaignId));
       if (!snapshot.exists()) return null;
       return snapshot.data() as HomebrewDocument;

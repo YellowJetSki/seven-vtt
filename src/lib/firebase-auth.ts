@@ -9,25 +9,28 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getAuthInstance, isFirebaseAvailable } from "@/lib/firebase";
 
 export type AuthCallback = (user: User | null) => void;
 
 /**
  * Signs in the DM using email/password credentials.
- * In Firebase, usernames are not supported natively, so we use
- * a mapped email address. The DM's email is derived from their
- * username: `dm_<username>@strvtt.local` — this is a convention,
- * not a real email. Firebase Auth accepts any valid email format.
+ * Uses a synthetic email derived from the username:
+ *   `dm_<username>@strvtt.local`
+ *
+ * This keeps the login UX simple (username + password) while using
+ * Firebase Auth properly internally.
  */
 export async function loginWithFirebase(
   username: string,
   password: string,
 ): Promise<{ success: boolean; error?: string }> {
+  if (!isFirebaseAvailable()) {
+    return { success: false, error: "Firebase is not configured." };
+  }
+
   try {
-    // The DM logs in with a synthetic email derived from their username.
-    // This keeps the UX simple (no "enter your email") while using
-    // Firebase Auth properly.
+    const auth = getAuthInstance();
     const email = `dm_${username.toLowerCase().replace(/[^a-z0-9]/g, "")}@strvtt.local`;
     await signInWithEmailAndPassword(auth, email, password);
     return { success: true };
@@ -68,7 +71,9 @@ export async function loginWithFirebase(
  * Logs out the current user.
  */
 export async function logoutFromFirebase(): Promise<void> {
+  if (!isFirebaseAvailable()) return;
   try {
+    const auth = getAuthInstance();
     await signOut(auth);
   } catch {
     // Silently fail — auth state will be cleared client-side anyway
@@ -80,6 +85,11 @@ export async function logoutFromFirebase(): Promise<void> {
  * Returns an unsubscribe function.
  */
 export function onAuthChanged(callback: AuthCallback): () => void {
+  if (!isFirebaseAvailable()) {
+    callback(null);
+    return () => {};
+  }
+  const auth = getAuthInstance();
   return onAuthStateChanged(auth, callback);
 }
 
@@ -87,6 +97,8 @@ export function onAuthChanged(callback: AuthCallback): () => void {
  * Returns the current Firebase user, or null if not authenticated.
  */
 export function getCurrentUser(): User | null {
+  if (!isFirebaseAvailable()) return null;
+  const auth = getAuthInstance();
   return auth.currentUser;
 }
 
