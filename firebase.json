@@ -17,6 +17,10 @@
     "ui": {
       "enabled": true,
       "port": 4000
+    },
+    "hub": {
+      "host": "127.0.0.1",
+      "port": 4400
     }
   },
   "storage": {
