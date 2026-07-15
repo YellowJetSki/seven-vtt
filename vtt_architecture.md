@@ -1547,3 +1547,55 @@ syncManager.pushCampaign() →  setDoc()  →  onSnapshot callback
 - **Cmd/Ctrl+Shift+N** = Toggle floating scratch pad
 
 ---
+
+## Phase 1-5: Second Overhaul - New Features, Upgrades, Firebase Monitor, UI/UX (Updated: 2026-07-14 21:25)
+## Phase 1-5: Second Major Overhaul
+
+### 🔧 Build Fix
+- **Root `package.json`**: Refactored to delegate to `vtt/` via `--prefix` 
+- **`vtt/package.json`**: `build` script uses `tsc --noEmit` instead of `tsc -b` to avoid monorepo tsconfig confusion
+- **`env.ts`**: Changed `requiredEnv` to lazy arrow functions (`DM_USERNAME: () => ...`) so env vars are not evaluated at module import time — prevents crashes when optional features (Spotify) import ENV
+
+### Phase 1: New Features
+| Feature | File | Description |
+|---|---|---|
+| **Combat Undo/Redo** | `hooks/useCombatHistory.ts` | Command-pattern combat history. `addSnapshot()` before mutations, `undo()`/`redo()` to navigate. Max 50 snapshots. `withHistory()` wrapper for inline use. |
+| **Quick-Add from Encounters** | `components/combat/QuickAddFromEncounters.tsx` | Dropdown panel during prep phase. Picks enemies from saved encounters and bulk-adds to combat tracker with stat lookup. Uses embedded monster stat reference. |
+
+### Phase 2: Feature Upgrades
+| Upgrade | Changes |
+|---|---|
+| **LiveSessionView** | Scene presets (save/load/delete to localStorage), ambient music URL field, combat summary card (alive/defeated/current turn), timer component with live interval, improved responsive layout |
+| **PlayerDashboard** | Live session banner (phase, timer, scene description, map thumbnail, DM announcements), combat status bar (round, alive count, initiative order with current turn highlight), party overview card, improved responsive layout |
+
+### Phase 3: Firebase Strengthening
+| Component | Description |
+|---|---|
+| **useFirebaseMonitor** | New hook in `hooks/useFirebaseMonitor.ts`. Monitors Firestore connection health, auto-reconnects with exponential backoff (2s/4s/8s/16s/32s, 5 max retries), updates `authStore.firebaseConnected` state, shows toast on reconnect. Integrated into AppShell. |
+
+### Phase 4: UI/UX Improvements
+| Component | Changes |
+|---|---|
+| **PlayerDashboard** | Full rewrite with live session awareness, combat tracker integration, party overview, improved empty states |
+| **LoginPage** | Enhanced visual design — glow effects, better buttons with hover states, loading spinners, clearer copy, rogue/accent color distinction between DM/Player |
+
+### Phase 5: Cleanup & Deployment
+- Root `package.json` proxies commands to `vtt/` subdir
+- Removed stale `tsconfig.app.tsbuildinfo` from root
+- `.gitignore` up to date
+
+### Files Changed
+```
+ M package.json                       (root delegation)
+ M vtt/package.json                  (build script fix)
+ M vtt/src/lib/env.ts                (lazy env eval)
+ M vtt/src/components/layout/AppShell.tsx  (added useFirebaseMonitor)
+ M vtt/src/pages/PlayerDashboard.tsx (major upgrade)
+ M vtt/src/pages/LoginPage.tsx       (visual upgrade)
+ M vtt/src/components/combat/LiveSessionView.tsx (scene presets, ambience)
+ A vtt/src/hooks/useCombatHistory.ts (undo/redo system)
+ A vtt/src/hooks/useFirebaseMonitor.ts (connection health)
+ A vtt/src/components/combat/QuickAddFromEncounters.tsx (quick enemy add)
+```
+
+---
