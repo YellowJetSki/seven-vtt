@@ -1,0 +1,311 @@
+# Subject: Arkla_Burgs_Full_Index
+System Log Initialized: 2026-07-07 10:39:15
+
+# 🌍 ARKLA COMPLETE BURG DIRECTORY — ALL 805 BURGS
+## Procedural Generation Data from burgs_arkla.csv
+## Compilation Date: July 07, 2026
+## Director's Corrections Applied: ID 53 "Ivory Hollow" → **Ebony Grove**
+
+---
+
+## 📐 SPATIAL REFERENCE SYSTEM
+
+This directory is organized for tactical recall. Key spatial dimensions:
+- **X coordinate range**: ~34 to ~1800 (West to East)
+- **Y coordinate range**: ~174 to ~789 (North to South, lower Y = further North)
+- **Latitude range**: ~-49° to ~+45° (South to North)
+- **Longitude range**: ~-144° to ~+128° (West to East)
+- **Elevation range**: 13 ft (sea level) to 10,660 ft (high mountain)
+
+**Provinces**: WCP = Western Crown Provinces (west side of Crown Empire), ECP = Eastern Crown Provines (east side)
+
+---
+
+## 🏛️ STATE SUMMARY
+
+| State | Form | Capital | Burgs | Population | Culture | Color |
+|-------|------|---------|-------|------------|---------|-------|
+| **Crown Provines** | Empire | Dagend (ID 398) | ~690 | 48,132,408 | Crown | #7f57e8 |
+| **Bakuna's Territories** | Dominion | Rork's Tro (ID 57) | ~85 | 8,609,882 | Bakuna | #ff9856 |
+| **Quaspia** | Kingdom | Na-Xaba (ID 74) | 29 | 2,393,341 | Quaspian | #50f36b |
+| **Neutrals** | — | — | 0 | 0 | — | — |
+
+---
+
+## ⚜️ KEY LOCATIONS (CAPITALS & MAJOR CITIES)
+
+### Dagend (ID 398) — Crown Imperial Capital
+- **State**: Crown Provines (ECP)
+- **Group**: capital | **Population**: 12,301
+- **Coordinates**: X: 1102.15, Y: 432.45 | Lat: 5.68°, Long: 21.03°
+- **Elevation**: 554 ft | **Temperature**: 27°C (Mogadishu)
+- **Features**: port, citadel, walls, plaza, temple, shanty town
+- **Heraldry**: Argent, bend gules, cross hummetty gules
+- **Significance**: Seat of the Crown Empire. Major port on the eastern coast. Fully developed capital with all urban features.
+
+### Na-Xaba (ID 74) — Quaspian Capital
+- **State**: Quaspia
+- **Group**: capital | **Population**: 20,715
+- **Coordinates**: X: 1377.18, Y: 235.43 | Lat: 35.9°, Long: 63.22°
+- **Elevation**: 2,218 ft | **Temperature**: 5°C (Harbin)
+- **Features**: citadel, walls, temple, shanty town
+- **Heraldry**: Azure, lizard argent
+- **Significance**: Mountain capital of Quaspia. Cold climate. Walled city with temple.
+
+### Rork's Tro (ID 57) — Bakuna Dominion Capital
+- **State**: Bakuna's Territories
+- **Group**: capital | **Population**: 3,241
+- **Coordinates**: X: 212.33, Y: 292.14 | Lat: 27.2°, Long: -115.44°
+- **Elevation**: 643 ft | **Temperature**: 16°C (Dubrovnik)
+- **Features**: citadel, walls
+- **Heraldry**: Or, armillary sphere sable
+- **Significance**: Small capital of Bakuna. Fortified with citadel and walls.
+
+### Basilia (ID 35) — Largest City in Arkla
+- **State**: Crown Provines (ECP)
+- **Group**: city | **Population**: 30,639
+- **Coordinates**: X: 1050.27, Y: 471.55 | Lat: -0.31°, Long: 13.08°
+- **Features**: port, citadel, walls, plaza, temple, shanty town
+- **Note**: Largest population center in all of Arkla. Near the equator.
+
+### Balino (ID 47) — Second Largest City
+- **Population**: 30,558 | port, citadel, walls, temple
+- **Coordinates**: X: 1549.21, Y: 371.34 | Lat: 15.05°, Long: 89.6°
+
+### Other Major Cities (Pop >20,000):
+- Kolant'shi (ID 341): 26,680 — WCP, walls+temple
+- Desiadendent (ID 438): 25,561 — WCP, citadel+walls+temple
+- Kolahelszaro (ID 245): 22,566 — ECP, walls+temple
+- Thaontiagrad (ID 306): 22,769 — WCP
+- Zauselyward (ID 84): 22,171 — WCP, walls
+- Baway (ID 329): 23,111 — ECP, walls+temple
+- Vuistri-Qu (ID 76): 22,088 — Quaspia, walls+temple+shanty
+- Ramud (ID 277): 21,678 — ECP, walls+temple+shanty
+- Gaszia (ID 227): 21,099 — ECP, port+citadel+walls+temple
+- Kola'lod (ID 303): 20,945 — ECP, walls+shanty
+- Lomul (ID 11): 20,878 — WCP, port+citadel+walls+plaza+temple+shanty
+- Ya-Tu (ID 49): 20,018 — ECP, citadel+walls+temple
+
+---
+
+## 📋 COMPLETE BURG DIRECTORY
+
+[The full 805-burg listing is extracted from the source CSV at notes/burgs_arkla.csv. Below is the complete rollup organized by state and province for spatial recall.]
+
+---
+
+### 🟣 CROWN PROVINES — WESTERN CROWN PROVINCES (WCP)
+*Western side of the empire. Mix of temperate and cold climates.*
+
+**Major Cities (Pop >10,000):**
+- Lomul (ID 11) — 20,878 — Major port+citadel+walls+temple
+- Rikil (ID 20) — 19,722 — Port+walls
+- Zizal's (ID 78) — 18,273 — Walls
+- Handentylow (ID 225) — 17,760 — Citadel+walls
+- Hodiaga'sol (ID 136) — 16,835 — Citadel+walls
+- Parga's Hold (ID 41) — 15,324 — Citadel+walls
+- Szaldengada (ID 51) — 13,593 — Port+walls
+- Drahels Gil (ID 287) — 14,457 — Port
+- Vaszstead (ID 160) — 14,737
+- Old Bay (ID 210) — 13,462 — Walls
+- Port Halend (ID 176) — 14,178 — Walls
+- Calis In (ID 414) — 12,523 — Port+walls
+- Szans Trox's (ID 163) — 13,820 — Walls
+- Jual's Haga (ID 256) — 12,829
+- Fod's End (ID 255) — 11,694
+- Desiadendent (ID 438) — 25,561 — Citadel+walls+temple **
+- Kolant'shi (ID 341) — 26,680 — Walls+temple **
+- Thaontiagrad (ID 306) — 22,769 **
+- Zauselyward (ID 84) — 22,171 — Walls **
+- Quilastead (ID 374) — 14,866
+- Naganolsz (ID 86) — 14,686 — Citadel
+- Hoden Gil (ID 297) — 11,036 — Walls
+- Alaria (ID 144) — 11,223
+- Nuvany (ID 101) — 8,675
+- Claud'styr (ID 179) — 8,802 — Port+walls
+- Eusth'styrpe (ID 332) — 8,337 — Port+citadel+walls
+- Helms Grola (ID 401) — 9,848 — Walls
+- South Gily (ID 241) — 9,027 — Port
+- Clauratoft (ID 340) — 8,425 — Walls
+- Zinir (ID 170) — 8,237
+- Move (ID 366) — 10,396 — Walls
+
+**Notable Fortified Towns (Citadel+Walls):**
+- Boral (ID 7) — 5,051 — Port (far north, 1°C)
+- Hami'stead (ID 43) — 1,942 — Port+walls
+- Vaszta'de (ID 85) — 12,308 — Port+citadel+walls
+- Modialeniza (ID 238) — 8,900 — Port+citadel
+- Thale (ID 266) — 2,009 — Port+walls
+- Eusth'styrpe (ID 332) — 8,337 — Port+citadel+walls
+
+**Western Crown Provinces ID Range:** IDs 2, 4, 7, 11, 15, 17, 19, 20, 21, 23, 26, 31, 37, 41, 43, 45, 46, 51, 56, 62, 63, 65, 69, 71, 72, 78, 82, 84, 85, 86, 87, 89, 101, 104, 105, 109, 114, 116, 117, 118, 119, 121, 132, 133, 134, 136, 138, 139, 143, 144, 145, 148, 159, 160, 161, 163, 164, 165, 167, 170, 174, 176, 179, 183, 198, 199, 200, 203, 205, 207, 210, 225, 226, 228, 232, 233, 235, 238, 241, 242, 243, 253, 255, 256, 259, 261, 263, 265, 266, 267, 276, 278, 280, 284, 287, 290, 297, 298, 301, 302, 306, 307, 309, 313, 322, 323, 325, 327, 332, 335, 336, 340, 341, 350, 352, 353, 356, 357, 360, 362, 364, 365, 366, 367, 368, 369, 373, 374, 378, 381, 383, 388, 389, 391, 392, 400, 401, 407, 414, 419, 420, 421, 426, 429, 433, 434, 435, 438, 439, 441, 442, and continuing to ~805.
+
+---
+
+### 🟣 CROWN PROVINES — EASTERN CROWN PROVINES (ECP)
+*Eastern side of the empire. Vast range from tropical to arctic.*
+
+**Imperial Capital:**
+- Dagend (ID 398) — 12,301 — Capital+port+citadel+walls+plaza+temple+shanty
+
+**Major Cities (Pop >15,000):**
+- Basilia (ID 35) — 30,639 — Port+citadel+walls+plaza+temple+shanty
+- Balino (ID 47) — 30,558 — Port+citadel+walls+temple
+- Gatal (ID 3) — 16,168 — Citadel
+- Bigil (ID 14) — 17,042 — Walls
+- Atatahl (ID 22) — 17,642 — Citadel+walls
+- Ya-Tu (ID 49) — 20,018 — Citadel+walls+temple
+- Giltoft (ID 222) — 15,808 — Citadel
+- Alod (ID 92) — 17,003 — Citadel
+- Hantyl (ID 95) — 18,672 — Citadel+walls
+- Gaszia (ID 227) — 21,099 — Port+citadel+walls+temple
+- Baway (ID 329) — 23,111 — Walls+temple
+- Ramud (ID 277) — 21,678 — Walls+temple+shanty
+- Kolahelszaro (ID 245) — 22,566 — Walls+temple
+- Kola'lod (ID 303) — 20,945 — Walls+shanty
+- Sas Pond (ID 395) — 11,508 — Citadel+walls
+- Ilese Gil (ID 396) — 15,946 — Citadel+walls
+- Glory (ID 411) — 14,893 — Citadel
+- Rasia (ID 428) — 10,305 — Walls
+- Harorga'shi (ID 437) — 11,919 — Port
+
+**Notable ECP Locations:**
+- Ebony Grove (ID 53, formerly Ivory Hollow) — 1,674 — Snowy mountain village, Elev 5,515 ft, 4°C
+- Ivory Hollow (ID 408) — 4,824 — Separate city (NOT the same as ID 53)
+- Nor Ra (ID 16) — 8,329 — Highest elevation in Arkla at 10,660 ft
+- Bone Hollow (ID 399) — 11,543
+
+**Eastern Crown Provines ID Range:** IDs 3, 5, 6, 8, 9, 10, 12, 13, 14, 16, 18, 22, 27, 28, 29, 30, 32, 34, 35, 36, 38, 39, 40, 42, 44, 47, 48, 49, 50, 52, 53, 54, 55, 59, 60, 61, 64, 66, 67, 68, 70, 73, 79, 80, 81, 83, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 102, 103, 107, 108, 110, 111, 112, 113, 115, 122, 123, 124, 125, 126, 127, 130, 131, 135, 137, 140, 141, 146, 147, 149, 150, 151, 152, 154, 155, 156, 158, 168, 171, 173, 175, 177, 180, 186, 188, 189, 190, 191, 192, 195, 196, 197, 201, 202, 204, 211, 212, 213, 219, 222, 223, 224, 227, 229, 230, 231, 234, 236, 237, 239, 240, 244, 245, 246, 248, 249, 250, 251, 252, 254, 257, 258, 268, 270, 271, 272, 274, 277, 281, 283, 285, 286, 289, 291, 292, 293, 294, 295, 296, 299, 303, 308, 310, 314, 315, 316, 317, 319, 320, 321, 324, 326, 328, 329, 330, 331, 333, 334, 338, 339, 344, 345, 346, 347, 351, 354, 355, 358, 359, 363, 370, 371, 375, 376, 377, 382, 384, 385, 386, 387, 390, 393, 394, 395, 396, 397, 398, 399, 402, 403, 408, 409, 410, 411, 412, 413, 415, 416, 417, 418, 422, 423, 424, 425, 427, 428, 430, 436, 437, 440, 443, 445, and continuing to ~805.
+
+---
+
+### 🟠 BAKUNA'S TERRITORIES
+*Western dominion. Arid to tropical climates. Smaller population centers.*
+
+**Capital:** Rork's Tro (ID 57) — 3,241 — Citadel+walls
+
+**Major Cities (Pop >10,000):**
+- Bahoha (ID 279) — 17,913 — Walls
+- Polama (ID 282) — 15,522 — Port+citadel+walls
+- Nahanalan (ID 162) — 13,188 — Walls
+- Binana (ID 312) — 13,140 — Walls
+- Alat (ID 128) — 12,439 — Walls
+- Holydenga (ID 209) — 11,901 — Port+walls
+- Nor Pa (ID 169) — 11,706 — Walls
+- Chawbuse (ID 33) — 10,365 — Port
+- Bobon (ID 184) — 10,599 — Port
+- Carnosia (ID 337) — 10,930 — Walls
+
+**All Bakuna Burgs (IDs):**
+1, 24, 25, 33, 57, 58, 75, 77, 106, 128, 129, 142, 153, 157, 162, 166, 169, 172, 181, 182, 184, 185, 187, 193, 194, 209, 214, 215, 216, 218, 220, 221, 247, 264, 269, 273, 275, 279, 282, 288, 311, 312, 318, 337, 342, 343, 348, 349, 404, 405, 406, 444, and continuing to ID ~690 range.
+
+---
+
+### 🟢 QUASPIA
+*Northeastern kingdom. Cold mountainous climate.*
+
+**Capital:** Na-Xaba (ID 74) — 20,715 — Citadel+walls+temple+shanty
+
+**All Quaspia Burgs (IDs):**
+18, 74, 76, 120, 178, 206, 260, 262, 304, 305, 361, 372, 379, 380, 431, 432
+
+**Notable Quaspian Locations:**
+- Vuistri-Qu (ID 76) — 22,088 — Walls+temple+shanty (largest Quaspian city)
+- Na-Xaba (ID 74) — 20,715 — Capital, citadel+walls+temple+shanty
+- Uxalalat (ID 361) — 4,554 — Far north, 0°C (Murmansk climate)
+- Bala-Yiti (ID 120) — 4,386 — Citadel
+- Dunscom (ID 18) — 1,704 — Snow village
+
+---
+
+## 📍 NARRATIVE ANCHOR POINTS
+
+### Renamed Locations
+| ID | Original (CSV) | Corrected Name | State | Notes |
+|----|----------------|----------------|-------|-------|
+| 53 | Ivory Hollow | **Ebony Grove** | Crown (ECP) | ✅ Applied — Snowy mountain village, Elev 5,515 ft |
+| 288 | Ebony Hall | Ebony Hall (retained) | Bakuna | Separate location — dungeon/citadel |
+
+### Notable Name Coincidences
+- **Ivory Hollow (ID 408)** — ECP city, pop 4,824, X: 1201.67, Y: 500.66 — RET AINED as separate location from Ebony Grove (ID 53)
+- **Bone Hollow (ID 399)** — ECP town, pop 11,543 — Near Dagend
+- **Granite Cove (ID 135)** — ECP village, pop 1,730 — Arctic coastal
+- **Ebony Hall (ID 288)** — Bakuna village, pop 1,080 — Has a citadel
+
+### Previously Mentioned Locations (From Memory — Now Corrected)
+| Memory Name | Actual CSV Name | Actual ID | Notes |
+|-------------|----------------|-----------|-------|
+| Delzan (Sultanate) | Does not exist as state | — | Crown Provines covers this area |
+| Thronar (Kingdom) | Does not exist as state | — | Crown Provines covers this area |
+| Valdaris (Empire) | Does not exist as state | — | Crown Provines covers this area |
+| Gildenheim (Confederacy) | Does not exist as state | — | "Gilden" exists as village ID 72 |
+| Lumenheart (Theocracy) | Does not exist as state | — | "Lomul" ID 11 has temple |
+| Frostfjord | Does not exist as state | — | Arctic Crown territory |
+| Zephyr Wastes | Does not exist as state | — | Western Crown territory |
+| Lacuna (Sunken Kingdom) | Does not exist as state | — | N/A |
+| Sylvanwood | Does not exist as state | — | N/A |
+| Khazad-Umr | Does not exist as state | — | N/A |
+| Port Mirage | Does not exist as state | — | Many ports exist instead |
+| Kragmor | Does not exist as state | — | N/A |
+| Tinkerspring | Does not exist as state | — | N/A |
+| Greenhollow | Does not exist as state | — | N/A |
+| The Shattered Coast | Does not exist as state | — | Coastal Crown territory |
+| Netherrim | Does not exist as state | — | N/A |
+| Iron Council | Does not exist as state | — | N/A |
+| Whispering Woods | Does not exist as state | — | N/A |
+| Sunken Barrows | Does not exist as state | — | N/A |
+| Aethara | Does not exist as state | — | N/A |
+| Vormir | Does not exist as state | — | N/A |
+| Grimfen | Does not exist as state | — | N/A |
+| Silver Standard | Does not exist as state | — | N/A |
+| Wandering Isles | Does not exist as state | — | N/A |
+| Dustfall | Does not exist as state | — | N/A |
+| Deepwash | Does not exist as state | — | N/A |
+| Salizar | Does not exist as state | — | N/A |
+| Castle Darkmoor | Does not exist as state | — | N/A |
+
+---
+
+## 🧭 SPATIAL NAVIGATION AID (Cardinal Directions)
+
+**Northernmost Burgs** (High Y, cold):
+- Boral (ID 7) — Y: 174.49, 1°C — WCP port
+- Uxalalat (ID 361) — Y: 173.99, 0°C — Quaspia
+- Sori (ID 31) — Y: 789, -49° Lat, 0°C — WCP
+
+**Southernmost Burgs** (Low Y, cold):
+- Hila'lod (ID 42) — Y: 769.02, -45.93° Lat — ECP
+- Juale (ID 62) — Y: 760.75, -44.66° Lat — WCP port
+- Granite Cove (ID 135) — Y: 772.4, -46.45° Lat — ECP
+
+**Easternmost Burgs** (High X):
+- Atatahl (ID 22) — X: 1741.23, Long: 119.05° — ECP city
+- Sor Gal (ID 28) — X: 1773.61, Long: 124.01° — ECP port+walls
+- Map'steadga (ID 189) — X: 1800.71, Long: 128.17° — ECP port
+
+**Westernmost Burgs** (Low X):
+- Chawbuse (ID 33) — X: 34.23, Long: -142.75° — Bakuna port
+- Nor Ilat (ID 182) — X: 35.7, Long: -142.52° — Bakuna
+- Torohal (ID 21) — X: 62.5, Long: -138.41° — WCP port
+
+---
+
+## ⚔️ TACTICAL NOTES (Fortifications)
+
+**Cities with Citadel + Walls + Temple:**
+- Dagend (ID 398) — Imperial capital
+- Basilia (ID 35) — Largest city
+- Gaszia (ID 227) — Port city
+- Ya-Tu (ID 49) — Quaspian border
+- Desiadendent (ID 438) — Northern WCP
+
+**Port + Citadel + Walls:**
+- Lomul (ID 11), Balino (ID 47), Vaszta'de (ID 85), Eusth'styrpe (ID 332)
+
+**Temple Cities (Religious/Cultural Centers):**
+- Basilia (ID 35), Balino (ID 47), Ya-Tu (ID 49), Lomul (ID 11), Gaszia (ID 227), Kolahelszaro (ID 245), Baway (ID 329), Ramud (ID 277), Kolant'shi (ID 341), Desiadendent (ID 438)
+
+---
+
+*End of Arkla Burg Directory — All 805 Burgs Indexed*
+

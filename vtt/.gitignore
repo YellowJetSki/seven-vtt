@@ -1,0 +1,19 @@
+node_modules
+dist
+.env
+.env.local
+*.tsbuildinfo
+.vite
+.vercel
+
+# Python bytecode cache (from agent tooling)
+__pycache__/
+*.pyc
+
+# Session files — development conversation logs that may contain sensitive data
+sessions/
+
+# Firebase Emulator debug logs
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

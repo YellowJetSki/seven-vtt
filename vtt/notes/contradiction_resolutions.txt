@@ -1,0 +1,29 @@
+# Subject: Contradiction Resolutions
+System Log Initialized: 2026-07-07 10:56:31
+
+CONTRADICTION RESOLUTIONS — Director Approved (July 2026)
+
+The following conflicts from the Arkla Campaign Bible have been resolved by the Director:
+
+1. Session 0.5 (Omease version) — DISCARDED. Never played, not needed. The Shores of Omease solo intro is relegated to archive/optional reference only.
+
+2. Strider's backstory — CONFIRMED CANON. The tragic backstory (Ruth's death, Haven's corruption, fleeing to Chauzy) is the true version. The comedic JSON bio in the Premade Characters section is a player-facing/mechanical abstraction, not narrative canon. Edmund "Strider" Tudul is a deeply traumatized prince, not a comedic fish-out-of-water.
+
+3. The "Byron Tudul" vs. "Edwin Tudul" naming issue — UNCLEAR. The Chauzy mayor is referred to as both "Byron Tudul" (Strider's bio) and "Mayor Edwin Tudul" (Old NPC list). This needs Director clarification: Are Byron and Edwin the same person with a first/middle name discrepancy, or are they different Tuduls?
+
+4. Toern's brothers — UNCLEAR. The document mentions Tulip, Tomper, and Tulin. Toern's bio identifies Tulip and Tomper as his brothers, but later says "elder brother Tulin's goo was gone." Three brothers? Or is Tulin a nickname/full name for one of the others? Needs Director clarification.
+
+5. The Crown / Consulate / Consolate naming — PARTIALLY RESOLVED. The "Consulate Crusade" (Envoy Shass's rebel group) is the anti-Crown faction. The "Consolate" mentioned in Emperor Hearn's bio appears to be a different entity — perhaps the original governing body Hearn founded. These are not the same. Needs Director confirmation.
+
+6. Jewl's vendetta vs. working for Haven — RESOLVED. Jewl's vendetta is against the broader Tudul family for their weapons trade. She works with Haven Tudul because Arteme compels her to (Herald is her hostage). Her cooperation is coerced, not voluntary. This explains the tension.
+
+7. Pooty's death/rescue branching — CONFIRMED AS INTENDED. Both outcomes deliver the same clue (cane contains Nevari location). The dying breath mechanism ensures the critical plot point is not missable.
+
+8. Hanz's death and detectives — CONFIRMED AS PLAYER CONSEQUENCE. Leevy and Chonko are a comedic consequence thread. The timing of their introduction (Session 3) is a narrative callback, not a retcon.
+
+9. Kola vs. Kol — RESOLVED. Kola and Kol are the same Nevari (the Kolari temple namesake). The document refers to them interchangeably. Canonical name: Kola.
+
+10. Crust's tavern naming (Rusty Acorn vs. Rusty Hook) — CONFIRMED AS TWO SEPARATE LOCATIONS. The Rusty Acorn is the tavern west of Basilia (Session 1 rest stop). The Rusty Hook is inside Basilia (Armand's tavern). Distinct locations.
+
+11. Pending clarification needed: Byron/Edwin Tudul naming, Toern's three brothers, Consolate vs. Consulate Crusade distinction.
+

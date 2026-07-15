@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Campaign Documents ──────────────────────────────────
+    // Single campaign document with embedded arrays.
+    // DM has full read/write. Players can read.
+    match /campaigns/{campaignId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.endsWith("@strvtt.local");
+    }
+
+    // ── Live Session Documents ──────────────────────────────
+    // Combat & session state synced in real-time.
+    // DM writes; all authenticated users (players) can read.
+    match /liveSessions/{campaignId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.endsWith("@strvtt.local");
+    }
+
+    // ── Homebrew Documents ──────────────────────────────────
+    // Homebrew library per campaign.
+    // DM writes; all authenticated users can read.
+    match /homebrew/{campaignId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.endsWith("@strvtt.local");
+    }
+
+    // ── Deny everything else ────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
