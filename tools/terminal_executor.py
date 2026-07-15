@@ -11,8 +11,8 @@ BANNED_SYMBOLS = {"&&", ";", "|", ">", "<", "`", "$("}
 # Keywords that indicate the AI is trying to use the terminal to bypass file writing protocols
 BANNED_KEYWORDS = {"-e", "--eval", "fs.", "writeFileSync", "writeFile", "appendFile", ".cjs", ".mjs"}
 
-# Persistent server commands that will hang the subprocess indefinitely
-BANNED_SERVERS = {"run dev", "vite", "serve", "nodemon", "start"}
+# Persistent servers and interactive text editors that will hang the subprocess indefinitely
+BANNED_SERVERS = {"run dev", "vite", "serve", "nodemon", "start", "vim", "nano", "less"}
 
 # Maximum characters to return to the AI (prevents token explosions on massive build logs)
 MAX_OUTPUT_CHARS = 10_000
@@ -39,13 +39,12 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
                 f"You MUST use the 'write_workspace_file' tool."
             )
 
-    # Guard 3: The Anti-Daemon Block (Prevents hanging on persistent servers)
+    # Guard 3: The Anti-Daemon Block (Prevents hanging on persistent servers or editors)
     cmd_lower = command.lower()
     for server_cmd in BANNED_SERVERS:
-        # Allow 'build' commands that might contain these words, but block actual server starts
         if server_cmd in cmd_lower and "build" not in cmd_lower:
             return (
-                f"SYSTEM DIRECTIVE: SECURITY OVERRIDE. You attempted to start a persistent server ('{command}'). "
+                f"SYSTEM DIRECTIVE: SECURITY OVERRIDE. You attempted to start a persistent server or interactive tool ('{command}'). "
                 f"This terminal tool is strictly for short-lived commands (build, test, lint, deploy). "
                 f"Starting a dev server here will cause the system to hang indefinitely. "
                 f"Please ask the user to manually run their dev server in a separate terminal window."
@@ -64,6 +63,8 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
     secure_env["NPM_CONFIG_YES"] = "true"      
     secure_env["NPM_CONFIG_FUND"] = "false"    
     secure_env["NPM_CONFIG_AUDIT"] = "false"   
+    # Critical: Prevents 'git log' or 'git diff' from hanging inside the 'less' pager
+    secure_env["GIT_PAGER"] = "cat"            
     
     try:
         # Execute the command with a 30-second killswitch, bot environment, and the Auto-Yes Pipeline
@@ -91,7 +92,6 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
         return output
         
     except subprocess.TimeoutExpired:
-        # THE FALLBACK DIRECTIVE
         return (
             f"SYSTEM DIRECTIVE: The command '{command}' timed out after 30 seconds. "
             f"It was forcefully terminated to prevent the system from hanging. "

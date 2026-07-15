@@ -6,7 +6,7 @@ from core.ui import display_welcome, print_system, get_user_input, get_workspace
 from core.llm_client import DeepSeekAgent
 
 def main():
-    load_dotenv()
+    load_dotenv(override=True)
     
     while True:
         try:

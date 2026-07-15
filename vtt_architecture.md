@@ -1638,3 +1638,69 @@ syncManager.pushCampaign() →  setDoc()  →  onSnapshot callback
 ```
 
 ---
+
+## LiveConditions Types & Store (Updated: 2026-07-15 07:50)
+## LiveConditions System (NEW)
+
+### Types (`vtt/src/types/combat.ts` extended)
+Added `LiveConditions` interface to `LiveSessionState`:
+```ts
+export interface LiveConditions {
+  weather: "clear" | "cloudy" | "rain" | "storm" | "fog" | "snow";
+  lighting: "bright" | "dim" | "darkness" | "magical_darkness";
+  terrain: "normal" | "difficult" | "extreme" | "water" | "lava";
+}
+```
+
+### Store Actions (combatStore.ts extended)
+Added to CombatStore interface:
+- `setConditions(conditions: Partial<LiveConditions>)` — Merges conditions into liveSession
+- `liveSession.conditions` — Defaults to `{ weather: "clear", lighting: "bright", terrain: "normal" }`
+
+### Component (`vtt/src/components/combat/ConditionsWidget.tsx`)
+Reusable widget extracted from DmDashboard. Displays weather, lighting, terrain selectors with descriptions. Used by DmDashboard and can be embedded elsewhere.
+
+### Player Sync
+Conditions are part of `liveSession` which is already pushed via `sessionSync.pushSession()` and listened to by `usePlayerFirebaseSync()`. Players see conditions in the live session banner.
+
+---
+
+## Phase 1 & 2: Completed Changes (Updated: 2026-07-15 07:54)
+## Phase 1 & 2 Changes (2026-07-15)
+
+### Code Quality Improvements
+1. **DmDashboard.tsx** — Refactored monolithic file (~480 lines → ~350 lines). Extracted:
+   - `NewCampaignWizard` — Dedicated component for campaign creation flow
+   - `SessionStatusBar` — Live session controls and phase display
+   - `StatCard`, `QuickActionButton`, `SummaryItem` — Extracted sub-components
+   - Wired conditions to `ConditionsWidget` (syncs to combat store → Firebase → players)
+
+2. **Combat Types** — Added `LiveConditions` interface with `WeatherCondition`, `LightingCondition`, `TerrainCondition` types and option constants (`WEATHER_OPTIONS`, `LIGHTING_OPTIONS`, `TERRAIN_OPTIONS`)
+
+3. **Combat Store** — Added `setConditions(conditions: Partial<LiveConditions>)` action
+
+4. **ConditionsWidget** (NEW) — `vtt/src/components/combat/ConditionsWidget.tsx`
+   - Reusable weather/lighting/terrain selector with descriptions
+   - Compact and expanded modes
+   - Active condition indicator
+   - Syncs to players via Firestore
+
+5. **CommandPalette** — Extracted `registerCommand`, `unregisterCommand`, `searchCommands` to `vtt/src/lib/commandRegistry.ts`
+   - CommandPalette now imports from the registry
+   - New file exports `Command` type, `registerCommand`, `unregisterCommand`, `getCommands`, `searchCommands`
+
+6. **CampaignScratchPad** — Fixed z-index positioning (`bottom-16 right-4 z-50`) to avoid overlap with ToastContainer (`bottom-4 right-4 z-[100]`). Fixed callback cleanup.
+
+7. **CampaignSettings.tsx** — Fixed exhaustive-deps lint warnings, added proper dependency arrays. Removed unused `clearCampaign` import.
+
+8. **InitiativeTracker.tsx** — Removed unused `useMemo` import, `CombatLogEntry` import, `combatLog` variable (now `_combatLog`).
+
+9. **CombatLogPanel.tsx** — Removed unused `CombatLogEntry` import and `Button` import.
+
+10. **Deleted obsolete `src/` directory** — Removed duplicate old source folder that was causing lint duplication.
+
+### Linter Status
+- **TypeScript**: 0 errors
+- **Oxlint**: 25 warnings (unused imports/variables, exhaustive-deps — all non-breaking)
+
+---

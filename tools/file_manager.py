@@ -9,7 +9,6 @@ from datetime import datetime
 # Directories and lockfiles the AI should never waste tokens scanning
 IGNORE_DIRS = {".git", "node_modules", "dist", ".next", "__pycache__", "venv", "env", "package-lock.json", "yarn.lock"}
 
-# The Ultimate Guardrail: Never return more than this many characters to the AI in a single tool call
 MAX_OUTPUT_CHARS = 30_000 
 
 def flush_node_processes() -> str:
@@ -24,11 +23,8 @@ def flush_node_processes() -> str:
         return f"System Error executing flush: {str(e)}"
 
 def read_workspace_file(file_path: str, base_dir: str = ".", start_line: int = None, end_line: int = None, start_char: int = None, end_char: int = None) -> str:
-    """
-    Securely reads a file. Includes cloud-sync anti-lock retries, ghost-flushing, and pagination.
-    """
     if not file_path or str(file_path).strip() == "":
-        return "SYSTEM DIRECTIVE: Critical Validation Error. You provided an empty 'file_path'. You MUST specify the exact relative path to the file you want to read."
+        return "SYSTEM DIRECTIVE: Critical Validation Error. You provided an empty 'file_path'."
 
     base_path = Path(base_dir).resolve()
     target_path = (base_path / file_path).resolve()
@@ -59,7 +55,7 @@ def read_workspace_file(file_path: str, base_dir: str = ".", start_line: int = N
                     with open(target_path, 'r', encoding='utf-8') as f:
                         content = f.read()
                 except Exception as final_e:
-                    return f"SYSTEM DIRECTIVE: The file '{file_path}' is currently locked by the local Vite/TS server for compilation. DO NOT run terminal workarounds. Either wait a moment and invoke this read tool again, or execute the 'flush_node_processes' tool to forcefully clear the lock. ({str(final_e)})"
+                    return f"SYSTEM DIRECTIVE: The file '{file_path}' is currently locked. Execute the 'flush_node_processes' tool. ({str(final_e)})"
         except Exception as e:
             return f"Error reading file: {str(e)}"
 
@@ -82,34 +78,28 @@ def read_workspace_file(file_path: str, base_dir: str = ".", start_line: int = N
         if file_size > MAX_OUTPUT_CHARS:
             return (
                 f"Error: File '{file_path}' is massive ({file_size} characters). "
-                f"You MUST use the 'start_char' and 'end_char' parameters to read it in chunks. "
-                f"Try requesting start_char=0, end_char={MAX_OUTPUT_CHARS}."
+                f"You MUST use the 'start_char' and 'end_char' parameters to read it in chunks."
             )
         sliced_content = content
         output_header = f"--- Displaying entire contents of {target_path.name} ---\n"
         
     if len(sliced_content) > MAX_OUTPUT_CHARS:
         sliced_content = sliced_content[:MAX_OUTPUT_CHARS]
-        
         if start_char is not None or end_char is not None:
-            next_start = s_char + MAX_OUTPUT_CHARS
-            output_header += f"\n[SYSTEM OVERRIDE: Data exceeded safety limits and was truncated. To continue reading, execute this tool again with start_char={next_start}]\n\n"
+            output_header += f"\n[SYSTEM OVERRIDE: Data truncated. To continue, execute tool again with start_char={s_char + MAX_OUTPUT_CHARS}]\n\n"
         else:
-            output_header += f"\n[SYSTEM OVERRIDE: Data exceeded safety limits and was truncated. This is likely a minified file on a single line. Switch to using 'start_char' and 'end_char' to continue reading.]\n\n"
+            output_header += f"\n[SYSTEM OVERRIDE: Data truncated. Switch to using 'start_char' and 'end_char' to continue.]\n\n"
             
     return output_header + sliced_content
 
 def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> str:
-    """
-    Securely writes code using an Atomic Swap strategy. 
-    ALWAYS performs a complete file overwrite.
-    """
+    """Securely writes code using an Atomic Swap strategy. ALWAYS overwrites the entire file."""
     if not file_path or str(file_path).strip() == "":
         return "SYSTEM DIRECTIVE: Critical Validation Error. You provided an empty 'file_path'."
 
-    # --- THE SNIPPET SNIFFER GUARDRAIL ---
+    # --- THE PRO SNIPPET SNIFFER ---
     lower_content = content.lower()
-    lazy_markers = ["// ...", "/* ...", "<!-- ...", "// existing code", "// rest of code", "// add more", "/* existing"]
+    lazy_markers = ["// ...", "/* ...", "<!-- ...", "// existing code", "// rest of code", "/* existing", "// previous code"]
     for marker in lazy_markers:
         if marker in lower_content:
             return (
@@ -135,8 +125,15 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> s
             try:
                 with open(temp_path, 'w', encoding='utf-8') as f:
                     f.write(content)
+                
+                # Antivirus/Vite race condition mitigation for Windows
+                time.sleep(0.05) 
+                
+                try:
+                    os.replace(temp_path, target_path)
+                except OSError:
+                    shutil.move(str(temp_path), str(target_path)) # Fallback if replace fails across volumes/locks
                     
-                os.replace(temp_path, target_path)
                 return f"Success: Wrote entire content to {file_path}"
                 
             except PermissionError as e:
@@ -153,7 +150,7 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> s
                     try:
                         with open(temp_path, 'w', encoding='utf-8') as f:
                             f.write(content)
-                        os.replace(temp_path, target_path)
+                        shutil.move(str(temp_path), str(target_path))
                         return f"Success: Wrote entire content to {file_path} (Recovered after aggressive backoff and flush)."
                     except Exception as final_e:
                         if temp_path.exists():
@@ -165,7 +162,6 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> s
         return f"Error writing file: {str(e)}"
 
 def delete_workspace_file(file_path: str, base_dir: str = ".") -> str:
-    """Securely deletes a specified file or directory from the workspace."""
     if not file_path or str(file_path).strip() == "":
         return "Error: Validation Error. You provided an empty 'file_path'."
 
@@ -189,7 +185,6 @@ def delete_workspace_file(file_path: str, base_dir: str = ".") -> str:
         return f"Error deleting target: {str(e)}"
 
 def list_workspace_files(directory: str = ".", base_dir: str = ".") -> str:
-    """Securely lists all files and folders in a given directory within the workspace."""
     base_path = Path(base_dir).resolve()
     target_path = (base_path / directory).resolve()
     
@@ -204,7 +199,6 @@ def list_workspace_files(directory: str = ".", base_dir: str = ".") -> str:
         for item in target_path.iterdir():
             if item.name in IGNORE_DIRS:
                 continue
-                
             suffix = "/" if item.is_dir() else ""
             items.append(f"- {item.name}{suffix}")
             
@@ -216,7 +210,6 @@ def list_workspace_files(directory: str = ".", base_dir: str = ".") -> str:
         return f"Error listing directory: {str(e)}"
 
 def update_architecture_ledger(section: str, content: str, base_dir: str = ".") -> str:
-    """Appends structural knowledge to the centralized vtt-architecture.md file."""
     base_path = Path(base_dir).resolve()
     ledger_path = base_path / "vtt_architecture.md"
     
