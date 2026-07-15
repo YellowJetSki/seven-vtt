@@ -3152,3 +3152,220 @@ DM Device A (main tab)
 ```
 
 ---
+
+## Firebase Data Architecture Plan — Normalized Collection Tables (Updated: 2026-07-15 14:11)
+# Firebase Data Architecture — Normalized Collection-Based Model
+
+## Current Problem
+Currently, all data is stored in a **single document** per domain:
+- `campaigns/{campaignId}` — entire campaign (PCs, enemies, maps, journal, encounters, settings)
+- `liveSessions/{campaignId}` — entire session state (encounter, combatLog, liveSession)
+- `homebrew/{campaignId}` — entire homebrew library (items, spells, feats)
+
+This causes issues: 1) 1MB Firestore document limit, 2) expensive reads for nested arrays, 3) no granular access control.
+
+## Proposed Normalized Collection Structure
+
+### 1. `campaigns/{campaignId}` — Metadata Only (was: everything)
+```
+{
+  id: "arkla",
+  name: "The Arkla Chronicles",
+  description: "...",
+  dmName: "MikeJello",
+  settings: {
+    experienceSystem: "xp",
+    currencyName: "Gold Pieces",
+    privateDmNotes: "..." // JSON string
+  },
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### 2. `campaigns/{campaignId}/characters/{characterId}` — Player Characters
+```
+{
+  id: "pc_...",
+  name: "Grommash",
+  class: "Barbarian",
+  level: 5,
+  race: "Half-Orc",
+  stats: { str: 18, dex: 14, con: 16, int: 8, wis: 10, cha: 12 },
+  hp: { current: 45, max: 55, temp: 0 },
+  ac: 16,
+  speed: 30,
+  hitDice: "1d12",
+  proficiencies: ["Strength", "Constitution", "Athletics", "Intimidation"],
+  features: ["Rage", "Unarmored Defense", "Reckless Attack", "Danger Sense"],
+  equipment: ["Greataxe", "Javelin x4", "Explorer's Pack"],
+  spells: ["...", "..."],
+  imageUrl: "/images/portraits/Hero.svg",
+  currency: { cp: 0, sp: 50, gp: 120, ep: 0, pp: 0 },
+  background: "Outlander",
+  inspiration: false,
+  notes: "...",
+  updatedAt: timestamp
+}
+```
+
+### 3. `campaigns/{campaignId}/enemies/{enemyId}` — Enemies (reusable)
+```
+{
+  id: "goblin",
+  name: "Goblin",
+  cr: "1/4",
+  type: "humanoid",
+  size: "Small",
+  ac: 15,
+  hp: { average: 7, formula: "2d6" },
+  speed: 30,
+  stats: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+  skills: { stealth: 6 },
+  senses: "darkvision 60ft",
+  languages: "Common, Goblin",
+  traits: [{ name: "Nimble Escape", description: "Disengage/Hide as bonus action" }],
+  actions: [{ name: "Scimitar", attack: "+4", damage: "1d6+2 slashing" }],
+  imageUrl: "/images/tokens/Goblin.svg",
+  updatedAt: timestamp
+}
+```
+
+### 4. `campaigns/{campaignId}/encounters/{encounterId}` — Encounters
+```
+{
+  id: "enc_...",
+  name: "Goblin Ambush",
+  difficulty: "medium",
+  enemies: [
+    { enemyId: "goblin", count: 4 },
+    { enemyId: "hobgoblin", count: 1 }
+  ],
+  environment: "forest",
+  description: "...",
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### 5. `campaigns/{campaignId}/maps/{mapId}` — Battle Maps
+```
+{
+  id: "map_...",
+  name: "Cragmaw Hideout",
+  imageUrl: "/images/battlemaps/Cragmaw_Hideout.svg",
+  imageFit: "cover",
+  gridWidth: 30,
+  gridHeight: 20,
+  gridSize: 40,
+  gridColor: "#4a5568",
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### 6. `campaigns/{campaignId}/maps/{mapId}/tokens/{tokenId}` — Map Tokens
+```
+{
+  id: "token_...",
+  type: "player" | "enemy" | "npc" | "custom",
+  label: "Grommash",
+  x: 10,
+  y: 8,
+  color: "#e74c3c",
+  size: 1,
+  visible: true,
+  icon: "⚔",
+  hp: { current: 45, max: 55 },
+  speed: 30,
+  imageUrl: "/images/tokens/Hero.svg",
+  updatedAt: timestamp
+}
+```
+
+### 7. `campaigns/{campaignId}/maps/{mapId}/fog/{fogZoneId}` — Fog of War
+```
+{
+  id: "fog_...",
+  x: 5,
+  y: 3,
+  width: 8,
+  height: 6,
+  label: "Hidden room"
+}
+```
+
+### 8. `campaigns/{campaignId}/journal/{entryId}` — Journal Entries
+```
+{
+  id: "entry_...",
+  title: "Session 5: The Cragmaw Caves",
+  content: "...",
+  tags: ["combat", "loot", "plot"],
+  type: "session" | "lore" | "quest" | "note" | "handout",
+  sessionNumber: 5,
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### 9. `campaigns/{campaignId}/sessions/{sessionId}` — Live Session State
+```
+{
+  id: "session_...",
+  phase: "combat" | "exploration" | "rest" | "downtime",
+  activeEncounterId: "enc_..." | null,
+  currentScene: "Cragmaw Hideout",
+  currentMapId: "map_...",
+  currentMapUrl: "/images/battlemaps/Cragmaw_Hideout.svg",
+  dmAnnouncement: "Roll initiative!",
+  sessionStartedAt: timestamp,
+  lastShortRestAt: timestamp | null,
+  lastLongRestAt: timestamp | null,
+  conditions: {
+    weather: "clear",
+    lighting: "bright",
+    terrain: "normal"
+  },
+  combatLog: CombatLogEntry[] // Keep as nested array (append-only, bounded)
+}
+```
+
+### 10. `campaigns/{campaignId}/sessions/{sessionId}/combatants/{combatantId}` — Live Combatants
+```
+{
+  id: "combatant_...",
+  name: "Grommash",
+  type: "player" | "enemy" | "npc",
+  initiative: 18,
+  hp: 45,
+  maxHp: 55,
+  tempHp: 0,
+  ac: 16,
+  conditions: ["poisoned"],
+  isConcentrating: false,
+  isDead: false,
+  turnOrder: 1,
+  updatedAt: timestamp
+}
+```
+
+### 11. `homebrew/{campaignId}/items/{itemId}` — Homebrew Items
+### 12. `homebrew/{campaignId}/spells/{spellId}` — Homebrew Spells
+### 13. `homebrew/{campaignId}/feats/{featId}` — Homebrew Feats
+
+## Migration Plan
+1. Create new collection-based Firestore structure
+2. Write migration script: read old single-document → write to new collections
+3. Update Zustand stores to use subcollection queries
+4. Update FirebaseService to listen to subcollections
+5. Update all components to use new paths
+
+## Benefits
+- **Granular reads**: Listen to only characters collection without fetching maps
+- **1MB limit per document**: No risk of hitting limit
+- **Security**: Firestore rules can control access per subcollection
+- **Performance**: Query pagination, smaller payloads
+- **Scalability**: As campaign grows, data stays manageable
+
+---

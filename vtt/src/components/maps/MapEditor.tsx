@@ -38,6 +38,10 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
     [map.tokens, selectedTokenId],
   );
 
+  /* ── Derived dimensions ──────────────────────────────────── */
+  const cellWidth = 100 / map.gridWidth;   // % per cell horizontally
+  const cellHeight = 100 / map.gridHeight; // % per cell vertically
+
   const handleTokenClick = useCallback((tokenId: string) => {
     setSelectedTokenId((prev) => (prev === tokenId ? null : tokenId));
     setShowMovement(false);
@@ -156,13 +160,10 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
         {/* Fog of War */}
         {showFog && (
           <FogOfWarLayer
-            mapId={map.id}
-            gridWidth={map.gridWidth}
-            gridHeight={map.gridHeight}
-            fogOfWar={map.fogOfWar}
-            showFogControls={showFogControls}
-            onUpdateFog={(fogOfWar) => onUpdate({ fogOfWar })}
-            gmView={gmView}
+            map={map}
+            isGmView={gmView}
+            cellWidth={cellWidth}
+            cellHeight={cellHeight}
           />
         )}
 
@@ -172,7 +173,9 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
             token={selectedToken}
             gridWidth={map.gridWidth}
             gridHeight={map.gridHeight}
-            dashMode={dashMode}
+            movementSpeed={selectedTokenSpeed}
+            dashMultiplier={dashMode ? 2 : 1}
+            cellSize={5}
           />
         )}
 
@@ -198,8 +201,8 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
               style={{
                 left: `${(c.x / map.gridWidth) * 100}%`,
                 top: `${(c.y / map.gridHeight) * 100}%`,
-                width: `${(100 / map.gridWidth)}%`,
-                height: `${(100 / map.gridHeight)}%`,
+                width: `${cellWidth}%`,
+                height: `${cellHeight}%`,
               }}
               title={`Move ${selectedToken.label} to (${c.x}, ${c.y})${c.dist > normalRange ? ' — Dash action required' : ''}`}
             />
@@ -236,6 +239,17 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
           </div>
         ))}
       </div>
+
+      {/* ── Fog Controls Panel ────────────────────────────────── */}
+      {showFogControls && (
+        <div className="rounded-xl border border-surface-700 bg-surface-850 p-4 animate-slide-up">
+          <FogOfWarControls
+            map={map}
+            onUpdate={onUpdate}
+            isGmView={gmView}
+          />
+        </div>
+      )}
 
       {/* ── Token Inspector Panel ─────────────────────────────── */}
       {selectedToken && (
