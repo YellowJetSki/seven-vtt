@@ -1,29 +1,23 @@
 /* ── Battle Maps ───────────────────────────────────────────────
  * Full battle map management with grid overlay, token placement,
- * fog of war, map CRUD, image picker, and gallery browsing.
+ * fog of war, map CRUD, image picker from /images/battlemaps/,
+ * gallery browsing, and a Theatric Tab for dramatic reveals.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ImagePicker } from "@/components/ui/ImagePicker";
 import { MapEditor } from "@/components/maps/MapEditor";
 import type { BattleMap, MapToken } from "@/types";
 
 function uid(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
-
-const TOKEN_TYPE_LABELS: Record<MapToken["type"], string> = {
-  player: "PC",
-  enemy: "Enemy",
-  npc: "NPC",
-  custom: "Custom",
-};
 
 /* ── Map Form Data ──────────────────────────────────────────── */
 interface MapFormData {
@@ -54,6 +48,7 @@ export function BattleMaps() {
   const [selectedMap, setSelectedMap] = useState<BattleMap | null>(null);
   const [editingMap, setEditingMap] = useState<BattleMap | undefined>();
   const [confirmDelete, setConfirmDelete] = useState<BattleMap | null>(null);
+  const [theatricToken, setTheatricToken] = useState<MapToken | null>(null);
 
   const filteredMaps = useMemo(() => {
     if (!searchQuery.trim()) return maps;
@@ -115,11 +110,13 @@ export function BattleMaps() {
 
   const openMapViewer = (map: BattleMap) => {
     setSelectedMap(map);
+    setTheatricToken(null);
     openModal("map-viewer");
   };
 
   const closeMapViewer = () => {
     setSelectedMap(null);
+    setTheatricToken(null);
     closeModal();
   };
 
@@ -128,6 +125,11 @@ export function BattleMaps() {
     updateBattleMap(selectedMap.id, { tokens: [...selectedMap.tokens, token] });
     closeModal();
     showToast({ message: `Token "${token.label}" added.`, type: "success" });
+  };
+
+  const handleOpenTheatric = (token: MapToken) => {
+    setTheatricToken(token);
+    openModal("theatric");
   };
 
   return (
@@ -205,6 +207,7 @@ export function BattleMaps() {
             <MapEditor
               map={selectedMap}
               onUpdate={(updates) => updateBattleMap(selectedMap.id, updates)}
+              onOpenTheatric={handleOpenTheatric}
             />
             <div className="flex justify-between border-t border-surface-700 pt-3">
               <div className="flex gap-2">
@@ -219,7 +222,19 @@ export function BattleMaps() {
         </Modal>
       )}
 
-      {/* Add Token Modal — lives outside MapEditor so it stays open when map-viewer closes */}
+      {/* Theatric Tab — full-bleed token spotlight, no grid, zooms on active token */}
+      {activeModal === "theatric" && selectedMap && theatricToken && (
+        <Modal modalId="theatric" title={`🎭 ${theatricToken.label} — Theatric View`} size="full">
+          <TheatricView
+            map={selectedMap}
+            token={theatricToken}
+            onUpdate={(updates) => updateBattleMap(selectedMap.id, updates)}
+            onClose={() => { setTheatricToken(null); closeModal(); }}
+          />
+        </Modal>
+      )}
+
+      {/* Add Token Modal — lives outside MapEditor so it stays open independently */}
       {activeModal === "add-token" && selectedMap && (
         <Modal modalId="add-token" title="Add Token" size="sm">
           <AddTokenForm
@@ -261,7 +276,112 @@ export function BattleMaps() {
   );
 }
 
-/* ── Add Token Form ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+ * THEATRIC VIEW — full-bleed, no grid, zooms on active token
+ * ═══════════════════════════════════════════════════════════════ */
+
+function TheatricView({
+  map,
+  token,
+  onUpdate,
+  onClose,
+}: {
+  map: BattleMap;
+  token: MapToken;
+  onUpdate: (updates: Partial<BattleMap>) => void;
+  onClose: () => void;
+}) {
+  const currentToken = map.tokens.find((t) => t.id === token.id) ?? token;
+  const containerRef = useState<HTMLDivElement | null>(null);
+
+  /* Compute a viewport that centers on the token and fills the screen */
+  const viewportStyle = useMemo(() => {
+    const tx = (currentToken.x / map.gridWidth) * 100;
+    const ty = (currentToken.y / map.gridHeight) * 100;
+    /* Zoom level: show roughly 5 cells around the token, but at least the whole map */
+    const zoomX = 100 / Math.max(map.gridWidth, 10);
+    const zoomY = 100 / Math.max(map.gridHeight, 10);
+    const zoom = Math.max(zoomX, zoomY, 0.15); /* 15% min = about 6-7 cells visible */
+    return {
+      transform: `translate(${-tx * zoom + 50 - zoom * 50}%, ${-ty * zoom + 50 - zoom * 50}%) scale(${1 / zoom})`,
+      transformOrigin: "0 0",
+    };
+  }, [currentToken.x, currentToken.y, map.gridWidth, map.gridHeight]);
+
+  const allTokens = map.tokens;
+
+  return (
+    <div className="relative w-full h-full overflow-hidden bg-surface-950">
+      {/* The zoomable/pannable scene */}
+      <div className="absolute inset-0" style={viewportStyle}>
+        {/* Map image */}
+        {map.imageUrl && (
+          <img src={map.imageUrl} alt={map.name}
+            className="absolute inset-0 h-full w-full object-cover" />
+        )}
+
+        {/* NO grid lines in theatric view — pure immersion */}
+
+        {/* All tokens — render only visible ones */}
+        {allTokens.map((t) => (
+          <div key={t.id}
+            className={`absolute flex items-center justify-center rounded-full transition-all duration-300 ${
+              t.id === currentToken.id
+                ? "ring-3 ring-accent-400 ring-offset-4 ring-offset-surface-950 z-20 scale-110"
+                : t.visible ? "z-10 opacity-70" : "hidden"
+            }`}
+            style={{
+              left: `${(t.x / map.gridWidth) * 100}%`,
+              top: `${(t.y / map.gridHeight) * 100}%`,
+              width: `${((t.size * 1.2) / map.gridWidth) * 100}%`,
+              height: `${((t.size * 1.2) / map.gridHeight) * 100}%`,
+              backgroundColor: t.color,
+              minWidth: "24px",
+              minHeight: "24px",
+            }}
+            title={`${t.label} — (${t.x},${t.y})`}>
+            {t.icon ? (
+              <span className="text-sm">{t.icon}</span>
+            ) : (
+              <span className="text-[10px] font-bold text-white uppercase">{t.label.charAt(0)}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Overlay controls */}
+      <div className="absolute top-4 right-4 z-30 flex gap-2">
+        <Button variant="ghost" size="xs" onClick={onClose}>
+          ✕ Close Theatric
+        </Button>
+      </div>
+
+      {/* Token info overlay */}
+      <div className="absolute bottom-4 left-4 right-4 z-30 flex items-end justify-between">
+        <div className="rounded-xl border border-surface-700/50 bg-surface-900/80 px-4 py-3 backdrop-blur-lg shadow-2xl">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: currentToken.color }}>
+              <span className="text-lg font-bold text-white">{currentToken.label.charAt(0)}</span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-surface-100">{currentToken.label}</h3>
+              <p className="text-xs text-surface-400">
+                {currentToken.type === "player" ? "PC" : currentToken.type.charAt(0).toUpperCase() + currentToken.type.slice(1)}
+                {currentToken.hp && ` · ${currentToken.hp.current}/${currentToken.hp.max} HP`}
+                {currentToken.speed && ` · ${currentToken.speed}ft`}
+                · Position ({currentToken.x},{currentToken.y})
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * ADD TOKEN FORM
+ * ═══════════════════════════════════════════════════════════════ */
 
 function AddTokenForm({
   gridWidth,
@@ -366,7 +486,10 @@ function AddTokenForm({
   );
 }
 
-/* ── Map Form ────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+ * MAP FORM — uses ImagePicker with libraryCategory="battlemaps"
+ * to showcase the SVGs in /public/images/battlemaps/
+ * ═══════════════════════════════════════════════════════════════ */
 
 function MapForm({
   existingMap,
@@ -398,18 +521,18 @@ function MapForm({
     <div className="space-y-4">
       <div>
         <label className="mb-1 block text-xs font-medium text-surface-400">Map Name</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Goblin Cave"
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Cragmaw Hideout"
           className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
       </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-surface-400">Image URL (optional)</label>
-        <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/map.jpg"
-          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
-        {imageUrl && (
-          <img src={imageUrl} alt="Preview" className="mt-2 h-24 w-full rounded-lg object-cover bg-surface-800"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-        )}
-      </div>
+
+      {/* Image Picker — uses libraryCategory="battlemaps" to show SVGs from /public/images/battlemaps/ */}
+      <ImagePicker
+        value={imageUrl}
+        onChange={setImageUrl}
+        label="Map Image (optional)"
+        libraryCategory="battlemaps"
+      />
+
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-surface-400">Grid Width</label>

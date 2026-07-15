@@ -1,23 +1,23 @@
+/* ── MapEditor ─────────────────────────────────────────────────
+ * Core battle map grid tool with token placement, movement,
+ * fog of war, HP tracking, and theatric view integration.
+ * ─────────────────────────────────────────────────────────────── */
+
 import { useState, useRef, useCallback, useMemo } from "react";
 import type { BattleMap, MapToken } from "@/types";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
 import { FogOfWarLayer, FogOfWarControls } from "@/components/maps/FogOfWarLayer";
 import { MovementRangeOverlay } from "@/components/maps/MovementRangeOverlay";
 
 interface MapEditorProps {
   map: BattleMap;
   onUpdate: (updates: Partial<BattleMap>) => void;
+  /** Callback to open the theatric tab for a specific token */
+  onOpenTheatric?: (token: MapToken) => void;
 }
 
-const TOKEN_COLORS = [
-  "#8b30ff", "#3b82f6", "#27ae60", "#f39c12",
-  "#e74c3c", "#ec4899", "#14b8a6", "#f97316",
-  "#6b7280", "#a855f7",
-];
-
-export function MapEditor({ map, onUpdate }: MapEditorProps) {
+export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
   const showToast = useUiStore((s) => s.showToast);
   const openModal = useUiStore((s) => s.openModal);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,6 +36,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
 
   const selectedToken = map.tokens.find((t) => t.id === selectedTokenId);
 
+  /* ── Grid lines (hidden in theatric mode) ───────────────── */
   const gridLines = useMemo(() => {
     const lines: React.ReactNode[] = [];
     for (let x = 0; x <= map.gridWidth; x++) {
@@ -57,6 +58,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     return lines;
   }, [map.gridWidth, map.gridHeight]);
 
+  /* ── Handlers ──────────────────────────────────────────── */
   const handleTokenClick = useCallback((tokenId: string) => {
     setSelectedTokenId((prev) => (prev === tokenId ? null : tokenId));
   }, []);
@@ -96,7 +98,6 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     const tokenSpeed = token.speed ?? 30;
     const normalRange = Math.floor(tokenSpeed / 5);
 
-    // If the move exceeds normal range and dash mode is not active, prompt for dash confirmation
     if (dist > normalRange && !dashMode) {
       setPendingDashMove({ tokenId, x: targetX, y: targetY });
       return;
@@ -133,12 +134,13 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      {/* ── Toolbar ───────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-surface-200">{map.name}</h3>
-          <span className="text-[10px] text-surface-500">{map.gridWidth}x{map.gridHeight} - {map.tokens.length} tokens</span>
+          <span className="text-[10px] text-surface-500">{map.gridWidth}x{map.gridHeight} · {map.tokens.length} tokens</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setGmView(!gmView)}
             className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${gmView ? "bg-accent-600 text-white" : "bg-surface-800 text-surface-400"}`}
             title={gmView ? "DM View (no fog)" : "Player View (with fog)"}>
@@ -152,19 +154,27 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
             {showFogControls ? "Hide Zones" : "Reveal Zones"}
           </Button>
           <Button size="xs" onClick={() => openModal("add-token")}>+ Token</Button>
+          {onOpenTheatric && selectedToken && (
+            <Button size="xs" variant="ghost" onClick={() => onOpenTheatric(selectedToken)}>
+              🎭 Theatric
+            </Button>
+          )}
         </div>
       </div>
 
+      {/* ── Map Canvas ────────────────────────────────────── */}
       <div ref={containerRef}
         className="relative w-full overflow-hidden rounded-xl border border-surface-700 bg-surface-900"
         style={{ aspectRatio: `${map.gridWidth}/${map.gridHeight}` }}
         onClick={handleCanvasClick}>
 
+        {/* Map image */}
         {map.imageUrl && (
           <img src={map.imageUrl} alt={map.name}
             className={`absolute inset-0 h-full w-full ${map.imageFit === "contain" ? "object-contain" : map.imageFit === "stretch" ? "object-fill" : "object-cover"}`} />
         )}
 
+        {/* Grid lines */}
         {gridLines}
 
         {/* Legacy fog reveals */}
@@ -251,7 +261,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
         ))}
       </div>
 
-      {/* Token Inspector Panel */}
+      {/* ── Token Inspector Panel ─────────────────────────── */}
       {selectedToken && (
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-4 animate-slide-up">
           <div className="flex items-start justify-between">
@@ -262,13 +272,18 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               <div>
                 <h4 className="font-semibold text-surface-100">{selectedToken.label}</h4>
                 <p className="text-xs text-surface-400">
-                  {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} - Position ({selectedToken.x},{selectedToken.y})
-                  {selectedToken.hp && ` - HP ${selectedToken.hp.current}/${selectedToken.hp.max}`}
-                  {selectedToken.speed && ` - Speed ${selectedToken.speed}ft`}
+                  {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} · Position ({selectedToken.x},{selectedToken.y})
+                  {selectedToken.hp && ` · HP ${selectedToken.hp.current}/${selectedToken.hp.max}`}
+                  {selectedToken.speed && ` · Speed ${selectedToken.speed}ft`}
                 </p>
               </div>
             </div>
             <div className="flex gap-1">
+              {onOpenTheatric && (
+                <button onClick={() => onOpenTheatric(selectedToken)}
+                  className="rounded-md px-2 py-1 text-xs text-accent-400 hover:bg-accent-500/10 transition-colors"
+                  title="Open Theatric View">🎭</button>
+              )}
               <button onClick={() => handleToggleVisibility(selectedToken.id)}
                 className="rounded-md px-2 py-1 text-xs text-surface-400 hover:bg-surface-700 hover:text-surface-200 transition-colors"
                 title={selectedToken.visible ? "Hide from players" : "Show to players"}>
@@ -319,25 +334,18 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
             </div>
           </div>
 
-          {/* HP Display & Edit (if token has HP) */}
+          {/* HP Display & Edit */}
           {selectedToken.hp && (
             <div className="mt-3 pt-3 border-t border-surface-700">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-medium text-surface-400">HP</span>
-                <span className="text-xs font-semibold text-surface-200">
-                  {selectedToken.hp.current}/{selectedToken.hp.max}
-                </span>
+                <span className="text-xs font-semibold text-surface-200">{selectedToken.hp.current}/{selectedToken.hp.max}</span>
               </div>
               <div className="mt-1 h-2 w-full rounded-full bg-surface-800 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-300"
+                <div className="h-full rounded-full transition-all duration-300"
                   style={{
                     width: `${Math.max(0, (selectedToken.hp.current / selectedToken.hp.max) * 100)}%`,
-                    backgroundColor: selectedToken.hp.current > selectedToken.hp.max * 0.5
-                      ? "#27ae60"
-                      : selectedToken.hp.current > 0
-                        ? "#f39c12"
-                        : "#e74c3c",
+                    backgroundColor: selectedToken.hp.current > selectedToken.hp.max * 0.5 ? "#27ae60" : selectedToken.hp.current > 0 ? "#f39c12" : "#e74c3c",
                   }}
                 />
               </div>
@@ -363,7 +371,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
         </div>
       )}
 
-      {/* Dash Confirmation Modal (local to MapEditor) */}
+      {/* Dash Confirmation Modal */}
       {pendingDashMove && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleCancelDash}>
           <div className="w-full max-w-sm rounded-xl border border-surface-700 bg-surface-850 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>

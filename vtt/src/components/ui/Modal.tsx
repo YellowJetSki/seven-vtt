@@ -5,7 +5,7 @@ interface ModalProps {
   modalId: string;
   title: string;
   children: ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
 export function Modal({ modalId, title, children, size = "md" }: ModalProps) {
@@ -37,38 +37,48 @@ export function Modal({ modalId, title, children, size = "md" }: ModalProps) {
 
   if (!isOpen) return null;
 
-  const sizeClasses = {
+  const sizeClasses: Record<string, string> = {
     sm: "max-w-sm",
     md: "max-w-lg",
     lg: "max-w-2xl",
     xl: "max-w-4xl",
+    full: "max-w-full mx-0 my-0 h-full max-h-full", // full-bleed for theatric view
   };
+
+  const isFull = size === "full";
 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className={`fixed inset-0 z-50 flex ${isFull ? "items-stretch p-0" : "items-center justify-center bg-black/60 p-4 backdrop-blur-sm"}`}
       onClick={(e) => {
         if (e.target === overlayRef.current) closeModal();
       }}
     >
       <div
-        className={`w-full ${sizeClasses[size]} animate-in zoom-in-95 fade-in rounded-xl border border-surface-700 bg-surface-850 shadow-2xl`}
+        className={`w-full ${sizeClasses[size]} animate-in zoom-in-95 fade-in ${
+          isFull
+            ? "rounded-none border-0 bg-surface-950"
+            : "rounded-xl border border-surface-700 bg-surface-850 shadow-2xl"
+        } flex flex-col overflow-hidden`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-surface-700 px-5 py-4">
-          <h2 className="text-lg font-semibold text-surface-100">{title}</h2>
-          <button
-            onClick={closeModal}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-surface-400 hover:bg-surface-700 hover:text-surface-200"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-
+        {/* Header — only for non-full modals; for full, the child handles its own controls */}
+        {!isFull && (
+          <div className="flex items-center justify-between border-b border-surface-700 px-5 py-4 shrink-0">
+            <h2 className="text-lg font-semibold text-surface-100">{title}</h2>
+            <button
+              onClick={closeModal}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-surface-400 hover:bg-surface-700 hover:text-surface-200"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         {/* Body */}
-        <div className="max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
+        <div className={`${isFull ? "flex-1 overflow-hidden" : "max-h-[70vh] overflow-y-auto px-5 py-4"}`}>
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 /* ── Authentication Store (DM / Player) ────────────────────────
  *
  * Two-layer authentication:
- *   1. App-level: DM checks VITE_DM_USERNAME/VITE_DM_PASSWORD env vars.
+ *   1. App-level: DM checks MikeJello/Jello1 credentials.
  *      Player matches name against campaign's player character list.
  *   2. Firebase Auth: On successful DM app-login, calls signInWithEmailAndPassword
  *      to get a Firebase Auth token for Firestore access.
@@ -13,9 +13,9 @@
  *
  * Persistence: Role + username survive page refresh via localStorage.
  *
- * DM CREDENTIALS: The DM login checks against VITE_DM_USERNAME and
- * VITE_DM_PASSWORD env vars, WITH a fallback list of valid credentials
- * to support multiple environments without Vercel env var headaches.
+ * DM CREDENTIALS: Hardcoded as MikeJello/Jello1 (the single source of truth).
+ * The VITE_DM_USERNAME / VITE_DM_PASSWORD env vars serve as a secondary
+ * override for custom deployments. Both should agree.
  * ─────────────────────────────────────────────────────────────── */
 
 import { create } from "zustand";
@@ -38,14 +38,10 @@ export interface PlayerIdentifier {
 }
 
 /**
- * Hardcoded fallback DM credentials for environments where
- * VITE_DM_USERNAME / VITE_DM_PASSWORD cannot be easily changed
- * (e.g., Vercel production with stuck env vars).
+ * The single hardcoded DM credential.
+ * This is the ONLY way to log in as DM, regardless of env var state.
  */
-const FALLBACK_DM_CREDENTIALS: { username: string; password: string }[] = [
-  { username: "MikeJello", password: "Jello1" },
-  { username: "arkla", password: "silvertongue" },
-];
+const DM_CREDENTIALS = { username: "MikeJello", password: "Jello1" };
 
 interface AuthStore {
   state: AuthState;
@@ -107,7 +103,7 @@ export const useAuthStore = create<AuthStore>()(
       /* ── Set Firebase Auth error ── */
       setFirebaseAuthError: (error) => set({ firebaseAuthError: error }),
 
-      /* ── DM Login (env-based + fallback list) ── */
+      /* ── DM Login — single source of truth: MikeJello/Jello1 ── */
       login: (username, password) => {
         const trimmedUser = username.trim();
         const trimmedPass = password.trim();
@@ -119,40 +115,32 @@ export const useAuthStore = create<AuthStore>()(
           };
         }
 
-        // Primary check: against env vars
+        // 1. Check env vars first (for custom deployments)
         const expectedUser = ENV.DM_USERNAME();
         const expectedPass = ENV.DM_PASSWORD();
 
-        if (expectedUser && expectedPass) {
-          if (trimmedUser === expectedUser && trimmedPass === expectedPass) {
-            set({
-              state: "authenticated",
-              role: "dm",
-              username: trimmedUser,
-              characterId: null,
-            });
-            return { success: true, role: "dm" };
-          }
+        const envMatch = expectedUser && expectedPass
+          && trimmedUser === expectedUser && trimmedPass === expectedPass;
+
+        // 2. Check hardcoded primary credential
+        const primaryMatch = trimmedUser === DM_CREDENTIALS.username
+          && trimmedPass === DM_CREDENTIALS.password;
+
+        if (!envMatch && !primaryMatch) {
+          return {
+            success: false,
+            error: "Invalid credentials. Only MikeJello is authorized as DM.",
+          };
         }
 
-        // Fallback check: against hardcoded credential list
-        for (const cred of FALLBACK_DM_CREDENTIALS) {
-          if (trimmedUser === cred.username && trimmedPass === cred.password) {
-            set({
-              state: "authenticated",
-              role: "dm",
-              username: trimmedUser,
-              characterId: null,
-            });
-            return { success: true, role: "dm" };
-          }
-        }
+        set({
+          state: "authenticated",
+          role: "dm",
+          username: trimmedUser,
+          characterId: null,
+        });
 
-        // No match found
-        return {
-          success: false,
-          error: "Invalid credentials. Please check your username and password.",
-        };
+        return { success: true, role: "dm" };
       },
 
       /* ── Player Login (name/alias matching) ── */

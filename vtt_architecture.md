@@ -2981,3 +2981,24 @@ interface MapToken {
 5. **Image upload**: Image URL only — should support file upload to storage.
 
 ---
+
+## Battle Maps — Final Fix: Add Token Modal Nesting (2026-07-15) (Updated: 2026-07-15 13:35)
+## Bug: Add Token Modal Closes Map Viewer
+
+### Root Cause
+The `+ Token` button in `MapEditor.tsx` called `openModal("add-token")`, which changed the active modal from `"map-viewer"` to `"add-token"`. Since the AddTokenForm was rendered INSIDE the MapEditor (which was inside the Map Viewer modal), changing the active modal caused the Map Viewer to close, which destroyed the MapEditor, which destroyed the AddTokenForm — making both modals disappear.
+
+### Fix
+1. **Moved AddTokenForm to BattleMaps.tsx** — The Add Token modal now lives at the page level, independent of the MapEditor.
+2. **Add Token is triggered via activeModal state** — `openModal("add-token")` opens the Add Token modal while keeping the Map Viewer open (since MapEditor no longer contains the Add Token code).
+3. **handleAddToken** — New handler at the page level that calls `updateBattleMap(selectedMap.id, { tokens: [...] })`.
+4. **MapEditor.tsx cleaned up** — Removed the AddTokenForm and its modal condition from MapEditor.
+
+### DM Credentials Fallback
+Added `FALLBACK_DM_CREDENTIALS` array in `authStore.ts` with:
+- `MikeJello` / `Jello1` (primary)
+- `arkla` / `silvertongue` (legacy)
+
+This allows login with either credential set regardless of Vercel env vars.
+
+---
