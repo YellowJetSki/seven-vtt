@@ -1200,3 +1200,79 @@ public/
 - `src/components/ui/EmptyState.tsx` — Added secondaryAction support
 
 ---
+
+## Security Audit — July 14, 2026 (Updated: 2026-07-14 20:01)
+## Security Sweep — Credential Leak Remediation
+
+**Date**: July 14, 2026
+**Scope**: Entire vtt/ codebase including src/, public/, config files, session logs, notes/
+
+### Findings
+| Location | Status | Notes |
+|----------|--------|-------|
+| `vtt/src/**` | ✅ Clean | All env values referenced via `import.meta.env.VITE_*` pattern |
+| `vtt/.env` | ✅ Sanitized | All values cleared to empty template |
+| `vtt/.env.example` | ✅ Clean | Template only with placeholder values |
+| `vtt/notes/**` | ✅ Clean | Campaign lore only, no credentials |
+| `vtt/public/**` | ✅ Clean | Static assets only |
+| `vtt/vercel.json` | ✅ Clean | Build config only |
+| `vtt/firebase.json` | ✅ Clean | Emulator port config only |
+| `vtt/storage.rules` | ✅ Clean | Firebase security rules only |
+| `vtt/firestore.rules` | ✅ Clean | Firebase security rules only |
+| `vtt/sessions/vtt_development.json` | 🚨 **DELETED** | Contained DeepSeek API key, Firebase project keys, Spotify client ID, Vercel OIDC JWT |
+| `vtt/sessions/arkla_campaign.json` | ✅ Clean | Campaign narrative only |
+| `vtt/sessions/general_assistant.json` | ✅ Clean | Chat history only |
+
+### Remediation
+- Deleted `sessions/vtt_development.json` from Git history
+- Added `sessions/` to `.gitignore` to prevent future leaks
+- Cleared `.env` to empty template (credentials are local-only, never committed)
+
+### Security Recommendation
+The following keys were exposed in the deleted session file and should be rotated/revoked:
+1. **DeepSeek API Key**: `sk-12400771bc2147b39526d1b4ed1aead3`
+2. **Spotify Client ID**: `574feaae55284ca8a7d86685ad0c06be`
+3. **Vercel OIDC Token** (Vercel project `str-vtt`, owner `mikejallow-4186s-projects`)
+
+### Prevention
+All API keys and secrets must only exist in:
+- `.env` (local, gitignored)
+- `.env.local` (local, gitignored)
+- Environment variables on Vercel dashboard
+
+---
+
+## Environment Variables — Schema (Updated Jul 14) (Updated: 2026-07-14 20:09)
+## Env Variable Schema
+
+### Source of truth files
+| File | Role |
+|------|------|
+| `vtt/.env` | Actual values (gitignored) |
+| `vtt/.env.example` | Documented template with instructions |
+| `vtt/src/vite-env.d.ts` | TypeScript type declarations |
+| `vtt/src/lib/env.ts` | Runtime guard + accessor object |
+
+### All defined variables
+
+| Variable | Required? | Notes |
+|----------|-----------|-------|
+| `VITE_DM_USERNAME` | ✅ Required | DM login credential |
+| `VITE_DM_PASSWORD` | ✅ Required | DM login credential |
+| `VITE_FIREBASE_API_KEY` | ❌ Optional | Firebase config — read directly by `firebase.ts` |
+| `VITE_FIREBASE_AUTH_DOMAIN` | ❌ Optional | Firebase config |
+| `VITE_FIREBASE_PROJECT_ID` | ❌ Optional | Firebase config |
+| `VITE_FIREBASE_STORAGE_BUCKET` | ❌ Optional | Firebase config |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | ❌ Optional | Firebase config |
+| `VITE_FIREBASE_APP_ID` | ❌ Optional | Firebase config |
+| `VITE_DEEPSEEK_API_KEY` | ❌ Optional | AI DM assistant (API key rotated) |
+| `VITE_SPOTIFY_CLIENT_ID` | ❌ Optional | Spotify integration (ID rotated) |
+| `VITE_SPOTIFY_CLIENT_SECRET` | ❌ Optional | Spotify integration (secret rotated) |
+| `VITE_USE_EMULATORS` | ❌ Optional | Dev-only, defaults to `false` |
+
+### Security policy
+- All secrets must be set in `.env` or Vercel dashboard env vars
+- Never hardcode any value in `src/` — always use `import.meta.env.VITE_*`
+- The `env.ts` guard separates required vs optional with `requiredEnv()` and `optionalEnv()`
+
+---
