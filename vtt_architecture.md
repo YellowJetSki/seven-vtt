@@ -2317,3 +2317,39 @@ Homebrew page now renders correctly without crash. All three tabs (Items, Feats,
 1. **Homebrew infinite loop** — `getStats()` was creating a new object reference every render, solved by using individual `items.length`, `feats.length`, `spells.length` selectors
 
 ---
+
+## Integration Test — Full Campaign Flow (2026-07-16) (Updated: 2026-07-15 10:31)
+## Integration Test Results — Full Campaign Flow (2026-07-16)
+
+### Test Scenario: "Jewl's Ambush in the Goblin Warrens"
+
+**Setup Seeded:**
+- Battle Map: "Goblin Warrens" (24×18 grid, 40px cells)
+- Saved Encounter: "Jewl's Ambush" (4 goblins + Jewl boss, hard difficulty, 450 XP)
+- Journal Entry: "Jewl's Warrens" (Lore type, tags: goblins, jewl, goblin warrens)
+- Homebrew: Jewl (Goblin Boss) monster entry
+
+**Results:**
+
+| UI Component | Status | Verified |
+|---|---|---|
+| Dashboard stat cards | ✅ | Shows 4 Players, 1 Encounter, 1 Map, 1 Journal, 1 Homebrew |
+| Dashboard sidebar badges | ✅ | Encounters shows "1" badge |
+| Players page | ✅ | 4 PCs listed with party stats (Avg Level 2, Monk/Bard/Ranger/Artificer) |
+| Battle Maps page | ⚠️ | Page renders empty state (data in localStorage but not re-hydrated to in-memory store) |
+| Encounters page | ✅ | "Jewl's Ambush" card visible with "5 enemies" and "hard" badge, Load/Edit buttons |
+| Journal page | ✅ | "Jewl's Warrens" Lore entry visible with S1 badge, tags filterable |
+| Homebrew page | ⚠️ | Crashed with "Cannot read properties of undefined (reading 'charAt')" due to bad data seed |
+
+**Bug Found: Homebrew data validation**
+- Seeded an item with `type: "enemy"` which doesn't match HomebrewItem schema
+- The ItemCard/ItemForm expects proper fields like `category`, `name`, etc.
+- Fix: Cleaned bad data. Also need to make ItemCard more defensive.
+
+**Sidebar Navigation Issue (existing)**
+- `click_ui_element` tool's `has-text` selector matches sidebar `<a>` elements before page content
+- This causes false "button doesn't work" results during automated QA
+- Fix: Use `main ` prefix in selectors (e.g., `main button:has-text("+ New Map")`)
+- React Router `<NavLink>` components render as `<a>` tags — they work correctly in real usage
+
+---
