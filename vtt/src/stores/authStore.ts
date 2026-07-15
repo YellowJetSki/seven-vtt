@@ -1,20 +1,23 @@
 /* ── Authentication Store (DM / Player) ────────────────────────
  *
- * SIMPLIFIED AUTH SYSTEM (no Firebase Auth dependency):
+ * Two-layer authentication:
+ *   1. App-level: DM checks VITE_DM_USERNAME/VITE_DM_PASSWORD env vars.
+ *      Player matches name against campaign's player character list.
+ *   2. Firebase Auth: On successful DM app-login, calls signInWithEmailAndPassword
+ *      to get a Firebase Auth token for Firestore access.
+ *      On player login, calls signInAnonymously for read-only Firestore access.
  *
- *   - DM Login: Checks username + password against VITE_DM_USERNAME
- *     and VITE_DM_PASSWORD env vars. No Firebase Auth calls.
+ * SECURITY: Firestore security rules check request.auth.uid.
+ *   - DM UID can write campaign/liveSession/homebrew documents.
+ *   - Any authenticated user (DM or anonymous player) can read.
  *
- *   - Player Login: Matches the entered name against a list of
- *     known identifiers (first name + alias). Case-insensitive.
- *     Example: "Edmund 'Strider' Tudul" can log in as "Edmund" or "Strider".
- *
- *   - Persistence: Role + username survive page refresh via localStorage.
+ * Persistence: Role + username survive page refresh via localStorage.
  * ─────────────────────────────────────────────────────────────── */
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ENV } from "@/lib/env";
+import { logoutFirebase } from "@/lib/firebase";
 
 export type UserRole = "dm" | "player";
 export type AuthState = "unauthenticated" | "authenticated";
@@ -43,9 +46,17 @@ interface AuthStore {
   /** Whether Firestore sync is connected (runtime flag, not persisted). */
   firebaseConnected: boolean;
 
+  /** Whether Firebase Auth login is in progress. */
+  firebaseAuthLoading: boolean;
+
+  /** Error message from Firebase Auth, if any. */
+  firebaseAuthError: string | null;
+
   // ── Actions ──
   setPlayerIdentifiers: (identifiers: PlayerIdentifier[]) => void;
   setFirebaseConnected: (connected: boolean) => void;
+  setFirebaseAuthLoading: (loading: boolean) => void;
+  setFirebaseAuthError: (error: string | null) => void;
   login: (username: string, password: string) => LoginResult;
   loginAsPlayer: (name: string) => LoginResult;
   logout: () => void;
@@ -67,6 +78,8 @@ export const useAuthStore = create<AuthStore>()(
       characterId: null,
       playerIdentifiers: [],
       firebaseConnected: false,
+      firebaseAuthLoading: false,
+      firebaseAuthError: null,
 
       /* ── Set the player identifier lookup table ── */
       setPlayerIdentifiers: (identifiers) => set({ playerIdentifiers: identifiers }),
@@ -74,7 +87,13 @@ export const useAuthStore = create<AuthStore>()(
       /* ── Set Firebase connection status (runtime only) ── */
       setFirebaseConnected: (connected) => set({ firebaseConnected: connected }),
 
-      /* ── DM Login (env-based, no Firebase Auth) ── */
+      /* ── Set Firebase Auth loading state ── */
+      setFirebaseAuthLoading: (loading) => set({ firebaseAuthLoading: loading }),
+
+      /* ── Set Firebase Auth error ── */
+      setFirebaseAuthError: (error) => set({ firebaseAuthError: error }),
+
+      /* ── DM Login (env-based + Firebase Auth) ── */
       login: (username, password) => {
         const trimmedUser = username.trim();
         const trimmedPass = password.trim();
@@ -147,13 +166,18 @@ export const useAuthStore = create<AuthStore>()(
         };
       },
 
-      /* ── Logout ── */
+      /* ── Logout (app-level + Firebase Auth) ── */
       logout: () => {
+        // Fire-and-forget the Firebase sign-out — don't block the UI
+        logoutFirebase();
+
         set({
           state: "unauthenticated",
           role: null,
           username: null,
           characterId: null,
+          firebaseConnected: false,
+          firebaseAuthError: null,
         });
       },
     }),
@@ -164,7 +188,7 @@ export const useAuthStore = create<AuthStore>()(
         role: state.role,
         username: state.username,
         characterId: state.characterId,
-        // firebaseConnected and playerIdentifiers are runtime-only — not persisted
+        // Runtime-only fields — not persisted
       }),
     },
   ),
