@@ -8,7 +8,8 @@
  *  • Initiative tracker preview (in combat phase)
  *  • Character sheet with full stats
  *  • Party overview card
- *  • Loading state to prevent "character not found" flash
+ *  • Loading state that waits for campaign store rehydration
+ *  • Fallback to campaign from localStorage if store is empty
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect } from "react";
@@ -23,8 +24,9 @@ export function PlayerDashboard() {
   const characterId = useAuthStore((s) => s.characterId);
   const characterName = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
   const campaign = useCampaignStore((s) => s.campaign);
+  const setCampaign = useCampaignStore((s) => s.setCampaign);
+  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
 
   // Subscribe to real-time updates from the DM
   usePlayerFirebaseSync();
@@ -33,29 +35,51 @@ export function PlayerDashboard() {
   const liveSession = useCombatStore((s) => s.liveSession);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
 
-  // Find the player's character
+  // Find the player's character by matching the characterId from auth
   const character = characters.find((c) => {
+    // Match by characterId (exact match from the auth store)
+    if (characterId && c.id === characterId) return true;
+    // Fallback: match by first name
     const firstName = c.name.split(" ")[0];
-    return firstName.toLowerCase() === characterId?.toLowerCase();
+    return firstName.toLowerCase() === (characterName ?? characterId ?? "").toLowerCase();
   });
 
   const sessionActive = liveSession.sessionStartedAt !== null;
 
-  // Loading state: campaign may not have loaded yet from Firebase
+  // Loading state: wait for campaign store to hydrate from localStorage
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Small delay to let Firebase hydrate; after 3 seconds, show whatever we have
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // If campaign data loads, we're done loading
-  useEffect(() => {
+    // Check if campaign data is available immediately (Zustand persist might
+    // have already rehydrated by the first render).
     if (campaign) {
       setIsLoading(false);
+      return;
     }
-  }, [campaign]);
+
+    // If not, try to seed from localStorage directly
+    try {
+      const raw = localStorage.getItem("str-vtt-campaign");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const storedCampaign = parsed?.state?.campaign;
+        if (storedCampaign && !campaign) {
+          setCampaign(storedCampaign);
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch {
+      // localStorage read failed, continue to wait
+    }
+
+    // Fallback: wait up to 3 seconds for Zustand persist to rehydrate
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [campaign, setCampaign]);
 
   // Session timer
   const [timer, setTimer] = useState(0);
@@ -95,6 +119,55 @@ export function PlayerDashboard() {
           <span className="animate-pulse text-3xl text-accent-400">Sᚱ</span>
           <p className="text-sm text-surface-500">Loading your character...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Character not found (after loading completed)
+  if (!character) {
+    return (
+      <div className="min-h-screen bg-surface-900">
+        <header className="sticky top-0 z-10 border-b border-surface-700/50 bg-surface-900/80 backdrop-blur-lg">
+          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-accent-400">Sᚱ</span>
+              <span className="text-xs text-surface-500">{campaign?.name ?? "Campaign"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-surface-400">
+                <span className="font-medium text-surface-200">{characterName ?? "Character"}</span>
+              </span>
+              <Button variant="ghost" size="sm" onClick={logout}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </header>
+        <main className="mx-auto max-w-4xl px-4 py-6 md:px-6">
+          <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-2xl border border-dashed border-surface-700 bg-surface-850 py-20 text-center">
+            <span className="mb-4 text-5xl text-surface-600">🔍</span>
+            <h2 className="mb-2 text-lg font-semibold text-surface-200">
+              Character Not Found
+            </h2>
+            <p className="mb-6 max-w-sm text-sm text-surface-500">
+              Your character "{characterName ?? ""}" hasn't been added to this campaign yet.
+              Please ask your DM to create your character card.
+            </p>
+            {characters.length > 0 && (
+              <p className="mb-6 text-xs text-surface-500">
+                Available characters: {characters.map((c) => c.name).join(", ")}
+              </p>
+            )}
+            <Button variant="ghost" size="sm" onClick={logout}>
+              Sign Out
+            </Button>
+          </div>
+        </main>
+        <footer className="border-t border-surface-800 py-4 text-center">
+          <p className="text-[10px] text-surface-600">
+            STᚱ VTT · Player View · ⏸️ Offline
+          </p>
+        </footer>
       </div>
     );
   }
@@ -238,65 +311,52 @@ export function PlayerDashboard() {
 
       {/* ── Main Content ── */}
       <main className="mx-auto max-w-4xl px-4 py-6 md:px-6">
-        {character ? (
-          <div className="space-y-6">
-            {/* Party Overview */}
-            {characters.length > 1 && (
-              <div className="rounded-xl border border-surface-700 bg-surface-850 p-4">
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-surface-400">
-                  🏰 Party ({characters.length})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {characters.map((pc) => {
-                    const isMe = pc.id === character.id;
-                    return (
-                      <div key={pc.id}
-                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${
-                          isMe
-                            ? "border-accent-500/50 bg-accent-500/10"
-                            : "border-surface-700 bg-surface-800"
-                        }`}>
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
-                          isMe ? "bg-accent-500/20 text-accent-400" : "bg-surface-700 text-surface-400"
-                        }`}>
-                          {pc.level}
-                        </span>
-                        <div>
-                          <p className="font-medium text-surface-200">{pc.name}</p>
-                          <p className="text-[10px] text-surface-500">{pc.class} · HP {pc.hitPoints.current}/{pc.hitPoints.max}</p>
-                        </div>
-                        {isMe && <span className="rounded bg-accent-500/20 px-1.5 py-0.5 text-[9px] text-accent-400">You</span>}
+        <div className="space-y-6">
+          {/* Party Overview */}
+          {characters.length > 1 && (
+            <div className="rounded-xl border border-surface-700 bg-surface-850 p-4">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-surface-400">
+                🏰 Party ({characters.length})
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {characters.map((pc) => {
+                  const isYou = pc.id === character.id;
+                  return (
+                    <div key={pc.id}
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${
+                        isYou
+                          ? "border-accent-500/40 bg-accent-500/10"
+                          : "border-surface-700 bg-surface-800"
+                      }`}>
+                      <span className="text-xs">{isYou ? "⚔" : "🛡"}</span>
+                      <div>
+                        <p className="text-sm font-medium text-surface-200">{pc.name}</p>
+                        <p className="text-[10px] text-surface-500">{pc.race} {pc.class} · Lvl {pc.level}</p>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className="ml-3 text-right">
+                        <p className={`text-xs font-bold ${
+                          pc.hitPoints.current <= 0 ? "text-warrior-400" :
+                          pc.hitPoints.current <= pc.hitPoints.max * 0.25 ? "text-warrior-500" :
+                          "text-surface-200"
+                        }`}>
+                          ❤️ {pc.hitPoints.current}/{pc.hitPoints.max}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Character Sheet */}
-            <PlayerCharacterSheet character={character} />
-          </div>
-        ) : (
-          <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-2xl border border-dashed border-surface-700 bg-surface-850 py-20 text-center">
-            <span className="mb-4 text-5xl text-surface-600">🔍</span>
-            <h2 className="mb-2 text-lg font-semibold text-surface-200">
-              Character Not Found
-            </h2>
-            <p className="mb-6 max-w-sm text-sm text-surface-500">
-              Your character "{characterName}" hasn't been added to this
-              campaign yet. Please ask your DM to create your character card.
-            </p>
-            <Button variant="secondary" size="sm" onClick={logout}>
-              Sign Out
-            </Button>
-          </div>
-        )}
+          {/* Character Sheet */}
+          <PlayerCharacterSheet character={character} />
+        </div>
       </main>
 
-      {/* ── Footer ── */}
       <footer className="border-t border-surface-800 py-4 text-center">
         <p className="text-[10px] text-surface-600">
-          STᚱ VTT · Player View · {sessionActive ? "🎙️ Session Live" : "⏸️ Offline"}
+          STᚱ VTT · Player View · ⏸️ Offline
         </p>
       </footer>
     </div>
