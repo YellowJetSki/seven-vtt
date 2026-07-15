@@ -1,9 +1,9 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
+  "buildCommand": "cd vtt && npm run build",
+  "outputDirectory": "vtt/dist",
+  "installCommand": "cd vtt && npm install",
   "framework": "vite",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/vtt/index.html" }
   ]
 }
