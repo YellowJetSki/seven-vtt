@@ -1408,3 +1408,142 @@ Homebrew operations (addItem, addFeat, removeSpell) are watched via array length
 - For cross-device player sync, add a `PlayerLiveView` component that calls `sessionSync.listenSession("arkla")` independently.
 
 ---
+
+## Player Firebase Sync — Cross-Device Real-Time (Updated: 2026-07-14 20:55)
+## Player Firebase Sync — Cross-Device Real-Time
+
+### The Problem
+PlayerDashboard was reading from the local Zustand store, which only has data that the DM's browser synced. If a player opens the app on a DIFFERENT device, they'd see stale data.
+
+### The Solution
+**`usePlayerFirebaseSync` hook** (new file: `src/hooks/usePlayerFirebaseSync.ts`)
+
+- Activated only when `role === "player"`
+- Subscribes to `liveSessions/arkla` via `sessionSync.listenSession()`
+- Subscribes to `campaigns/arkla` via `campaignSync.listenCampaign()`
+- Hydrates `combatStore.liveSession` with real-time data (phase, scene, map URL, DM announcement)
+- Hydrates `campaignStore.campaign` (character data, for up-to-date character sheets)
+- Cleans up listeners on unmount
+- Also does an eager `sessionSync.fetchSession()` on mount for initial state
+
+### Wire-Up
+`PlayerDashboard.tsx` now calls `usePlayerFirebaseSync()` at the top of the component.
+
+### End-to-End Flow
+```
+DM Browser                        Firestore                Player Browser
+─────────                         ────────                 ──────────────
+edit encounter                    campaigns/arkla          usePlayerFirebaseSync
+      │                                │                        │
+      ▼                                ▼                        ▼
+syncManager.pushCampaign() →  setDoc()  →  onSnapshot callback
+                                          →  useCampaignStore.getState().setCampaign()
+                                          →  React re-render with new data
+```
+
+### Cross-Device Test
+1. Open `vtt-seven.vercel.app` on Device A (DM login)
+2. Open same URL on Device B (Player login, e.g. "Wendy")
+3. On Device A: edit a character, create an encounter, change the session scene
+4. On Device B: see the update within ~3 seconds (Firestore latency)
+
+---
+
+## Phase 1-3: New Features, Upgrades, Firebase Enhancements (Updated: 2026-07-14 21:02)
+## Phase 1-3: New Features, Upgrades & Firebase Robustness
+
+### New Features (Phase 1)
+1. **CombatantDragSort** (`src/components/combat/CombatantDragSort.tsx`)
+   - HTML5 native drag-and-drop reordering for combatants
+   - Keyboard accessible (Arrow Up/Down to reorder)
+   - Visual feedback: scaling ring on hover, opacity during drag
+   - Integrated into InitiativeTracker
+
+2. **SessionRecapNotes** (`src/components/combat/SessionRecapNotes.tsx`)
+   - Bullet-point session notes panel
+   - Auto-saves to localStorage
+   - "Generate Recap" button → produces formatted Markdown recap
+   - One-click copy to clipboard for sharing with players
+
+3. **CommandPalette** (`src/components/ui/CommandPalette.tsx`)
+   - Spotlight/Alfred-style command palette triggered by Cmd/Ctrl+K
+   - Navigation commands registered on mount
+   - Fuzzy search across label, description, category
+   - Keyboard navigation (↑↓ arrows, Enter to execute)
+   - Integrated into AppShell
+
+### Upgrades (Phase 2)
+1. **InitiativeTracker** — Major rewrite
+   - Integrated CombatantDragSort for drag-and-drop turn ordering
+   - Added "Remove combatant" button in expanded actions
+   - Added session recap toggle button
+   - Added pause indicator in header
+   - Separated CombatLogPanel as a toggle button instead of embedded
+   - Improved responsive layout with SessionRecapNotes sidebar
+
+2. **CombatLogPanel** — Refactored as standalone toggle component
+   - Now imported and used as a button in InitiativeTracker header
+   - Same full-featured log with search, filter, export
+
+### Firebase Strengthening (Phase 3)
+1. **Rate Limiter** — New class in firebase-service.ts
+   - Prevents Firestore write storms
+   - Per-domain debouncing (campaign, session, homebrew)
+   - Minimum 500ms interval between pushes per domain
+   - Debounce queues with automatic cancellation
+
+2. **Retry Wrapper** (`withRetry`)
+   - Retries Firestore writes up to 2 times with exponential backoff
+   - Catches transient network errors
+
+3. **SyncManager** improvements
+   - `cancelAll()` on stop to clear pending rate-limited pushes
+   - Proper `_isListening` state tracking
+   - All push operations now use the rate limiter
+
+---
+
+## Phase 4-5: UI/UX Improvements & Deployment (Updated: 2026-07-14 21:04)
+## Phase 4: UI/UX Improvements
+
+### Header (`src/components/layout/Header.tsx`)
+- Glass-morphism backdrop: `bg-surface-850/95 backdrop-blur-md`
+- New "Session Live" badge (pulsing green, only shown when session is active)
+- PC count badge with rogue-color styling
+- Firebase sync indicator with divine-color styling
+- All badges show consistently with semantic color coding
+- Responsive: truncates breadcrumb on mobile
+
+### Sidebar (`src/components/layout/Sidebar.tsx`)
+- Active route indicator: left accent bar (`before:absolute before:left-0 before:top-1/4 before:h-1/2 before:w-0.5 before:rounded-full before:bg-accent-400`)
+- Session dot indicator in collapsed mode
+- Glass-morphism backdrop matching header
+- Hover animations on nav items and stat cards
+- Session Active indicator bar in expanded mode
+- Brand container with accent background
+
+### DmDashboard (`src/pages/DmDashboard.tsx`)
+- **Session start/end controls** directly on dashboard (calls `startSession()`/`endSession()`)
+- Session status bar with phase/scene/encounter count grid
+- Hover animations on stat cards (`hover:-translate-y-0.5 hover:shadow-lg`)
+- Stat cards now show: Players, Encounters, Maps, Journal, Combat (was: Players, Combatants, Alive, Round, Session)
+- Better data density with the new session section
+- Animated page entrance (`animate-in fade-in duration-300`)
+
+## Phase 5: Cleanup & Deployment
+
+### .gitignore
+- Added Firebase emulator log patterns: `firebase-debug.log`, `firestore-debug.log`, `ui-debug.log`
+
+### Deployment
+- **Vercel:** vtt-seven.vercel.app ✓
+- **Build:** 116 modules, 0 errors, 880 KB JS (245 KB gzipped)
+- **Domain:** Alias confirmed `vtt-seven.vercel.app`
+
+### Quick Reference
+- **Cmd/Ctrl+K** = Open Command Palette
+- **Cmd/Ctrl+/** = Keyboard Shortcuts Overlay
+- **Drag combatants** = Reorder initiative in Combat Center
+- **Cmd/Ctrl+Shift+N** = Toggle floating scratch pad
+
+---
