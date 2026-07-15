@@ -24,14 +24,20 @@ import { DmQuickReferencePanel } from "@/components/combat/DmQuickReferencePanel
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
-import type { Encounter } from "@/types";
+import type { Encounter, EncounterEnemy } from "@/types";
 import type { Combatant } from "@/types/combat";
 
 type SubTab = "combat" | "session" | "reference" | "build";
 
+/** Total enemy count in the encounter */
+function totalEnemyCount(enc: Encounter): number {
+  return enc.enemies.reduce((sum, e) => sum + (e.count || 1), 0);
+}
+
 export function Encounters() {
   const [subTab, setSubTab] = useState<SubTab>("combat");
   const campaign = useCampaignStore((s) => s.campaign);
+  const encounters = useCampaignStore((s) => s.campaign?.encounters ?? []);
   const addEncounter = useCampaignStore((s) => s.addEncounter);
   const updateEncounter = useCampaignStore((s) => s.updateEncounter);
   const removeEncounter = useCampaignStore((s) => s.removeEncounter);
@@ -44,7 +50,6 @@ export function Encounters() {
   const [editingEncounter, setEditingEncounter] = useState<Encounter | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
 
-  const encounters = campaign?.encounters ?? [];
   const playerCharacters = campaign?.playerCharacters ?? [];
 
   const handleSaveEncounter = (encounter: Encounter) => {
@@ -59,15 +64,13 @@ export function Encounters() {
   };
 
   /** Load a saved encounter into the combat tracker, populating all combatants
-   *  including player characters, enemies from the encounter template,
-   *  and possibly a hobgoblin leader depending on party level. */
+   *  including player characters, enemies from the encounter template. */
   const handleLoadIntoCombat = (encounter: Encounter) => {
     // Build combatants from the saved encounter's enemies list
-    const enemyCombatants: Omit<Combatant, "id">[] = encounter.enemies.flatMap((ee) => {
+    const enemyCombatants: Omit<Combatant, "id">[] = encounter.enemies.flatMap((ee: EncounterEnemy) => {
       const count = ee.count || 1;
       const hp = ee.customHp ?? 15;
-      // Determine enemy type name from a simple heuristic
-      const enemyName = ee.enemyId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      const enemyName = ee.customName ?? ee.enemyId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
       return Array.from({ length: count }, (_, i) => ({
         name: count > 1 ? `${enemyName} ${i + 1}` : enemyName,
         type: "enemy" as const,
@@ -192,7 +195,7 @@ export function Encounters() {
                       <p className="text-sm font-medium text-surface-200 truncate">{enc.name}</p>
                       <div className="flex gap-2 mt-1">
                         <Badge size="xs" variant="neutral">
-                          {enc.enemies.reduce((sum, e) => sum + e.count, 0)} enemies
+                          {totalEnemyCount(enc)} enemies
                         </Badge>
                         {enc.difficulty && (
                           <Badge
@@ -269,7 +272,7 @@ export function Encounters() {
                   <div>
                     <p className="font-medium text-surface-200">{enc.name}</p>
                     <p className="text-xs text-surface-400 mt-0.5">
-                      {enc.enemies.reduce((sum, e) => sum + e.count, 0)} enemies
+                      {totalEnemyCount(enc)} enemies
                       {enc.difficulty ? ` · ${enc.difficulty.charAt(0).toUpperCase() + enc.difficulty.slice(1)}` : ""}
                       {enc.environment ? ` · ${enc.environment}` : ""}
                     </p>

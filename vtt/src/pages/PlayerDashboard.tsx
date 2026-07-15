@@ -207,16 +207,16 @@ export function PlayerDashboard() {
                     <span className="text-[10px] text-surface-500">{c.type}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {c.initiative && (
+                    {c.initiative != null && (
                       <span className="rounded bg-surface-800 px-1.5 py-0.5 text-[11px] font-mono text-surface-300">
                         {c.initiative}
                       </span>
                     )}
-                    {c.hp !== undefined && (
+                    {c.hitPoints && (
                       <span className={`text-xs ${
-                        c.hp > 0 ? 'text-surface-400' : 'text-warrior-400'
+                        c.hitPoints.current > 0 ? 'text-surface-400' : 'text-warrior-400'
                       }`}>
-                        {c.hp}/{c.maxHp}
+                        {c.hitPoints.current}/{c.hitPoints.max}
                       </span>
                     )}
                   </div>

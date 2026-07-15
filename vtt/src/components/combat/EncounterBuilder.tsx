@@ -51,39 +51,13 @@ const SRD_ENEMIES: EnemyTemplate[] = [
 /* ── XP by CR (D&D 5e DMG p. 274) ──────────────────────────── */
 
 const XP_BY_CR: Record<number, number> = {
-  0: 10,
-  0.125: 25,
-  0.25: 50,
-  0.5: 100,
-  1: 200,
-  2: 450,
-  3: 700,
-  4: 1100,
-  5: 1800,
-  6: 2300,
-  7: 2900,
-  8: 3900,
-  9: 5000,
-  10: 5900,
-  11: 7200,
-  12: 8400,
-  13: 10000,
-  14: 11500,
-  15: 13000,
-  16: 15000,
-  17: 18000,
-  18: 20000,
-  19: 22000,
-  20: 25000,
-  21: 33000,
-  22: 41000,
-  23: 50000,
-  24: 62000,
-  25: 75000,
-  30: 155000,
+  0: 10, 0.125: 25, 0.25: 50, 0.5: 100,
+  1: 200, 2: 450, 3: 700, 4: 1100, 5: 1800,
+  6: 2300, 7: 2900, 8: 3900, 9: 5000, 10: 5900,
+  11: 7200, 12: 8400, 13: 10000, 14: 11500, 15: 13000,
+  16: 15000, 17: 18000, 18: 20000, 19: 22000, 20: 25000,
+  21: 33000, 22: 41000, 23: 50000, 24: 62000, 25: 75000, 30: 155000,
 };
-
-/* ── XP Thresholds by Party Level ───────────────────────────── */
 
 const PARTY_SIZE_MULTIPLIERS: Record<number, number> = {
   1: 1, 2: 1.5, 3: 2, 4: 2, 5: 2,
@@ -146,7 +120,6 @@ function calculateExactXp(enemies: { enemyId: string; count: number }[]): {
     }
   }
 
-  // Encounter size multiplier (DMG p. 274)
   const multKey = enemyCount as keyof typeof PARTY_SIZE_MULTIPLIERS;
   const multiplier = PARTY_SIZE_MULTIPLIERS[multKey] ?? 4;
   const adjustedXp = Math.floor(rawXp * multiplier);
@@ -158,8 +131,6 @@ function estimateDifficulty(adjustedXp: number, partyLevels: number[]): string {
   if (partyLevels.length === 0) return "unknown";
   const avgLevel = Math.round(partyLevels.reduce((s, l) => s + l, 0) / partyLevels.length);
   const threshold = THRESHOLDS[avgLevel] ?? THRESHOLDS[5];
-
-  // Deadly by total party threshold
   const partyDeadly = threshold.deadly * partyLevels.length;
   const partyHard = threshold.hard * partyLevels.length;
 
@@ -221,41 +192,18 @@ export function EncounterBuilder({
     );
   }, [searchQuery]);
 
-  /* ── Drag-reorder handlers ── */
-  const handleDragStart = useCallback((index: number) => {
-    setDraggedIndex(index);
-  }, []);
-
-  const handleDragOver = useCallback(
-    (e: React.DragEvent, index: number) => {
-      e.preventDefault();
-      if (draggedIndex === null || draggedIndex === index) return;
-
-      setSlots((prev) => {
-        const newSlots = [...prev];
-        const [moved] = newSlots.splice(draggedIndex, 1);
-        newSlots.splice(index, 0, moved);
-        return newSlots;
-      });
-      setDraggedIndex(index);
-    },
-    [draggedIndex],
-  );
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null);
-  }, []);
-
-  const addEnemy = (enemyId: string) => {
+  const addEnemy = (template: EnemyTemplate) => {
     setSlots((prev) => {
-      const existing = prev.find((s) => s.enemyId === enemyId);
+      const existing = prev.find((s) => s.enemyId === template.id);
       if (existing) {
         return prev.map((s) =>
-          s.enemyId === enemyId ? { ...s, count: s.count + 1 } : s,
+          s.enemyId === template.id ? { ...s, count: s.count + 1 } : s,
         );
       }
-      return [...prev, { enemyId, count: 1 }];
+      return [...prev, { enemyId: template.id, count: 1 }];
     });
+    setShowEnemyPicker(false);
+    setSearchQuery("");
   };
 
   const updateCount = (enemyId: string, count: number) => {
@@ -287,14 +235,15 @@ export function EncounterBuilder({
       name: name.trim(),
       description: description.trim() || "No description provided.",
       enemies: slots.map(
-        (s): EncounterEnemy => ({
+        (s) => ({
           enemyId: s.enemyId,
           count: s.count,
-        }),
+        } as EncounterEnemy),
       ),
-      environment: environment.trim() || undefined,
-      difficulty: (difficulty === "unknown" ? undefined : difficulty) as "easy" | "medium" | "hard" | "deadly" | undefined,
+      environment: environment.trim() || "Unknown",
+      difficulty: (difficulty === "unknown" ? "medium" : difficulty),
       experienceReward: totalXp,
+      isActive: false,
       isHomebrew: false,
       createdAt: existingEncounter?.createdAt ?? Date.now(),
       updatedAt: Date.now(),
@@ -313,8 +262,8 @@ export function EncounterBuilder({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Roadside Ambush"
-            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none"
+            placeholder="e.g., Goblin Ambush"
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
           />
         </div>
         <div>
@@ -322,9 +271,9 @@ export function EncounterBuilder({
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the encounter scenario..."
-            rows={3}
-            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none resize-none"
+            rows={2}
+            placeholder="Brief description of the encounter..."
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
           />
         </div>
         <div>
@@ -332,86 +281,61 @@ export function EncounterBuilder({
           <input
             value={environment}
             onChange={(e) => setEnvironment(e.target.value)}
-            placeholder="e.g., Dark forest, ruined keep, swamp"
-            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none"
+            placeholder="e.g., Forest, Dungeon, City Streets"
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
           />
         </div>
       </div>
 
-      {/* Enemy Groups with Drag-Reorder */}
+      {/* Enemy Slots */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400">
-            Enemy Groups
-          </h4>
-          <Button size="xs" onClick={() => setShowEnemyPicker(true)}>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-400">
+            Enemies ({slots.length} group{slots.length !== 1 ? "s" : ""})
+          </h3>
+          <Button size="xs" variant="ghost" onClick={() => setShowEnemyPicker(true)}>
             + Add Enemy
           </Button>
         </div>
 
         {slots.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-surface-700 bg-surface-800 py-8">
-            <span className="text-2xl text-surface-600">⚔</span>
-            <p className="mt-2 text-sm text-surface-500">No enemies yet. Add some!</p>
+          <div className="rounded-lg border border-dashed border-surface-700 bg-surface-800 py-6 text-center">
+            <p className="text-xs text-surface-500">No enemies added yet. Click "Add Enemy" to begin.</p>
           </div>
         ) : (
           <div className="space-y-1.5">
-            {slots.map((slot, index) => {
-              const template = SRD_ENEMIES.find((e) => e.id === slot.enemyId);
-              if (!template) return null;
+            {slots.map((slot, i) => {
+              const template = SRD_ENEMIES.find((t) => t.id === slot.enemyId);
               return (
                 <div
-                  key={`${slot.enemyId}-${index}`}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-3 rounded-lg border bg-surface-800 px-3 py-2.5 transition-all ${
-                    draggedIndex === index
-                      ? "border-accent-500 opacity-50 scale-[1.02] shadow-lg"
-                      : "border-surface-700 hover:border-surface-600"
-                  }`}
+                  key={slot.enemyId}
+                  className="flex items-center justify-between rounded-lg bg-surface-800 px-3 py-2"
                 >
-                  {/* Drag Handle */}
-                  <span className="cursor-grab text-surface-500 hover:text-surface-300 text-sm shrink-0" title="Drag to reorder">
-                    ⠿
-                  </span>
-
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-surface-200">{template.name}</p>
-                    <p className="text-xs text-surface-500">
-                      CR {template.cr} · AC {template.ac} · {template.hp} HP · {template.type}
-                      {template.subType ? ` (${template.subType})` : ""}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-surface-200 truncate">
+                      {template?.name ?? slot.enemyId}
+                    </p>
+                    <p className="text-[10px] text-surface-500">
+                      CR {template?.cr ?? "?"} · AC {template?.ac ?? "?"} · HP {template?.hp ?? "?"}
                     </p>
                   </div>
-
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
                     <button
                       onClick={() => updateCount(slot.enemyId, slot.count - 1)}
-                      className="flex h-7 w-7 items-center justify-center rounded bg-surface-700 text-surface-400 hover:bg-surface-600 hover:text-surface-200 transition-colors"
-                      aria-label="Decrease count"
-                    >
-                      −
-                    </button>
-                    <span className="w-6 text-center text-sm font-bold text-surface-200">
+                      className="flex h-6 w-6 items-center justify-center rounded bg-surface-700 text-xs text-surface-300 hover:text-surface-100"
+                    >−</button>
+                    <span className="w-6 text-center text-sm font-medium text-surface-200">
                       {slot.count}
                     </span>
                     <button
                       onClick={() => updateCount(slot.enemyId, slot.count + 1)}
-                      className="flex h-7 w-7 items-center justify-center rounded bg-surface-700 text-surface-400 hover:bg-surface-600 hover:text-surface-200 transition-colors"
-                      aria-label="Increase count"
-                    >
-                      +
-                    </button>
+                      className="flex h-6 w-6 items-center justify-center rounded bg-surface-700 text-xs text-surface-300 hover:text-surface-100"
+                    >+</button>
+                    <button
+                      onClick={() => removeEnemy(slot.enemyId)}
+                      className="ml-1 text-surface-600 hover:text-warrior-400"
+                    >✕</button>
                   </div>
-
-                  <button
-                    onClick={() => removeEnemy(slot.enemyId)}
-                    className="flex h-7 w-7 items-center justify-center rounded text-surface-500 hover:bg-warrior-500/10 hover:text-warrior-400 transition-colors"
-                    aria-label="Remove enemy"
-                  >
-                    ✕
-                  </button>
                 </div>
               );
             })}
@@ -419,85 +343,73 @@ export function EncounterBuilder({
         )}
       </div>
 
-      {/* Difficulty Summary — Enhanced */}
-      {slots.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="rounded-lg border border-surface-700 bg-surface-800 p-3">
-            <p className="text-xs text-surface-500">Raw XP</p>
-            <p className="text-lg font-bold text-surface-100">{totalXp.toLocaleString()}</p>
-          </div>
-          <div className="rounded-lg border border-surface-700 bg-surface-800 p-3">
-            <p className="text-xs text-surface-500">Adjusted XP</p>
-            <p className="text-lg font-bold text-surface-100">{adjustedXp.toLocaleString()}</p>
-            <p className="text-[10px] text-surface-500">×{multiplier} mult</p>
-          </div>
-          <div className="rounded-lg border border-surface-700 bg-surface-800 p-3">
-            <p className="text-xs text-surface-500">Difficulty</p>
-            <span className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-bold mt-1 ${getDifficultyColor(difficulty)}`}>
-              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-            </span>
-          </div>
-          <div className="rounded-lg border border-surface-700 bg-surface-800 p-3">
-            <p className="text-xs text-surface-500">Party</p>
-            <p className="text-lg font-bold text-surface-100">Lvl {averagePartyLevel}</p>
-            <p className="text-[10px] text-surface-500">{partyLevels.length} adventurers</p>
-          </div>
+      {/* Difficulty & XP Display */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-lg bg-surface-800 p-3 text-center">
+          <p className="text-[10px] text-surface-500">Raw XP</p>
+          <p className="text-sm font-bold text-surface-200">{totalXp.toLocaleString()}</p>
         </div>
-      )}
+        <div className="rounded-lg bg-surface-800 p-3 text-center">
+          <p className="text-[10px] text-surface-500">Adjusted (×{multiplier})</p>
+          <p className="text-sm font-bold text-surface-200">{adjustedXp.toLocaleString()}</p>
+        </div>
+        <div className="rounded-lg bg-surface-800 p-3 text-center">
+          <p className="text-[10px] text-surface-500">Difficulty</p>
+          <p className={`text-sm font-bold ${getDifficultyColor(difficulty)}`}>
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+          </p>
+        </div>
+      </div>
+
+      {/* Average Party Level */}
+      <p className="text-[10px] text-surface-500">
+        Based on {partyLevels.length} PC(s) with average level {averagePartyLevel}.
+      </p>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-2 border-t border-surface-700">
-        <Button variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>
-          {existingEncounter ? "Update Encounter" : "Create Encounter"}
+      <div className="flex justify-end gap-2 border-t border-surface-700 pt-4">
+        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+        <Button size="sm" onClick={handleSave} disabled={!name.trim() || slots.length === 0}>
+          Save Encounter
         </Button>
       </div>
 
       {/* Enemy Picker Modal */}
       {showEnemyPicker && (
-        <Modal modalId="enemy-picker" title="Select Enemy" size="lg">
-          <div className="space-y-4">
+        <Modal modalId="enemy-picker" title="Add Enemy" size="md">
+          <div className="space-y-3">
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search enemies by name, type, or subtype..."
-              className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none"
+              placeholder="Search enemies by name or type..."
               autoFocus
+              className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
             />
-            <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto pr-1">
-              {filteredEnemies.map((enemy) => (
+            <div className="max-h-60 overflow-y-auto space-y-1">
+              {filteredEnemies.map((template) => (
                 <button
-                  key={enemy.id}
-                  onClick={() => {
-                    addEnemy(enemy.id);
-                    setShowEnemyPicker(false);
-                    setSearchQuery("");
-                  }}
-                  className="text-left rounded-lg border border-surface-700 bg-surface-800 p-3 transition-colors hover:border-accent-500/50 hover:bg-surface-700"
+                  key={template.id}
+                  onClick={() => addEnemy(template)}
+                  className="flex w-full items-center justify-between rounded-lg bg-surface-800 px-3 py-2 text-left transition-colors hover:bg-surface-700"
                 >
-                  <p className="text-sm font-medium text-surface-200">{enemy.name}</p>
-                  <div className="flex gap-2 mt-1">
-                    <Badge size="xs" variant="neutral">CR {enemy.cr}</Badge>
-                    <Badge size="xs" variant="neutral">AC {enemy.ac}</Badge>
-                    <Badge size="xs" variant="neutral">HP {enemy.hp}</Badge>
+                  <div>
+                    <p className="text-sm font-medium text-surface-200">{template.name}</p>
+                    <p className="text-[10px] text-surface-500 capitalize">
+                      {template.type}{template.subType ? ` (${template.subType})` : ""}
+                    </p>
                   </div>
-                  <p className="text-[10px] text-surface-500 mt-1">
-                    {enemy.type}{enemy.subType ? ` · ${enemy.subType}` : ""} · {enemy.source}
-                  </p>
+                  <div className="flex gap-2 text-[10px] text-surface-500">
+                    <span>CR {template.cr}</span>
+                    <span>AC {template.ac}</span>
+                    <span>HP {template.hp}</span>
+                  </div>
                 </button>
               ))}
               {filteredEnemies.length === 0 && (
-                <div className="col-span-2 py-8 text-center text-sm text-surface-500">
-                  No enemies matching "{searchQuery}"
-                </div>
+                <p className="py-4 text-center text-xs text-surface-500">
+                  No enemies match "{searchQuery}"
+                </p>
               )}
-            </div>
-            <div className="flex justify-end">
-              <Button variant="ghost" size="sm" onClick={() => { setShowEnemyPicker(false); setSearchQuery(""); }}>
-                Cancel
-              </Button>
             </div>
           </div>
         </Modal>

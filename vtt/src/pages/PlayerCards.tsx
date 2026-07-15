@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PartyCompendium } from "@/components/player/PartyCompendium";
 import { CharacterForm } from "@/components/player/CharacterForm";
 import { PlayerInventory } from "@/components/player/PlayerInventory";
-import type { PlayerCharacter, Ability } from "@/types";
+import type { PlayerCharacter, Ability, EquipmentSlot } from "@/types";
 
 type ViewMode = "grid" | "compendium";
 type SortKey = "name" | "level" | "class" | "race";
@@ -25,6 +25,30 @@ const ABILITY_SHORT: Record<Ability, string> = {
   strength: "STR", dexterity: "DEX", constitution: "CON",
   intelligence: "INT", wisdom: "WIS", charisma: "CHA",
 };
+
+/* ── Helpers ────────────────────────────────────────────────── */
+
+function getAbilityScore(char: PlayerCharacter, ability: Ability): number {
+  return char[ability] ?? 10;
+}
+
+function formatCurrency(char: PlayerCharacter, type: "cp" | "sp" | "ep" | "gp" | "pp"): number {
+  switch (type) {
+    case "cp": return char.copper ?? 0;
+    case "sp": return char.silver ?? 0;
+    case "ep": return char.electrum ?? 0;
+    case "gp": return char.gold ?? 0;
+    case "pp": return char.platinum ?? 0;
+  }
+}
+
+function totalGoldValue(char: PlayerCharacter): number {
+  return (char.gold ?? 0)
+    + Math.floor((char.silver ?? 0) / 10)
+    + Math.floor((char.copper ?? 0) / 100)
+    + (char.electrum ?? 0) * 0.5
+    + (char.platinum ?? 0) * 10;
+}
 
 /** Export a single character as a downloadable JSON file */
 function exportCharacter(char: PlayerCharacter): void {
@@ -124,17 +148,34 @@ export function PlayerCards() {
       try {
         const text = await file.text();
         const data = JSON.parse(text) as PlayerCharacter;
-        if (!data.name || !data.class || !data.abilityScores) {
-          useUiStore.getState().showToast({ message: "Invalid character file.", type: "error" });
+        if (!data.name || !data.class) {
+          // If the file uses the old abilityScores/currency structure, convert it
+          if ((data as any).abilityScores) {
+            throw new Error("Old format detected — use the export from this app");
+          }
+          useUiStore.getState().showToast({ message: "Invalid character file: missing name/class.", type: "error" });
           return;
         }
         data.id = `pc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         data.createdAt = Date.now();
         data.updatedAt = Date.now();
+        // Ensure flat ability scores exist
+        if (!data.strength) data.strength = 10;
+        if (!data.dexterity) data.dexterity = 10;
+        if (!data.constitution) data.constitution = 10;
+        if (!data.intelligence) data.intelligence = 10;
+        if (!data.wisdom) data.wisdom = 10;
+        if (!data.charisma) data.charisma = 10;
+        // Ensure flat currency exists
+        if (data.copper === undefined) data.copper = 0;
+        if (data.silver === undefined) data.silver = 0;
+        if (data.electrum === undefined) data.electrum = 0;
+        if (data.gold === undefined) data.gold = 0;
+        if (data.platinum === undefined) data.platinum = 0;
         addCharacter(data);
         useUiStore.getState().showToast({ message: `Imported "${data.name}"!`, type: "success" });
-      } catch {
-        useUiStore.getState().showToast({ message: "Failed to parse character file.", type: "error" });
+      } catch (err) {
+        useUiStore.getState().showToast({ message: err instanceof Error ? err.message : "Failed to parse character file.", type: "error" });
       }
     };
     input.click();
@@ -268,11 +309,11 @@ export function PlayerCards() {
                   </div>
                 </div>
 
-                {/* Equipment count badge */}
+                {/* Equipment count + gold badge */}
                 <div className="flex items-center gap-2 text-[10px] text-surface-500">
                   <span>🎒 {(char.equipment ?? []).length} items</span>
                   <span>·</span>
-                  <span>🪙 {(char.currency?.gp ?? 0)} gp</span>
+                  <span>🪙 {formatCurrency(char, "gp")} gp</span>
                 </div>
 
                 {/* Ability Scores Quick View */}
@@ -280,7 +321,7 @@ export function PlayerCards() {
                   {ABILITY_ORDER.map((ability) => (
                     <div key={ability} className="text-center rounded bg-surface-800 py-1">
                       <p className="text-[9px] font-medium text-surface-500 uppercase">{ABILITY_SHORT[ability]}</p>
-                      <p className="text-[11px] font-bold text-surface-200">{char.abilityScores[ability]}</p>
+                      <p className="text-[11px] font-bold text-surface-200">{getAbilityScore(char, ability)}</p>
                     </div>
                   ))}
                 </div>
@@ -328,7 +369,7 @@ export function PlayerCards() {
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400 mb-2">Ability Scores</h4>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
                   {ABILITY_ORDER.map((ability) => {
-                    const score = selectedCharacter.abilityScores[ability];
+                    const score = getAbilityScore(selectedCharacter, ability);
                     const mod = Math.floor((score - 10) / 2);
                     return (
                       <div key={ability} className="text-center rounded-lg border border-surface-700 bg-surface-800 p-3">
@@ -362,7 +403,7 @@ export function PlayerCards() {
                   <div className="flex flex-wrap gap-1">
                     {(selectedCharacter.equipment ?? []).map((item, i) => (
                       <Badge key={`eq-${i}`} size="xs" variant="neutral">
-                        {item}
+                        {item.item} {item.quantity > 1 ? `×${item.quantity}` : ""}
                       </Badge>
                     ))}
                   </div>
@@ -373,11 +414,11 @@ export function PlayerCards() {
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400 mb-2">Currency</h4>
                 <div className="flex gap-3 text-xs text-surface-300">
-                  <span>🟤 {selectedCharacter.currency?.cp ?? 0} CP</span>
-                  <span>⚪ {selectedCharacter.currency?.sp ?? 0} SP</span>
-                  <span>🔵 {selectedCharacter.currency?.ep ?? 0} EP</span>
-                  <span>🟡 {selectedCharacter.currency?.gp ?? 0} GP</span>
-                  <span>💠 {selectedCharacter.currency?.pp ?? 0} PP</span>
+                  <span>🟤 {formatCurrency(selectedCharacter, "cp")} CP</span>
+                  <span>⚪ {formatCurrency(selectedCharacter, "sp")} SP</span>
+                  <span>🔵 {formatCurrency(selectedCharacter, "ep")} EP</span>
+                  <span>🟡 {formatCurrency(selectedCharacter, "gp")} GP</span>
+                  <span>💠 {formatCurrency(selectedCharacter, "pp")} PP</span>
                 </div>
               </div>
 

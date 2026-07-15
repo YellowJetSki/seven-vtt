@@ -32,7 +32,7 @@ export function InitiativeRoller() {
         (pc) => pc.name.toLowerCase() === c.name.toLowerCase()
       );
       if (pc) {
-        const dexMod = abilityModifier(pc.abilityScores.dexterity);
+        const dexMod = abilityModifier(pc.dexterity);
         const init = dexMod + Math.floor(Math.random() * 20) + 1;
         setCombatantInitiative(c.id, init);
         updated++;
@@ -79,7 +79,7 @@ export function InitiativeRoller() {
               const pc = characters.find(
                 (pc) => pc.name.toLowerCase() === c.name.toLowerCase()
               );
-              const dexMod = pc ? abilityModifier(pc.abilityScores.dexterity) : null;
+              const dexMod = pc ? abilityModifier(pc.dexterity) : null;
               return (
                 <div key={c.id} className="flex items-center gap-2 rounded bg-surface-800 px-2 py-1.5">
                   <span className="flex-1 text-xs text-surface-300 truncate">{c.name}</span>
@@ -88,34 +88,25 @@ export function InitiativeRoller() {
                   )}
                   <input
                     type="number"
-                    defaultValue={c.initiative}
-                    className="w-14 rounded border border-surface-700 bg-surface-900 px-2 py-1 text-xs text-surface-100 text-center focus:border-accent-500 focus:outline-none"
-                    onBlur={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (!isNaN(val)) setCombatantInitiative(c.id, val);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const val = parseInt((e.target as HTMLInputElement).value, 10);
-                        if (!isNaN(val)) setCombatantInitiative(c.id, val);
-                      }
-                    }}
+                    value={c.initiative}
+                    onChange={(e) => setCombatantInitiative(c.id, parseInt(e.target.value) || 0)}
+                    className="w-16 rounded border border-surface-700 bg-surface-900 px-2 py-0.5 text-center text-xs text-surface-100 focus:border-accent-500 focus:outline-none"
                   />
                 </div>
               );
             })}
           </div>
 
-          {/* Bulk actions */}
-          <div className="flex gap-2 pt-1">
-            <Button size="xs" variant="secondary" onClick={handleAssignAll}>
-              Assign PCs from DEX
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button size="xs" variant="ghost" onClick={handleAssignAll}>
+              🎲 Assign from DEX
             </Button>
             <Button size="xs" variant="ghost" onClick={handleSortByInitiative}>
-              Sort by Init
+              🔽 Sort
             </Button>
             <Button size="xs" variant="ghost" onClick={handleClearAll}>
-              Clear
+              🗑️ Clear
             </Button>
           </div>
         </div>

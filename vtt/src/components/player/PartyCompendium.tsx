@@ -1,6 +1,7 @@
 /* ── Party Compendium ──────────────────────────────────────────
  * A beautifully crafted overview of all player characters in the
  * campaign. Shows key stats at a glance in a grid of compact cards.
+ * Uses flat PlayerCharacter type (ability scores are direct fields).
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
@@ -9,9 +10,18 @@ import { PlayerCharacterSheet } from "@/components/player/PlayerCharacterSheet";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useUiStore } from "@/stores/uiStore";
-import type { PlayerCharacter } from "@/types";
+import type { PlayerCharacter, Ability } from "@/types";
 
-const ABILITY_ABBR = ["STR", "DEX", "CON", "INT", "WIS", "CHA"] as const;
+const ABILITY_KEYS: Ability[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
+const ABILITY_ABBR: Record<Ability, string> = {
+  strength: "STR", dexterity: "DEX", constitution: "CON",
+  intelligence: "INT", wisdom: "WIS", charisma: "CHA",
+};
+
+function abilityModifier(score: number): string {
+  const mod = Math.floor((score - 10) / 2);
+  return mod >= 0 ? `+${mod}` : `${mod}`;
+}
 
 export function PartyCompendium() {
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
@@ -127,11 +137,6 @@ function CharacterCard({
   const hpColor =
     hpPercent > 50 ? "bg-rogue-500" : hpPercent > 25 ? "bg-divine-500" : "bg-warrior-500";
 
-  const abilityModifier = (score: number): string => {
-    const mod = Math.floor((score - 10) / 2);
-    return mod >= 0 ? `+${mod}` : `${mod}`;
-  };
-
   return (
     <div
       className="rounded-xl border border-surface-700 bg-surface-850 overflow-hidden transition-all hover:border-surface-600 hover:shadow-lg cursor-pointer group"
@@ -212,41 +217,20 @@ function CharacterCard({
         {/* Ability Scores (compact) */}
         {showAllAbilities && (
           <div className="grid grid-cols-6 gap-1">
-            {(["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const).map((ability, idx) => (
-              <div key={ability} className="rounded-md bg-surface-800 py-1 text-center">
-                <p className="text-[9px] font-semibold uppercase text-surface-500">{ABILITY_ABBR[idx]}</p>
-                <p className="text-xs font-bold text-surface-200">{character.abilityScores[ability]}</p>
-                <p className={`text-[9px] font-medium ${
-                  character.abilityScores[ability] >= 10 ? "text-rogue-400" : "text-warrior-400"
-                }`}>
-                  {abilityModifier(character.abilityScores[ability])}
-                </p>
-              </div>
-            ))}
+            {ABILITY_KEYS.map((ability) => {
+              const score = character[ability];
+              return (
+                <div key={ability} className="rounded-md bg-surface-800 py-1 text-center">
+                  <p className="text-[9px] font-semibold uppercase text-surface-500">{ABILITY_ABBR[ability]}</p>
+                  <p className="text-xs font-bold text-surface-200">{score}</p>
+                  <p className={`text-[9px] font-medium ${score >= 10 ? "text-rogue-400" : "text-warrior-400"}`}>
+                    {abilityModifier(score)}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         )}
-
-        {/* Top Skills (first 4) */}
-        <div className="flex flex-wrap gap-1">
-          {Object.entries(character.skills)
-            .filter(([, val]) => val > 0)
-            .slice(0, 6)
-            .map(([key, val]) => (
-              <span
-                key={key}
-                className="rounded bg-rogue-500/10 px-2 py-0.5 text-[10px] text-rogue-400"
-              >
-                {key === "animalHandling" ? "Animal" :
-                 key === "sleightOfHand" ? "Sleight" :
-                 key.charAt(0).toUpperCase() + key.slice(1)} +{val}
-              </span>
-            ))}
-          {Object.entries(character.skills).filter(([, val]) => val > 0).length > 6 && (
-            <span className="text-[10px] text-surface-500">
-              +{Object.entries(character.skills).filter(([, val]) => val > 0).length - 6} more
-            </span>
-          )}
-        </div>
 
         {/* View full sheet link */}
         <div className="pt-1 text-center">

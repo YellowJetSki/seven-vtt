@@ -2,6 +2,10 @@
  * Core data types shared across the app.
  * ─────────────────────────────────────────────────────────────── */
 
+/* ── Ability Score Type ─────────────────────────────────────── */
+
+export type Ability = "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
+
 /* ── Player Character ───────────────────────────────────────── */
 
 export interface PlayerCharacter {
@@ -102,14 +106,23 @@ export interface InventoryItem {
 
 /* ── Encounters & Combatants ────────────────────────────────── */
 
+export interface EncounterEnemy {
+  enemyId: string;
+  count: number;
+  customHp?: number;
+  customName?: string;
+}
+
 export interface Encounter {
   id: string;
   name: string;
   description: string;
-  creatures: EncounterCreature[];
+  enemies: EncounterEnemy[];
   environment: string;
   difficulty: string;
+  experienceReward?: number;
   isActive: boolean;
+  isHomebrew?: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -143,18 +156,6 @@ export interface EncounterCreature {
 
 export type CreatureSize = "Tiny" | "Small" | "Medium" | "Large" | "Huge" | "Gargantuan";
 export type CreatureType = "Aberration" | "Beast" | "Celestial" | "Construct" | "Dragon" | "Elemental" | "Fey" | "Fiend" | "Giant" | "Humanoid" | "Monstrosity" | "Ooze" | "Plant" | "Undead" | "Custom";
-
-export interface Encounter {
-  id: string;
-  name: string;
-  description: string;
-  creatures: EncounterCreature[];
-  environment: string;
-  difficulty: string;
-  isActive: boolean;
-  createdAt: number;
-  updatedAt: number;
-}
 
 export interface AbilityScores {
   strength: number;
@@ -203,7 +204,7 @@ export interface MapToken {
   visible: boolean;
   icon?: string;
   hp?: { current: number; max: number };
-  speed?: number; // Movement speed in feet (D&D 5e default: 30). Used by MovementRangeOverlay.
+  speed?: number;
   imageUrl?: string;
 }
 

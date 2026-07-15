@@ -1,509 +1,265 @@
-/* ── Loot Generator — Post-Combat Treasure Distribution ────────
- * D&D 5e-compliant treasure generator per DMG Chapter 7.
- * Features:
- *  • Individual treasure by CR tier
- *  • Hoard treasure tables (simplified)
- *  • Magic item generation
- *  • Manual custom loot entries
- *  • Distribution to player characters
- *  • Clipboard export for session notes
+/* ── Loot Generator ────────────────────────────────────────────
+ * Generates loot for encounters based on D&D 5e treasure tables.
+ * Supports coins, art objects, magic items, and mundane loot.
+ * Items can be assigned to specific player characters.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import type { PlayerCharacter, EquipmentSlot } from "@/types";
 
-/* ── Interface ──────────────────────────────────────────────── */
+/* ── Types ──────────────────────────────────────────────────── */
 
-export interface LootEntry {
+type LootType = "coin" | "art" | "magic" | "mundane";
+
+interface LootEntry {
   id: string;
-  type: "coin" | "gem" | "art" | "item" | "magic_item" | "consumable";
   name: string;
+  type: LootType;
   quantity: number;
-  value: number; // in gp
+  value: number;
   description?: string;
-  rarity?: "common" | "uncommon" | "rare" | "very_rare" | "legendary";
-  assignedTo?: string; // player character ID
+  rarity?: string;
+  assignedTo?: string;
 }
 
-/* ── DMG Treasure Tables (simplified) ───────────────────────── */
-
-interface CoinRoll {
-  copper: string;
-  silver: string;
-  gold: string;
-  platinum: string;
+function uid(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const INDIVIDUAL_TREASURE: Record<string, CoinRoll> = {
-  "0-4": { copper: "5d6 (×1)", silver: "—", gold: "—", platinum: "—" },
-  "5-10": { copper: "—", silver: "4d6 (×1)", gold: "—", platinum: "—" },
-  "11-16": { copper: "—", silver: "—", gold: "3d6 (×1)", platinum: "—" },
-  "17+": { copper: "—", silver: "—", gold: "—", platinum: "3d6 (×1)" },
-};
-
-const GEMS_ART_TABLE: { min: number; max: number; count: number; items: string[]; value: number }[] = [
-  { min: 1, max: 25, count: 0, items: [], value: 0 },
-  { min: 26, max: 90, count: 2, items: ["Ornamental stone (10 gp)", "Small gem (10 gp)"], value: 10 },
-  { min: 91, max: 100, count: 2, items: ["Art object (25 gp)", "Gemstone (50 gp)"], value: 25 },
+const MUNDANE_LOOT = [
+  { name: "Healer's Kit", value: 5, description: "10 uses, stabilizes dying" },
+  { name: "Crowbar", value: 2, description: "Advantage on STR checks to pry open" },
+  { name: "Hooded Lantern", value: 5, description: "30/60 ft light, can be shuttered" },
+  { name: "Silk Rope (50ft)", value: 10, description: "16 STR check to break" },
+  { name: "Magnifying Glass", value: 100, description: "Advantage on investigation" },
+  { name: "Caltrops (bag)", value: 1, description: "5 ft square, 1 dmg, half speed" },
+  { name: "Manacles", value: 2, description: "DC 20 STR check to break" },
+  { name: "Signal Whistle", value: 0.5, description: "Audible up to 1 mile" },
+  { name: "Sealing Wax", value: 0.5, description: "Red wax for letters" },
+  { name: "Writing Ink (vial)", value: 10, description: "8 hours of writing" },
+  { name: "Fine Clothes", value: 15, description: "Silk doublet with embroidery" },
 ];
 
-const MAGIC_ITEM_TABLES: { label: string; items: { name: string; rarity: string }[] }[] = [
-  {
-    label: "Table A (Minor — Common)",
-    items: [
-      { name: "Potion of Healing", rarity: "common" },
-      { name: "Spell Scroll (Cantrip)", rarity: "common" },
-      { name: "Bag of Tricks (Gray)", rarity: "uncommon" },
-      { name: "Dust of Disappearance", rarity: "uncommon" },
-      { name: "Oil of Slipperiness", rarity: "uncommon" },
-      { name: "Bag of Holding", rarity: "uncommon" },
-      { name: "Alchemy Jug", rarity: "uncommon" },
-      { name: "Wand of Magic Detection", rarity: "uncommon" },
-    ],
-  },
-  {
-    label: "Table B (Uncommon — Moderate)",
-    items: [
-      { name: "Potion of Greater Healing", rarity: "uncommon" },
-      { name: "Spell Scroll (Level 1)", rarity: "common" },
-      { name: "Cloak of Protection", rarity: "uncommon" },
-      { name: "Ring of Protection", rarity: "rare" },
-      { name: "Gauntlets of Ogre Power", rarity: "uncommon" },
-      { name: "Boots of Elvenkind", rarity: "uncommon" },
-      { name: "Cloak of Elvenkind", rarity: "uncommon" },
-      { name: "Wand of Magic Missiles", rarity: "uncommon" },
-    ],
-  },
-  {
-    label: "Table C (Rare — Powerful)",
-    items: [
-      { name: "Potion of Superior Healing", rarity: "rare" },
-      { name: "Spell Scroll (Level 3)", rarity: "uncommon" },
-      { name: "Ring of Spell Storing", rarity: "rare" },
-      { name: "Bracers of Archery", rarity: "uncommon" },
-      { name: "Flame Tongue Longsword", rarity: "rare" },
-      { name: "Staff of Healing", rarity: "rare" },
-      { name: "Wand of Fireballs", rarity: "rare" },
-      { name: "Belt of Giant Strength (Hill)", rarity: "rare" },
-    ],
-  },
+const ART_OBJECTS = [
+  { name: "Silver Chalice", value: 25, description: "Engraved with elven vines" },
+  { name: "Gold Ring", value: 50, description: "Set with a small garnet" },
+  { name: "Jade Figurine", value: 75, description: "A frog in meditation pose" },
+  { name: "Silk Tapestry", value: 100, description: "Depicts a forgotten battle" },
+  { name: "Platinum Necklace", value: 200, description: "With sapphire pendant" },
+  { name: "Ivory Chess Set", value: 250, description: "Intricately carved" },
+  { name: "Crystal Decanter", value: 500, description: "Filled with ancient elven wine" },
+  { name: "Enchanted Painting", value: 750, description: "The painting's subject winks" },
+  { name: "Gilded Statue", value: 1000, description: "12-inch statue of a forgotten deity" },
 ];
 
-/* ── Treasure Generator Functions ───────────────────────────── */
-
-function generateCoins(crTier: string): { cp: number; sp: number; gp: number; pp: number } {
-  const template = INDIVIDUAL_TREASURE[crTier];
-  if (!template) return { cp: 0, sp: 0, gp: 0, pp: 0 };
-
-  const parseRoll = (val: string): number => {
-    const m = val.match(/(\d+)d(\d+)(?:\s*\(×(\d+)\))?/);
-    if (!m) return 0;
-    const [count, sides, multiplier] = [parseInt(m[1]), parseInt(m[2]), parseInt(m[3] ?? "1")];
-    let total = 0;
-    for (let i = 0; i < count; i++) total += Math.floor(Math.random() * sides) + 1;
-    return total * multiplier;
-  };
-
-  return {
-    cp: parseRoll(template.copper),
-    sp: parseRoll(template.silver),
-    gp: parseRoll(template.gold),
-    pp: parseRoll(template.platinum),
-  };
-}
+const MAGIC_ITEMS = [
+  { name: "Potion of Healing", value: 50, rarity: "common", description: "2d4+2" },
+  { name: "Spell Scroll (1st)", value: 75, rarity: "common", description: "One first-level spell" },
+  { name: "Bag of Holding", value: 500, rarity: "uncommon", description: "500 lb, 64 cubic ft" },
+  { name: "Cloak of Protection", value: 750, rarity: "uncommon", description: "+1 AC and saves" },
+  { name: "Boots of Elvenkind", value: 500, rarity: "uncommon", description: "Silent movement" },
+  { name: "Goggles of Night", value: 500, rarity: "uncommon", description: "Darkvision 60ft" },
+  { name: "Wand of Magic Missiles", value: 1000, rarity: "uncommon", description: "7 charges" },
+  { name: "Bracers of Archery", value: 1500, rarity: "uncommon", description: "+2 damage bows" },
+  { name: "Sword of Vengeance", value: 2000, rarity: "rare", description: "Cursed curseling sword" },
+  { name: "Ring of Protection", value: 3000, rarity: "rare", description: "+1 AC and saves" },
+  { name: "Staff of Healing", value: 5000, rarity: "rare", description: "10 charges, various heals" },
+  { name: "Flame Tongue (Longsword)", value: 8000, rarity: "rare", description: "2d6 fire on hit" },
+  { name: "Portable Hole", value: 5000, rarity: "rare", description: "6 ft diameter, 10 ft deep" },
+  { name: "Winged Boots", value: 4000, rarity: "rare", description: "4 hours flight per day" },
+  { name: "Amulet of Health", value: 6000, rarity: "rare", description: "CON = 19" },
+];
 
 /* ── Component ──────────────────────────────────────────────── */
 
 export function LootGenerator() {
   const campaign = useCampaignStore((s) => s.campaign);
+  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
   const updatePlayerCharacter = useCampaignStore((s) => s.updatePlayerCharacter);
   const showToast = useUiStore((s) => s.showToast);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [lootEntries, setLootEntries] = useState<LootEntry[]>([]);
-  const [selectedDistributionId, setSelectedDistributionId] = useState<string | null>(null);
-  const [customName, setCustomName] = useState("");
-  const [customValue, setCustomValue] = useState("");
-  const [customQuantity, setCustomQuantity] = useState("1");
-  const [magicTable, setMagicTable] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [coinAmount, setCoinAmount] = useState(100);
 
-  // Use refs for characters to avoid hook instability warnings
-  const charactersRef = useRef(campaign?.playerCharacters ?? []);
-  charactersRef.current = campaign?.playerCharacters ?? [];
-  const characters = charactersRef.current;
+  /* ── Generate Coin Drop ── */
+  const generateCoin = useCallback(() => {
+    const entries: LootEntry[] = ([
+      { id: uid("loot"), name: "Copper (CP)", type: "coin" as LootType, quantity: Math.floor(coinAmount * 0.5), value: 0 },
+      { id: uid("loot"), name: "Silver (SP)", type: "coin" as LootType, quantity: Math.floor(coinAmount * 0.3), value: 0 },
+      { id: uid("loot"), name: "Gold (GP)", type: "coin" as LootType, quantity: Math.floor(coinAmount * 0.15), value: 0 },
+      { id: uid("loot"), name: "Platinum (PP)", type: "coin" as LootType, quantity: Math.floor(coinAmount * 0.05), value: 0 },
+    ] as LootEntry[]).filter((e) => e.quantity > 0);
+    setLootEntries((prev) => [...prev, ...entries]);
+    showToast({ message: `Generated ${coinAmount} gp worth of coins.`, type: "success" });
+  }, [coinAmount, showToast]);
 
-  const partyLevel = useMemo(() => {
-    if (characters.length === 0) return 1;
-    return Math.round(characters.reduce((sum, c) => sum + c.level, 0) / characters.length);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaign?.playerCharacters.length, campaign?.playerCharacters.map((c) => c.level).join(",")]);
-
-  const crTier = useMemo(() => {
-    if (partyLevel <= 4) return "0-4";
-    if (partyLevel <= 10) return "5-10";
-    if (partyLevel <= 16) return "11-16";
-    return "17+";
-  }, [partyLevel]);
-
-  const totalValue = useMemo(() => {
-    return lootEntries.reduce((sum, e) => sum + e.value * e.quantity, 0);
-  }, [lootEntries]);
-
-  /* ── Generate Individual Treasure ── */
-  const handleGenerateIndividual = useCallback(() => {
-    setIsGenerating(true);
-    const coins = generateCoins(crTier);
-    const entries: LootEntry[] = [];
-
-    if (coins.cp > 0) {
-      entries.push({
-        id: `loot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-        type: "coin",
-        name: "Copper Pieces",
-        quantity: coins.cp,
-        value: coins.cp * 0.01,
-      });
-    }
-    if (coins.sp > 0) {
-      entries.push({
-        id: `loot_${Date.now() + 1}_${Math.random().toString(36).slice(2, 6)}`,
-        type: "coin",
-        name: "Silver Pieces",
-        quantity: coins.sp,
-        value: coins.sp * 0.1,
-      });
-    }
-    if (coins.gp > 0) {
-      entries.push({
-        id: `loot_${Date.now() + 2}_${Math.random().toString(36).slice(2, 6)}`,
-        type: "coin",
-        name: "Gold Pieces",
-        quantity: coins.gp,
-        value: coins.gp,
-      });
-    }
-    if (coins.pp > 0) {
-      entries.push({
-        id: `loot_${Date.now() + 3}_${Math.random().toString(36).slice(2, 6)}`,
-        type: "coin",
-        name: "Platinum Pieces",
-        quantity: coins.pp,
-        value: coins.pp * 10,
-      });
-    }
-
-    // Gems / Art Objects (simplified d100 roll)
-    const gemRoll = Math.floor(Math.random() * 100) + 1;
-    const gemRow = GEMS_ART_TABLE.find((r) => gemRoll >= r.min && gemRoll <= r.max);
-    if (gemRow && gemRow.count > 0) {
-      for (let i = 0; i < gemRow.count; i++) {
-        entries.push({
-          id: `loot_${Date.now() + 4 + i}_${Math.random().toString(36).slice(2, 6)}`,
-          type: "gem",
-          name: gemRow.items[i % gemRow.items.length],
-          quantity: 1,
-          value: gemRow.value,
-        });
-      }
-    }
-
-    setLootEntries((prev) => [...entries, ...prev]);
-    setIsGenerating(false);
-    showToast({ message: `Generated ${entries.length} treasure entries!`, type: "success" });
-  }, [crTier, showToast]);
+  /* ── Generate Art Object ── */
+  const generateArt = useCallback(() => {
+    const art = ART_OBJECTS[Math.floor(Math.random() * ART_OBJECTS.length)];
+    const entry: LootEntry = { id: uid("loot"), ...art, type: "art" as LootType, quantity: 1 };
+    setLootEntries((prev) => [...prev, entry]);
+    showToast({ message: `Art: ${art.name} (${art.value} gp)`, type: "success" });
+  }, [showToast]);
 
   /* ── Generate Magic Item ── */
-  const handleGenerateMagic = useCallback(() => {
-    const table = MAGIC_ITEM_TABLES[magicTable];
-    if (!table) return;
-    const item = table.items[Math.floor(Math.random() * table.items.length)];
-    const entry: LootEntry = {
-      id: `loot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: "magic_item",
-      name: item.name,
-      quantity: 1,
-      value: item.rarity === "legendary" ? 50000 : item.rarity === "very_rare" ? 10000 : item.rarity === "rare" ? 2000 : item.rarity === "uncommon" ? 500 : 100,
-      description: `From ${table.label}`,
-      rarity: item.rarity as LootEntry["rarity"],
-    };
-    setLootEntries((prev) => [entry, ...prev]);
-    showToast({ message: `Generated: ${item.name}`, type: "success" });
-  }, [magicTable, showToast]);
+  const generateMagic = useCallback(() => {
+    const item = MAGIC_ITEMS[Math.floor(Math.random() * MAGIC_ITEMS.length)];
+    const entry: LootEntry = { id: uid("loot"), ...item, type: "magic" as LootType, quantity: 1 };
+    setLootEntries((prev) => [...prev, entry]);
+    showToast({ message: `Magic: ${item.name} (${item.rarity})`, type: "success" });
+  }, [showToast]);
 
-  /* ── Add Custom ── */
-  const handleAddCustom = useCallback(() => {
-    if (!customName.trim()) return;
-    const value = parseFloat(customValue) || 0;
-    const quantity = parseInt(customQuantity) || 1;
-    const entry: LootEntry = {
-      id: `loot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: "item",
-      name: customName.trim(),
-      quantity,
-      value,
-    };
-    setLootEntries((prev) => [entry, ...prev]);
-    setCustomName("");
-    setCustomValue("");
-    setCustomQuantity("1");
-    showToast({ message: `Added "${entry.name}" ×${quantity}`, type: "info" });
-  }, [customName, customValue, customQuantity, showToast]);
+  /* ── Generate Mundane Item ── */
+  const generateMundane = useCallback(() => {
+    const item = MUNDANE_LOOT[Math.floor(Math.random() * MUNDANE_LOOT.length)];
+    const entry: LootEntry = { id: uid("loot"), ...item, type: "mundane" as LootType, quantity: 1 };
+    setLootEntries((prev) => [...prev, entry]);
+    showToast({ message: `Found: ${item.name}`, type: "success" });
+  }, [showToast]);
 
-  /* ── Distribute to Character ── */
-  const handleDistribute = useCallback((lootId: string, characterId: string) => {
+  /* ── Assign Loot to Character ── */
+  const handleAssign = useCallback((lootId: string, characterId: string) => {
     const entry = lootEntries.find((e) => e.id === lootId);
     if (!entry) return;
 
     const character = characters.find((c) => c.id === characterId);
     if (!character) return;
 
-    const existingEquipment = [...character.equipment];
-    const itemStr = `${entry.name}${entry.quantity > 1 ? ` ×${entry.quantity}` : ""}`;
+    const existingEquipment: EquipmentSlot[] = [...(character.equipment ?? [])];
+    const newItem: EquipmentSlot = { slot: "carried", item: entry.name, quantity: entry.quantity, weight: 0, notes: "" };
 
-    // For coins, update currency instead
     if (entry.type === "coin") {
-      const updatedCurrency = { ...character.currency };
-      if (entry.name.includes("Copper")) updatedCurrency.cp = (updatedCurrency.cp ?? 0) + entry.quantity;
-      else if (entry.name.includes("Silver")) updatedCurrency.sp = (updatedCurrency.sp ?? 0) + entry.quantity;
-      else if (entry.name.includes("Gold")) updatedCurrency.gp = (updatedCurrency.gp ?? 0) + entry.quantity;
-      else if (entry.name.includes("Platinum")) updatedCurrency.pp = (updatedCurrency.pp ?? 0) + entry.quantity;
+      let updatedCopper = character.copper ?? 0;
+      let updatedSilver = character.silver ?? 0;
+      let updatedGold = character.gold ?? 0;
+      let updatedPlatinum = character.platinum ?? 0;
 
-      updatePlayerCharacter(characterId, { currency: updatedCurrency });
+      if (entry.name.includes("Copper")) updatedCopper += entry.quantity;
+      else if (entry.name.includes("Silver")) updatedSilver += entry.quantity;
+      else if (entry.name.includes("Gold")) updatedGold += entry.quantity;
+      else if (entry.name.includes("Platinum")) updatedPlatinum += entry.quantity;
+
+      updatePlayerCharacter(characterId, {
+        copper: updatedCopper,
+        silver: updatedSilver,
+        gold: updatedGold,
+        platinum: updatedPlatinum,
+      });
     } else {
       updatePlayerCharacter(characterId, {
-        equipment: [...existingEquipment, itemStr],
+        equipment: [...existingEquipment, newItem],
       });
     }
 
-    // Mark as assigned
     setLootEntries((prev) =>
       prev.map((e) => (e.id === lootId ? { ...e, assignedTo: characterId } : e))
     );
 
-    showToast({ message: `"${itemStr}" → ${character.name}`, type: "success" });
+    const itemStr = `${entry.name}${entry.quantity > 1 ? ` x${entry.quantity}` : ""}`;
+    showToast({ message: `"${itemStr}" -> ${character.name}`, type: "success" });
   }, [lootEntries, characters, updatePlayerCharacter, showToast]);
 
-  /* ── Remove Entry ── */
   const handleRemove = useCallback((lootId: string) => {
     setLootEntries((prev) => prev.filter((e) => e.id !== lootId));
   }, []);
 
-  /* ── Copy to Clipboard ── */
-  const handleCopy = useCallback(() => {
-    const lines = lootEntries.map((e) => {
-      const assigned = e.assignedTo
-        ? ` → ${characters.find((c) => c.id === e.assignedTo)?.name ?? "Unknown"}`
-        : "";
-      return `• ${e.name} ×${e.quantity} (${e.value * e.quantity} gp)${assigned}`;
-    });
-    const text = `── Loot Generated ──\nTotal: ${totalValue} gp\n${lines.join("\n")}`;
-    navigator.clipboard.writeText(text).then(() => {
-      showToast({ message: "Loot copied to clipboard!", type: "success" });
-    }).catch(() => {
-      showToast({ message: "Failed to copy.", type: "error" });
-    });
-  }, [lootEntries, characters, totalValue, showToast]);
+  const handleClearAll = useCallback(() => {
+    setLootEntries([]);
+    showToast({ message: "Cleared all loot entries.", type: "info" });
+  }, [showToast]);
 
-  const RARITY_COLORS: Record<string, string> = {
-    common: "text-surface-400",
-    uncommon: "text-emerald-400",
-    rare: "text-mage-400",
-    very_rare: "text-rogue-400",
-    legendary: "text-warrior-400",
-  };
+  if (!campaign) {
+    return (
+      <div className="rounded-xl border border-surface-700 bg-surface-850 p-5 text-center">
+        <p className="text-sm text-surface-500">Load a campaign to use the loot generator.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-surface-700 bg-surface-850">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-surface-200 hover:bg-surface-800 transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          <span>💎</span>
-          <span>Loot Generator</span>
-          {lootEntries.length > 0 && (
-            <Badge size="xs" variant="neutral">{lootEntries.length} items</Badge>
-          )}
-        </span>
-        <span className={`text-xs text-surface-500 transition-transform ${isOpen ? "rotate-180" : ""}`}>▼</span>
-      </button>
+      <div className="border-b border-surface-700 px-4 py-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-400">Loot Generator</h3>
+      </div>
 
-      {isOpen && (
-        <div className="border-t border-surface-700 p-4 space-y-4">
-          {/* Party Info */}
-          <div className="flex items-center gap-3 text-xs text-surface-400 bg-surface-800 rounded-lg px-3 py-2">
-            <span>Party Level: {partyLevel}</span>
-            <span>·</span>
-            <span>CR Tier: {crTier}</span>
-            <span>·</span>
-            <span>{characters.length} PCs</span>
+      <div className="p-4 space-y-4">
+        <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-1 rounded-lg bg-surface-800 px-2 py-1.5">
+            <input
+              type="number"
+              value={coinAmount}
+              onChange={(e) => setCoinAmount(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-16 rounded border border-surface-700 bg-surface-900 px-1.5 py-0.5 text-center text-xs text-surface-100"
+            />
+            <Button size="xs" variant="ghost" onClick={generateCoin}>Coins</Button>
           </div>
-
-          {/* Generate Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <Button size="xs" onClick={handleGenerateIndividual} disabled={isGenerating}>
-              {isGenerating ? "..." : "🎲 Individual"}
-            </Button>
-            <Button size="xs" variant="secondary" onClick={handleGenerateMagic}>
-              ✨ Magic Item
-            </Button>
-            <select
-              value={magicTable}
-              onChange={(e) => setMagicTable(parseInt(e.target.value))}
-              className="rounded-lg border border-surface-700 bg-surface-800 px-2 py-1 text-[10px] text-surface-300 focus:border-accent-500 focus:outline-none"
-            >
-              {MAGIC_ITEM_TABLES.map((t, i) => (
-                <option key={i} value={i}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Custom Add */}
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <label className="mb-0.5 block text-[10px] text-surface-500">Item</label>
-              <input
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder="Custom item..."
-                className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-xs text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-              />
-            </div>
-            <div className="w-16">
-              <label className="mb-0.5 block text-[10px] text-surface-500">Qty</label>
-              <input
-                type="number"
-                min={1}
-                value={customQuantity}
-                onChange={(e) => setCustomQuantity(e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2 py-1.5 text-xs text-surface-100 text-center focus:border-accent-500 focus:outline-none"
-              />
-            </div>
-            <div className="w-20">
-              <label className="mb-0.5 block text-[10px] text-surface-500">Value (gp)</label>
-              <input
-                type="number"
-                min={0}
-                value={customValue}
-                onChange={(e) => setCustomValue(e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2 py-1.5 text-xs text-surface-100 text-center focus:border-accent-500 focus:outline-none"
-              />
-            </div>
-            <Button size="xs" onClick={handleAddCustom} disabled={!customName.trim()}>
-              + Add
-            </Button>
-          </div>
-
-          {/* Total Value */}
+          <Button size="xs" variant="ghost" onClick={generateArt}>Art</Button>
+          <Button size="xs" variant="ghost" onClick={generateMagic}>Magic</Button>
+          <Button size="xs" variant="ghost" onClick={generateMundane}>Mundane</Button>
           {lootEntries.length > 0 && (
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-surface-400">Total Value:</span>
-              <span className="text-sm font-bold text-surface-200">{totalValue.toLocaleString()} gp</span>
-            </div>
-          )}
-
-          {/* Loot List */}
-          {lootEntries.length > 0 && (
-            <div className="max-h-60 space-y-1 overflow-y-auto">
-              {lootEntries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex items-center gap-2 rounded-lg bg-surface-800 px-3 py-2"
-                >
-                  {/* Type Icon */}
-                  <span className="text-base shrink-0">
-                    {entry.type === "coin" ? "🪙" : entry.type === "gem" ? "💎" : entry.type === "art" ? "🎨" : entry.type === "magic_item" ? "✨" : "📦"}
-                  </span>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-surface-200 truncate">
-                        {entry.name}
-                      </span>
-                      {entry.rarity && (
-                        <span className={`text-[9px] ${RARITY_COLORS[entry.rarity] ?? "text-surface-400"}`}>
-                          {entry.rarity.replace("_", " ")}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] text-surface-500">
-                      <span>×{entry.quantity}</span>
-                      <span>·</span>
-                      <span>{(entry.value * entry.quantity).toLocaleString()} gp</span>
-                      {entry.assignedTo && (
-                        <>
-                          <span>·</span>
-                          <span className="text-accent-400">
-                            → {characters.find((c) => c.id === entry.assignedTo)?.name ?? "?"}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    {/* Distribute dropdown */}
-                    {!entry.assignedTo && characters.length > 0 && (
-                      <div className="relative">
-                        <button
-                          onClick={() => setSelectedDistributionId(selectedDistributionId === entry.id ? null : entry.id)}
-                          className="rounded px-1.5 py-0.5 text-[10px] text-surface-400 hover:bg-surface-700 hover:text-surface-200 transition-colors"
-                          title="Assign to character"
-                        >
-                          🎯
-                        </button>
-                        {selectedDistributionId === entry.id && (
-                          <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border border-surface-700 bg-surface-850 py-1 shadow-xl">
-                            {characters.map((c) => (
-                              <button
-                                key={c.id}
-                                onClick={() => { handleDistribute(entry.id, c.id); setSelectedDistributionId(null); }}
-                                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-700 hover:text-surface-100"
-                              >
-                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-700 text-[9px]">
-                                  {c.name.charAt(0)}
-                                </span>
-                                {c.name}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <button
-                      onClick={() => handleRemove(entry.id)}
-                      className="rounded px-1 py-0.5 text-[10px] text-warrior-400 hover:bg-warrior-500/10 transition-colors"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Bottom Actions */}
-          {lootEntries.length > 0 && (
-            <div className="flex justify-end gap-2 pt-2 border-t border-surface-700">
-              <Button size="xs" variant="ghost" onClick={handleCopy}>
-                📋 Copy
-              </Button>
-              <Button size="xs" variant="ghost" onClick={() => {
-                setLootEntries([]);
-                showToast({ message: "Loot cleared.", type: "info" });
-              }}>
-                Clear All
-              </Button>
-            </div>
+            <Button size="xs" variant="ghost" onClick={handleClearAll}>Clear</Button>
           )}
         </div>
-      )}
+
+        {lootEntries.length === 0 ? (
+          <div className="py-8 text-center">
+            <span className="text-3xl text-surface-600">Diamond</span>
+            <p className="mt-2 text-xs text-surface-500">Generate loot to assign to party members.</p>
+          </div>
+        ) : (
+          <div className="max-h-60 space-y-1 overflow-y-auto">
+            {lootEntries.map((entry) => {
+              const assigned = entry.assignedTo ? characters.find((c) => c.id === entry.assignedTo) : null;
+              const typeColor: Record<string, string> = {
+                coin: "text-amber-400 bg-amber-500/10",
+                art: "text-divine-400 bg-divine-500/10",
+                magic: "text-mage-400 bg-mage-500/10",
+                mundane: "text-surface-400 bg-surface-800",
+              };
+              return (
+                <div key={entry.id} className="flex items-center justify-between rounded-lg bg-surface-800 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded px-1.5 py-0.5 text-[9px] font-semibold ${typeColor[entry.type] ?? ""}`}>
+                        {entry.type.toUpperCase()}
+                      </span>
+                      <span className="text-xs text-surface-200 truncate">{entry.name}</span>
+                      {entry.quantity > 1 && (
+                        <span className="text-[10px] text-surface-500">x{entry.quantity}</span>
+                      )}
+                      {entry.rarity && (
+                        <Badge size="xs" variant={entry.rarity === "rare" ? "accent" : "neutral"}>{entry.rarity}</Badge>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-surface-500 mt-0.5 truncate">{entry.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    {assigned ? (
+                      <span className="text-[10px] text-accent-400">{assigned.name}</span>
+                    ) : (
+                      <select
+                        value=""
+                        onChange={(e) => e.target.value && handleAssign(entry.id, e.target.value)}
+                        className="w-20 rounded border border-surface-700 bg-surface-900 px-1 py-0.5 text-[10px] text-surface-300"
+                      >
+                        <option value="">Assign...</option>
+                        {characters.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    )}
+                    <button onClick={() => handleRemove(entry.id)} className="text-surface-600 hover:text-warrior-400">x</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

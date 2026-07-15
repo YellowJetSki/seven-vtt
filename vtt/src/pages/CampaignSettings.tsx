@@ -28,7 +28,7 @@ export function CampaignSettings() {
 
   const [campaignName, setCampaignName] = useState(campaign?.name ?? "");
   const [campaignDescription, setCampaignDescription] = useState(campaign?.description ?? "");
-  const [xpSystem, setXpSystem] = useState(campaign?.settings.experienceSystem ?? "milestone");
+  const [xpSystem, setXpSystem] = useState<"xp" | "milestone">(campaign?.settings.experienceSystem ?? "milestone");
   const [currencyName, setCurrencyName] = useState(campaign?.settings.currencyName ?? "Gold Pieces");
   const [dmNotes, setDmNotes] = useState(campaign?.settings.privateDmNotes ?? "");
   const [isDirty, setIsDirty] = useState(false);
@@ -38,76 +38,51 @@ export function CampaignSettings() {
   // Sync form fields when campaign loads/changes
   useEffect(() => {
     if (campaign) {
-      setCampaignName(campaign.name);
+      setCampaignName(campaign.name ?? "");
       setCampaignDescription(campaign.description ?? "");
-      setXpSystem(campaign.settings.experienceSystem);
-      setCurrencyName(campaign.settings.currencyName);
-      setDmNotes(campaign.settings.privateDmNotes);
+      setXpSystem(campaign.settings.experienceSystem ?? "milestone");
+      setCurrencyName(campaign.settings.currencyName ?? "Gold Pieces");
+      setDmNotes(campaign.settings.privateDmNotes ?? "");
+      setIsDirty(false);
     }
-  }, [
-    campaign?.id,
-    campaign?.name,
-    campaign?.description,
-    campaign?.settings.experienceSystem,
-    campaign?.settings.currencyName,
-    campaign?.settings.privateDmNotes,
-  ]);
+  }, [campaign]);
 
-  const handleSave = useCallback(() => {
+  const handleDMNotesChange = useCallback((value: string) => {
+    setDmNotes(value);
+    setIsDirty(true);
+  }, []);
+
+  const handleSave = useCallback(async () => {
     if (!campaign) return;
-
     setCampaign({
       ...campaign,
-      name: campaignName.trim() || campaign.name,
-      description: campaignDescription.trim() || campaign.description,
+      name: campaignName,
+      description: campaignDescription,
       settings: {
         ...campaign.settings,
         experienceSystem: xpSystem,
         currencyName,
+        privateDmNotes: dmNotes,
       },
-      updatedAt: Date.now(),
     });
     setIsDirty(false);
-    showToast({ message: "Campaign settings saved.", type: "success" });
-  }, [campaign, campaignName, campaignDescription, xpSystem, currencyName, setCampaign, showToast]);
+    // Trigger full Firebase sync after saving
+    if (isFirebaseAvailable()) {
+      await triggerFullSync();
+    }
+    showToast({ message: "Campaign settings saved and synced.", type: "success" });
+  }, [campaign, campaignName, campaignDescription, xpSystem, currencyName, dmNotes, setCampaign, showToast]);
 
   const handleReset = useCallback(() => {
     if (!campaign) return;
-    setCampaign({
-      ...campaign,
-      settings: {
-        ...campaign.settings,
-        experienceSystem: "milestone",
-        currencyName: "Gold Pieces",
-      },
-      updatedAt: Date.now(),
-    });
-    setXpSystem("milestone");
-    setCurrencyName("Gold Pieces");
+    setCampaignName(campaign.name ?? "");
+    setCampaignDescription(campaign.description ?? "");
+    setXpSystem(campaign.settings.experienceSystem ?? "milestone");
+    setCurrencyName(campaign.settings.currencyName ?? "Gold Pieces");
+    setDmNotes(campaign.settings.privateDmNotes ?? "");
     setIsDirty(false);
-    showToast({ message: "Settings reset to defaults.", type: "info" });
-  }, [campaign, setCampaign, showToast]);
-
-  const handleImport = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const handleFileImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        setCampaign({ ...json, updatedAt: Date.now() });
-        showToast({ message: "Campaign imported successfully!", type: "success" });
-      } catch {
-        showToast({ message: "Invalid JSON file.", type: "error" });
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  }, [setCampaign, showToast]);
+    showToast({ message: "Form reset to saved values.", type: "info" });
+  }, [campaign, showToast]);
 
   const handleExport = useCallback(() => {
     if (!campaign) return;
@@ -115,42 +90,74 @@ export function CampaignSettings() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${campaign.name.replace(/\s+/g, "_")}.json`;
+    a.download = `${campaign.name.replace(/\s+/g, "-").toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast({ message: "Campaign exported!", type: "success" });
-  }, [campaign, showToast]);
+  }, [campaign]);
 
-  const handleResetToDemo = useCallback(() => {
-    const demo = createDemoCampaign();
-    setCampaign(demo);
-    setCampaignName(demo.name);
-    setCampaignDescription(demo.description ?? "");
-    setXpSystem(demo.settings.experienceSystem);
-    setCurrencyName(demo.settings.currencyName);
-    setIsDirty(false);
-    showToast({ message: "Demo campaign loaded!", type: "info" });
+  const handleImport = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      // Validate minimal campaign structure
+      if (!data.name || !data.playerCharacters) {
+        showToast({ message: "Invalid campaign file.", type: "error" });
+        return;
+      }
+      setCampaign(data);
+      showToast({ message: `Campaign "${data.name}" imported.`, type: "success" });
+    } catch {
+      showToast({ message: "Failed to parse campaign file.", type: "error" });
+    }
+    e.target.value = "";
   }, [setCampaign, showToast]);
 
-  const handleDMNotesChange = useCallback((value: string) => {
-    setDmNotes(value);
-    if (campaign) {
-      setCampaign({
-        ...campaign,
-        settings: { ...campaign.settings, privateDmNotes: value },
-        updatedAt: Date.now(),
-      });
-    }
-  }, [campaign, setCampaign]);
+  if (!campaign) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div className="rounded-xl border border-surface-700 bg-surface-850 p-8 text-center">
+          <span className="text-4xl">⚙️</span>
+          <h2 className="mt-3 text-lg font-semibold text-surface-200">No Campaign Loaded</h2>
+          <p className="mt-1 text-sm text-surface-500">
+            Create or import a campaign to adjust settings.
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button onClick={() => {
+              setCampaign(createDemoCampaign());
+              showToast({ message: "Demo campaign created!", type: "success" });
+            }}>
+              Create Demo Campaign
+            </Button>
+            <Button variant="secondary" onClick={handleImport}>
+              Import Campaign
+            </Button>
+          </div>
+        </div>
+        <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelected} />
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-xl font-bold text-surface-100">Campaign Settings</h1>
-        <p className="text-sm text-surface-400">Manage your campaign metadata, rules, and notes.</p>
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-surface-100 md:text-2xl">Campaign Settings</h2>
+          <p className="mt-1 text-sm text-surface-400">Manage campaign rules, notes, and data</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="xs" onClick={handleExport}>Export</Button>
+          <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelected} />
+        </div>
       </div>
 
-      {/* Campaign Metadata */}
+      {/* Campaign Name & Description */}
       <section className="space-y-4 rounded-xl border border-surface-700 bg-surface-850 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-surface-400">Campaign Info</h2>
         <div>
@@ -160,8 +167,9 @@ export function CampaignSettings() {
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-surface-400">Description</label>
-          <textarea value={campaignDescription} onChange={(e) => { setCampaignDescription(e.target.value); setIsDirty(true); }} rows={3}
-            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none resize-none" />
+          <textarea value={campaignDescription} onChange={(e) => { setCampaignDescription(e.target.value); setIsDirty(true); }}
+            rows={3}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
         </div>
       </section>
 
@@ -171,7 +179,7 @@ export function CampaignSettings() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-xs font-medium text-surface-400">Experience System</label>
-            <select value={xpSystem} onChange={(e) => { setXpSystem(e.target.value); setIsDirty(true); }}
+            <select value={xpSystem} onChange={(e) => { setXpSystem(e.target.value as "xp" | "milestone"); setIsDirty(true); }}
               className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 focus:border-accent-500 focus:outline-none">
               <option value="milestone">Milestone</option>
               <option value="xp">Experience Points</option>
@@ -189,7 +197,15 @@ export function CampaignSettings() {
       <section className="space-y-4 rounded-xl border border-surface-700 bg-surface-850 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-surface-400">Private DM Notes</h2>
         <p className="text-xs text-surface-500">These notes are synced to Firebase and available on all DM devices.</p>
-        <LockableNotes value={dmNotes} onChange={handleDMNotesChange} label="DM Notes" />
+        <LockableNotes defaultLocked={false}>
+          <textarea
+            value={dmNotes}
+            onChange={(e) => handleDMNotesChange(e.target.value)}
+            rows={6}
+            placeholder="Enter private DM notes here..."
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
+          />
+        </LockableNotes>
       </section>
 
       {/* Save / Reset */}
@@ -200,34 +216,42 @@ export function CampaignSettings() {
       </div>
 
       {/* Danger Zone */}
-      <section className="space-y-4 rounded-xl border border-warrior-500/30 bg-warrior-500/5 p-5">
+      <section className="space-y-4 rounded-xl border border-warrior-500/20 bg-warrior-500/5 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-warrior-400">Danger Zone</h2>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="danger" size="sm" onClick={handleImport}>Import JSON</Button>
-          <Button variant="secondary" size="sm" onClick={handleExport}>Export JSON</Button>
-          <Button variant="danger" size="sm" onClick={handleResetToDemo}>Reset to Demo</Button>
+        <p className="text-xs text-surface-500">
+          These actions are irreversible. Use with caution.
+        </p>
+        <div className="flex gap-2">
           <Button variant="danger" size="sm" onClick={() => setShowDeleteConfirm(true)}>
-            Sync to Firebase Now
+            Delete All Campaign Data
           </Button>
         </div>
-        <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileImport} />
-        {showDeleteConfirm && (
-          <div className="space-y-2">
-            <p className="text-xs text-surface-400">This will force-push all local data to Firebase immediately.</p>
-            <div className="flex gap-2">
-              <Button size="xs" variant="primary"
-                onClick={async () => {
-                  await triggerFullSync();
-                  setShowDeleteConfirm(false);
-                  showToast({ message: "Full sync triggered!", type: "success" });
-                }}>
-                Confirm Sync
+      </section>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="w-full max-w-md rounded-xl border border-surface-700 bg-surface-850 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-surface-100">Delete All Campaign Data?</h3>
+            <p className="mt-2 text-sm text-surface-400">
+              This will permanently delete the current campaign and all its data locally.
+              Firebase data can be restored by re-syncing.
+            </p>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
               </Button>
-              <Button size="xs" variant="ghost" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+              <Button variant="danger" size="sm" onClick={async () => {
+                _clearCampaign();
+                setShowDeleteConfirm(false);
+                showToast({ message: "Campaign data cleared.", type: "warning" });
+              }}>
+                Delete Everything
+              </Button>
             </div>
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </div>
   );
 }

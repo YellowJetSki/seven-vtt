@@ -15,11 +15,72 @@
  *   "Wood Elf" → "Wood Elf"
  *   "Variant Human" → "Human (Variant)"
  *   "Salt Gnome" → "Salt Gnome (homebrew)"
- *
- * Spells carry homebrew flags, companion data is preserved.
  * ─────────────────────────────────────────────────────────────── */
 
-import type { Campaign, PlayerCharacter } from "@/types";
+import type { Campaign, PlayerCharacter, EquipmentSlot, TraitEntry } from "@/types";
+
+/* ── Helpers ────────────────────────────────────────────────── */
+
+function uid(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function profBonus(level: number): number {
+  if (level >= 17) return 6;
+  if (level >= 13) return 5;
+  if (level >= 9) return 4;
+  if (level >= 5) return 3;
+  return 2;
+}
+
+/** Map ability strings to stat block */
+function mapStats(stats: Record<string, number> = {}): { strength: number; dexterity: number; constitution: number; intelligence: number; wisdom: number; charisma: number } {
+  const s = (name: string, def: number) => stats[name] ?? stats[name.toLowerCase()] ?? stats[name.substring(0, 3)] ?? def;
+  return {
+    strength: s("Strength", 10),
+    dexterity: s("Dexterity", 10),
+    constitution: s("Constitution", 10),
+    intelligence: s("Intelligence", 10),
+    wisdom: s("Wisdom", 10),
+    charisma: s("Charisma", 10),
+  };
+}
+
+function initMod(dex: number): number {
+  return Math.floor((dex - 10) / 2);
+}
+
+function mapRace(species: string): string {
+  const map: Record<string, string> = {
+    "rock gnome": "Rock Gnome",
+    "wood elf": "Wood Elf",
+    "variant human": "Human (Variant)",
+    "salt gnome": "Salt Gnome",
+  };
+  return map[species.toLowerCase()] ?? species;
+}
+
+function mapEquipment(inventory: { item?: string; name?: string; qty?: number; quantity?: number }[]): EquipmentSlot[] {
+  return (inventory ?? []).map((inv) => ({
+    slot: "carried",
+    item: inv.item ?? inv.name ?? "Unknown Item",
+    quantity: inv.qty ?? inv.quantity ?? 1,
+    weight: 0,
+    notes: "",
+  }));
+}
+
+function mapCurrency(currency: { leptons?: number; quadrans?: number; assarions?: number; cp?: number; sp?: number; gp?: number; ep?: number; pp?: number }): { copper: number; silver: number; electrum: number; gold: number; platinum: number } {
+  return {
+    copper: currency.leptons ?? currency.cp ?? 0,
+    silver: currency.quadrans ?? currency.sp ?? 0,
+    electrum: currency.ep ?? 0,
+    gold: currency.assarions ?? currency.gp ?? 0,
+    platinum: currency.pp ?? 0,
+  };
+}
+
+/* ── Raw Arkla Export Types ─────────────────────────────────── */
 
 interface ArklaExport {
   characters: Record<string, ArklaCharacter>;
@@ -38,272 +99,56 @@ interface ArklaCharacter {
   exp: number;
   hp: number;
   maxHp: number;
-  tempHp: number;
+  tempHp?: number;
   ac: number;
   speed: number;
-  initiative: string;
+  stats: Record<string, number>;
   alignment: string;
-  backstory: string;
-  journal: string;
-  notes: string;
-  imageUrl: string;
-  img: string;
-  stats: {
-    STR: number;
-    DEX: number;
-    CON: number;
-    INT: number;
-    WIS: number;
-    CHA: number;
+  imageUrl?: string;
+  img?: string;
+  backstory?: string;
+  notes?: string;
+  features?: string[];
+  inventory?: { item?: string; name?: string; qty?: number; quantity?: number }[];
+  currency?: { leptons?: number; quadrans?: number; assarions?: number; cp?: number; sp?: number; gp?: number };
+  proficiencies?: {
+    savingThrows?: string;
+    skills?: string;
   };
-  currency: {
-    leptons: number;
-    assarions: number;
-    quadrans: number;
+  spellSlots?: Record<string, { total: number; expended: number }>;
+  companion?: {
+    name: string;
+    species: string;
+    hp: number;
+    ac: number;
+    speed: number;
+    desc?: string;
+    attacks?: string;
+    stats?: Record<string, number>;
+    traits?: string;
   };
-  inventory: ArklaItem[];
-  features: ArklaFeature[];
-  spells: ArklaSpell[];
-  proficiencies: {
-    skills: string;
-    savingThrows: string;
-    languages: string;
-    armor: string;
-    weapons: string;
-    tools: string;
-  };
-  spellSlots?: Record<string, { current: number; max: number }>;
-  spellAttack?: string;
-  spellSave?: number;
-  companion?: ArklaCompanion;
-  resources?: ArklaResource[];
-  traits?: {
-    personality: string;
-    ideal: string;
-    bond: string;
-    flaws: string;
-  };
-  hitDice: { max: number; current: number; type: string };
-  age: string;
-  height: string;
-  weight: string;
-  hair: string;
-  skin: string;
-  eyes: string;
-  deathSaves: { successes: number; failures: number };
-  conditions: string[];
-  isConcentrating: boolean;
-  inspiration: boolean;
-  theme: string;
-}
-
-interface ArklaItem {
-  id: string;
-  name: string;
-  category: string;
-  quantity: number;
-  desc: string;
-  damageDice: string | null;
-  damageType: string | null;
-  ac: number | null;
-  properties: string | null;
-  range: string | null;
-  imageUrl: string;
-  hpRecovery?: string | null;
-}
-
-interface ArklaFeature {
-  name: string;
-  desc: string;
-  isDefensive: boolean;
-}
-
-interface ArklaSpell {
-  name: string;
-  desc: string;
-  level: number | string;
-  range: string;
-  duration: string;
-  components: string;
-  castTime: string;
-  index?: string;
-  isHomebrew?: boolean;
-}
-
-interface ArklaCompanion {
-  name: string;
-  species: string;
-  hp: number;
-  ac: number;
-  speed: number;
-  isDormant: boolean;
-  awakeLevel: number;
-  desc: string;
-  attacks?: string;
-  stats?: Record<string, number>;
-  traits?: string;
-}
-
-interface ArklaResource {
-  name: string;
-  current: number;
-  max: number;
-  recharge: "long" | "short" | "none";
+  resources?: { name: string; current: number; max: number; recharge: string }[];
 }
 
 interface ArklaMap {
-  cols: number;
-  rows: number;
-  gridColor: string;
-  imageUrl: string;
-  tokens?: Record<string, unknown>;
+  id?: string;
+  name?: string;
+  path?: string;
+  width?: number;
+  height?: number;
+  grid?: number;
+  fullPath?: string;
 }
 
 interface ArklaPreset {
-  mapData: ArklaMap;
-  tokens?: Record<string, unknown>;
-  savedAt: string;
+  name?: string;
+  description?: string;
+  environment?: string;
+  difficulty?: string;
+  enemies?: { enemyId: string; count: number; customHp: number }[];
 }
 
-function uid(prefix: string): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-/** Convert Arkla stats object to our format */
-function mapStats(s: ArklaCharacter["stats"]) {
-  return {
-    strength: s.STR,
-    dexterity: s.DEX,
-    constitution: s.CON,
-    intelligence: s.INT,
-    wisdom: s.WIS,
-    charisma: s.CHA,
-  };
-}
-
-/** Compute initiative modifier from DEX score */
-function initMod(dex: number): number {
-  return Math.floor((dex - 10) / 2);
-}
-
-/** Compute proficiency bonus for a given level */
-function profBonus(level: number): number {
-  return Math.ceil(level / 4) + 1;
-}
-
-/** Parse comma-separated skill string from Arkla into our skill map */
-function parseSkills(skillsStr: string): Partial<Record<string, number>> {
-  const skillMap: Record<string, string> = {
-    acrobatics: "acrobatics",
-    "animal handling": "animalHandling",
-    arcana: "arcana",
-    athletics: "athletics",
-    deception: "deception",
-    history: "history",
-    insight: "insight",
-    intimidation: "intimidation",
-    investigation: "investigation",
-    medicine: "medicine",
-    nature: "nature",
-    perception: "perception",
-    performance: "performance",
-    persuasion: "persuasion",
-    religion: "religion",
-    "sleight of hand": "sleightOfHand",
-    stealth: "stealth",
-    survival: "survival",
-  };
-
-  const result: Record<string, number> = {};
-  if (!skillsStr) return result;
-
-  const entries = skillsStr.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-  for (const entry of entries) {
-    const ourKey = skillMap[entry];
-    if (ourKey) {
-      // Expertise grants double prof bonus
-      result[ourKey] = entry.includes("(expertise)") ? 2 : 1;
-    }
-  }
-  return result;
-}
-
-/** Parse saving throws string into our format */
-function parseSaves(savesStr: string, scores: { strength: number; dexterity: number; constitution: number; intelligence: number; wisdom: number; charisma: number }): Partial<Record<string, number>> {
-  const result: Partial<Record<string, number>> = {};
-  if (!savesStr) return result;
-
-  const entries = savesStr.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
-  const abbrMap: Record<string, keyof typeof scores> = {
-    STR: "strength", DEX: "dexterity", CON: "constitution",
-    INT: "intelligence", WIS: "wisdom", CHA: "charisma",
-  };
-
-  for (const entry of entries) {
-    const key = abbrMap[entry];
-    if (key) {
-      const mod = Math.floor((scores[key] - 10) / 2);
-      result[key] = mod + Math.ceil(2 / 4) + 1; // prof bonus for level 2
-    }
-  }
-  return result;
-}
-
-/** Convert Arkla currency to our format:
- *  Leptons → CP, Quadrans → SP, Assarions → GP
- *  50 leptons = 1 quadrans, 5 quadrans = 1 assarion
- */
-function mapCurrency(arkla: { leptons: number; quadrans: number; assarions: number }) {
-  return {
-    cp: arkla.leptons ?? 0,
-    sp: arkla.quadrans ?? 0,
-    ep: 0,
-    gp: arkla.assarions ?? 0,
-    pp: 0,
-  };
-}
-
-/** Convert Arkla spell slots to our format */
-function mapSpellSlots(slots: ArklaCharacter["spellSlots"]): { level: number; total: number; expended: number }[] {
-  if (!slots) return [];
-  return Object.entries(slots).map(([level, data]) => ({
-    level: parseInt(level),
-    total: data.max,
-    expended: data.max - data.current,
-  }));
-}
-
-/** Clean up equipment names to be human-readable strings */
-function mapEquipment(inventory: ArklaItem[]): string[] {
-  const items: string[] = [];
-  const processed = new Set<string>();
-
-  for (const item of inventory) {
-    if (item.name === "Arrow") continue; // ammo tracked separately
-    const name = item.quantity > 1 ? `${item.name} (${item.quantity})` : item.name;
-    if (!processed.has(name)) {
-      items.push(name);
-      processed.add(name);
-    }
-  }
-  return items;
-}
-
-/** Convert features array to strings */
-function mapFeatures(features: ArklaFeature[]): string[] {
-  return features.map((f) => f.name);
-}
-
-/** Map Arkla races to our internal format */
-function mapRace(species: string): string {
-  const map: Record<string, string> = {
-    "rock gnome": "Rock Gnome",
-    "wood elf": "Wood Elf",
-    "variant human": "Human (Variant)",
-    "salt gnome": "Salt Gnome",
-  };
-  return map[species.toLowerCase()] ?? species;
-}
+/* ── Importer ───────────────────────────────────────────────── */
 
 export function importArklaJson(json: string): Campaign {
   const data: ArklaExport = JSON.parse(json);
@@ -314,31 +159,25 @@ export function importArklaJson(json: string): Campaign {
     const level = c.level || 2;
     const prof = profBonus(level);
     const dex = scores.dexterity;
-
-    // Determine subclass from features or class name
-    const classLower = c.class?.toLowerCase() ?? "";
-    let subclass = "";
-    if (classLower === "monk") subclass = "";
-    else if (classLower === "bard") subclass = "";
-    else if (classLower === "ranger") subclass = "";
-    else if (classLower === "artificer") subclass = "";
+    const currency = mapCurrency(c.currency ?? {});
 
     return {
       id: uid("pc"),
       name: c.name,
-      playerName: c.name.split(" ")[0], // first name as player name
+      playerName: c.name.split(" ")[0],
       race: mapRace(c.species ?? ""),
       class: c.class ?? "Adventurer",
       level,
-      subclass: subclass || undefined,
+      experiencePoints: c.exp || 0,
       background: "",
       alignment: c.alignment || "Unaligned",
-      experience: c.exp || 0,
-
-      abilityScores: scores,
-      savingThrows: parseSaves(c.proficiencies?.savingThrows ?? "", scores),
-      skills: parseSkills(c.proficiencies?.skills ?? ""),
-
+      inspiration: false,
+      strength: scores.strength,
+      dexterity: scores.dexterity,
+      constitution: scores.constitution,
+      intelligence: scores.intelligence,
+      wisdom: scores.wisdom,
+      charisma: scores.charisma,
       hitPoints: {
         current: c.hp ?? c.maxHp ?? 10,
         max: c.maxHp ?? c.hp ?? 10,
@@ -347,26 +186,50 @@ export function importArklaJson(json: string): Campaign {
       armorClass: c.ac ?? 10,
       initiative: initMod(dex),
       speed: c.speed ?? 30,
+      hitDice: `d${c.class?.toLowerCase() === "monk" || c.class?.toLowerCase() === "bard" ? 8 : c.class?.toLowerCase() === "ranger" ? 10 : 8}`,
       proficiencyBonus: prof,
-
-      features: mapFeatures(c.features ?? []),
-      traits: [],
-      spells: mapSpellSlots(c.spellSlots),
+      conditions: [],
+      deathSaves: { successes: 0, failures: 0 },
+      temporaryHitPoints: c.tempHp ?? 0,
+      traits: [] as TraitEntry[],
+      proficiencies: [],
+      languages: [],
+      features: c.features ?? [],
       equipment: mapEquipment(c.inventory ?? []),
-      currency: mapCurrency(c.currency ?? { leptons: 0, quadrans: 0, assarions: 0 }),
-
-      backstory: c.backstory || undefined,
-      notes: c.notes || undefined,
-      portraitUrl: c.imageUrl || undefined,
-      tokenUrl: c.img || undefined,
-
-      companion: c.companion || undefined,
-      resources: c.resources || undefined,
-
+      inventory: [],
+      copper: currency.copper,
+      silver: currency.silver,
+      electrum: currency.electrum,
+      gold: currency.gold,
+      platinum: currency.platinum,
+      appearance: "",
+      backstory: c.backstory ?? "",
+      allies: "",
+      characterNotes: c.notes ?? "",
+      imageUrl: c.imageUrl ?? c.img ?? undefined,
+      isHomebrew: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
   });
+
+  // Build encounters from presets if available
+  const presets = data.campaign?.battlemap_presets?.presets ?? {};
+  const encounters = Object.values(presets).map((preset) => ({
+    id: uid("enc"),
+    name: preset.name || "Unknown Encounter",
+    description: preset.description || "",
+    enemies: (preset.enemies ?? []).map((e) => ({
+      enemyId: e.enemyId,
+      count: e.count,
+      customHp: e.customHp,
+    })),
+    environment: preset.environment || "",
+    difficulty: preset.difficulty || "medium",
+    isActive: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }));
 
   return {
     id: uid("camp"),
@@ -375,14 +238,13 @@ export function importArklaJson(json: string): Campaign {
       "A dark corruption spreads through the realm of Arkla. Seven ancient obelisks — once guardians of a planar seal — are being tainted by an unknown force. The party must track down each obelisk, recover the Keys of Rift-Sealing, and prevent the permanent opening of a rift to the Shadowfell.",
     dmName: "Dungeon Master",
     playerCharacters,
-    encounters: [],
+    encounters,
     battleMaps: [],
     journal: [],
     settings: {
       homebrewRules: [
         "Custom currency: 50 Leptons = 1 Quadrans, 5 Quadrans = 1 Assarion",
         "Homebrew race: Salt Gnome (swim speed, cold resistance)",
-        "Homebrew spells: Caroline's Laughter, Earth Tremor (Bard variants)",
         "Monk 'Kol' points replace Ki points",
       ],
       experienceSystem: "xp",

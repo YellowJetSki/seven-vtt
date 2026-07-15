@@ -139,7 +139,7 @@ async function flushQueue(): Promise<void> {
         case "token": {
           if (entry.entityId && entry.subId) {
             const token = (useCampaignStore.getState().mapTokens[entry.entityId] ?? []).find((t) => t.id === entry.subId);
-            if (token) ok = await normalizedTokens.push(campaignId, entry.entityId, token);
+            if (token) ok = await normalizedTokens.push(campaignId, entry.entityId, token as unknown as MapTokenDoc);
           }
           break;
         }
@@ -371,7 +371,6 @@ export function useFirebaseSync(): void {
         const store = useCampaignStore.getState();
         if (!store.meta) return; // No campaign yet — ignore remote data
         const storeCharIds = new Set(store.characters.map((c) => c.id));
-        const incomingIds = new Set(chars.map((c) => c.id));
         // Only update if there are actual remote changes not in local store
         const hasNewData = chars.some((c) => !storeCharIds.has(c.id));
         if (hasNewData) {
@@ -457,7 +456,6 @@ export function useFirebaseSync(): void {
             } : local;
           });
           // Keep any combatants that exist in remote but not locally (e.g. added by another DM device)
-          const remoteIds = new Set(combatants.map((c) => c.id));
           for (const remote of combatants) {
             if (!localIds.has(remote.id)) {
               mergedCombatants.push(remote as unknown as Combatant);

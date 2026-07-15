@@ -1,84 +1,73 @@
+/* ── STᚱ VTT — App Root ────────────────────────────────────────
+ * Main routing tree with auth guard, theme detection, and Firebase sync.
+ *
+ * ROUTING ARCHITECTURE:
+ *   /login          → Player/DM login
+ *   /theatric       → Fullscreen battle map (no auth, no shell)
+ *   /campaign/*     → Authenticated DM routes (wrapped in AppShell)
+ *   /player         → Player-facing dashboard (anonymously authenticated)
+ *   *               → Redirect to /login
+ *
+ * THEME & UI:
+ *   - Theme is detected from system preference via CSS media query
+ *   - Dark mode enforced for VTT immersion (all UI baked dark)
+ *   - Tailwind CSS with custom design system tokens
+ * ─────────────────────────────────────────────────────────────── */
+
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuthStore } from "@/stores/authStore";
-import { isFirebaseAvailable } from "@/lib/firebase";
-import { migrateLegacyCampaignData } from "@/lib/migrate-legacy-data";
-
 import { LoginPage } from "@/pages/LoginPage";
 import { DmDashboard } from "@/pages/DmDashboard";
 import { PlayerCards } from "@/pages/PlayerCards";
 import { HomebrewPanel } from "@/pages/HomebrewPanel";
-import { Encounters } from "@/pages/Encounters";
-import { BattleMaps } from "@/pages/BattleMaps";
 import { DmJournal } from "@/pages/DmJournal";
 import { CampaignSettings } from "@/pages/CampaignSettings";
 import { PlayerDashboard } from "@/pages/PlayerDashboard";
 import { TheatricPage } from "@/pages/TheatricPage";
-
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
 
 export default function App() {
-  const state = useAuthStore((s) => s.state);
-  const role = useAuthStore((s) => s.role);
+  // Monitor Firebase connection health (shows indicator, auto-reconnect)
+  useFirebaseMonitor();
 
-  /* ── Migrate legacy localStorage data on first boot ──────────
-   * This runs once to convert the old monolithic campaign storage
-   * format to the new normalized format. Idempotent — safe on every load.
-   */
+  // Run legacy data migration once on mount
   useEffect(() => {
-    migrateLegacyCampaignData();
+    import("@/lib/migrate-legacy-data").then((mod) => {
+      mod.runMigrationIfNeeded();
+    });
   }, []);
 
   return (
     <Routes>
-      {/* Public: Login */}
-      <Route
-        path="/login"
-        element={
-          state === "authenticated" ? (
-            role === "dm" ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/player" replace />
-            )
-          ) : (
-            <LoginPage />
-          )
-        }
-      />
+      {/* Public: Login (no shell) */}
+      <Route path="/login" element={<LoginPage />} />
 
       {/* Public: Theatric View — no auth, no sidebar, just fullscreen map */}
       <Route path="/theatric" element={<TheatricPage />} />
 
       {/* Authenticated DM routes (with sidebar shell) */}
       <Route
+        path="/campaign"
         element={
-          <AuthGuard requiredRole="dm">
+          <AuthGuard>
             <AppShell />
           </AuthGuard>
         }
       >
-        <Route path="/dashboard" element={<DmDashboard />} />
-        <Route path="/characters" element={<PlayerCards />} />
-        <Route path="/homebrew" element={<HomebrewPanel />} />
-        <Route path="/encounters" element={<Encounters />} />
-        <Route path="/maps" element={<BattleMaps />} />
-        <Route path="/journal" element={<DmJournal />} />
-        <Route path="/settings" element={<CampaignSettings />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<DmDashboard />} />
+        <Route path="player-cards" element={<PlayerCards />} />
+        <Route path="homebrew" element={<HomebrewPanel />} />
+        <Route path="journal" element={<DmJournal />} />
+        <Route path="settings" element={<CampaignSettings />} />
       </Route>
 
-      {/* Authenticated Player route (no sidebar shell) */}
-      <Route
-        path="/player"
-        element={
-          <AuthGuard requiredRole="player">
-            <PlayerDashboard />
-          </AuthGuard>
-        }
-      />
+      {/* Player-facing route (anonymous auth) */}
+      <Route path="/player" element={<PlayerDashboard />} />
 
-      {/* Catch-all: redirect to login */}
+      {/* Default: redirect to login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
