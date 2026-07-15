@@ -3102,3 +3102,53 @@ Registered in `App.tsx` as a top-level `<Route>` outside the DM routes.
 - Theme color set to `#0a0a1a` (surface-950)
 
 ---
+
+## Firebase Real-Time Sync Audit — Complete Storage Inventory (Updated: 2026-07-15 13:59)
+# Firebase Real-Time Sync Audit — Complete Storage Inventory
+
+## ✅ Synced to Firebase (Real-Time Cross-Device)
+
+| Store / Data | Firestore Document | Sync Direction | Status |
+|---|---|---|---|
+| **Campaign** (name, desc, PCs, encounters, maps, journal, settings) | `campaigns/arkla` | Push (useFirebaseSync) + Pull (onSnapshot) via `campaignSync` | ✅ |
+| **Combat** (activeEncounter, combatLog, liveSession) | `liveSessions/arkla` | Push (useFirebaseSync) + Pull (onSnapshot) via `sessionSync` | ✅ |
+| **Homebrew** (items, spells, feats) | `homebrew/arkla` | Push (useFirebaseSync) + Pull (onSnapshot) via `homebrewSync` | ✅ |
+| **DM Notes** (privateDmNotes) | Inside `campaigns/arkla` (settings.privateDmNotes) | Via campaign push/listen | ✅ |
+| **Session Notes Timeline** | Derived from `combatLog` inside `liveSessions/arkla` | Via session push/listen | ✅ |
+| **Session Recap Bullets** | Stored as JSON in `campaigns/arkla` (settings.privateDmNotes) | Via campaign push/listen | ✅ |
+| **Scratch Pad** (CampaignScratchPad) | Inside `campaigns/arkla` (settings.privateDmNotes) | Via campaign push/listen | ✅ |
+| **Theatric Tab** | Reads from `campaigns/arkla` via onSnapshot | Pull only (player) | ✅ |
+
+## ✅ Persistent Caches (Zustand persist — localStorage)
+
+These are LOCAL CACHES only. The source of truth is Firebase.
+- `str-vtt-campaign` — Zustand cache of campaignStore
+- `str-vtt-campaign-settings` — Zustand cache of campaign settings
+- `str-vtt-homebrew` — Zustand cache of homebrewStore
+- `str-vtt-combat-store` — Zustand cache of combatStore
+- `str-vtt-auth` — Zustand cache of authStore (username, role, characterId)
+- `vtt-sync-queue` — Offline queue for pending Firebase pushes
+- `vtt-encounter-presets` — User-saved encounter TEMPLATES (exportable, not campaign data)
+
+## ❌ Remaining localStorage (acceptable use cases)
+- `str_vtt_spotify_tokens` — Spotify OAuth tokens (credential, not campaign data)
+- `str-vtt:theatric-data` — Tiny bridge payload `{ mapId, tokenId }` for cross-tab communication
+- `vtt-encounter-presets` — Reusable encounter templates (exportable JSON, not campaign state)
+
+## 🔧 Conflict Resolution Fix
+- Changed `>` to `>=` in `shouldApplyRemoteData()` so simultaneous multi-device saves are all applied
+- Remote data wins when its `updatedAt >= localCampaign.updatedAt`
+
+## 🔄 Real-Time Data Flow
+```
+DM Device A (main tab)
+    ↓ campaignStore mutation (e.g., move token)
+    ↓ useFirebaseSync → debounced push to Firestore
+    ↓ Firestore onSnapshot fires
+    ↓
+    ├── DM Device A (theatric tab) → TheatricPage re-renders with new token position
+    ├── DM Device B (second laptop) → campaignStore hydrates → UI updates
+    └── Player Devices → usePlayerFirebaseSync hydrates combatStore → UI updates
+```
+
+---

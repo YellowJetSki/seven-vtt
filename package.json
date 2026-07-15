@@ -1,31 +1,11 @@
 {
-  "name": "str-vtt",
+  "name": "str-vtt-root",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
+  "description": "Monorepo root — VTT project lives in /vtt",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "firebase": "^11.10.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.3.2",
-    "@types/node": "^24.13.2",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.3",
-    "firebase-admin": "^14.1.0",
-    "oxlint": "^1.71.0",
-    "tailwindcss": "^4.3.2",
-    "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "build": "cd vtt && npm run build",
+    "dev": "cd vtt && npm run dev",
+    "lint": "cd vtt && npm run lint",
+    "deploy": "cd vtt && npx vercel --prod"
   }
 }
