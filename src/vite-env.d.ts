@@ -7,7 +7,13 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_STORAGE_BUCKET: string;
   readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string;
   readonly VITE_FIREBASE_APP_ID: string;
+
+  readonly VITE_DM_USERNAME: string;
+  readonly VITE_DM_PASSWORD: string;
+
+  readonly VITE_DEEPSEEK_API_KEY: string;
   readonly VITE_SPOTIFY_CLIENT_ID: string;
+  readonly VITE_SPOTIFY_CLIENT_SECRET: string;
 }
 
 interface ImportMeta {

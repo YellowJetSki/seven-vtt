@@ -4,6 +4,7 @@
  *
  * ── Global Features ──────────────────────────────────────────
  * • Firebase real-time sync (for DM)
+ * • Firebase connection health monitor with auto-reconnect
  * • Keyboard shortcuts overlay (Ctrl+/)
  * • Command palette (Cmd/Ctrl+K)
  * • Floating scratch pad (Ctrl+Shift+N)
@@ -18,10 +19,14 @@ import { KeyboardShortcutsOverlay } from "@/components/ui/KeyboardShortcutsOverl
 import { CampaignScratchPad } from "./CampaignScratchPad";
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { useFirebaseSync } from "@/hooks/useFirebaseSync";
+import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
 
 export function AppShell() {
   // Start Firebase real-time sync for campaign, combat, and homebrew data
   useFirebaseSync();
+
+  // Start Firebase connection health monitor with auto-reconnect
+  useFirebaseMonitor();
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-surface-900">
