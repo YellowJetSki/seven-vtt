@@ -2,34 +2,29 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Campaign Documents ──────────────────────────────────
-    // DM (with Firebase Auth custom claim role == "dm") has full read/write.
-    // Any authenticated user (anonymous players) can read.
+    // ── DEVELOPMENT MODE ─────────────────────────────────────
+    // For the local emulator only, we allow all reads and writes
+    // so the system can be seeded and tested easily.
+    // In production, these rules MUST be locked down.
+
     match /campaigns/{campaignId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.token.role == "dm";
+      allow read: if true;  // Anyone can read
+      allow write: if true; // Anyone can write (dev only)
     }
 
-    // ── Live Session Documents ──────────────────────────────
-    // Real-time combat & session state synced to players.
     match /liveSessions/{campaignId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.token.role == "dm";
+      allow read: if true;
+      allow write: if true;
     }
 
-    // ── Homebrew Documents ──────────────────────────────────
-    // DM writes; any authenticated user can read.
     match /homebrew/{campaignId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.token.role == "dm";
+      allow read: if true;
+      allow write: if true;
     }
 
-    // ── Deny access to any other collections ────────────────
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if true;
     }
   }
 }

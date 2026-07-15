@@ -3645,3 +3645,67 @@ Firestore change → onSnapshot → listener callback → setCampaign()/setItems
 ```
 
 ---
+
+## Emulator Hub Configuration (Updated: 2026-07-15 15:04)
+## Emulator Configuration
+
+- **Hub**: 127.0.0.1:4400 (explicitly configured in firebase.json)
+- **Firestore**: localhost:8090
+- **Auth**: localhost:9099
+- **Storage**: localhost:9199
+- **UI**: localhost:4000
+
+Enabled via `VITE_USE_EMULATORS=true` in `.env` (dev only). Production uses `.env` without this flag set via Vercel env vars.
+
+---
+
+## Firestore Emulator Seeding (Updated: 2026-07-15 15:19)
+## Emulator Data Seeded (July 15, 2026)
+
+### Auth Emulator (port 9099)
+- **User**: `mikejalow@gmail.com` / `Jello1` → `localId: jdxRUxJfsUZPI5ySpzqYlDfAVAZx`
+- Created via `identitytoolkit` REST API `accounts:signUp`
+
+### Firestore Emulator (port 8090)
+Data written via REST API at `/v1/projects/demo-str-vtt/databases/(default)/documents/`
+
+#### `campaigns/arkla` (Campaign Meta - app-compatible format)
+- Format: `{ data: Campaign, updatedAt, updatedBy }` (as expected by `firebase-service.ts`)
+- Name: "The Stᚱ VTT Campaign"
+- DM: MikeJello
+- Settings: milestone XP, flanking advantage, crits on 19-20, bonus action potions
+
+#### `campaigns/arkla/characters/*` (4 documents)
+| ID | Name | Player | Class | Level |
+|----|------|--------|-------|-------|
+| char_wendy | Wendy | David | Paladin (Oath of Vengeance) | 5 |
+| char_kehrfuffle | Kehrfuffle | Mike | Warlock (The Fiend) | 5 |
+| char_strider | Strider | Ben | Ranger (Hunter) | 5 |
+| char_toern | Toern | Sarah | Bard (College of Lore) | 5 |
+
+#### `campaigns/arkla/enemies/*` (5 documents)
+- goblin_01, goblin_boss_01 (Poll Cave)
+- sahuagin_01, sahuagin_priest, giant_shark (Bacilia Docks)
+
+#### `campaigns/arkla/encounters/*` (2 documents)
+- enc_poll_cave: "The Poll Cave Ambush" (Medium, 4 goblins + 1 boss)
+- enc_bacilia_docks: "The Bacilia Docks Raid" (Hard, 3 sahuagin + priest + giant shark)
+
+#### `campaigns/arkla/maps/*` + `tokens/*` (1 map + 4 tokens)
+- map_poll_cave: "Poll Cave System" (30x20 grid, 50px grid size)
+- Tokens: Wendy, Kehrfuffle, Strider, Toern positioned at cave entrance
+
+#### `campaigns/arkla/journal/*` (3 documents)
+- journal_s01: Session 1 - Road to Poll Cave
+- journal_lore01: The Shifting Veil - World Lore
+- journal_quest01: Main Quest - Investigate Poll Cave
+
+#### `liveSessions/arkla` (app-compatible format)
+- Format: `{ data: { activeEncounter, combatLog, liveSession }, updatedAt, updatedBy }`
+- Phase: exploration, Conditions: clear/bright/normal
+
+#### `homebrew/arkla` (app-compatible format)
+- Format: `{ data: { items, spells, feats }, updatedAt, updatedBy }`
+- All empty arrays (no homebrew seeded yet)
+
+---
