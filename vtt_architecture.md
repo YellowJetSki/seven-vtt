@@ -3551,3 +3551,41 @@ homebrew/feats/{featId}                   → { per-feat }
 ```
 
 ---
+
+## Campaign Store - campaign computed field (Updated: 2026-07-15 14:57)
+## Campaign Store - `campaign` Computed Field
+
+**Decision:** Replaced Zustand ES6 getter (`get campaign()`) with a direct `campaign` state field that is recomputed on every `set()` call.
+
+**Root Cause:** Zustand v5 + `persist` middleware had an issue where ES6 getters defined in `create()` were not reliably re-evaluated after persist rehydration. The getter would return null even though `meta` was populated.
+
+**Solution:** 
+- Removed the `get campaign()` getter from the store interface
+- Added `campaign: Campaign | null` as a regular state field initialized to `null`
+- Every `set()` call now also sets `campaign` by calling `buildCampaign(newState)` and spreading it into the returned object
+- `onRehydrateStorage` callback rebuilds `campaign` from persisted normalized state
+
+**Files Modified:** `vtt/src/stores/campaignStore.ts`
+
+---
+
+## Route Fix: /players → /characters (Updated: 2026-07-15 14:57)
+## Route Fix: `/players` → `/characters`
+
+**Root Cause:** The React Router configuration in `App.tsx` defines the player characters route as `/characters`, but 5 components referenced `/players`:
+1. `Sidebar.tsx` - NAV_ITEMS had `path: "/players"`
+2. `BreadcrumbBar.tsx` - PAGE_LABELS had key `"/players"`
+3. `Header.tsx` - ROUTE_LABELS had key `"/players"`
+4. `CommandPalette.tsx` - default commands navigated to `/players`
+5. `RecentActivityFeed.tsx` - character items linked to `/players`
+
+**Fix:** Changed all instances to `/characters` to match the actual route.
+
+**Files Modified:**
+- `vtt/src/components/layout/Sidebar.tsx`
+- `vtt/src/components/layout/BreadcrumbBar.tsx`
+- `vtt/src/components/layout/Header.tsx`
+- `vtt/src/components/ui/CommandPalette.tsx`
+- `vtt/src/components/dashboard/RecentActivityFeed.tsx`
+
+---
