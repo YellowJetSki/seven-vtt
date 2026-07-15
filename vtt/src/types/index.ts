@@ -19,7 +19,6 @@ export interface PlayerCharacter {
 
   hitPoints: HitPoints;
   armorClass: number;
-  /** Initiative modifier derived from Dexterity (e.g., +2 for 14 DEX) */
   initiative: number;
   speed: number;
   proficiencyBonus: number;
@@ -32,12 +31,39 @@ export interface PlayerCharacter {
 
   backstory?: string;
   notes?: string;
-  /** URL to the character's portrait image (for sheets and detail views) */
   portraitUrl?: string;
-  /** URL to the character's battlemap token image */
   tokenUrl?: string;
+
+  /** Arkla-specific: companions (mouse, bear cub, etc.) */
+  companion?: ArklaCompanion;
+  /** Arkla-specific: class resources (Bardic Inspiration, Arrows, etc.) */
+  resources?: ArklaResource[];
+
   createdAt: number;
   updatedAt: number;
+}
+
+/** Companion data from the Arkla export */
+export interface ArklaCompanion {
+  name: string;
+  species: string;
+  hp: number;
+  ac: number;
+  speed: number;
+  isDormant: boolean;
+  awakeLevel: number;
+  desc: string;
+  attacks?: string;
+  stats?: Partial<AbilityScores>;
+  traits?: string;
+}
+
+/** Trackable resource (Bardic Inspiration uses, arrows, etc.) */
+export interface ArklaResource {
+  name: string;
+  current: number;
+  max: number;
+  recharge: "long" | "short" | "none";
 }
 
 export interface AbilityScores {
@@ -104,11 +130,23 @@ export interface SpellSlot {
   expended: number;
 }
 
+/**
+ * Universal currency system.
+ * The Arkla campaign uses custom denominations mapped here:
+ *   leptons (cp) → quadrans (sp) → assarions (gp)
+ * Exchange: 50 leptons = 1 quadrans, 5 quadrans = 1 assarion
+ * ep and pp remain optional for homebrew.
+ */
 export interface Currency {
+  /** Copper pieces (standard) / Leptons (Arkla) */
   cp: number;
+  /** Silver pieces (standard) / Quadrans (Arkla) */
   sp: number;
+  /** Electrum pieces (standard, rarely used in Arkla) */
   ep: number;
+  /** Gold pieces (standard) / Assarions (Arkla) */
   gp: number;
+  /** Platinum pieces (standard, rarely used in Arkla) */
   pp: number;
 }
 
@@ -118,67 +156,36 @@ export interface Enemy {
   id: string;
   name: string;
   size: CreatureSize;
-  type: string;
-  alignment: string;
+  type: CreatureType;
+  alignment?: string;
   armorClass: number;
-  hitPoints: HitPoints;
-  speed: Speed;
+  hitPoints: number;
+  speed: string;
   abilityScores: AbilityScores;
+  skills?: string;
+  senses?: string;
+  languages?: string;
   challengeRating: number;
-  proficiencyBonus: number;
-
-  savingThrows: Partial<Record<Ability, number>>;
-  skills: Partial<Record<Skill, number>>;
-  damageVulnerabilities: string[];
-  damageResistances: string[];
-  damageImmunities: string[];
-  conditionImmunities: string[];
-
-  senses: string;
-  languages: string;
-  traits: string[];
-  actions: Action[];
-  legendaryActions: Action[];
-  reactions: string[];
-
-  description?: string;
-  portraitUrl?: string;
-  tokenUrl?: string;
-  source?: string;
+  traits?: string;
+  actions?: string;
+  reactions?: string;
+  specialAbilities?: string;
+  legendaryActions?: string;
   isHomebrew: boolean;
+  imageUrl?: string;
 }
 
-export interface Speed {
-  walk: number;
-  burrow?: number;
-  climb?: number;
-  fly?: number;
-  swim?: number;
-}
-
-export interface Action {
-  name: string;
-  description: string;
-  attackBonus?: number;
-  damage?: DamageRoll[];
-}
-
-export interface DamageRoll {
-  dice: string;
-  damageType: string;
-  bonus?: number;
-}
-
-export type CreatureSize = "tiny" | "small" | "medium" | "large" | "huge" | "gargantuan";
+export type CreatureSize = "Tiny" | "Small" | "Medium" | "Large" | "Huge" | "Gargantuan";
+export type CreatureType = "Aberration" | "Beast" | "Celestial" | "Construct" | "Dragon" | "Elemental" | "Fey" | "Fiend" | "Giant" | "Humanoid" | "Monstrosity" | "Ooze" | "Plant" | "Undead" | "Custom";
 
 export interface Encounter {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   enemies: EncounterEnemy[];
   environment?: string;
-  difficulty?: string;
-  experienceReward: number;
+  difficulty?: "easy" | "medium" | "hard" | "deadly";
+  experienceReward?: number;
   isHomebrew: boolean;
   createdAt: number;
   updatedAt: number;
@@ -190,32 +197,31 @@ export interface EncounterEnemy {
   customHp?: number;
 }
 
-/* ── Battle Map ─────────────────────────────────────────────── */
-
-/** A rectangular region of revealed fog of war */
-export interface FogReveal {
-  id: string;
-  x: number;      // grid x origin
-  y: number;      // grid y origin
-  width: number;
-  height: number;
-  label?: string;
-}
+/* ── Battle Maps ────────────────────────────────────────────── */
 
 export interface BattleMap {
   id: string;
   name: string;
-  imageUrl?: string;
-  imageFit?: "cover" | "contain" | "stretch";
+  imageUrl: string;
+  imageFit: "cover" | "contain" | "stretch";
   gridWidth: number;
   gridHeight: number;
-  gridSize: number; // pixels per cell
-  gridColor?: string;
-  fogOfWar: FogReveal[];
+  gridSize: number;
+  gridColor: string;
+  fogOfWar: FogZone[];
   tokens: MapToken[];
   notes?: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface FogZone {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
 }
 
 export interface MapToken {
@@ -225,11 +231,11 @@ export interface MapToken {
   x: number;
   y: number;
   color: string;
+  size: number;
+  visible: boolean;
   icon?: string;
-  portraitUrl?: string;
-  size: number; // grid cells occupied (1 for medium)
-  visible: boolean; // hidden by fog / GM-only
   hp?: { current: number; max: number };
+  imageUrl?: string;
 }
 
 /* ── Journal ────────────────────────────────────────────────── */
@@ -239,7 +245,7 @@ export interface JournalEntry {
   title: string;
   content: string;
   tags: string[];
-  type: "session" | "note" | "lore" | "quest";
+  type: "session" | "lore" | "quest";
   sessionNumber?: number;
   createdAt: number;
   updatedAt: number;
@@ -250,7 +256,7 @@ export interface JournalEntry {
 export interface Campaign {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   dmName: string;
   playerCharacters: PlayerCharacter[];
   encounters: Encounter[];
@@ -263,7 +269,50 @@ export interface Campaign {
 
 export interface CampaignSettings {
   homebrewRules: string[];
-  experienceSystem: "milestone" | "xp";
+  experienceSystem: "xp" | "milestone";
   currencyName: string;
   privateDmNotes: string;
+}
+
+/* ── Combat ─────────────────────────────────────────────────── */
+
+export interface Combatant {
+  id: string;
+  name: string;
+  type: "player" | "enemy" | "npc";
+  initiative: number;
+  hitPoints: HitPoints;
+  armorClass: number;
+  conditions: string[];
+  isDead: boolean;
+  isPlayerControlled?: boolean;
+  imageUrl?: string;
+}
+
+export interface CombatEncounter {
+  id: string;
+  name: string;
+  round: number;
+  phase: "active" | "pending" | "completed";
+  currentCombatantIndex: number;
+  combatants: Combatant[];
+  startedAt: number | null;
+  endedAt: number | null;
+}
+
+/* ── Session (Live Player View) ─────────────────────────────── */
+
+export interface LiveSession {
+  phase: "exploration" | "combat" | "rest" | "downtime";
+  sessionStartedAt: number | null;
+  currentScene: string | null;
+  currentMapUrl: string | null;
+  dmAnnouncement: string | null;
+  conditions: SessionConditions | null;
+}
+
+export interface SessionConditions {
+  weather: "clear" | "rain" | "storm" | "fog" | "snow" | "extreme";
+  lighting: "bright" | "dim" | "darkness" | "magical_darkness";
+  terrain: "normal" | "difficult" | "obscured" | "dangerous";
 }

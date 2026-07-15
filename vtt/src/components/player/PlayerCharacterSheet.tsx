@@ -121,21 +121,26 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
   for (const item of character.equipment) {
     const lower = item.toLowerCase();
     if (lower.includes("longsword") || lower.includes("warhammer") || lower.includes("battleaxe") || lower.includes("greatsword") || lower.includes("mace") || lower.includes("quarterstaff")) {
-      weaponAttacks.push({ name: item, bonus: modStr(strMod + proficiencyBonus), damage: lower.includes("greatsword") ? `2d6${modStr(strMod)}` : `1d8${modStr(strMod)}` });
+      weaponAttacks.push({ name: item, bonus: modStr(strMod + proficiencyBonus), damage: lower.includes("greatsword") ? "2d6+" + (strMod >= 0 ? strMod : 0) : "1d8+" + (strMod >= 0 ? strMod : 0) });
     } else if (lower.includes("shortsword") || lower.includes("rapier") || lower.includes("scimitar") || lower.includes("dagger")) {
-      weaponAttacks.push({ name: item, bonus: modStr(dexMod + proficiencyBonus), damage: lower.includes("dagger") ? `1d4${modStr(dexMod)}` : `1d6${modStr(dexMod)}` });
+      weaponAttacks.push({ name: item, bonus: modStr(dexMod + proficiencyBonus), damage: lower.includes("dagger") ? "1d4+" + (dexMod >= 0 ? dexMod : 0) : "1d6+" + (dexMod >= 0 ? dexMod : 0) });
     } else if (lower.includes("shortbow") || lower.includes("longbow") || lower.includes("crossbow")) {
-      weaponAttacks.push({ name: item, bonus: modStr(dexMod + proficiencyBonus), damage: lower.includes("longbow") || lower.includes("heavy") ? `1d8${modStr(dexMod)}` : `1d6${modStr(dexMod)}` });
+      weaponAttacks.push({ name: item, bonus: modStr(dexMod + proficiencyBonus), damage: lower.includes("longbow") || lower.includes("heavy") ? "1d8+" + (dexMod >= 0 ? dexMod : 0) : "1d6+" + (dexMod >= 0 ? dexMod : 0) });
     }
   }
 
-  const spellcastingAbility = character.class.toLowerCase().includes("cleric")
+  const spellcastingAbility = character.class.toLowerCase().includes("cleric") || character.class.toLowerCase().includes("druid")
     ? mod(character.abilityScores.wisdom)
-    : character.class.toLowerCase().includes("paladin")
+    : character.class.toLowerCase().includes("paladin") || character.class.toLowerCase().includes("bard") || character.class.toLowerCase().includes("sorcerer")
       ? mod(character.abilityScores.charisma)
-      : mod(character.abilityScores.intelligence);
+      : character.class.toLowerCase().includes("artificer")
+        ? mod(character.abilityScores.intelligence)
+        : mod(character.abilityScores.wisdom);
   const spellAttackBonus = modStr(spellcastingAbility + proficiencyBonus);
   const spellSaveDC = 8 + spellcastingAbility + proficiencyBonus;
+
+  const companion = character.companion;
+  const resources = character.resources ?? [];
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -172,7 +177,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
                 <div className="min-w-0 flex-1">
                   <h1 className="text-2xl font-bold text-surface-100 md:text-3xl">{character.name}</h1>
                   <p className="mt-0.5 text-sm text-surface-400">
-                    {character.race}{character.subclass ? ` - ${character.subclass} ${character.class}` : ` - ${character.class}`} - Level {character.level}
+                    {character.race}{character.subclass ? " - " + character.subclass + " " + character.class : " - " + character.class} - Level {character.level}
                   </p>
                   <p className="mt-0.5 text-xs text-surface-500">
                     {character.alignment ?? "Unaligned"} - {character.background ?? "No Background"}
@@ -196,7 +201,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
               <span>Hit Points</span>
               <span>
                 {character.hitPoints.current} / {character.hitPoints.max}
-                {character.hitPoints.temporary > 0 && ` (+${character.hitPoints.temporary} temp)`}
+                {character.hitPoints.temporary > 0 && " (+" + character.hitPoints.temporary + " temp)"}
               </span>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-surface-800">
@@ -279,7 +284,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Equipment</h2>
               <div className="grid grid-cols-2 gap-1.5">
                 {character.equipment.map((item, i) => (
-                  <div key={`eq-${i}`} className="rounded-lg bg-surface-800 px-3 py-2 text-xs text-surface-300">{item}</div>
+                  <div key={"eq-" + i} className="rounded-lg bg-surface-800 px-3 py-2 text-xs text-surface-300">{item}</div>
                 ))}
               </div>
             </section>
@@ -289,11 +294,12 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Currency</h2>
             <div className="grid grid-cols-5 gap-2 text-center">
               <CurrencyCell label="PP" value={character.currency.pp} color="gold" />
-              <CurrencyCell label="GP" value={character.currency.gp} color="gold" />
+              <CurrencyCell label="GP (Assarion)" value={character.currency.gp} color="gold" />
               <CurrencyCell label="EP" value={character.currency.ep} color="surface" />
-              <CurrencyCell label="SP" value={character.currency.sp} color="surface" />
-              <CurrencyCell label="CP" value={character.currency.cp} color="surface" />
+              <CurrencyCell label="SP (Quadrans)" value={character.currency.sp} color="surface" />
+              <CurrencyCell label="CP (Lepton)" value={character.currency.cp} color="surface" />
             </div>
+            <p className="mt-2 text-center text-[9px] text-surface-500">50 Leptons = 1 Quadrans | 5 Quadrans = 1 Assarion</p>
           </section>
 
           {character.backstory && (
@@ -404,7 +410,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
                 {character.spells.map((slot) => {
                   const remaining = slot.total - slot.expended;
                   return (
-                    <div key={`slot-${slot.level}`} className="flex items-center justify-between rounded-lg bg-surface-800 px-4 py-2.5">
+                    <div key={"slot-" + slot.level} className="flex items-center justify-between rounded-lg bg-surface-800 px-4 py-2.5">
                       <div className="flex items-center gap-3">
                         <span className="flex h-6 w-6 items-center justify-center rounded bg-mage-500/20 text-[10px] font-bold text-mage-400">{slot.level}</span>
                         <span className="text-xs text-surface-300">Level {slot.level}</span>
@@ -412,7 +418,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
                       <div className="flex items-center gap-2">
                         <div className="flex gap-1">
                           {Array.from({ length: slot.total }).map((_, i) => (
-                            <span key={i} className={`h-3 w-3 rounded-full border transition-all ${i < slot.expended ? "border-surface-600 bg-surface-700" : "border-mage-500/50 bg-mage-500/20"}`} />
+                            <span key={i} className={"h-3 w-3 rounded-full border transition-all " + (i < slot.expended ? "border-surface-600 bg-surface-700" : "border-mage-500/50 bg-mage-500/20")} />
                           ))}
                         </div>
                         <span className="text-xs text-surface-500 mr-2">{remaining}/{slot.total}</span>
@@ -432,6 +438,23 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
                     </div>
                   );
                 })}
+              </div>
+            </section>
+          )}
+
+          {resources.length > 0 && (
+            <section className="rounded-xl border border-surface-700 bg-surface-850 p-4 md:p-5">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Resources</h2>
+              <div className="space-y-2">
+                {resources.map((res, idx) => (
+                  <div key={"res-" + idx} className="flex items-center justify-between rounded-lg bg-surface-800 px-4 py-2.5">
+                    <span className="text-xs text-surface-300">{res.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-surface-100">{res.current}/{res.max}</span>
+                      <span className="text-[9px] text-surface-500">{res.recharge === "long" ? "Long Rest" : res.recharge === "short" ? "Short Rest" : ""}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -471,6 +494,32 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
             </div>
           </section>
 
+          {companion && (
+            <section className="rounded-xl border border-surface-700 bg-surface-850 p-4 md:p-5">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Companion: {companion.name}</h2>
+              <div className="rounded-lg bg-surface-800 p-4 space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-surface-500">Species:</span>
+                  <span className="text-surface-200">{companion.species}</span>
+                </div>
+                <div className="flex gap-3 text-xs">
+                  <span className="text-surface-500">HP: <span className="font-bold text-rogue-400">{companion.hp}</span></span>
+                  <span className="text-surface-500">AC: <span className="font-bold text-mage-400">{companion.ac}</span></span>
+                  <span className="text-surface-500">Speed: <span className="font-bold text-surface-200">{companion.speed}ft</span></span>
+                </div>
+                {companion.desc && (
+                  <p className="text-xs text-surface-400 leading-relaxed mt-2">{companion.desc}</p>
+                )}
+                {companion.attacks && (
+                  <div className="mt-2">
+                    <p className="text-[10px] font-medium text-surface-500 mb-1">Attacks</p>
+                    <p className="text-xs text-surface-300 whitespace-pre-wrap">{companion.attacks}</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="rounded-xl border border-surface-700 bg-surface-850 p-4 md:p-5">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Quick Reference</h2>
             <div className="grid grid-cols-2 gap-3 text-xs text-surface-400">
@@ -505,7 +554,7 @@ function StatPill({ label, value, color }: { label: string; value: string; color
     rogue: "border-rogue-500/30 bg-rogue-500/10 text-rogue-400",
   };
   return (
-    <div className={`rounded-xl border p-4 text-center ${colorMap[color]}`}>
+    <div className={"rounded-xl border p-4 text-center " + colorMap[color]}>
       <p className="text-xs font-medium opacity-70">{label}</p>
       <p className="mt-0.5 text-xl font-bold">{value}</p>
     </div>
@@ -517,7 +566,7 @@ function CurrencyCell({ label, value, color }: { label: string; value: number; c
     ? "text-gold-400 bg-gold-500/10 border-gold-500/20"
     : "text-surface-300 bg-surface-800 border-surface-700";
   return (
-    <div className={`rounded-lg border py-2 ${colorClass}`}>
+    <div className={"rounded-lg border py-2 " + colorClass}>
       <p className="text-[10px] font-semibold uppercase opacity-60">{label}</p>
       <p className="text-sm font-bold">{value}</p>
     </div>

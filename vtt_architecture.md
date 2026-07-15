@@ -1869,3 +1869,36 @@ A D&D 5e treasure generator that creates loot based on encounter difficulty, cre
 - Clean separated constants for abilities and skills (no inline arrays)
 
 ---
+
+## Arkla Campaign Import System (Updated: 2026-07-15 08:50)
+## Arkla Campaign Import System
+
+**Files**:
+- `vtt/public/Arkla.json` - The exported campaign file (source of truth)
+- `vtt/src/utils/importArklaCampaign.ts` - Parser that converts Arkla export format to Campaign type
+- `vtt/src/App.tsx` - Auto-loads Arkla.json on first mount via fetch()
+
+### Conversion Logic:
+- **Currency**: Leptons → CP, Quadrans → SP, Assarions → GP (50:1:5 ratio)
+- **Abilities**: STR/DEX/CON/INT/WIS/CHA mapped directly
+- **Skills**: Comma-separated string parsed into our skill map
+- **Saving Throws**: STR/DEX shorthand mapped to proper keys, proficiency bonus applied
+- **Spell Slots**: Converted from max/current to total/expended
+- **Equipment**: All items including weapons, armor, gear, consumables
+- **Companions**: Preserved in `character.companion` field
+- **Resources**: Bardic Inspiration uses, arrow counts, etc. in `character.resources`
+- **Races**: Salt Gnome, Rock Gnome, Wood Elf, Variant Human all mapped
+
+### PlayerCharacterSheet Updates:
+- Added companion display section in Notes tab
+- Added resources tracking in Combat tab
+- Currency labels now show Arkla denominations (GP/Assarion, SP/Quadrans, CP/Lepton)
+- Exchange rate displayed below currency
+
+### First-time load behavior:
+1. App mounts, checks localStorage for `str_vtt_campaign_loaded` flag
+2. Fetches `/Arkla.json` from public folder
+3. Parses with `importArklaJson()` and sets as campaign
+4. Sets localStorage flag to prevent re-import on refresh
+
+---
