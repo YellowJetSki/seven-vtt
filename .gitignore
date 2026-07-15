@@ -6,6 +6,9 @@ dist
 .vite
 .vercel
 
+# Vercel OIDC tokens — auto-generated deployment credentials
+.vercel.env.local
+
 # Python bytecode cache (from agent tooling)
 __pycache__/
 *.pyc
@@ -17,6 +20,9 @@ sessions/
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Firebase service account key (DO NOT COMMIT)
+service-account.json
 
 # Embedded git repo (vtt was accidentally initialized as a submodule)
 /vtt/.git
