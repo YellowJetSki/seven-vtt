@@ -12,7 +12,6 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { triggerFullSync } from "@/hooks/useFirebaseSync";
 import { Button } from "@/components/ui/Button";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { LockableNotes } from "@/components/ui/LockableNotes";
 import { createDemoCampaign } from "@/data/demoCampaign";
 import { isFirebaseAvailable } from "@/lib/firebase";
@@ -22,7 +21,6 @@ export function CampaignSettings() {
   const setCampaign = useCampaignStore((s) => s.setCampaign);
   const clearCampaign = useCampaignStore((s) => s.clearCampaign);
   const showToast = useUiStore((s) => s.showToast);
-  const toast = useUiStore((s) => s.showToast);
 
   const [campaignName, setCampaignName] = useState(campaign?.name ?? "");
   const [campaignDescription, setCampaignDescription] = useState(campaign?.description ?? "");
@@ -36,7 +34,7 @@ export function CampaignSettings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync when campaign loads/changes
+  // Sync form fields when campaign loads/changes
   useEffect(() => {
     if (campaign) {
       setCampaignName(campaign.name);
@@ -82,7 +80,6 @@ export function CampaignSettings() {
     if (!campaign) return;
 
     try {
-      // Include homebrew data in the export if available
       const exportData = {
         campaign,
         exportedAt: new Date().toISOString(),
@@ -123,7 +120,6 @@ export function CampaignSettings() {
           return;
         }
 
-        // Restore the campaign with a fresh timestamp
         const restored = {
           ...data.campaign,
           updatedAt: Date.now(),
@@ -135,7 +131,6 @@ export function CampaignSettings() {
           type: "success",
         });
 
-        // Force a full Firebase sync after import
         if (isFirebaseAvailable()) {
           triggerFullSync().then((ok) => {
             if (ok) {
@@ -148,8 +143,6 @@ export function CampaignSettings() {
       }
     };
     reader.readAsText(file);
-
-    // Reset input so the same file can be imported again
     e.target.value = "";
   };
 
@@ -160,7 +153,6 @@ export function CampaignSettings() {
     setShowDeleteConfirm(false);
     showToast({ message: "Reset to demo campaign data.", type: "info" });
 
-    // Force a full Firebase sync after reset
     if (isFirebaseAvailable()) {
       triggerFullSync().then((ok) => {
         if (ok) {
@@ -176,7 +168,6 @@ export function CampaignSettings() {
     setShowDeleteConfirm(false);
     showToast({ message: "Campaign data cleared from this device.", type: "info" });
 
-    // Push empty state to Firebase (clear remote)
     if (isFirebaseAvailable()) {
       triggerFullSync().then((ok) => {
         if (ok) {
@@ -205,7 +196,8 @@ export function CampaignSettings() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <PageHeader title="Campaign Settings" description="Manage your campaign details and DM tools" />
+          <h2 className="text-xl font-bold text-surface-100 md:text-2xl">Campaign Settings</h2>
+          <p className="mt-1 text-sm text-surface-400">Manage your campaign details and DM tools</p>
         </div>
         <Button size="sm" onClick={handleSave} disabled={!isDirty}>
           {isDirty ? "💾 Save Changes" : "Saved ✓"}
@@ -275,7 +267,7 @@ export function CampaignSettings() {
             value={dmNotes}
             onChange={(e) => { setDmNotes(e.target.value); markDirty(); }}
             rows={6}
-            placeholder="Your secret campaign notes &mdash; use the lock button to hide during screen-sharing..."
+            placeholder="Your secret campaign notes — use the lock button to hide during screen-sharing..."
             className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none resize-y min-h-[120px]"
           />
         </LockableNotes>
@@ -308,7 +300,6 @@ export function CampaignSettings() {
           )}
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {/* Export */}
           <button
             onClick={handleExport}
             className="rounded-lg border border-surface-700 bg-surface-800 px-3 py-3 text-center text-xs text-surface-300 transition-all hover:border-accent-500/50 hover:text-surface-100"
@@ -317,7 +308,6 @@ export function CampaignSettings() {
             Export Campaign
           </button>
 
-          {/* Import */}
           <button
             onClick={handleImportClick}
             className="rounded-lg border border-surface-700 bg-surface-800 px-3 py-3 text-center text-xs text-surface-300 transition-all hover:border-accent-500/50 hover:text-surface-100"
@@ -333,7 +323,6 @@ export function CampaignSettings() {
             className="hidden"
           />
 
-          {/* Reset to Demo */}
           <button
             onClick={handleResetToDemo}
             className="rounded-lg border border-surface-700 bg-surface-800 px-3 py-3 text-center text-xs text-surface-300 transition-all hover:border-mage-500/50 hover:text-surface-100"
@@ -342,7 +331,6 @@ export function CampaignSettings() {
             Reset to Demo
           </button>
 
-          {/* Delete Campaign */}
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="rounded-lg border border-warrior-500/30 bg-warrior-500/5 px-3 py-3 text-center text-xs text-warrior-400 transition-all hover:border-warrior-500/50 hover:bg-warrior-500/10"
@@ -382,7 +370,10 @@ export function CampaignSettings() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-950/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-surface-950/60 backdrop-blur-sm"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
           <div
             className="mx-4 w-full max-w-sm rounded-xl border border-surface-700 bg-surface-900 p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
