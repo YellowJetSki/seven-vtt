@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
-import { useCampaignStore } from "@/stores/campaignStore";
-import { normalizedSync } from "@/lib/normalized-firebase-service";
 import { isFirebaseAvailable } from "@/lib/firebase";
 import { migrateLegacyCampaignData } from "@/lib/migrate-legacy-data";
 
@@ -20,8 +18,6 @@ import { TheatricPage } from "@/pages/TheatricPage";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
-const CAMPAIGN_ID = "arkla";
-
 export default function App() {
   const state = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
@@ -32,23 +28,6 @@ export default function App() {
    */
   useEffect(() => {
     migrateLegacyCampaignData();
-  }, []);
-
-  /* ── Initialize Firebase sync listeners on mount ───────────
-   * Uses the normalized subcollection-based syncManager.
-   * Subscribes to campaign, session, and homebrew Firestore documents
-   * via onSnapshot, hydrating all Zustand stores in real-time.
-   *
-   * NOTE: normalizedSync.start() without callbacks is deliberately
-   * a no-op for the listeners. Local-first architecture means
-   * Firestore sync is a background enhancement, not a dependency.
-   */
-  useEffect(() => {
-    if (!isFirebaseAvailable()) return;
-    normalizedSync.start(CAMPAIGN_ID);
-    return () => {
-      normalizedSync.stop(CAMPAIGN_ID);
-    };
   }, []);
 
   return (

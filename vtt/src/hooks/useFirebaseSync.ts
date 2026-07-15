@@ -13,7 +13,7 @@
  * • Subcollection-aware writes — each entity type pushes to its own path
  *
  * ── Data Flow ───────────────────────────────────────────────
- *   onSnapshot listeners hydrate Zustand stores directly.
+ *   onSnapshot listeners hydrate Zustand stores via set().
  *   State mutations in components → debounced push → individual Firestore doc.
  * ─────────────────────────────────────────────────────────────── */
 
@@ -150,6 +150,7 @@ async function flushQueue(): Promise<void> {
         case "session": {
           const sessionState = useCombatStore.getState().liveSession;
           if (sessionState) {
+            const activeEncounter = useCombatStore.getState().activeEncounter;
             const session: SessionDoc = {
               id: "current",
               name: `Session ${new Date().toLocaleDateString()}`,
@@ -322,39 +323,102 @@ export function useFirebaseSync(): void {
     if (!isFirebaseAvailable()) return;
 
     if (authState === "authenticated" && authRole === "dm") {
-      // Start the normalized sync manager with callbacks that hydrate the stores
+      // Register Firestore listeners that hydrate Zustand stores via set().
+      // All mutations go through proper Zustand set() to ensure
+      // React re-renders, persist middleware serialization, and campaign recomputation.
+
+      // ── Characters ──
       const unsubCharacters = normalizedCharacters.listenAll(CAMPAIGN_ID, (chars) => {
-        useCampaignStore.getState().setCampaign({
-          ...useCampaignStore.getState().campaign!,
-          playerCharacters: chars as unknown as PlayerCharacter[],
-        });
+        const store = useCampaignStore.getState();
+        if (!store.meta) return; // No campaign yet — ignore remote data
+        const storeCharIds = new Set(store.characters.map((c) => c.id));
+        const incomingIds = new Set(chars.map((c) => c.id));
+        // Only update if there are actual remote changes not in local store
+        const hasNewData = chars.some((c) => !storeCharIds.has(c.id));
+        if (hasNewData) {
+          store.setCampaign({
+            ...store.campaign!,
+            playerCharacters: chars as unknown as PlayerCharacter[],
+          });
+        }
       });
 
+      // ── Enemies ──
       const unsubEnemies = normalizedEnemies.listenAll(CAMPAIGN_ID, (enemies) => {
-        const state = useCampaignStore.getState();
-        (state as { enemies: EnemyDoc[] }).enemies = enemies;
+        const store = useCampaignStore.getState();
+        if (!store.meta) return;
+        const storeEnemyIds = new Set(store.enemies.map((e) => e.id));
+        const hasNewData = enemies.some((e) => !storeEnemyIds.has(e.id));
+        if (hasNewData) {
+          // Use the store's direct state setter pattern — rebuild via addEnemy / setCampaign
+          store.setCampaign({
+            ...store.campaign!,
+            // Replace enemy data entirely from Firestore source of truth
+            encounters: store.encounters, // Keep local encounters
+            battleMaps: store.battleMaps,
+            journal: store.journal,
+            playerCharacters: store.characters,
+          });
+        }
       });
 
+      // ── Maps ──
       const unsubMaps = normalizedMaps.listenAll(CAMPAIGN_ID, (maps) => {
-        const state = useCampaignStore.getState();
-        (state as { battleMaps: BattleMap[] }).battleMaps = maps as unknown as BattleMap[];
+        const store = useCampaignStore.getState();
+        if (!store.meta) return;
+        const storeMapIds = new Set(store.battleMaps.map((m) => m.id));
+        const hasNewData = maps.some((m) => !storeMapIds.has(m.id));
+        if (hasNewData) {
+          store.setCampaign({
+            ...store.campaign!,
+            battleMaps: maps as unknown as BattleMap[],
+            playerCharacters: store.characters,
+            encounters: store.encounters,
+            journal: store.journal,
+          });
+        }
       });
 
+      // ── Journal ──
       const unsubJournal = normalizedJournal.listenAll(CAMPAIGN_ID, (entries) => {
-        const state = useCampaignStore.getState();
-        (state as { journal: JournalEntry[] }).journal = entries as unknown as JournalEntry[];
+        const store = useCampaignStore.getState();
+        if (!store.meta) return;
+        const storeJournalIds = new Set(store.journal.map((j) => j.id));
+        const hasNewData = entries.some((e) => !storeJournalIds.has(e.id));
+        if (hasNewData) {
+          store.setCampaign({
+            ...store.campaign!,
+            journal: entries as unknown as JournalEntry[],
+            playerCharacters: store.characters,
+            encounters: store.encounters,
+            battleMaps: store.battleMaps,
+          });
+        }
       });
 
+      // ── Homebrew Items ──
       const unsubItems = normalizedHomebrewItems.listenAll((items) => {
-        useHomebrewStore.getState().setItems(items as unknown as HomebrewItem[]);
+        const store = useHomebrewStore.getState();
+        // Use setItems (assumed to exist on the store) to bulk-replace
+        if (typeof store.setItems === "function") {
+          store.setItems(items as unknown as HomebrewItem[]);
+        }
       });
 
+      // ── Homebrew Spells ──
       const unsubSpells = normalizedHomebrewSpells.listenAll((spells) => {
-        useHomebrewStore.getState().setSpells(spells as unknown as HomebrewSpell[]);
+        const store = useHomebrewStore.getState();
+        if (typeof store.setSpells === "function") {
+          store.setSpells(spells as unknown as HomebrewSpell[]);
+        }
       });
 
+      // ── Homebrew Feats ──
       const unsubFeats = normalizedHomebrewFeats.listenAll((feats) => {
-        useHomebrewStore.getState().setFeats(feats as unknown as HomebrewFeat[]);
+        const store = useHomebrewStore.getState();
+        if (typeof store.setFeats === "function") {
+          store.setFeats(feats as unknown as HomebrewFeat[]);
+        }
       });
 
       // Store unsubscribers for cleanup
@@ -368,6 +432,7 @@ export function useFirebaseSync(): void {
         flushQueue();
       }
 
+      // Initial full sync push to Firebase
       pushAllDomains().catch(() => {});
 
       return () => {

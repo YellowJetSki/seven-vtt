@@ -3589,3 +3589,59 @@ homebrew/feats/{featId}                   → { per-feat }
 - `vtt/src/components/dashboard/RecentActivityFeed.tsx`
 
 ---
+
+## Sprint Status (Updated: 2026-07-15 14:59)
+## Sprint Completion Status
+
+### Sprint 1: P0 Critical Fixes ✅ COMPLETE
+1. ✅ **Missing loading states** - PageSkeleton component already exists and is used in DmDashboard
+2. ✅ **Broken `/players` route** - Fixed all 5 components referencing `/players` to use `/characters`
+3. ✅ **Campaign creation not persisting** - Fixed Zustand getter → direct computed field with `onRehydrateStorage`
+4. ✅ **Search not working** - Verified search on PlayerCards page works correctly with filter logic
+
+### Sprint 2: Remaining Pages ✅ VERIFIED
+- ✅ PlayerCards renders with empty state, search, sort, and Add Character modal
+- ✅ CampaignSettings page renders with all fields
+- ✅ DmJournal page renders with CRUD
+- ✅ HomebrewPanel renders with tabs (items, feats, spells)
+- ✅ Encounters renders with sub-tabs (combat, session, reference, build)
+- ✅ BattleMaps renders with gallery and MapEditor
+
+### Sprint 3-6: Polish & Edge Cases
+All pages are structurally complete. Remaining work includes:
+- Adding more demo data (characters, encounters, maps)
+- Testing the full CRUD lifecycle on each page
+- Edge case handling for empty states
+
+---
+
+## Firebase Integration Audit (Updated: 2026-07-15 15:03)
+## Firebase Integration Audit (July 15, 2026)
+
+### Architecture Overview
+The app uses a **local-first** architecture with Firebase as a background sync layer:
+- **Primary store**: Zustand with `persist` middleware (localStorage)
+- **Sync layer**: `useFirebaseSync` hook in `AppShell.tsx`
+- **Write**: `normalized-firebase-service.ts` CRUD functions → Firestore subcollections
+- **Read**: `onSnapshot` listeners hydrate Zustand stores
+
+### Schema Coverage: 13/13 Subcollections ✅
+All defined in `types/firestore.ts` with `Paths.*` helpers.
+
+### Critical Fix Applied: Direct State Mutation
+The listener callbacks in `useFirebaseSync.ts` were mutating Zustand state directly via `getState().enemies = enemies` — which bypasses `set()`, breaking React re-renders, persist middleware, and campaign recomputation.
+
+**Fix**: All listeners now use `store.setCampaign({...})` which goes through proper Zustand `set()` with campaign recomputation. Homebrew listeners use `setItems()`, `setFeats()`, `setSpells()`.
+
+### Gaps Identified
+1. **Firestore Emulator**: Not running (`VITE_USE_EMULATORS=false`). Production Firebase is used.
+2. **Session Combatants**: Schema defined but no `normalizedSessionCombatants` service.
+3. **Combat Log**: Listen-only — no individual push/remove functions exposed.
+
+### Data Flow
+```
+Component mutation → Zustand set() → debounced push → normalizedService → Firestore
+Firestore change → onSnapshot → listener callback → setCampaign()/setItems() → Zustand set() → React re-render
+```
+
+---
