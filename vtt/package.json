@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-image-manifest.js",
     "dev": "vite",
+    "prebuild": "node scripts/generate-image-manifest.js",
     "build": "tsc --noEmit && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

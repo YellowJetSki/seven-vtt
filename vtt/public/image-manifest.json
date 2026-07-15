@@ -1,0 +1,18 @@
+{
+  "battlemaps": [
+    "/images/battlemaps/Cragmaw_Hideout.svg",
+    "/images/battlemaps/Dragon_Barrow.svg",
+    "/images/battlemaps/Wave_Echo_Cave.svg"
+  ],
+  "portraits": [
+    "/images/portraits/Strider.svg",
+    "/images/portraits/Toern_Ironheart.svg",
+    "/images/portraits/Wendy_The_Wisp_Lightfoot.svg"
+  ],
+  "tokens": [
+    "/images/tokens/Dragon.svg",
+    "/images/tokens/Goblin.svg",
+    "/images/tokens/Hero.svg",
+    "/images/tokens/Wizard.svg"
+  ]
+}
