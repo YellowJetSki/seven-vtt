@@ -1368,3 +1368,43 @@ homebrew/{campaignId} — Single document
 ```
 
 ---
+
+## Firebase Integration — Complete Audit (2026-07-14) (Updated: 2026-07-14 20:51)
+## Firebase Integration — Complete Audit
+
+### What Was Built
+
+#### Service Layer (`lib/`)
+- **`firebase.ts`** — Getter functions (`getDb()`, `getAuthInstance()`, `getStorageInstance()`) with `isFirebaseAvailable()` guard. Emulator auto-connect in dev mode.
+- **`firebase-auth.ts`** — `loginWithFirebase()` maps DM username → `dm_<user>@strvtt.local` email. `logoutFromFirebase()`, `onAuthChanged()`, `getCurrentUser()`, `isDmUser()`.
+- **`firebase-service.ts`** — `campaignSync`, `sessionSync`, `homebrewSync` objects with `push*()` and `listen*()` methods. `SyncManager` singleton orchestrates all three.
+- **`firebase-schema.ts`** — v2 schema docs: `campaigns/{id}`, `liveSessions/{id}`, `homebrew/{id}` — all single documents with embedded arrays.
+
+#### Stitch Layer (`hooks/`)
+- **`useFirebaseSync.ts`** — Called in AppShell. Watches ALL state dimensions: `pcCount`, `encCount`, `mapCount`, `journalCount`, `campaignUpdatedAt`, `forcePushCounter`, `activeEncounter.phase/round/index`, `liveSession.*`, `homebrewItemsLen/FeatsLen/SpellsLen`. 2s debounce for campaign/homebrew, 1.5s for combat. `triggerFullSync()` exported for bulk operations.
+
+#### Auth (`stores/`)
+- **`authStore.ts`** — DM login via Firebase Auth (async), player login remains local name matching. `firebaseConnected` state for UI indicator. Persists to localStorage.
+
+#### UI — Sync Indicator
+- **`Header.tsx`** — Green pulse dot + "Sync" badge when Firebase is connected. Hidden when not available.
+- **`CampaignSettings.tsx`** — "Firebase Sync Active" badge in Data Management section. Import/Export/Reset/Delete buttons all call `triggerFullSync()`.
+
+#### Data Layer (`stores/`)**
+- **`campaignStore.ts`** — Added `forcePushCounter` that increments on `setCampaign()` and `clearCampaign()`. The sync hook watches this for wholesale replacements.
+
+#### CRUD Flow
+All campaign CRUD operations (addCharacter, updateEncounter, addBattleMap, removeJournalEntry, updateSettings, etc.) update `campaign.updatedAt`. The `useFirebaseSync` hook watches this timestamp PLUS array lengths → debounce 2s → `syncManager.pushCampaign()`.
+
+Combat operations (startEncounter, nextTurn, damageCombatant, setSessionPhase, etc.) are watched via `activeEncounter.*` fields + `liveSession.*` fields → debounce 1.5s → `syncManager.pushSession()`.
+
+Homebrew operations (addItem, addFeat, removeSpell) are watched via array lengths → debounce 2s → `syncManager.pushHomebrew()`.
+
+#### Firestore Rules (`firestore.rules`)
+- Campaigns, liveSessions, homebrew: **read** = any authenticated user, **write** = user with `@strvtt.local` email (DM only).
+
+### Remaining Considerations
+- Player-facing pages don't yet subscribe to live session `onSnapshot` — they read from the Zustand store which is hydrated by the DM's listener. For true multi-device sync, players' browsers would need their own `liveSessions` listener. Currently, players access the DM's session state through the shared Zustand store (same browser session).
+- For cross-device player sync, add a `PlayerLiveView` component that calls `sessionSync.listenSession("arkla")` independently.
+
+---
