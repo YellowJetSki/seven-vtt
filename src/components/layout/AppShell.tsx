@@ -4,8 +4,12 @@ import { Header } from "./Header";
 import { ToastContainer } from "@/components/ui/ToastContainer";
 import { KeyboardShortcutsOverlay } from "@/components/ui/KeyboardShortcutsOverlay";
 import { CampaignScratchPad } from "./CampaignScratchPad";
+import { useFirebaseSync } from "@/hooks/useFirebaseSync";
 
 export function AppShell() {
+  // Start Firebase real-time sync for campaign, combat, and homebrew data
+  useFirebaseSync();
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-surface-900">
       <Sidebar />

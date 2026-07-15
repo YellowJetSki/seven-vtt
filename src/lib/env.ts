@@ -11,12 +11,21 @@ function requiredEnv(key: string): string {
   return value;
 }
 
+/**
+ * Returns the env value or an empty string if not set.
+ * Use this for truly optional keys that won't crash the app.
+ */
+function optionalEnv(key: string): string {
+  return (import.meta.env[key] as string | undefined) ?? "";
+}
+
 export const ENV = {
-  FIREBASE_API_KEY: requiredEnv("VITE_FIREBASE_API_KEY"),
-  FIREBASE_AUTH_DOMAIN: requiredEnv("VITE_FIREBASE_AUTH_DOMAIN"),
-  FIREBASE_PROJECT_ID: requiredEnv("VITE_FIREBASE_PROJECT_ID"),
-  FIREBASE_STORAGE_BUCKET: requiredEnv("VITE_FIREBASE_STORAGE_BUCKET"),
-  FIREBASE_MESSAGING_SENDER_ID: requiredEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-  FIREBASE_APP_ID: requiredEnv("VITE_FIREBASE_APP_ID"),
-  SPOTIFY_CLIENT_ID: requiredEnv("VITE_SPOTIFY_CLIENT_ID"),
+  /* ── Required — app won't start without these ── */
+  DM_USERNAME: requiredEnv("VITE_DM_USERNAME"),
+  DM_PASSWORD: requiredEnv("VITE_DM_PASSWORD"),
+
+  /* ── Optional — feature-gated external APIs ── */
+  DEEPSEEK_API_KEY: optionalEnv("VITE_DEEPSEEK_API_KEY"),
+  SPOTIFY_CLIENT_ID: optionalEnv("VITE_SPOTIFY_CLIENT_ID"),
+  SPOTIFY_CLIENT_SECRET: optionalEnv("VITE_SPOTIFY_CLIENT_SECRET"),
 } as const;

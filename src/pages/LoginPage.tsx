@@ -21,21 +21,24 @@ export function LoginPage() {
   const [playerLoading, setPlayerLoading] = useState(false);
 
   /* ── Handlers ── */
-  const handleDmLogin = (e: FormEvent) => {
+
+  const handleDmLogin = async (e: FormEvent) => {
     e.preventDefault();
     setDmError("");
     setDmLoading(true);
 
-    // Simulate brief network delay for UX
-    setTimeout(() => {
-      const result = login(dmUsername, dmPassword);
-      setDmLoading(false);
+    try {
+      const result = await login(dmUsername, dmPassword);
       if (!result.success) {
         setDmError(result.error ?? "Login failed.");
       } else {
         showToast({ message: "Welcome back, Dungeon Master.", type: "success" });
       }
-    }, 400);
+    } catch {
+      setDmError("An unexpected error occurred. Please try again.");
+    } finally {
+      setDmLoading(false);
+    }
   };
 
   const handlePlayerLogin = (e: FormEvent) => {
