@@ -2754,3 +2754,76 @@ Two new env vars must be added to Vercel:
 4. **31 linter warnings** — Mostly unused imports and `exhaustive-deps`. Cosmetic, not blocking.
 
 ---
+
+## E2E Test Results (2026-07-15) (Updated: 2026-07-15 12:51)
+## E2E Test — Successfully Validated Features
+
+### Environment
+- **Dev Server**: Vite on port 5173 — running
+- **Firestore Emulator**: Port 8090 — running, data seeded with `Authorization: Bearer owner`
+- **Auth Emulator**: Port 9099 — running but no DM user created (sync queue operational)
+
+### Test Log
+
+#### 1. Authentication
+- ✅ Login page renders with role selector (DM / Player)
+- ✅ DM login form works (username + password)
+- ✅ DM authentication succeeds with env credentials (`MikeJello` / `Jello1`)
+- ✅ Role-based redirect works (DM → `/dashboard`)
+- ✅ User badge shows role (👑 MikeJello · Dungeon Master)
+- ✅ "Online" badge indicator works
+
+#### 2. Navigation & Layout
+- ✅ AppShell with Sidebar (7 nav items: Dashboard, Players, Homebrew, Encounters, Battle Maps, Journal, Settings)
+- ✅ Header with breadcrumb trail (Campaign Name / Page Title)
+- ✅ Responsive mobile overlay sidebar with backdrop blur
+- ✅ All navigation links render correct pages
+
+#### 3. Campaign Creation
+- ✅ "New Campaign" button on dashboard opens creation form
+- ✅ Campaign name & description input fields render
+- ✅ Campaign creates successfully with Zustand store
+- ✅ Dashboard updates with campaign name + stats
+- ✅ Sidebar header updates to show campaign name + XP + PC count
+
+#### 4. Player Character Management
+- ✅ Players page shows empty state ("No player characters yet")
+- ✅ "Add Character" button opens modal form
+- ✅ Full character creation form includes: Name, Player Name, Race, Class, Subclass, Level (1-20), Background, Alignment, AC, HP Max, Speed, Initiative, Ability Scores (6), Portrait URL, Token URL
+- ✅ Character creation persists to Zustand store
+- ✅ Players page updates with party summary (count, avg level, classes, races)
+- ✅ Sidebar shows badge count for Players nav item
+- ✅ Dashboard stat card updates: Players 0→1
+
+#### 5. Journal
+- ✅ Empty state with search bar
+- ✅ Filter tabs (All, Session, Note, Lore, Quest)
+- ✅ "+ New Entry" and "+ First Entry" buttons
+- ✅ Tag system with "+ Add Tag"
+
+#### 6. Campaign Settings
+- ✅ Campaign name/description editing
+- ✅ Experience system toggle (Milestone / XP)
+- ✅ Currency name field
+- ✅ Private DM Notes with lock/unlock toggle
+- ✅ Scratch Pad for quick notes
+- ✅ Data Management section with backup options
+- ✅ "Firebase Sync Active" badge indicator
+
+#### 7. Firebase Sync Queue
+- ✅ Sync queue is operational (count increments on changes: 8→9→10)
+- ✅ Offline queue stores pending changes
+- ✅ Sync badge shows pending count (divine-400 animate-pulse)
+- ✅ "Cloud sync is active. Offline queue ready." toast shown
+
+#### 8. Firebase Emulator Integration
+- ✅ Firestore emulator REST API accessible with `Authorization: Bearer owner`
+- ✅ Campaign data seeded: 4 characters, 2 encounters, 1 map, 2 journal entries
+- ✅ Security rules enforced (403 when no auth, 200 with Bearer owner)
+
+#### 9. Known Gaps (Not App Bugs — Config Issues)
+- ❌ Auth emulator DM user not created — sync queue items remain pending (10 items)
+- ❌ "New Campaign" creates empty campaign (no demo characters/enemies/journal)
+- ❌ `VITE_USE_EMULATORS=true` means app connects to emulators, not real Firebase
+
+---

@@ -68,7 +68,8 @@ if (hasValidConfig()) {
   /* ── Emulator Connection (Dev Mode) ─────────────────────────── */
   const useEmulators = import.meta.env.VITE_USE_EMULATORS === "true";
   if (useEmulators) {
-    connectFirestoreEmulator(_db, "127.0.0.1", 8080);
+    // Firestore emulator runs on port 8090 (configured in firebase.json)
+    connectFirestoreEmulator(_db, "127.0.0.1", 8090);
     connectStorageEmulator(_storage, "127.0.0.1", 9199);
     connectAuthEmulator(_auth, "http://127.0.0.1:9099", { disableWarnings: true });
   }
