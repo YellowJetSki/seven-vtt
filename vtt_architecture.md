@@ -3709,3 +3709,34 @@ Data written via REST API at `/v1/projects/demo-str-vtt/databases/(default)/docu
 - All empty arrays (no homebrew seeded yet)
 
 ---
+
+## Schema Audit & Integration (2026-07-15) (Updated: 2026-07-15 15:26)
+## Schema Audit & Integration — Full Verification
+
+### Status: ✅ FULLY INTEGRATED
+All 13 Firestore schema interfaces are defined and consumed:
+
+| Interface | Location | Service Layer | Sync Hook | Zustand Store |
+|---|---|---|---|---|
+| `CampaignMeta` | `firestore.ts:39` | `normalizedCampaign` | `useFirebaseSync` | `campaignStore.meta` |
+| `CharacterDoc` | `firestore.ts:65` | `normalizedCharacters` | `useFirebaseSync` | `campaignStore.characters` |
+| `EnemyDoc` | `firestore.ts:114` | `normalizedEnemies` | `useFirebaseSync` | `campaignStore.enemies` |
+| `EncounterDoc` | `firestore.ts:146` | `normalizedEncounters` | `useFirebaseSync` | `campaignStore.encounters` |
+| `MapDoc` | `firestore.ts:167` | `normalizedMaps` | `useFirebaseSync` | `campaignStore.battleMaps` |
+| `MapTokenDoc` | `firestore.ts:182` | `normalizedTokens` | `useFirebaseSync` | `campaignStore.mapTokens{}` |
+| `JournalEntryDoc` | `firestore.ts:200` | `normalizedJournal` | `useFirebaseSync` | `campaignStore.journal` |
+| `SessionDoc` | `firestore.ts:212` | `normalizedSessions` | `useFirebaseSync` | `combatStore.liveSession` |
+| `SessionCombatantDoc` | `firestore.ts:234` | `normalizedSessionCombatants` | `useFirebaseSync` ✅ **FIXED** | `combatStore.activeEncounter.combatants` |
+| `CombatLogEntryDoc` | `firestore.ts:251` | `normalizedCombatLog` | `useFirebaseSync` ✅ **FIXED** | `combatStore.combatLog` |
+| `HomebrewItemDoc` | `firestore.ts:267` | `normalizedHomebrewItems` | `useFirebaseSync` | `homebrewStore.items` |
+| `HomebrewSpellDoc` | `firestore.ts:296` | `normalizedHomebrewSpells` | `useFirebaseSync` | `homebrewStore.spells` |
+| `HomebrewFeatDoc` | `firestore.ts:320` | `normalizedHomebrewFeats` | `useFirebaseSync` | `homebrewStore.feats` |
+
+### Fixes Applied
+1. **Production emulator fix**: Added `vtt/.env.production` with `VITE_USE_EMULATORS=false` so Vercel builds don't try to connect to local emulators
+2. **SessionCombatantDoc wired**: Previously only defined in schema/service but NOT pushed or listened in `useFirebaseSync.ts`. Now: actively pushed when combatant data changes, listened for cross-device sync
+3. **CombatLogEntryDoc wired**: Previously only defined in schema/service but NOT pushed or listened. Now: latest combat log entry debounced-pushed, listened for remote merge
+4. **normalized-firebase-service.ts bugfix**: `normalizedSync.start()` was passing `campaignId` as first argument to Homebrew `listenAll()` functions which only take `(onChange, onError)`. Fixed with proper call signatures.
+5. **Missing import**: Added `EncounterDoc` to the import list in `useFirebaseSync.ts`
+
+---

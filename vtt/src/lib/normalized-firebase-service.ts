@@ -1,45 +1,50 @@
-/* ── Normalized Firestore Sync Service ─────────────────────────
+/* ── Normalized Firebase Sync Service ─────────────────────────
  *
- * ARCHITECTURE: Subcollection-based Firestore layout.
- * Each data entity lives in its own document at a predictable path.
- * This replaces the legacy monolithic document pattern.
+ * Writes each entity to its own SUBCOLLECTION document.
  *
- * ── Key Design Decisions ─────────────────────────────────────
- * 1. Every write targets a SPECIFIC document path — no full-campaign bloat.
- * 2. Real-time listeners use onSnapshot per subcollection.
- * 3. Conflict resolution: last-write-wins via updatedAt timestamps.
- * 4. Offline queue persists to localStorage (survives page reload).
- * 5. Rate-limited debounce per domain (campaign: 2s, session: 1.5s, homebrew: 2s).
+ * BENEFITS OVER MONOLITHIC DOC:
+ * • No 1MB document size limit — each entity is its own doc
+ * • Real-time updates for individual entities only (not the whole blob)
+ * • Less merge conflicts on concurrent writes
+ * • Clean Atomic writes for individual entities
+ * • Scalable to 1000+ entities per campaign
  *
- * ── Usage ────────────────────────────────────────────────────
- *   import { normalizedSync } from "@/lib/normalized-firebase-service";
+ * ── Write Pattern ────────────────────────────────────────────
+ *   Each subcollection document stores:
+ *     { data: <serialized_entity>, updatedAt: TIMESTAMP, updatedBy: USER_ID }
  *
- *   // Start listening to all subcollections for a campaign
- *   normalizedSync.start("arkla");
- *
- *   // Push a single entity
- *   await normalizedSync.pushCharacter("arkla", characterData);
- *   await normalizedSync.pushMapToken("arkla", "map_001", tokenData);
- *
- *   // Stop all listeners
- *   normalizedSync.stop("arkla");
+ * ── Collection Layout ────────────────────────────────────────
+ *   campaigns/{campaignId}                  → CampaignMeta (single doc)
+ *   campaigns/{campaignId}/characters/{id}  → CharacterDoc
+ *   campaigns/{campaignId}/enemies/{id}     → EnemyDoc
+ *   campaigns/{campaignId}/encounters/{id}  → EncounterDoc
+ *   campaigns/{campaignId}/maps/{id}        → MapDoc
+ *   campaigns/{campaignId}/maps/{id}/tokens/{tokenId} → MapTokenDoc
+ *   campaigns/{campaignId}/journal/{id}     → JournalEntryDoc
+ *   campaigns/{campaignId}/sessions/{id}    → SessionDoc
+ *   campaigns/{campaignId}/sessions/{id}/combatants/{cid} → SessionCombatantDoc
+ *   campaigns/{campaignId}/combatLog/{id}   → CombatLogEntryDoc
+ *   homebrew/items/{id}                     → HomebrewItemDoc (global)
+ *   homebrew/spells/{id}                    → HomebrewSpellDoc (global)
+ *   homebrew/feats/{id}                     → HomebrewFeatDoc (global)
  * ─────────────────────────────────────────────────────────────── */
 
 import {
   doc,
-  getDoc,
-  setDoc,
-  deleteDoc,
   collection,
+  setDoc,
+  getDoc,
   getDocs,
-  onSnapshot,
+  deleteDoc,
   query,
   orderBy,
-  type DocumentData,
+  onSnapshot,
   type Unsubscribe,
+  type DocumentData,
   type Firestore,
 } from "firebase/firestore";
-import { getDb, isFirebaseAvailable } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+import { isFirebaseAvailable } from "@/lib/firebase";
 import { Paths } from "@/types/firestore";
 import type {
   CampaignMeta,
@@ -286,8 +291,8 @@ export const normalizedCharacters = {
     });
   },
 
-  async remove(campaignId: string, characterId: string): Promise<boolean> {
-    return deleteDocAtPath(Paths.character(campaignId, characterId));
+  async remove(campaignId: string, charId: string): Promise<boolean> {
+    return deleteDocAtPath(Paths.character(campaignId, charId));
   },
 
   async fetchAll(campaignId: string): Promise<CharacterDoc[]> {
@@ -343,7 +348,7 @@ export const normalizedEncounters = {
   },
 };
 
-/* ── Battle Maps ────────────────────────────────────────────── */
+/* ── Maps ───────────────────────────────────────────────────── */
 
 export const normalizedMaps = {
   async push(campaignId: string, map: MapDoc): Promise<boolean> {
@@ -462,8 +467,8 @@ export const normalizedCombatLog = {
     });
   },
 
-  async remove(campaignId: string, logId: string): Promise<boolean> {
-    return deleteDocAtPath(Paths.combatLogEntry(campaignId, logId));
+  async remove(campaignId: string, entryId: string): Promise<boolean> {
+    return deleteDocAtPath(Paths.combatLogEntry(campaignId, entryId));
   },
 
   async fetchAll(campaignId: string): Promise<CombatLogEntryDoc[]> {
@@ -543,36 +548,37 @@ export const normalizedHomebrewFeats = {
 
 /* ── Normalized Sync Manager ────────────────────────────────── */
 
-/**
- * Orchestrator that manages all subcollection listeners.
- * Provides a single start/stop interface.
- */
+interface SyncManagerCallbacks {
+  onCharacters?: (chars: CharacterDoc[]) => void;
+  onEnemies?: (enemies: EnemyDoc[]) => void;
+  onEncounters?: (encs: EncounterDoc[]) => void;
+  onMaps?: (maps: MapDoc[]) => void;
+  onJournal?: (entries: JournalEntryDoc[]) => void;
+  onSessions?: (sessions: SessionDoc[]) => void;
+  onCombatLog?: (entries: CombatLogEntryDoc[]) => void;
+  onItems?: (items: HomebrewItemDoc[]) => void;
+  onSpells?: (spells: HomebrewSpellDoc[]) => void;
+  onFeats?: (feats: HomebrewFeatDoc[]) => void;
+}
+
 export const normalizedSync = {
   privateUnsubscribers: new Map<string, Unsubscribe>(),
   privateIsListening: false,
 
-  get isListening(): boolean {
+  isListening(): boolean {
     return this.privateIsListening;
   },
 
   /**
    * Start listening to all subcollections for a campaign.
    * Callbacks hydrate Zustand stores.
+   *
+   * NOTE: Homebrew listeners (items/spells/feats) are global and
+   * do NOT take a campaignId — they're registered separately.
    */
   start(
     campaignId: string,
-    callbacks?: {
-      onCharacters?: (chars: CharacterDoc[]) => void;
-      onEnemies?: (enemies: EnemyDoc[]) => void;
-      onEncounters?: (encs: EncounterDoc[]) => void;
-      onMaps?: (maps: MapDoc[]) => void;
-      onJournal?: (entries: JournalEntryDoc[]) => void;
-      onSessions?: (sessions: SessionDoc[]) => void;
-      onCombatLog?: (entries: CombatLogEntryDoc[]) => void;
-      onItems?: (items: HomebrewItemDoc[]) => void;
-      onSpells?: (spells: HomebrewSpellDoc[]) => void;
-      onFeats?: (feats: HomebrewFeatDoc[]) => void;
-    },
+    callbacks?: SyncManagerCallbacks,
   ): void {
     this.stop(campaignId);
 
@@ -581,8 +587,8 @@ export const normalizedSync = {
     };
 
     // Campaign meta
-    const metaUnsub = normalizedCampaign.listenMeta(campaignId, (meta) => {
-      // Handled separately by campaign store
+    const metaUnsub = normalizedCampaign.listenMeta(campaignId, () => {
+      // Handled separately by campaign store via direct listener
     });
     register("meta", metaUnsub);
 
@@ -621,15 +627,15 @@ export const normalizedSync = {
       register("combatLog", normalizedCombatLog.listenAll(campaignId, callbacks.onCombatLog));
     }
 
-    // Homebrew
+    // Homebrew (global — no campaignId prefix)
     if (callbacks?.onItems) {
-      register("items", normalizedHomebrewItems.listenAll(campaignId, callbacks.onItems));
+      register("items", normalizedHomebrewItems.listenAll(callbacks.onItems));
     }
     if (callbacks?.onSpells) {
-      register("spells", normalizedHomebrewSpells.listenAll(campaignId, callbacks.onSpells));
+      register("spells", normalizedHomebrewSpells.listenAll(callbacks.onSpells));
     }
     if (callbacks?.onFeats) {
-      register("feats", normalizedHomebrewFeats.listenAll(campaignId, callbacks.onFeats));
+      register("feats", normalizedHomebrewFeats.listenAll(callbacks.onFeats));
     }
 
     this.privateIsListening = true;
