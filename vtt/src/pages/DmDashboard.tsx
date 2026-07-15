@@ -22,10 +22,12 @@ import { ExportAllButton } from "@/components/ui/ExportAllButton";
 import { Badge } from "@/components/ui/Badge";
 import { ConditionsWidget } from "@/components/combat/ConditionsWidget";
 import { Button } from "@/components/ui/Button";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 
 export function DmDashboard() {
   const campaign = useCampaignStore((s) => s.campaign);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
+  const isLoading = useCampaignStore((s) => s.isLoading);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const liveSession = useCombatStore((s) => s.liveSession);
   const startSession = useCombatStore((s) => s.startSession);
@@ -89,6 +91,17 @@ export function DmDashboard() {
     showToast({ message: "Session ended.", type: "info" });
   }, [endSession, showToast]);
 
+  // ── Loading State ──
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-6xl space-y-6 pt-8">
+        <div className="h-8 w-1/3 animate-pulse rounded bg-surface-700" />
+        <div className="h-4 w-2/3 animate-pulse rounded bg-surface-700" />
+        <PageSkeleton rows={6} variant="card" />
+      </div>
+    );
+  }
+
   // ── No Campaign State ──
   if (!campaign) {
     return (
@@ -122,7 +135,7 @@ export function DmDashboard() {
           <p className="mt-1 text-sm text-surface-400 line-clamp-1">{campaign.description ?? "No description set."}</p>
         </div>
         <div className="flex items-center gap-2 self-start">
-          <ExportAllButton variant="secondary" size="sm" label="📦 Full Backup" />
+          <ExportAllButton variant="secondary" size="sm" label="📤 Export Campaign" />
         </div>
       </section>
 
@@ -164,7 +177,7 @@ export function DmDashboard() {
           </h3>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <QuickActionButton label="Combat Center" icon="⚔️" to="/encounters" />
-            <QuickActionButton label="New Player" icon="+" to="/players" />
+            <QuickActionButton label="New Player" icon="+" to="/characters" />
             <QuickActionButton label="Homebrew" icon="⚗️" to="/homebrew" />
             <QuickActionButton label="Journal Entry" icon="📝" to="/journal" />
           </div>

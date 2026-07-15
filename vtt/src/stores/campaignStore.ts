@@ -44,10 +44,6 @@ interface NormalizedCampaignState {
   /** Incremented on wholesale replacement to force sync */
   forcePushCounter: number;
 
-  // ── Backward-compatible computed getter ──
-  /** Reconstructs legacy monolithic Campaign from normalized state */
-  campaign: Campaign | null;
-
   // ── Actions ──
   setMeta: (meta: CampaignMeta) => void;
   setLoading: (loading: boolean) => void;
@@ -98,6 +94,10 @@ interface NormalizedCampaignState {
   addToken: (mapId: string, token: MapTokenDoc) => void;
   updateToken: (mapId: string, tokenId: string, updates: Partial<MapTokenDoc>) => void;
   removeToken: (mapId: string, tokenId: string) => void;
+
+  // ── Computed value (not a getter — recomputed on each state change) ──
+  /** Reconstructs legacy monolithic Campaign from normalized state */
+  campaign: Campaign | null;
 }
 
 /* ── Helpers ────────────────────────────────────────────────── */
@@ -154,22 +154,24 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
       error: null,
       forcePushCounter: 0,
 
-      // Backward-compatible computed getter
-      get campaign(): Campaign | null {
-        return buildCampaign(get());
-      },
+      // Computed campaign — recomputed via the `set` wrapper below
+      campaign: null,
 
       setMeta: (meta) =>
-        set((state) => ({
-          meta,
-          forcePushCounter: state.forcePushCounter + 1,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            meta,
+            forcePushCounter: state.forcePushCounter + 1,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
 
       setCampaign: (campaign) => {
-        set({
+        const newState = {
           meta: {
             id: campaign.id,
             name: campaign.name,
@@ -206,6 +208,10 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
           ),
           journal: campaign.journal,
           forcePushCounter: Date.now(),
+        };
+        set({
+          ...newState,
+          campaign: buildCampaign(newState as Parameters<typeof buildCampaign>[0]),
         });
       },
 
@@ -223,205 +229,288 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
           journal: [],
           mapTokens: {},
           forcePushCounter: Date.now(),
+          campaign: null,
         }),
       clearCampaign: () => get().clear(),
 
       setMapTokens: (mapId, tokens) =>
-        set((state) => ({
-          mapTokens: { ...state.mapTokens, [mapId]: tokens },
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            mapTokens: { ...state.mapTokens, [mapId]: tokens },
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Character Actions ── */
       addCharacter: (character) =>
-        set((state) => ({
-          characters: [...state.characters, character],
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, characterCount: state.characters.length + 1 },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            characters: [...state.characters, character],
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, characterCount: state.characters.length + 1 },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updateCharacter: (id, updates) =>
-        set((state) => ({
-          characters: state.characters.map((c) =>
-            c.id === id ? { ...c, ...updates, updatedAt: Date.now() } : c,
-          ),
-          meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            characters: state.characters.map((c) =>
+              c.id === id ? { ...c, ...updates, updatedAt: Date.now() } : c,
+            ),
+            meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updatePlayerCharacter: (id, updates) =>
-        set((state) => ({
-          characters: state.characters.map((c) =>
-            c.id === id ? { ...c, ...updates, updatedAt: Date.now() } : c,
-          ),
-          meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            characters: state.characters.map((c) =>
+              c.id === id ? { ...c, ...updates, updatedAt: Date.now() } : c,
+            ),
+            meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       removeCharacter: (id) =>
-        set((state) => ({
-          characters: state.characters.filter((c) => c.id !== id),
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, characterCount: Math.max(0, state.characters.length - 1) },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            characters: state.characters.filter((c) => c.id !== id),
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, characterCount: Math.max(0, state.characters.length - 1) },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Enemy Actions ── */
       addEnemy: (enemy) =>
-        set((state) => ({
-          enemies: [...state.enemies, enemy],
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, enemyCount: state.enemies.length + 1 },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            enemies: [...state.enemies, enemy],
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, enemyCount: state.enemies.length + 1 },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updateEnemy: (id, updates) =>
-        set((state) => ({
-          enemies: state.enemies.map((e) =>
-            e.id === id ? { ...e, ...updates, updatedAt: Date.now() } : e,
-          ),
-          meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            enemies: state.enemies.map((e) =>
+              e.id === id ? { ...e, ...updates, updatedAt: Date.now() } : e,
+            ),
+            meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       removeEnemy: (id) =>
-        set((state) => ({
-          enemies: state.enemies.filter((e) => e.id !== id),
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, enemyCount: Math.max(0, state.enemies.length - 1) },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            enemies: state.enemies.filter((e) => e.id !== id),
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, enemyCount: Math.max(0, state.enemies.length - 1) },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Encounter Actions ── */
       addEncounter: (encounter) =>
-        set((state) => ({
-          encounters: [...state.encounters, encounter],
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, encounterCount: state.encounters.length + 1 },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            encounters: [...state.encounters, encounter],
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, encounterCount: state.encounters.length + 1 },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updateEncounter: (id, updates) =>
-        set((state) => ({
-          encounters: state.encounters.map((e) =>
-            e.id === id ? { ...e, ...updates, updatedAt: Date.now() } : e,
-          ),
-          meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            encounters: state.encounters.map((e) =>
+              e.id === id ? { ...e, ...updates, updatedAt: Date.now() } : e,
+            ),
+            meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       removeEncounter: (id) =>
-        set((state) => ({
-          encounters: state.encounters.filter((e) => e.id !== id),
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, encounterCount: Math.max(0, state.encounters.length - 1) },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            encounters: state.encounters.filter((e) => e.id !== id),
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, encounterCount: Math.max(0, state.encounters.length - 1) },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Battle Map Actions ── */
       addBattleMap: (map) =>
-        set((state) => ({
-          battleMaps: [...state.battleMaps, map],
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, mapCount: state.battleMaps.length + 1 },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            battleMaps: [...state.battleMaps, map],
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, mapCount: state.battleMaps.length + 1 },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updateBattleMap: (id, updates) =>
-        set((state) => ({
-          battleMaps: state.battleMaps.map((m) =>
-            m.id === id ? { ...m, ...updates, updatedAt: Date.now() } : m,
-          ),
-          meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            battleMaps: state.battleMaps.map((m) =>
+              m.id === id ? { ...m, ...updates, updatedAt: Date.now() } : m,
+            ),
+            meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       removeBattleMap: (id) =>
-        set((state) => ({
-          battleMaps: state.battleMaps.filter((m) => m.id !== id),
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, mapCount: Math.max(0, state.battleMaps.length - 1) },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            battleMaps: state.battleMaps.filter((m) => m.id !== id),
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, mapCount: Math.max(0, state.battleMaps.length - 1) },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Token Actions ── */
       addToken: (mapId, token) =>
-        set((state) => ({
-          mapTokens: {
-            ...state.mapTokens,
-            [mapId]: [...(state.mapTokens[mapId] ?? []), token],
-          },
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            mapTokens: {
+              ...state.mapTokens,
+              [mapId]: [...(state.mapTokens[mapId] ?? []), token],
+            },
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updateToken: (mapId, tokenId, updates) =>
-        set((state) => ({
-          mapTokens: {
-            ...state.mapTokens,
-            [mapId]: (state.mapTokens[mapId] ?? []).map((t) =>
-              t.id === tokenId ? { ...t, ...updates, updatedAt: Date.now() } : t,
-            ),
-          },
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            mapTokens: {
+              ...state.mapTokens,
+              [mapId]: (state.mapTokens[mapId] ?? []).map((t) =>
+                t.id === tokenId ? { ...t, ...updates, updatedAt: Date.now() } : t,
+              ),
+            },
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       removeToken: (mapId, tokenId) =>
-        set((state) => ({
-          mapTokens: {
-            ...state.mapTokens,
-            [mapId]: (state.mapTokens[mapId] ?? []).filter((t) => t.id !== tokenId),
-          },
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            mapTokens: {
+              ...state.mapTokens,
+              [mapId]: (state.mapTokens[mapId] ?? []).filter((t) => t.id !== tokenId),
+            },
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Journal Actions ── */
       addJournalEntry: (entry) =>
-        set((state) => ({
-          journal: [...state.journal, entry],
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, journalCount: state.journal.length + 1 },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            journal: [...state.journal, entry],
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, journalCount: state.journal.length + 1 },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       updateJournalEntry: (id, updates) =>
-        set((state) => ({
-          journal: state.journal.map((j) =>
-            j.id === id ? { ...j, ...updates, updatedAt: Date.now() } : j,
-          ),
-          meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            journal: state.journal.map((j) =>
+              j.id === id ? { ...j, ...updates, updatedAt: Date.now() } : j,
+            ),
+            meta: state.meta ? { ...state.meta, updatedAt: Date.now() } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       removeJournalEntry: (id) =>
-        set((state) => ({
-          journal: state.journal.filter((j) => j.id !== id),
-          meta: state.meta ? {
-            ...state.meta,
-            stats: { ...state.meta.stats, journalCount: Math.max(0, state.journal.length - 1) },
-            updatedAt: Date.now(),
-          } : null,
-        })),
+        set((state) => {
+          const newState = {
+            ...state,
+            journal: state.journal.filter((j) => j.id !== id),
+            meta: state.meta ? {
+              ...state.meta,
+              stats: { ...state.meta.stats, journalCount: Math.max(0, state.journal.length - 1) },
+              updatedAt: Date.now(),
+            } : null,
+          };
+          return { ...newState, campaign: buildCampaign(newState) };
+        }),
 
       /* ── Settings ── */
       updateSettings: (updates) =>
         set((state) => {
           if (!state.meta) return state;
-          return {
+          const newState = {
+            ...state,
             meta: {
               ...state.meta,
               settings: { ...state.meta.settings, ...updates },
               updatedAt: Date.now(),
             },
           };
+          return { ...newState, campaign: buildCampaign(newState) };
         }),
     }),
     {
@@ -435,7 +524,26 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
         mapTokens: state.mapTokens,
         journal: state.journal,
         forcePushCounter: state.forcePushCounter,
+        // campaign is computed — don't persist
       }),
+      // Rebuild campaign on rehydration
+      onRehydrateStorage: () => {
+        return (state, error) => {
+          if (state && !error) {
+            // Rebuild campaign from persisted normalized data
+            const { meta, characters, enemies, encounters, battleMaps, mapTokens, journal, ...rest } = state;
+            const campaign = buildCampaign({
+              meta: meta as CampaignMeta | null,
+              characters: characters as PlayerCharacter[],
+              encounters: encounters as Encounter[],
+              battleMaps: battleMaps as BattleMap[],
+              mapTokens: mapTokens as Record<string, MapTokenDoc[]>,
+              journal: journal as JournalEntry[],
+            });
+            state.campaign = campaign;
+          }
+        };
+      },
     },
   ),
 );

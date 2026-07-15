@@ -25,7 +25,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", path: "/dashboard", icon: "◈" },
-  { label: "Players", path: "/players", icon: "⚔" },
+  { label: "Players", path: "/characters", icon: "⚔" },
   { label: "Homebrew", path: "/homebrew", icon: "⚗" },
   { label: "Encounters", path: "/encounters", icon: "⚡" },
   { label: "Battle Maps", path: "/maps", icon: "🗺" },
@@ -54,7 +54,7 @@ export function Sidebar() {
 
   // Dynamic badges for nav items (memoized via useMemo is not needed — small list)
   const navItemsWithBadges = NAV_ITEMS.map((item) => {
-    if (item.path === "/players" && playerCount > 0) {
+    if (item.path === "/characters" && playerCount > 0) {
       return { ...item, badge: playerCount };
     }
     if (item.path === "/encounters" && encounterCount > 0) {

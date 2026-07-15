@@ -8,7 +8,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const PAGE_LABELS: Record<string, { label: string; icon: string }> = {
   "/dashboard": { label: "Dashboard", icon: "🏠" },
-  "/players": { label: "Player Characters", icon: "⚔" },
+  "/characters": { label: "Player Characters", icon: "⚔" },
   "/homebrew": { label: "Homebrew", icon: "⚗️" },
   "/encounters": { label: "Combat Center", icon: "⚔️" },
   "/maps": { label: "Battle Maps", icon: "🗺️" },

@@ -3502,3 +3502,52 @@ Point to new normalized service.
 - Uses generic `writeDoc`, `readDoc`, `readAllDocs`, `listenCollection` helpers
 
 ---
+
+## Normalized Firestore Migration — Complete (Updated: 2026-07-15 14:37)
+# NORMALIZED FIRESTORE MIGRATION — STATUS: ✅ COMPLETE & DEPLOYED
+
+## What Changed
+
+### New Files Created
+1. **`vtt/src/types/firestore.ts`** — All Firestore document interfaces (`CampaignMeta`, `CharacterDoc`, `EnemyDoc`, `EncounterDoc`, `MapDoc`, `MapTokenDoc`, `JournalEntryDoc`, `SessionDoc`, `SessionCombatantDoc`, `CombatLogEntryDoc`, `HomebrewItemDoc`, `HomebrewSpellDoc`, `HomebrewFeatDoc`) plus `Paths` constants for type-safe collection path generation.
+
+2. **`vtt/src/lib/normalized-firebase-service.ts`** — Full normalized CRUD service with:
+   - Generic `writeDoc`, `readDoc`, `readAllDocs`, `deleteDocAtPath`, `listenCollection` helpers
+   - Per-entity export groups (`normalizedCampaign`, `normalizedCharacters`, `normalizedEnemies`, `normalizedEncounters`, `normalizedMaps`, `normalizedTokens`, `normalizedJournal`, `normalizedSessions`, `normalizedSessionCombatants`, `normalizedCombatLog`, `normalizedHomebrewItems`, `normalizedHomebrewSpells`, `normalizedHomebrewFeats`)
+   - Queue & retry system (max 3 retries, 500ms rate limit)
+   - `normalizedSync` orchestrator with start/stop/stopAll
+
+3. **`vtt/src/lib/migrate-legacy-data.ts`** — One-time localStorage migration from old monolithic key (`str-vtt-campaign`) to new normalized key (`str-vtt-campaign-normalized`). Called once from App.tsx on boot.
+
+### Modified Files
+4. **`vtt/src/stores/campaignStore.ts`** — Full rewrite:
+   - Now stores normalized data: `meta`, `characters`, `enemies[]`, `encounters`, `battleMaps`, `mapTokens`, `journal`
+   - `campaign` getter reconstructs legacy monolithic shape for backward compatibility
+   - All CRUD actions update individual arrays + stats in meta
+   - Persist key changed to `str-vtt-campaign-normalized`
+
+5. **`vtt/src/hooks/useFirebaseSync.ts`** — Full rewrite:
+   - Uses `normalizedSync` / normalized CRUD instead of legacy `syncManager`
+   - Per-entity debounced pushes (character, enemy, encounter, map, token, journal, item, spell, feat)
+   - On-mount listener setup hydrates Zustand stores from subcollections
+
+6. **`vtt/src/App.tsx`** — Updated imports to use `normalizedSync` from normalized service instead of legacy `syncManager` from `firebase-service.ts`. Added migration call on mount.
+
+## Target Architecture (13 Subcollections)
+```
+campaigns/arkla                           → { meta only }
+campaigns/arkla/characters/{charId}       → { full PlayerCharacter }
+campaigns/arkla/enemies/{enemyId}         → { full EnemyDoc }          ← NEW
+campaigns/arkla/encounters/{encId}        → { full Encounter (refs enemies) }
+campaigns/arkla/maps/{mapId}              → { BattleMap (no tokens) }
+campaigns/arkla/maps/{mapId}/tokens/{tId} → { MapToken }
+campaigns/arkla/journal/{entryId}         → { JournalEntry }
+campaigns/arkla/sessions/{sessionId}      → { session metadata }
+campaigns/arkla/sessions/{sid}/combatants → { per-combatant }
+campaigns/arkla/combatLog/{logId}         → { per-log-entry }
+homebrew/items/{itemId}                   → { per-item }
+homebrew/spells/{spellId}                 → { per-spell }
+homebrew/feats/{featId}                   → { per-feat }
+```
+
+---

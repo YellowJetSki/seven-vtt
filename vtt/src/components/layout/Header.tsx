@@ -31,7 +31,7 @@ import { getPendingSyncCount } from "@/hooks/useFirebaseSync";
 
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard": "Command Center",
-  "/players": "Player Cards",
+  "/characters": "Player Cards",
   "/homebrew": "Homebrew Library",
   "/encounters": "Combat Center",
   "/maps": "Battle Maps",

@@ -46,7 +46,7 @@ export function CommandPalette({ getNavigate }: CommandPaletteProps) {
   useEffect(() => {
     const defaultCommands: Command[] = [
       { id: "nav-dashboard", label: "Go to Dashboard", icon: "◈", category: "navigation", action: () => goToRef.current("/dashboard") },
-      { id: "nav-players", label: "Go to Player Cards", icon: "⚔", category: "navigation", action: () => goToRef.current("/players") },
+      { id: "nav-players", label: "Go to Player Cards", icon: "⚔", category: "navigation", action: () => goToRef.current("/characters") },
       { id: "nav-homebrew", label: "Go to Homebrew Library", icon: "⚗", category: "navigation", action: () => goToRef.current("/homebrew") },
       { id: "nav-encounters", label: "Go to Combat Center", icon: "⚡", category: "navigation", action: () => goToRef.current("/encounters") },
       { id: "nav-maps", label: "Go to Battle Maps", icon: "🗺", category: "navigation", action: () => goToRef.current("/maps") },

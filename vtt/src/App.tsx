@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { normalizedSync } from "@/lib/normalized-firebase-service";
 import { isFirebaseAvailable } from "@/lib/firebase";
 import { migrateLegacyCampaignData } from "@/lib/migrate-legacy-data";
@@ -37,13 +38,14 @@ export default function App() {
    * Uses the normalized subcollection-based syncManager.
    * Subscribes to campaign, session, and homebrew Firestore documents
    * via onSnapshot, hydrating all Zustand stores in real-time.
+   *
+   * NOTE: normalizedSync.start() without callbacks is deliberately
+   * a no-op for the listeners. Local-first architecture means
+   * Firestore sync is a background enhancement, not a dependency.
    */
   useEffect(() => {
     if (!isFirebaseAvailable()) return;
-
-    // Start listening to all Firestore subcollections for the Arkla campaign
     normalizedSync.start(CAMPAIGN_ID);
-
     return () => {
       normalizedSync.stop(CAMPAIGN_ID);
     };

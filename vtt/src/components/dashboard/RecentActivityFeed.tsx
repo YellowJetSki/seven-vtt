@@ -64,7 +64,7 @@ export function RecentActivityFeed() {
         label: pc.name,
         description: `${pc.race} ${pc.class} · Level ${pc.level}`,
         timestamp: pc.createdAt,
-        href: "/players",
+        href: "/characters",
       });
     }
 
