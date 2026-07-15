@@ -3036,3 +3036,38 @@ MapForm now uses `<ImagePicker libraryCategory="battlemaps" />` which:
 - `arkla`/`silvertongue` fallback removed
 
 ---
+
+## Theatric Tab — New Browser Window Architecture (Updated: 2026-07-15 13:47)
+## Theatric Tab — New Browser Window Pattern
+
+**Architecture**: Theatric view now opens in a **separate browser tab** via `window.open()`, not as a modal.
+
+### Data Flow (Cross-Tab Sync)
+1. **BattleMaps** (`handleOpenTheatric`):
+   - Serialises `{ map: BattleMap, tokenId: string }` into `localStorage` under key `THEATRIC_STORAGE_KEY = "str-vtt:theatric-data"`
+   - Opens `/theatric` in a new tab via `window.open(theatricUrl, "str-vtt-theatric", "noopener,noreferrer")`
+
+2. **TheatricPage** (standalone route `/theatric`):
+   - Reads initial payload from `localStorage` on mount
+   - Listens for the browser's `storage` event (fires automatically when another tab writes to localStorage)
+   - Falls back to polling every 500ms for same-tab detection
+   - When the DM moves a token in the main tab → campaignStore updates the map → BattleMaps re-serialises into localStorage → `storage` event fires in the theatric tab → view updates in real time
+
+### TheatricPage Features
+- **Fullscreen** (`h-screen w-screen`), no grid lines, no sidebar, no auth guard
+- **Auto-zoom & center** on the active token using CSS `transform: translate(-tx * zoom + 50 - zoom * 50%, ...) scale(1/zoom)`
+- **Token ring highlight**: active token gets `ring-3 ring-accent-400 ring-offset-4`
+- **Other tokens** at 60% opacity for situational awareness
+- **Bottom info card**: token name, type, HP (with health bar), speed, position
+- **Top-right controls**: `⊞ Fullscreen` toggle + `✕ Close` (window.close())
+- **Top-left badge**: map name
+- **Bottom-center hint**: "DM moves tokens in main tab · this view updates live"
+- **Fade-in animation** on mount (600ms ease)
+
+### Route
+```
+/theatric — Public (no AuthGuard, no AppShell)
+```
+Registered in `App.tsx` as a top-level `<Route>` outside the DM routes.
+
+---

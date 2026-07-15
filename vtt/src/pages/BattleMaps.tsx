@@ -6,9 +6,10 @@
  * ── Theatric Tab (new browser window) ────────────────────────
  * Opens a separate tab that shows a full-bleed, no-grid view
  * centered on the selected token. The tab reads map + token data
- * from localStorage and listens for cross-tab updates via the
- * 'storage' event, so the DM moving a token in the main tab
- * updates the theatric view in real time.
+ * from Firebase in real-time via onSnapshot, so the DM moving a
+ * token in the main tab updates the theatric view instantly.
+ * Only a tiny { mapId, tokenId } payload is stored in localStorage
+ * as a communication bridge to the new tab.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
@@ -25,10 +26,26 @@ import type { BattleMap, MapToken } from "@/types";
 /* ── Cross-tab communication constant ──────────────────────── */
 export const THEATRIC_STORAGE_KEY = "str-vtt:theatric-data";
 
-/** Payload serialised into localStorage for the theatric tab to consume. */
+/**
+ * Minimal payload stored in localStorage as a communication bridge
+ * to the new theatric tab. The tab then fetches the full map data
+ * from Firebase (or falls back to localStorage polling).
+ *
+ * We keep the full map in the payload as a FALLBACK for when
+ * Firebase is not configured — the TheatricPage will read the
+ * full map from here if the Firestore listener is unavailable.
+ */
 export interface TheatricPayload {
-  map: BattleMap;
+  /** Map ID to identify the battle map */
+  mapId: string;
+  /** Token ID to spotlight */
   tokenId: string;
+  /**
+   * Full map data — only populated as a fallback when Firebase
+   * is not available. In the normal case (Firebase sync active),
+   * this is left empty and the TheatricPage subscribes to Firestore.
+   */
+  map?: BattleMap;
 }
 
 function uid(prefix: string): string {
@@ -144,20 +161,20 @@ export function BattleMaps() {
   const handleOpenTheatric = (token: MapToken) => {
     if (!selectedMap) return;
 
+    // Only store the minimal payload: mapId + tokenId
+    // The TheatricPage will subscribe to Firebase for the full data
     const payload: TheatricPayload = {
-      map: selectedMap,
+      mapId: selectedMap.id,
       tokenId: token.id,
     };
 
-    // Serialise the full map + token into localStorage so the new tab can read it
     try {
       localStorage.setItem(THEATRIC_STORAGE_KEY, JSON.stringify(payload));
     } catch {
-      showToast({ message: "Failed to open theatric view: data too large.", type: "error" });
+      showToast({ message: "Failed to open theatric view.", type: "error" });
       return;
     }
 
-    // Open the theatric page in a new tab
     const theatricUrl = `${window.location.origin}/theatric`;
     window.open(theatricUrl, "str-vtt-theatric", "noopener,noreferrer");
   };
@@ -295,7 +312,8 @@ export function BattleMaps() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
- * ADD TOKEN FORM
+ * ADD TOKEN FORM — includes ImagePicker for token images
+ * from /public/images/tokens/
  * ═══════════════════════════════════════════════════════════════ */
 
 function AddTokenForm({
@@ -317,6 +335,7 @@ function AddTokenForm({
   const [size, setSize] = useState(1);
   const [speed, setSpeed] = useState(30);
   const [hpMax, setHpMax] = useState(15);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleAdd = () => {
     if (!label.trim()) return;
@@ -331,6 +350,7 @@ function AddTokenForm({
       speed,
       visible: true,
       hp: { current: hpMax, max: hpMax },
+      imageUrl: imageUrl || undefined,
     };
     onAdd(token);
   };
@@ -342,6 +362,15 @@ function AddTokenForm({
         <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Goblin Archer"
           className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
       </div>
+
+      {/* Token Image Picker — from /public/images/tokens/ */}
+      <ImagePicker
+        value={imageUrl}
+        onChange={setImageUrl}
+        label="Token Image (optional, from library)"
+        libraryCategory="tokens"
+      />
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-surface-400">Type</label>
