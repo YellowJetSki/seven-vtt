@@ -1,6 +1,10 @@
 /* ── Firebase Authentication Service ───────────────────────────
  * Wraps Firebase Auth for DM login. Players still authenticate
  * via local name matching (no Firebase UIs or accounts for players).
+ *
+ * Uses synthetic email pattern: dm_<username>@strvtt.app
+ * The .app domain is used instead of .local because Firebase
+ * Console requires RFC-compliant email addresses to create users.
  * ─────────────────────────────────────────────────────────────── */
 
 import {
@@ -13,10 +17,22 @@ import { getAuthInstance, isFirebaseAvailable } from "@/lib/firebase";
 
 export type AuthCallback = (user: User | null) => void;
 
+/** The email domain used for DM accounts (must be RFC-compliant). */
+const DM_EMAIL_DOMAIN = "@strvtt.app";
+
+/**
+ * Derives a synthetic email from a DM username.
+ * Example: "MikeJello" → "dm_mikejello@strvtt.app"
+ */
+function buildDmEmail(username: string): string {
+  const sanitized = username.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return `dm_${sanitized}${DM_EMAIL_DOMAIN}`;
+}
+
 /**
  * Signs in the DM using email/password credentials.
  * Uses a synthetic email derived from the username:
- *   `dm_<username>@strvtt.local`
+ *   `dm_<username>@strvtt.app`
  *
  * This keeps the login UX simple (username + password) while using
  * Firebase Auth properly internally.
@@ -31,7 +47,7 @@ export async function loginWithFirebase(
 
   try {
     const auth = getAuthInstance();
-    const email = `dm_${username.toLowerCase().replace(/[^a-z0-9]/g, "")}@strvtt.local`;
+    const email = buildDmEmail(username);
     await signInWithEmailAndPassword(auth, email, password);
     return { success: true };
   } catch (err: unknown) {
@@ -104,9 +120,10 @@ export function getCurrentUser(): User | null {
 
 /**
  * Checks if the current user is the DM by verifying the email pattern.
+ * Must match the domain used in buildDmEmail().
  */
 export function isDmUser(): boolean {
   const user = getCurrentUser();
   if (!user?.email) return false;
-  return user.email.endsWith("@strvtt.local");
+  return user.email.endsWith(DM_EMAIL_DOMAIN);
 }

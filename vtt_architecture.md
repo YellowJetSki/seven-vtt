@@ -1985,3 +1985,22 @@ vtt/
 **Important:** Password was changed from `Jello` (5 chars) to `Jello1` (6 chars) to satisfy Firebase Auth's minimum 6-character password requirement. The Firebase Console user must be updated to use `Jello1` as the password.
 
 ---
+
+## Firebase Auth — Synthetic Email Domain (Updated: 2026-07-15 09:16)
+## Firebase Auth — Synthetic Email Domain
+
+**Changed from:** `@strvtt.local` → `@strvtt.app`
+
+**Reason:** Firebase Console requires RFC-compliant email addresses to create/test user accounts. The `.local` TLD is not RFC-compliant and was rejected by the Firebase UI. The `.app` TLD is valid and accepted.
+
+**How it works:**
+- `buildDmEmail(username)` in `firebase-auth.ts` generates `dm_{sanitized_username}@strvtt.app`
+- Example: `MikeJello` → `dm_mikejello@strvtt.app`
+- `isDmUser()` checks if the authenticated user's email ends with `@strvtt.app`
+
+**DM Credentials (production):**
+- Username: `MikeJello`
+- Password: `Jello1`
+- Synthetic Email: `dm_mikejello@strvtt.app`
+
+---
