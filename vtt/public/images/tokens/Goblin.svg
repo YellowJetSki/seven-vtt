@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="gobg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#65A30D"/>
+      <stop offset="100%" style="stop-color:#3F6212"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#gobg)" stroke="#1E1B4B" stroke-width="3"/>
+  <!-- Goblin head -->
+  <ellipse cx="64" cy="48" rx="18" ry="20" fill="#A3E635"/>
+  <!-- Large ears -->
+  <ellipse cx="42" cy="44" rx="8" ry="12" fill="#A3E635" stroke="#4D7C0F" stroke-width="1.5" transform="rotate(-15 42 44)"/>
+  <ellipse cx="86" cy="44" rx="8" ry="12" fill="#A3E635" stroke="#4D7C0F" stroke-width="1.5" transform="rotate(15 86 44)"/>
+  <!-- Eyes (red) -->
+  <circle cx="56" cy="44" r="4" fill="#DC2626"/>
+  <circle cx="72" cy="44" r="4" fill="#DC2626"/>
+  <circle cx="56" cy="44" r="1.5" fill="#FEF08A"/>
+  <circle cx="72" cy="44" r="1.5" fill="#FEF08A"/>
+  <!-- Grin -->
+  <path d="M52 56 Q64 64 76 56" stroke="#4D7C0F" stroke-width="2" fill="none"/>
+  <line x1="60" y1="56" x2="60" y2="60" stroke="#4D7C0F" stroke-width="1"/>
+  <line x1="68" y1="56" x2="68" y2="60" stroke="#4D7C0F" stroke-width="1"/>
+  <!-- Body -->
+  <rect x="46" y="70" width="36" height="28" rx="5" fill="#4D7C0F"/>
+  <!-- Dagger -->
+  <rect x="76" y="76" width="3" height="18" rx="1" fill="#CBD5E1" transform="rotate(-20 77 85)"/>
+  <rect x="74" y="74" width="8" height="4" rx="1" fill="#94A3B8" transform="rotate(-20 78 76)"/>
+</svg>

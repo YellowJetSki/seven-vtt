@@ -1925,3 +1925,63 @@ A D&D 5e treasure generator that creates loot based on encounter difficulty, cre
 - `forcePushCounter` is persisted so queued Firebase syncs don't re-trigger on rehydrate.
 
 ---
+
+## Image Library System (Build-time Manifest) (Updated: 2026-07-15 09:05)
+## Image Library System (Updated: 2026-07-15)
+
+### Overview
+A dynamic image library that auto-discovers images dropped into `public/images/` subdirectories at build time. No hardcoded paths — add a file, restart dev server, it appears.
+
+### Architecture
+```
+vtt/
+├── scripts/
+│   └── generate-image-manifest.js    ← Scans public/images/, generates JSON
+├── public/
+│   ├── images/
+│   │   ├── battlemaps/               ← Battle map SVGs/PNGs
+│   │   ├── portraits/                ← Character portraits
+│   │   └── tokens/                   ← Enemy/token icons
+│   └── image-manifest.json           ← Auto-generated: { "battlemaps": ["/images/battlemaps/Cragmaw_Hideout.svg", ...], ... }
+└── src/components/ui/
+    └── ImagePicker.tsx               ← Fetches manifest at runtime
+```
+
+### Build Pipeline
+- `predev` and `prebuild` scripts in `package.json` run `node scripts/generate-image-manifest.js`
+- This scans `public/images/*/` for image files (.svg, .png, .jpg, .jpeg, .gif, .webp)
+- Outputs `public/image-manifest.json` with category → URL arrays
+
+### ImagePicker.tsx Props (Updated)
+- `value: string` — Current image URL
+- `onChange: (url: string) => void` — Selection callback
+- `label: string` — Field label
+- `className?: string` — Optional styling
+- `maxFileSize?: number` — Upload limit (default 5MB)
+- `libraryCategory?: string` — Optional: filter library to one folder (e.g. "battlemaps")
+
+### Library Tab Behavior
+- Fetches `/image-manifest.json` on mount
+- Shows "None" option + grouped images by category (Maps 🗺️, Portraits 🧑‍🎨, Tokens 🎯)
+- Category order: battlemaps → portraits → tokens (falls through to alphabetical for unknown)
+- Each image shows a thumbnail (with lazy loading) and truncated filename label
+- If an image fails to load (404), falls back to category emoji
+- If manifest is missing, shows actionable error message with instructions
+- If no images exist, shows empty state guidance
+
+### Current Images
+- **Battlemaps (3):** Cragmaw_Hideout.svg, Dragon_Barrow.svg, Wave_Echo_Cave.svg
+- **Portraits (3):** Strider.svg, Toern_Ironheart.svg, Wendy_The_Wisp_Lightfoot.svg
+- **Tokens (4):** Dragon.svg, Goblin.svg, Hero.svg, Wizard.svg
+---
+
+## DM Credentials (.env) (Updated: 2026-07-15 09:15)
+## DM Credentials (.env)
+
+**Username:** `MikeJello`
+**Password:** `Jello1`
+**Synthetic Email:** `dm_mikejello@strvtt.local`
+
+**Important:** Password was changed from `Jello` (5 chars) to `Jello1` (6 chars) to satisfy Firebase Auth's minimum 6-character password requirement. The Firebase Console user must be updated to use `Jello1` as the password.
+
+---
