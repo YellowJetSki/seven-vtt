@@ -41,9 +41,10 @@ if (hasValidConfig()) {
   _storage = getStorage(_app);
 
   /* ── Emulator Connection (Dev Mode) ─────────────────────────── */
-  if (import.meta.env.DEV) {
-    connectFirestoreEmulator(_db, "localhost", 8080);
-    connectStorageEmulator(_storage, "localhost", 9199);
+  const useEmulators = import.meta.env.VITE_USE_EMULATORS === "true";
+  if (useEmulators) {
+    connectFirestoreEmulator(_db, "127.0.0.1", 8090);
+    connectStorageEmulator(_storage, "127.0.0.1", 9199);
   }
 } else {
   console.info(
