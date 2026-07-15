@@ -1,6 +1,6 @@
 /* ── Initiative Tracker Component ─────────────────────────────
  * Premium combat management with:
- *  • Drag-reorderable turn order
+ *  • Drag-reorderable turn order (HTML5 DnD)
  *  • One-click damage / heal / temp HP
  *  • Status effect toggles (blinded, poisoned, stunned, etc.)
  *  • Concentration tracking
@@ -9,6 +9,7 @@
  *  • Quick-add combatants from player roster
  *  • Enemy group actions (bulk damage/heal)
  *  • Initiative management tools (DEX-based assignment, sort)
+ *  • Keyboard accessibility for reordering
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -19,8 +20,11 @@ import { STATUS_EFFECTS } from "@/data/statusEffects";
 import type { Combatant, StatusEffect, CombatLogEntry } from "@/types/combat";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { CombatantDragSort } from "./CombatantDragSort";
+import { CombatLogPanel } from "./CombatLogPanel";
 import { EnemyGroupActions } from "./EnemyGroupActions";
 import { InitiativeRoller } from "./InitiativeRoller";
+import { SessionRecapNotes } from "./SessionRecapNotes";
 
 export function InitiativeTracker() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
@@ -33,7 +37,7 @@ export function InitiativeTracker() {
   const togglePause = useCombatStore((s) => s.togglePause);
   const resetCombat = useCombatStore((s) => s.resetCombat);
   const addCombatant = useCombatStore((s) => s.addCombatant);
-  const updateCombatant = useCombatStore((s) => s.updateCombatant);
+  const reorderCombatants = useCombatStore((s) => s.reorderCombatants);
   const showToast = useUiStore((s) => s.showToast);
 
   const [encounterName, setEncounterName] = useState("");
@@ -44,6 +48,7 @@ export function InitiativeTracker() {
   const [manualHp, setManualHp] = useState("20");
   const [manualAc, setManualAc] = useState("12");
   const [manualType, setManualType] = useState<Combatant["type"]>("enemy");
+  const [showRecapPanel, setShowRecapPanel] = useState(false);
 
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
 
@@ -126,6 +131,7 @@ export function InitiativeTracker() {
   }
 
   const isActive = activeEncounter.phase === "active";
+  const isPrep = activeEncounter.phase === "prep";
 
   return (
     <div className="space-y-4">
@@ -137,7 +143,7 @@ export function InitiativeTracker() {
             <h3 className="font-bold text-surface-100">{activeEncounter.name}</h3>
             <p className="text-xs text-surface-500">
               {isActive
-                ? `Round ${activeEncounter.round} · ${activeEncounter.combatants.length} combatants`
+                ? `Round ${activeEncounter.round} · ${activeEncounter.combatants.length} combatants${activeEncounter.isPaused ? " · ⏸ PAUSED" : ""}`
                 : activeEncounter.phase === "completed"
                   ? `Ended after ${activeEncounter.round} rounds`
                   : `${activeEncounter.combatants.length} combatants — ready to start`}
@@ -155,16 +161,20 @@ export function InitiativeTracker() {
               <TurnTimer isPaused={activeEncounter.isPaused} />
             </>
           )}
-          {activeEncounter.phase === "prep" && (
+          {isPrep && (
             <>
               <InitiativeRoller />
               <Button size="xs" variant="ghost" onClick={() => setShowPlayerImport(true)}>
                 📥 Import PCs
               </Button>
               <Button size="xs" variant="ghost" onClick={() => setShowManualAdd(true)}>
-                + Add Foe
+                + Add Combatant
               </Button>
-              <Button size="sm" onClick={startEncounter} disabled={activeEncounter.combatants.length === 0}>
+              <Button
+                size="sm"
+                onClick={startEncounter}
+                disabled={activeEncounter.combatants.length === 0}
+              >
                 ▶ Start
               </Button>
             </>
@@ -180,20 +190,43 @@ export function InitiativeTracker() {
             </>
           )}
           {activeEncounter.phase === "completed" && (
-            <Button variant="secondary" size="sm" onClick={resetCombat}>↺ Reset</Button>
+            <Button variant="secondary" size="sm" onClick={resetCombat}>↺ New Combat</Button>
           )}
+          {/* Combat log toggle */}
+          <CombatLogPanel />
+          {/* Recap toggle */}
+          <button
+            onClick={() => setShowRecapPanel((p) => !p)}
+            className="rounded-lg border border-surface-700 bg-surface-850 px-3 py-2 text-xs font-medium text-surface-300 hover:bg-surface-800 hover:text-surface-100 transition-colors"
+          >
+            <span>📝</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Grid: Combatant List + Enemy Groups + Log */}
+      {/* Main Grid: Combatant List + Session Notes */}
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          <CombatantList combatants={activeEncounter.combatants} currentIndex={activeEncounter.currentCombatantIndex} isActive={isActive} />
-          {activeEncounter.combatants.filter((c) => c.type === "enemy").length > 1 && (
+          <CombatantList
+            combatants={activeEncounter.combatants}
+            currentIndex={activeEncounter.currentCombatantIndex}
+            isActive={isActive}
+            reorderCombatants={reorderCombatants}
+          />
+          {isPrep && activeEncounter.combatants.filter((c) => c.type === "enemy").length > 1 && (
             <EnemyGroupActions />
           )}
         </div>
-        <CombatLogPanel log={combatLog} />
+        <div className="space-y-4">
+          {showRecapPanel && <SessionRecapNotes />}
+          {isActive && (
+            <div className="rounded-xl border border-accent-500/20 bg-accent-500/5 p-4 text-center">
+              <p className="text-xs text-accent-400 font-medium">
+                {activeEncounter.isPaused ? "⏸ Combat Paused" : `▶ ${activeEncounter.combatants[activeEncounter.currentCombatantIndex]?.name ?? "—"}'s Turn`}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Player Import Modal */}
@@ -296,22 +329,35 @@ function TurnTimer({ isPaused }: { isPaused: boolean }) {
   );
 }
 
-/* ── Combatant List ─────────────────────────────────────────── */
-function CombatantList({ combatants, currentIndex, isActive }: { combatants: Combatant[]; currentIndex: number; isActive: boolean }) {
+/* ── Combatant List (with drag-and-drop) ────────────────────── */
+function CombatantList({
+  combatants,
+  currentIndex,
+  isActive,
+  reorderCombatants,
+}: {
+  combatants: Combatant[];
+  currentIndex: number;
+  isActive: boolean;
+  reorderCombatants: (ids: string[]) => void;
+}) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400">Turn Order</h4>
-        <span className="text-xs text-surface-500">{combatants.length} combatant{combatants.length !== 1 ? "s" : ""}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-surface-500">Drag to reorder · ↑↓ keys</span>
+          <span className="text-xs text-surface-500">{combatants.length} combatant{combatants.length !== 1 ? "s" : ""}</span>
+        </div>
       </div>
       {combatants.length === 0 ? (
         <div className="flex items-center justify-center rounded-lg border border-dashed border-surface-700 bg-surface-850 py-8">
           <p className="text-sm text-surface-500">No combatants added yet. Import PCs or add enemies.</p>
         </div>
       ) : (
-        <div className="space-y-1.5">
+        <CombatantDragSort reorderCombatants={reorderCombatants} className="space-y-1.5">
           {combatants.map((combatant, index) => {
             const isCurrentTurn = isActive && index === currentIndex;
             const isDone = isActive && index < currentIndex;
@@ -321,52 +367,88 @@ function CombatantList({ combatants, currentIndex, isActive }: { combatants: Com
             return (
               <div key={combatant.id}
                 className={`group relative rounded-xl border-2 transition-all ${
-                  isCurrentTurn ? "border-accent-500 bg-accent-500/5 shadow-lg shadow-accent-500/10" :
-                  isDone ? "border-surface-700/50 bg-surface-850 opacity-60" :
-                  isDead ? "border-warrior-900/50 bg-surface-850" :
-                  "border-surface-700 bg-surface-850 hover:border-surface-600"
+                  isCurrentTurn
+                    ? "border-accent-500 bg-accent-500/5 shadow-lg shadow-accent-500/10"
+                    : isDone
+                      ? "border-surface-700/50 bg-surface-850 opacity-60"
+                      : isDead
+                        ? "border-warrior-900/50 bg-surface-850"
+                        : "border-surface-700 bg-surface-850 hover:border-surface-600"
                 }`}
               >
                 <div className="flex items-center gap-3 px-4 py-3">
-                  <div className="flex w-6 items-center justify-center">
+                  {/* Initiative / Turn indicator */}
+                  <div className="flex w-7 items-center justify-center">
                     {isCurrentTurn ? (
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 text-xs font-bold text-white">▶</span>
                     ) : (
-                      <span className="text-xs font-bold text-surface-500">{combatant.initiative > 0 ? `+${combatant.initiative}` : combatant.initiative}</span>
+                      <span className="text-xs font-bold text-surface-500">
+                        {combatant.initiative > 0 ? `+${combatant.initiative}` : combatant.initiative}
+                      </span>
                     )}
                   </div>
+                  {/* Type icon */}
                   <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
-                    combatant.type === "player" ? "bg-rogue-500/15 text-rogue-400" :
-                    combatant.type === "ally" ? "bg-divine-500/15 text-divine-400" :
-                    "bg-warrior-500/15 text-warrior-400"
+                    combatant.type === "player"
+                      ? "bg-rogue-500/15 text-rogue-400"
+                      : combatant.type === "ally"
+                        ? "bg-divine-500/15 text-divine-400"
+                        : "bg-warrior-500/15 text-warrior-400"
                   }`}>
                     {combatant.type === "player" ? "⚔" : combatant.type === "ally" ? "🛡" : "👹"}
                   </div>
+                  {/* Name + Stats */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className={`truncate text-sm font-semibold ${isDead ? "text-warrior-400 line-through" : "text-surface-100"}`}>{combatant.name}</p>
-                      {combatant.isConcentrating && <span className="shrink-0 rounded bg-mage-500/20 px-1.5 py-0.5 text-[10px] font-medium text-mage-400">🧘 Conc</span>}
+                      <p className={`truncate text-sm font-semibold ${isDead ? "text-warrior-400 line-through" : "text-surface-100"}`}>
+                        {combatant.name}
+                      </p>
+                      {combatant.isConcentrating && (
+                        <span className="shrink-0 rounded bg-mage-500/20 px-1.5 py-0.5 text-[10px] font-medium text-mage-400">🧘 Conc</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <p className="text-[11px] text-surface-500">AC {combatant.armorClass}</p>
-                      <p className={`text-[11px] font-medium ${combatant.hitPoints.current <= 0 ? "text-warrior-400" : combatant.hitPoints.current <= combatant.hitPoints.max * 0.25 ? "text-warrior-500" : "text-surface-400"}`}>
+                      <p className={`text-[11px] font-medium ${
+                        combatant.hitPoints.current <= 0
+                          ? "text-warrior-400"
+                          : combatant.hitPoints.current <= combatant.hitPoints.max * 0.25
+                            ? "text-warrior-500"
+                            : "text-surface-400"
+                      }`}>
                         {combatant.hitPoints.current}/{combatant.hitPoints.max}
-                        {combatant.hitPoints.temporary > 0 && <span className="ml-1 text-divine-400">(+{combatant.hitPoints.temporary}tmp)</span>}
+                        {combatant.hitPoints.temporary > 0 && (
+                          <span className="ml-1 text-divine-400">(+{combatant.hitPoints.temporary}tmp)</span>
+                        )}
                       </p>
                     </div>
                   </div>
+                  {/* Status Effect Badges */}
                   <div className="flex shrink-0 gap-1">
                     {combatant.statusEffects.slice(0, 3).map((s) => {
                       const def = STATUS_EFFECTS[s.effect as keyof typeof STATUS_EFFECTS];
                       return (
-                        <span key={s.id} className="rounded px-1.5 py-0.5 text-[11px]" style={{ backgroundColor: `${def?.color}15`, color: def?.color ?? "inherit" }} title={def?.description}>
+                        <span
+                          key={s.id}
+                          className="rounded px-1.5 py-0.5 text-[11px]"
+                          style={{ backgroundColor: `${def?.color}15`, color: def?.color ?? "inherit" }}
+                          title={def?.description}
+                        >
                           {def?.icon ?? "✦"} {def?.label ?? s.effect}
                         </span>
                       );
                     })}
-                    {combatant.statusEffects.length > 3 && <span className="rounded bg-surface-700 px-1.5 py-0.5 text-[11px] text-surface-400">+{combatant.statusEffects.length - 3}</span>}
+                    {combatant.statusEffects.length > 3 && (
+                      <span className="rounded bg-surface-700 px-1.5 py-0.5 text-[11px] text-surface-400">
+                        +{combatant.statusEffects.length - 3}
+                      </span>
+                    )}
                   </div>
-                  <button onClick={() => setExpandedId(isExpanded ? null : combatant.id)} className="rounded p-1 text-surface-500 transition-colors hover:bg-surface-700 hover:text-surface-200">
+                  {/* Expand toggle */}
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : combatant.id)}
+                    className="rounded p-1 text-surface-500 transition-colors hover:bg-surface-700 hover:text-surface-200"
+                  >
                     <span className={`text-xs transition-transform ${isExpanded ? "rotate-180" : ""}`}>▼</span>
                   </button>
                 </div>
@@ -374,7 +456,7 @@ function CombatantList({ combatants, currentIndex, isActive }: { combatants: Com
               </div>
             );
           })}
-        </div>
+        </CombatantDragSort>
       )}
     </div>
   );
@@ -388,24 +470,33 @@ function CombatantActions({ combatant }: { combatant: Combatant }) {
   const toggleStatus = useCombatStore((s) => s.toggleStatus);
   const toggleConcentration = useCombatStore((s) => s.toggleConcentration);
   const toggleDead = useCombatStore((s) => s.toggleDead);
+  const removeCombatant = useCombatStore((s) => s.removeCombatant);
+  const showToast = useUiStore((s) => s.showToast);
   const [hpInput, setHpInput] = useState("");
 
-  const handleDamage = () => { const val = parseInt(hpInput); if (!isNaN(val) && val > 0) { damageCombatant(combatant.id, val, "DM"); setHpInput(""); } };
-  const handleHeal = () => { const val = parseInt(hpInput); if (!isNaN(val) && val > 0) { healCombatant(combatant.id, val, "DM"); setHpInput(""); } };
+  const handleDamage = () => {
+    const val = parseInt(hpInput);
+    if (!isNaN(val) && val > 0) { damageCombatant(combatant.id, val, "DM"); setHpInput(""); }
+  };
+  const handleHeal = () => {
+    const val = parseInt(hpInput);
+    if (!isNaN(val) && val > 0) { healCombatant(combatant.id, val, "DM"); setHpInput(""); }
+  };
   const quickDamage = (amount: number) => damageCombatant(combatant.id, amount, "DM");
   const quickHeal = (amount: number) => healCombatant(combatant.id, amount, "DM");
 
   return (
     <div className="border-t border-surface-700/50 px-4 py-3 space-y-3">
+      {/* HP Controls */}
       <div>
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-surface-500">Hit Points</p>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap">
           <Button variant="danger" size="xs" onClick={() => quickDamage(1)}>-1</Button>
           <Button variant="danger" size="xs" onClick={() => quickDamage(5)}>-5</Button>
           <Button variant="danger" size="xs" onClick={() => quickDamage(10)}>-10</Button>
-          <div className="flex flex-1 gap-1">
+          <div className="flex flex-1 gap-1 min-w-[120px]">
             <input type="number" value={hpInput} onChange={(e) => setHpInput(e.target.value)} placeholder="HP"
-              className="w-16 rounded-md border border-surface-700 bg-surface-800 px-2 py-1 text-center text-xs text-surface-100 focus:border-accent-500 focus:outline-none"
+              className="w-full max-w-[80px] rounded-md border border-surface-700 bg-surface-800 px-2 py-1 text-center text-xs text-surface-100 focus:border-accent-500 focus:outline-none"
               onKeyDown={(e) => e.key === "Enter" && (e.shiftKey ? handleHeal() : handleDamage())} />
             <Button size="xs" onClick={handleDamage} title="Damage (Enter)">−</Button>
             <Button size="xs" variant="secondary" onClick={handleHeal} title="Heal (Shift+Enter)">+</Button>
@@ -413,7 +504,7 @@ function CombatantActions({ combatant }: { combatant: Combatant }) {
           <Button variant="secondary" size="xs" onClick={() => quickHeal(5)}>+5</Button>
           <Button variant="secondary" size="xs" onClick={() => quickHeal(10)}>+10</Button>
         </div>
-        <div className="mt-1.5 flex items-center gap-2">
+        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
           <span className="text-[11px] text-surface-500">Temp HP:</span>
           <input type="number" defaultValue={combatant.hitPoints.temporary || ""} placeholder="0"
             className="w-16 rounded-md border border-surface-700 bg-surface-800 px-2 py-1 text-center text-xs text-surface-100 focus:border-divine-500 focus:outline-none"
@@ -422,6 +513,7 @@ function CombatantActions({ combatant }: { combatant: Combatant }) {
           <span className="text-[11px] text-surface-500">· Max HP: {combatant.hitPoints.max}</span>
         </div>
       </div>
+      {/* Status Effects */}
       <div>
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-surface-500">Status Effects</p>
         <div className="flex flex-wrap gap-1">
@@ -429,7 +521,11 @@ function CombatantActions({ combatant }: { combatant: Combatant }) {
             const isActive = combatant.statusEffects.some((s) => s.effect === key);
             return (
               <button key={key} onClick={() => toggleStatus(combatant.id, key as StatusEffect)}
-                className={`rounded-md border px-2 py-1 text-[11px] font-medium transition-all ${isActive ? "border-accent-500 bg-accent-500/15 text-accent-300" : "border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-600 hover:text-surface-200"}`}
+                className={`rounded-md border px-2 py-1 text-[11px] font-medium transition-all ${
+                  isActive
+                    ? "border-accent-500 bg-accent-500/15 text-accent-300"
+                    : "border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-600 hover:text-surface-200"
+                }`}
                 title={def.description}>
                 {def.icon} {def.label}
               </button>
@@ -437,87 +533,26 @@ function CombatantActions({ combatant }: { combatant: Combatant }) {
           })}
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <label className="flex cursor-pointer items-center gap-2">
-          <input type="checkbox" checked={combatant.isConcentrating} onChange={() => toggleConcentration(combatant.id)} className="h-4 w-4 rounded border-surface-600 bg-surface-800 accent-mage-500" />
-          <span className="text-xs text-surface-300">🧘 Concentrating</span>
-        </label>
-        <label className="flex cursor-pointer items-center gap-2">
-          <input type="checkbox" checked={combatant.isDead} onChange={() => toggleDead(combatant.id)} className="h-4 w-4 rounded border-surface-600 bg-surface-800 accent-warrior-500" />
-          <span className="text-xs text-surface-300">💀 Dead</span>
-        </label>
-      </div>
-    </div>
-  );
-}
-
-/* ── Combat Log Panel ────────────────────────────────────────── */
-function CombatLogPanel({ log }: { log: CombatLogEntry[] }) {
-  const clearLog = useCombatStore((s) => s.clearLog);
-  const [filter, setFilter] = useState<"all" | "damage" | "heal" | "status" | "round">("all");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filtered = useMemo(() => {
-    let filtered = log;
-    if (filter !== "all") filtered = filtered.filter((e) => e.type === filter);
-    const q = searchQuery.toLowerCase().trim();
-    if (q) filtered = filtered.filter((e) => e.actorName.toLowerCase().includes(q) || e.targetName?.toLowerCase().includes(q) || e.description.toLowerCase().includes(q));
-    return filtered;
-  }, [log, filter, searchQuery]);
-
-  const handleExport = useCallback(() => {
-    const blob = new Blob([JSON.stringify(log, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `combat-log-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [log]);
-
-  return (
-    <div className="rounded-xl border border-surface-700 bg-surface-850">
-      <div className="flex items-center justify-between border-b border-surface-700 px-4 py-3">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400">Combat Log</h4>
-        <div className="flex items-center gap-2">
-          <button onClick={handleExport} className="text-[11px] text-surface-500 hover:text-surface-300" title="Export">📥</button>
-          <button onClick={clearLog} className="text-[11px] text-surface-500 hover:text-surface-300">Clear</button>
+      {/* Toggles + Remove */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" checked={combatant.isConcentrating} onChange={() => toggleConcentration(combatant.id)}
+              className="h-4 w-4 rounded border-surface-600 bg-surface-800 accent-mage-500" />
+            <span className="text-xs text-surface-300">🧘 Concentrating</span>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" checked={combatant.isDead} onChange={() => toggleDead(combatant.id)}
+              className="h-4 w-4 rounded border-surface-600 bg-surface-800 accent-warrior-500" />
+            <span className="text-xs text-surface-300">💀 Dead</span>
+          </label>
         </div>
-      </div>
-      <div className="border-b border-surface-700/50 px-3 py-2 space-y-2">
-        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search combat log..."
-          className="w-full rounded-md border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-xs text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
-        <div className="flex gap-1">
-          {(["all", "damage", "heal", "status", "round"] as const).map((f) => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${filter === f ? "bg-accent-500/15 text-accent-300" : "text-surface-500 hover:text-surface-300"}`}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="max-h-[400px] overflow-y-auto space-y-0.5 p-2">
-        {filtered.length === 0 ? (
-          <p className="text-center text-xs text-surface-500 py-6">{log.length === 0 ? "No combat actions yet." : "No matches."}</p>
-        ) : (
-          filtered.map((entry) => {
-            const typeColor: Record<string, string> = { damage: "text-warrior-400 bg-warrior-500/10", heal: "text-rogue-400 bg-rogue-500/10", status: "text-mage-400 bg-mage-500/10", round: "text-divine-400 bg-divine-500/10" };
-            return (
-              <div key={entry.id} className="flex items-start gap-2 rounded-md px-2.5 py-1.5 hover:bg-surface-800">
-                <span className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase ${typeColor[entry.type] ?? "text-surface-400 bg-surface-800"}`}>{entry.type}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-surface-300 leading-relaxed">{entry.description}</p>
-                  <p className="text-[9px] text-surface-500 mt-0.5">{entry.actorName}{entry.targetName ? ` → ${entry.targetName}` : ""} · {new Date(entry.timestamp).toLocaleTimeString()}</p>
-                </div>
-                {entry.value !== undefined && entry.value !== 0 && (
-                  <span className={`shrink-0 font-bold text-sm ${entry.type === "damage" ? "text-warrior-400" : entry.type === "heal" ? "text-rogue-400" : "text-surface-400"}`}>
-                    {entry.value > 0 ? "+" : ""}{entry.value}
-                  </span>
-                )}
-              </div>
-            );
-          })
-        )}
+        <button
+          onClick={() => { removeCombatant(combatant.id); showToast({ message: `"${combatant.name}" removed.`, type: "info" }); }}
+          className="text-[11px] text-surface-500 hover:text-warrior-400 transition-colors"
+        >
+          Remove
+        </button>
       </div>
     </div>
   );

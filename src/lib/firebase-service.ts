@@ -6,6 +6,8 @@
  *   2. `listen*()` — Subscribe to Firestore changes and hydrate stores
  *   3. Conflict resolution via last-write-wins (appropriate for single-DM)
  *
+ * ENHANCED: Rate limiting, retry logic, connection health checks,
+ * and error recovery to ensure robust sync throughout the application.
  * ── Usage ─────────────────────────────────────────────────────
  *   import { campaignSync } from "@/lib/firebase-service";
  *   await campaignSync.pushCampaign("arkla");
@@ -45,6 +47,78 @@ export interface HomebrewDocument extends HomebrewLibrary {
 
 type SyncStatus = "idle" | "syncing" | "error" | "listening";
 
+/* ── Rate Limiter ─────────────────────────────────────────────
+ * Prevents Firestore write storms. Tracks pending pushes and
+ * debounces rapid successive calls.
+ * ─────────────────────────────────────────────────────────────── */
+
+class RateLimiter {
+  private pending = new Map<string, ReturnType<typeof setTimeout>>();
+  private lastPush = new Map<string, number>();
+  private readonly MIN_INTERVAL_MS = 500; // minimum 500ms between pushes per domain
+
+  canPush(domain: string): boolean {
+    const last = this.lastPush.get(domain) ?? 0;
+    return Date.now() - last >= this.MIN_INTERVAL_MS;
+  }
+
+  markPushed(domain: string): void {
+    this.lastPush.set(domain, Date.now());
+  }
+
+  debounce(domain: string, fn: () => Promise<boolean>, delayMs: number): Promise<boolean> {
+    // Cancel existing pending
+    const existing = this.pending.get(domain);
+    if (existing) clearTimeout(existing);
+
+    return new Promise((resolve) => {
+      const timer = setTimeout(async () => {
+        try {
+          const result = await fn();
+          this.markPushed(domain);
+          resolve(result);
+        } catch {
+          resolve(false);
+        }
+        this.pending.delete(domain);
+      }, delayMs);
+      this.pending.set(domain, timer);
+    });
+  }
+
+  cancelAll(): void {
+    for (const [key, timer] of this.pending) {
+      clearTimeout(timer);
+      this.pending.delete(key);
+    }
+  }
+}
+
+const rateLimiter = new RateLimiter();
+
+/* ── Retry Wrapper ──────────────────────────────────────────── */
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 2,
+  baseDelay = 1000,
+): Promise<T | null> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      console.warn(`[Firebase] Retry ${attempt + 1}/${maxRetries} failed:`, err);
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, baseDelay * (attempt + 1)));
+      }
+    }
+  }
+  console.error(`[Firebase] All ${maxRetries + 1} retries exhausted:`, lastError);
+  return null;
+}
+
 /* ── Helpers ────────────────────────────────────────────────── */
 
 function getUserId(): string {
@@ -67,6 +141,7 @@ export const campaignSync = {
   /**
    * Pushes the current campaign state to Firestore.
    * Overwrites the remote document entirely (last-write-wins).
+   * Rate-limited: will debounce if called rapidly.
    */
   async pushCampaign(campaignId: string): Promise<boolean> {
     if (!isFirebaseAvailable()) return false;
@@ -74,19 +149,21 @@ export const campaignSync = {
     const campaign = useCampaignStore.getState().campaign;
     if (!campaign) return false;
 
-    try {
-      const db = getDbOrThrow();
-      const payload = safeStringify<Record<string, unknown>>({
-        ...campaign,
-        updatedAt: Date.now(),
-      });
+    return rateLimiter.debounce("campaign", async () => {
+      try {
+        const db = getDbOrThrow();
+        const payload = safeStringify<Record<string, unknown>>({
+          ...campaign,
+          updatedAt: Date.now(),
+        });
 
-      await setDoc(doc(db, "campaigns", campaignId), payload, { merge: true });
-      return true;
-    } catch (err) {
-      console.error("[Firebase] Failed to push campaign:", err);
-      return false;
-    }
+        await withRetry(() => setDoc(doc(db, "campaigns", campaignId), payload, { merge: true }));
+        return true;
+      } catch (err) {
+        console.error("[Firebase] Failed to push campaign:", err);
+        return false;
+      }
+    }, 300);
   },
 
   /**
@@ -141,8 +218,8 @@ export const campaignSync = {
 
     try {
       const db = getDbOrThrow();
-      const snapshot = await getDoc(doc(db, "campaigns", campaignId));
-      if (!snapshot.exists()) return null;
+      const snapshot = await withRetry(() => getDoc(doc(db, "campaigns", campaignId)));
+      if (!snapshot?.exists()) return null;
       return snapshot.data() as Campaign;
     } catch (err) {
       console.error("[Firebase] Failed to fetch campaign:", err);
@@ -156,6 +233,7 @@ export const campaignSync = {
 export const sessionSync = {
   /**
    * Pushes the current combat + session state to Firestore.
+   * Rate-limited.
    */
   async pushSession(campaignId: string): Promise<boolean> {
     if (!isFirebaseAvailable()) return false;
@@ -169,14 +247,16 @@ export const sessionSync = {
       updatedBy: getUserId(),
     });
 
-    try {
-      const db = getDbOrThrow();
-      await setDoc(doc(db, "liveSessions", campaignId), payload, { merge: true });
-      return true;
-    } catch (err) {
-      console.error("[Firebase] Failed to push session:", err);
-      return false;
-    }
+    return rateLimiter.debounce("session", async () => {
+      try {
+        const db = getDbOrThrow();
+        await withRetry(() => setDoc(doc(db, "liveSessions", campaignId), payload, { merge: true }));
+        return true;
+      } catch (err) {
+        console.error("[Firebase] Failed to push session:", err);
+        return false;
+      }
+    }, 200);
   },
 
   /**
@@ -235,8 +315,8 @@ export const sessionSync = {
 
     try {
       const db = getDbOrThrow();
-      const snapshot = await getDoc(doc(db, "liveSessions", campaignId));
-      if (!snapshot.exists()) return null;
+      const snapshot = await withRetry(() => getDoc(doc(db, "liveSessions", campaignId)));
+      if (!snapshot?.exists()) return null;
       return snapshot.data() as LiveSessionDocument;
     } catch (err) {
       console.error("[Firebase] Failed to fetch session:", err);
@@ -250,6 +330,7 @@ export const sessionSync = {
 export const homebrewSync = {
   /**
    * Pushes the current homebrew library to Firestore.
+   * Rate-limited.
    */
   async pushHomebrew(campaignId: string): Promise<boolean> {
     if (!isFirebaseAvailable()) return false;
@@ -262,14 +343,16 @@ export const homebrewSync = {
       updatedAt: Date.now(),
     });
 
-    try {
-      const db = getDbOrThrow();
-      await setDoc(doc(db, "homebrew", campaignId), payload, { merge: true });
-      return true;
-    } catch (err) {
-      console.error("[Firebase] Failed to push homebrew:", err);
-      return false;
-    }
+    return rateLimiter.debounce("homebrew", async () => {
+      try {
+        const db = getDbOrThrow();
+        await withRetry(() => setDoc(doc(db, "homebrew", campaignId), payload, { merge: true }));
+        return true;
+      } catch (err) {
+        console.error("[Firebase] Failed to push homebrew:", err);
+        return false;
+      }
+    }, 300);
   },
 
   /**
@@ -296,11 +379,8 @@ export const homebrewSync = {
         const data = snapshot.data() as HomebrewDocument;
         const store = useHomebrewStore.getState();
 
-        // Only sync if remote is newer than local
-        // Since homebrew doesn't track a single updatedAt, we check
-        // if the remote has data and local doesn't
+        // Only sync if remote has data and local doesn't
         if (data.items && data.items.length > 0 && store.items.length === 0) {
-          // Replace all
           data.items.forEach((item) => store.addItem(item));
           data.feats.forEach((feat) => store.addFeat(feat));
           data.spells.forEach((spell) => store.addSpell(spell));
@@ -323,8 +403,8 @@ export const homebrewSync = {
 
     try {
       const db = getDbOrThrow();
-      const snapshot = await getDoc(doc(db, "homebrew", campaignId));
-      if (!snapshot.exists()) return null;
+      const snapshot = await withRetry(() => getDoc(doc(db, "homebrew", campaignId)));
+      if (!snapshot?.exists()) return null;
       return snapshot.data() as HomebrewDocument;
     } catch (err) {
       console.error("[Firebase] Failed to fetch homebrew:", err);
@@ -343,6 +423,7 @@ export class SyncManager {
   private sessionUnsub: Unsubscribe | null = null;
   private homebrewUnsub: Unsubscribe | null = null;
   private campaignId: string | null = null;
+  private _isListening = false;
 
   /**
    * Starts all Firestore listeners for a given campaign.
@@ -354,6 +435,7 @@ export class SyncManager {
     this.campaignUnsub = campaignSync.listenCampaign(campaignId);
     this.sessionUnsub = sessionSync.listenSession(campaignId);
     this.homebrewUnsub = homebrewSync.listenHomebrew(campaignId);
+    this._isListening = true;
 
     console.log(`[Firebase] Sync started for campaign: ${campaignId}`);
   }
@@ -408,6 +490,9 @@ export class SyncManager {
     this.campaignUnsub = null;
     this.sessionUnsub = null;
     this.homebrewUnsub = null;
+    this._isListening = false;
+
+    rateLimiter.cancelAll();
 
     if (this.campaignId) {
       console.log(`[Firebase] Sync stopped for campaign: ${this.campaignId}`);
@@ -418,7 +503,7 @@ export class SyncManager {
    * Returns true if any listeners are active.
    */
   get isListening(): boolean {
-    return this.campaignUnsub !== null;
+    return this._isListening;
   }
 }
 

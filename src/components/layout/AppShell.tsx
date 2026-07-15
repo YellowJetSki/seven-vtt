@@ -1,9 +1,22 @@
+/* ── App Shell ─────────────────────────────────────────────────
+ * Root layout for all DM routes. Wraps the sidebar, header,
+ * outlet (page content), toast container, and global overlays.
+ *
+ * ── Global Features ──────────────────────────────────────────
+ * • Firebase real-time sync (for DM)
+ * • Keyboard shortcuts overlay (Ctrl+/)
+ * • Command palette (Cmd/Ctrl+K)
+ * • Floating scratch pad (Ctrl+Shift+N)
+ * • Toast notifications
+ * ─────────────────────────────────────────────────────────────── */
+
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { ToastContainer } from "@/components/ui/ToastContainer";
 import { KeyboardShortcutsOverlay } from "@/components/ui/KeyboardShortcutsOverlay";
 import { CampaignScratchPad } from "./CampaignScratchPad";
+import { CommandPalette } from "@/components/ui/CommandPalette";
 import { useFirebaseSync } from "@/hooks/useFirebaseSync";
 
 export function AppShell() {
@@ -22,6 +35,8 @@ export function AppShell() {
       <CampaignScratchPad />
       <ToastContainer />
       <KeyboardShortcutsOverlay />
+      {/* Global command palette: Cmd/Ctrl+K */}
+      <CommandPalette />
     </div>
   );
 }
