@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
@@ -13,11 +13,7 @@ import { BattleMaps } from "@/pages/BattleMaps";
 import { DmJournal } from "@/pages/DmJournal";
 import { CampaignSettings } from "@/pages/CampaignSettings";
 import { PlayerDashboard } from "@/pages/PlayerDashboard";
-import { createDemoCampaign } from "@/data/demoCampaign";
-import { importArklaJson } from "@/utils/importArklaCampaign";
 import type { PlayerIdentifier } from "@/stores/authStore";
-
-const STORAGE_KEY = "str_vtt_campaign_loaded";
 
 export default function App() {
   const state = useAuthStore((s) => s.state);
@@ -25,54 +21,16 @@ export default function App() {
   const campaign = useCampaignStore((s) => s.campaign);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
   const setPlayerIdentifiers = useAuthStore((s) => s.setPlayerIdentifiers);
-  const [isArklaLoading, setIsArklaLoading] = useState(true);
 
-  // Seed the campaign from Arkla.json on first mount if no campaign exists
-  // and no persisted campaign is found in localStorage.
+  // Ensure a campaign exists in the store.
+  // If no campaign has been created yet (fresh visit), the store's
+  // default state will be used; DM actions will prompt campaign creation.
   useEffect(() => {
-    // If campaign already exists in store (hydrated from localStorage persist),
-    // skip the Arkla.json import entirely.
-    if (campaign) {
-      setIsArklaLoading(false);
+    if (!campaign) {
+      // The campaign store will handle seeding from localStorage persist.
+      // If nothing is persisted, the DM can create a campaign on first login.
       return;
     }
-
-    const alreadyLoaded = localStorage.getItem(STORAGE_KEY);
-    if (alreadyLoaded) {
-      // Already imported the Arkla campaign this session; use empty demo.
-      const demo = createDemoCampaign();
-      setCampaign(demo);
-      setIsArklaLoading(false);
-      return;
-    }
-
-    // Try to load Arkla.json from the public folder
-    const loadArkla = async () => {
-      try {
-        const response = await fetch("/Arkla.json");
-        if (response.ok) {
-          const text = await response.text();
-          const arklaCampaign = importArklaJson(text);
-          setCampaign(arklaCampaign);
-          localStorage.setItem(STORAGE_KEY, "true");
-          console.log(
-            `[Arkla] Imported ${arklaCampaign.playerCharacters.length} characters from Arkla.json`,
-          );
-        } else {
-          // Fall back to empty campaign if file not found
-          const demo = createDemoCampaign();
-          setCampaign(demo);
-        }
-      } catch {
-        // Fallback on error
-        const demo = createDemoCampaign();
-        setCampaign(demo);
-      } finally {
-        setIsArklaLoading(false);
-      }
-    };
-
-    loadArkla();
   }, [campaign, setCampaign]);
 
   // Sync character identifiers (first name + alias) to auth store for player lookup
@@ -96,18 +54,6 @@ export default function App() {
       setPlayerIdentifiers([]);
     }
   }, [campaign, setPlayerIdentifiers]);
-
-  // Global loading state (Arkla.json loading)
-  if (isArklaLoading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-surface-950">
-        <div className="flex flex-col items-center gap-3">
-          <span className="text-3xl text-accent-400 animate-pulse">Sᚱ</span>
-          <p className="text-sm text-surface-500">Loading campaign...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <Routes>
