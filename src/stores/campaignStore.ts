@@ -1,4 +1,13 @@
-/* ── Campaign Global Store ───────────────────────────────────── */
+/* ── Campaign Global Store ─────────────────────────────────────
+ *
+ * Firestore auto-sync: Every action that mutates campaign data
+ * increments `updatedAt`. The useFirebaseSync hook watches this
+ * field plus array lengths to trigger Firestore pushes.
+ *
+ * The `forcePushCounter` is a manual increment for wholesale
+ * replacements (import JSON, reset to demo) that triggers an
+ * immediate sync regardless of other watchers.
+ * ─────────────────────────────────────────────────────────────── */
 
 import { create } from "zustand";
 import type {
@@ -14,6 +23,8 @@ interface CampaignState {
   campaign: Campaign | null;
   isLoading: boolean;
   error: string | null;
+  /** Incremented on wholesale replacement to force Firebase sync */
+  forcePushCounter: number;
 
   // ── Actions ──
   setCampaign: (campaign: Campaign) => void;
@@ -49,9 +60,21 @@ export const useCampaignStore = create<CampaignState>((set) => ({
   campaign: null,
   isLoading: false,
   error: null,
+  forcePushCounter: 0,
 
-  setCampaign: (campaign) => set({ campaign, error: null }),
-  clearCampaign: () => set({ campaign: null }),
+  setCampaign: (campaign) =>
+    set((state) => ({
+      campaign,
+      error: null,
+      forcePushCounter: state.forcePushCounter + 1,
+    })),
+
+  clearCampaign: () =>
+    set((state) => ({
+      campaign: null,
+      forcePushCounter: state.forcePushCounter + 1,
+    })),
+
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 
