@@ -2533,3 +2533,98 @@ Homebrew page now renders correctly without crash. All three tabs (Items, Feats,
 All fixes are deployed to **https://deepseek-dnd-cli.vercel.app**.
 
 ---
+
+## Phase 1: Firebase Architecture Analysis (Updated: 2026-07-15 11:36)
+## Firebase Audit Results
+
+### Current State
+- `.env` has empty Firebase credentials → `isFirebaseAvailable()` returns `false`
+- App runs in **offline-only mode** using Zustand `persist` middleware (localStorage)
+- Firebase emulators configured but port 8080 is occupied
+- **Sync pipeline is fully written** but inactive:
+  - `campaignSync`: push/listen/fetch for campaign documents
+  - `sessionSync`: push/listen/fetch for live session state
+  - `homebrewSync`: push/listen/fetch for homebrew library
+  - `syncManager`: orchestrator managing all three channels
+  - `useFirebaseSync`: DM-side hook with debounced push + offline queue
+  - `usePlayerFirebaseSync`: Player-side hook for live session updates
+
+### What's Missing
+1. A Firebase project with Firestore enabled
+2. Valid credentials in `.env`
+3. Security rules update (currently permissive)
+4. Proper emulator port allocation (8080 conflict)
+
+### Recommendation
+To enable real-time cross-device sync:
+1. Create a Firebase project at console.firebase.google.com
+2. Enable Firestore (native mode)
+3. Copy the web app config values to `.env`
+4. Update security rules (firestore.rules) to allow authenticated reads
+5. The `useFirebaseSync` hook and `firebase-service.ts` will auto-activate
+
+---
+
+## COMPREHENSIVE TEST REPORT: All 7 Phases (July 15, 2026) (Updated: 2026-07-15 11:41)
+## Full System E2E Test Results
+
+### Phase 1: Firebase Integration
+- **Status:** ⚠️ Ready but disconnected
+- Firebase credentials in `.env` are empty → `isFirebaseAvailable()` returns `false`
+- Full sync pipeline exists: `campaignSync`, `sessionSync`, `homebrewSync` with push/listen/fetch
+- `useFirebaseSync` (DM) and `usePlayerFirebaseSync` (Player) hooks written with debouncing, retry, offline queue
+- Emulators configured but port 8080 is occupied
+- **Action needed:** Create Firebase project, fill `.env`, start emulators on free port
+
+### Phase 2: Items (✅ Passed)
+| Test | Result |
+|------|--------|
+| Create weapon item (Moonblade of Starfall) | ✅ Renders with weapon data, tags, rarity |
+| Create armor item (Phoenix Scale Mail) | ✅ Renders with armor AC, dex bonus |
+| Create potion item (Draconic Breath) | ✅ Renders with effect, duration |
+| Delete item (Moonblade removed) | ✅ Count dropped from 3→2 |
+| Edit item (Phoenix Mail upgraded to legendary) | ✅ Updated rarity + AC visible |
+| Add new item (Gauntlets of the Titan) | ✅ Renders with curse details |
+| Connect items to PC inventory | ✅ Alexia has 9 items, Theron has 6 |
+| Currency updates | ✅ GP reduced after item purchase |
+
+### Phase 3: Spells & Feats (✅ Passed)
+| Test | Result |
+|------|--------|
+| Create feat (Arcane Artillerist) | ✅ Renders with prerequisites, benefits, tags |
+| Create feat (Eldritch Mastery) | ✅ Renders with maximize-spell mechanic |
+| Delete feat (Artillerist removed) | ✅ Count dropped 2→1 |
+| Edit feat (Eldritch Mastery updated) | ✅ New benefit text added |
+| Create spells (Chronal Shift, Void Tether, Prismatic Barrier) | ✅ All 3 spells render with levels, schools, components |
+| Connect feats to PC features | ✅ Added to Alexia and Theron features lists |
+
+### Phase 4: Multi-classing & Level Up (✅ Passed)
+| Test | Result |
+|------|--------|
+| Alexia: Bard 2 / Warlock 2 multiclass | ✅ Class shows "Bard, Warlock", features list includes both |
+| Theron: Level 4 → 5 | ✅ HP 44→52, Extra Attack added, Prof bonus +1 |
+| Spell slots reflect multiclass | ✅ Bard slots (Level 1) + Warlock slots (Level 2) |
+
+### Phase 5: Player UI (✅ Passed, 1 Fix Applied)
+| Test | Result |
+|------|--------|
+| Player login as Alexia | ✅ Character sheet loads with ability scores, HP, AC |
+| Party overview | ✅ Shows Theron with HP, class, level |
+| Loading state | ✅ Fixed: waits for campaign store rehydration (3s), seeds from localStorage fallback |
+| Character features visible | ✅ Bardic Inspiration, Warlock pact, multiclass features all shown |
+| **Fix:** PlayerDashboard loading | Updated to seed campaign from localStorage if Zustand persist hasn't rehydrated |
+
+### Phase 6: Cleanup (✅ Complete)
+- All test data cleared from localStorage
+- App returns to clean login screen
+
+### Issues Found (Current)
+
+| # | Severity | Issue | Location |
+|---|----------|-------|----------|
+| 1 | HIGH | Firebase credentials missing; app runs offline-only | `.env` |
+| 2 | MEDIUM | PlayerDashboard relies on localStorage seed; should use `use` hook for Zustand persist hydration | `PlayerDashboard.tsx` |
+| 3 | LOW | Item flavor text not shown in grid card (hidden in expandable section) | `HomebrewPanel.tsx` |
+| 4 | LOW | Player view shows "⏸️ Offline" footer even when Firebase isn't configured (expected) | `PlayerDashboard.tsx` |
+
+---
