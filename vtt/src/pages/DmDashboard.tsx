@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ConditionsWidget } from "@/components/combat/ConditionsWidget";
 import { Button } from "@/components/ui/Button";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { CampaignWizard } from "@/components/campaign/CampaignWizard";
 
 export function DmDashboard() {
   const campaign = useCampaignStore((s) => s.campaign);
@@ -113,11 +114,31 @@ export function DmDashboard() {
             Start a new campaign or import an existing one to begin your adventure.
           </p>
         </div>
-        <NewCampaignWizard
-          showNewCampaign={showNewCampaign}
-          setShowNewCampaign={setShowNewCampaign}
-          onImport={handleImportCampaign}
-        />
+        {showNewCampaign ? (
+          <CampaignWizard
+            onClose={() => setShowNewCampaign(false)}
+            onImport={handleImportCampaign}
+          />
+        ) : (
+          <div className="space-y-4">
+            <button
+              onClick={() => setShowNewCampaign(true)}
+              className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-accent-500/40 hover:bg-surface-700 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <span className="text-3xl">✨</span>
+              <p className="mt-2 font-semibold text-surface-200">New Campaign</p>
+              <p className="text-xs text-surface-500">Choose from Arkla template or create a custom campaign</p>
+            </button>
+            <button
+              onClick={handleImportCampaign}
+              className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-mage-500/40 hover:bg-surface-700 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <span className="text-3xl">📥</span>
+              <p className="mt-2 font-semibold text-surface-200">Import Campaign</p>
+              <p className="text-xs text-surface-500">Load a campaign from a JSON file</p>
+            </button>
+          </div>
+        )}
         <p className="text-center text-xs text-surface-500">
           Your campaign data is stored locally. Use export to back it up.
         </p>
@@ -242,96 +263,7 @@ export function DmDashboard() {
  * but with clear boundaries for future extraction.
  * ═══════════════════════════════════════════════════════════════ */
 
-/* ── New Campaign Wizard ──────────────────────────────────── */
-
-interface NewCampaignWizardProps {
-  showNewCampaign: boolean;
-  setShowNewCampaign: (show: boolean) => void;
-  onImport: () => void;
-}
-
-function NewCampaignWizard({ showNewCampaign, setShowNewCampaign, onImport }: NewCampaignWizardProps) {
-  const setCampaign = useCampaignStore((s) => s.setCampaign);
-  const showToast = useUiStore((s) => s.showToast);
-  const [name, setName] = useState("");
-  const [desc, setDesc] = useState("");
-
-  const handleCreate = useCallback(() => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    const c = createDemoCampaign();
-    c.name = trimmed;
-    c.description = desc.trim() || c.description;
-    setCampaign(c);
-    setShowNewCampaign(false);
-    setName("");
-    setDesc("");
-    showToast({ message: `Campaign "${trimmed}" created!`, type: "success" });
-  }, [name, desc, setCampaign, setShowNewCampaign, showToast]);
-
-  if (!showNewCampaign) {
-    return (
-      <div className="space-y-4">
-        <button
-          onClick={() => setShowNewCampaign(true)}
-          className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-accent-500/40 hover:bg-surface-700 hover:-translate-y-0.5 active:translate-y-0"
-        >
-          <span className="text-3xl">✨</span>
-          <p className="mt-2 font-semibold text-surface-200">New Campaign</p>
-          <p className="text-xs text-surface-500">Creates a new Arkla campaign with demo data</p>
-        </button>
-        <button
-          onClick={onImport}
-          className="w-full rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-6 text-center transition-all hover:border-mage-500/40 hover:bg-surface-700 hover:-translate-y-0.5 active:translate-y-0"
-        >
-          <span className="text-3xl">📥</span>
-          <p className="mt-2 font-semibold text-surface-200">Import Campaign</p>
-          <p className="text-xs text-surface-500">Load a campaign from a JSON file</p>
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-xl border border-surface-700 bg-surface-850 p-6 space-y-4">
-      <h3 className="text-sm font-semibold text-surface-200">New Campaign</h3>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-surface-400">Campaign Name</label>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. The Obelisks of Arkla"
-          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-        />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-surface-400">Description (optional)</label>
-        <textarea
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          rows={3}
-          placeholder="A brief synopsis of the campaign..."
-          className="w-full resize-none rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-        />
-      </div>
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => setShowNewCampaign(false)}
-          className="rounded-lg px-4 py-2 text-sm text-surface-400 transition-colors hover:text-surface-200"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleCreate}
-          disabled={!name.trim()}
-          className="rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-500 disabled:opacity-50"
-        >
-          Create
-        </button>
-      </div>
-    </div>
-  );
-}
+/* ── (Old NewCampaignWizard replaced by CampaignWizard component) ── */
 
 /* ── Session Status Bar ────────────────────────────────────── */
 

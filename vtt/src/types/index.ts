@@ -6,7 +6,7 @@
 
 export type Ability = "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
 
-/* ── Player Character ───────────────────────────────────────── */
+/* ── Player Character (D&D 5e Complete) ─────────────────────── */
 
 export interface PlayerCharacter {
   id: string;
@@ -14,13 +14,14 @@ export interface PlayerCharacter {
   playerName: string;
   race: string;
   class: string;
+  subClass?: string;               // e.g. "School of Evocation", "Path of the Berserker"
   level: number;
   experiencePoints: number;
   background: string;
   alignment: string;
   inspiration: boolean;
 
-  // Core Stats
+  // Core Ability Scores
   strength: number;
   dexterity: number;
   constitution: number;
@@ -28,43 +29,147 @@ export interface PlayerCharacter {
   wisdom: number;
   charisma: number;
 
+  // Saving Throws (proficiency flags + bonuses)
+  savingThrows: {
+    strength: { proficient: boolean; bonus: number };
+    dexterity: { proficient: boolean; bonus: number };
+    constitution: { proficient: boolean; bonus: number };
+    intelligence: { proficient: boolean; bonus: number };
+    wisdom: { proficient: boolean; bonus: number };
+    charisma: { proficient: boolean; bonus: number };
+  };
+
+  // Skills (proficiency flags)
+  skills: {
+    acrobatics: SkillProficiency;
+    animalHandling: SkillProficiency;
+    arcana: SkillProficiency;
+    athletics: SkillProficiency;
+    deception: SkillProficiency;
+    history: SkillProficiency;
+    insight: SkillProficiency;
+    intimidation: SkillProficiency;
+    investigation: SkillProficiency;
+    medicine: SkillProficiency;
+    nature: SkillProficiency;
+    perception: SkillProficiency;
+    performance: SkillProficiency;
+    persuasion: SkillProficiency;
+    religion: SkillProficiency;
+    sleightOfHand: SkillProficiency;
+    stealth: SkillProficiency;
+    survival: SkillProficiency;
+  };
+
   // Combat Stats
   hitPoints: HitPoints;
   armorClass: number;
   initiative: number;
-  speed: number;
+  speed: Speed;
   hitDice: string;
   proficiencyBonus: number;
   conditions: string[];
   deathSaves: DeathSaves;
   temporaryHitPoints: number;
 
-  // Traits
-  traits: TraitEntry[];
-  proficiencies: string[];
-  languages: string[];
-  features: string[];
+  // Spellcasting
+  spellcasting?: Spellcasting;
 
-  // Equipment
+  // Traits, Proficiencies & Features
+  traits: TraitEntry[];
+  proficiencies: Proficiency[];
+  languages: string[];
+  features: FeatureEntry[];
+
+  // Equipment & Inventory
   equipment: EquipmentSlot[];
   inventory: InventoryItem[];
-  copper: number;
-  silver: number;
-  electrum: number;
-  gold: number;
-  platinum: number;
+  currency: Currency;
 
-  // Biography
+  // Biography & Notes
   appearance: string;
   backstory: string;
   allies: string;
   characterNotes: string;
+  personalityTraits?: string;
+  ideals?: string;
+  bonds?: string;
+  flaws?: string;
 
   // Meta
   imageUrl?: string;
   isHomebrew: boolean;
   createdAt: number;
   updatedAt: number;
+}
+
+export type SkillProficiency = "none" | "proficient" | "expertise" | "jack_of_all_trades";
+
+export interface Proficiency {
+  name: string;
+  type: "armor" | "weapon" | "tool" | "saving_throw" | "skill" | "language" | "other";
+  isProficient: boolean;
+  notes?: string;
+}
+
+export interface FeatureEntry {
+  name: string;
+  description: string;
+  source: string;                  // e.g. "Class: Wizard Lvl 3", "Race: Human"
+  uses?: {
+    current: number;
+    max: number;
+    recharge: "short_rest" | "long_rest" | "dawn" | "dusk" | "special";
+  };
+}
+
+export interface Speed {
+  walk: number;                    // in feet
+  fly?: number;
+  swim?: number;
+  climb?: number;
+  burrow?: number;
+  canHover?: boolean;
+}
+
+export interface Currency {
+  copper: number;
+  silver: number;
+  electrum: number;
+  gold: number;
+  platinum: number;
+}
+
+export interface Spellcasting {
+  spellcastingAbility: Ability;
+  spellSaveDC: number;
+  spellAttackBonus: number;
+  cantripsKnown: number;
+  spellsKnown: number;
+  spellSlots: SpellSlots;
+  preparedSpells?: string[];
+  spells: SpellEntry[];
+}
+
+export interface SpellSlots {
+  level1: { max: number; used: number };
+  level2: { max: number; used: number };
+  level3: { max: number; used: number };
+  level4: { max: number; used: number };
+  level5: { max: number; used: number };
+  level6: { max: number; used: number };
+  level7: { max: number; used: number };
+  level8: { max: number; used: number };
+  level9: { max: number; used: number };
+}
+
+export interface SpellEntry {
+  id: string;
+  name: string;
+  level: number;
+  prepared: boolean;
+  alwaysPrepared?: boolean;
+  uses?: { current: number; max: number; recharge: string };
 }
 
 /* ── Hit Points & Death Saves ───────────────────────────────── */
@@ -242,6 +347,17 @@ export interface CampaignSettings {
   experienceSystem: "xp" | "milestone";
   currencyName: string;
   privateDmNotes: string;
+
+  // ── Campaign creation metadata ──
+  allowedRaces?: string[];
+  allowedClasses?: string[];
+  currencyPreset?: {
+    copperLabel: string;
+    silverLabel: string;
+    electrumLabel: string;
+    goldLabel: string;
+    platinumLabel: string;
+  };
 }
 
 /* ── Combat ─────────────────────────────────────────────────── */

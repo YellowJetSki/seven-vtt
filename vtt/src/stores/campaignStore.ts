@@ -95,6 +95,10 @@ interface NormalizedCampaignState {
   updateToken: (mapId: string, tokenId: string, updates: Partial<MapToken>) => void;
   removeToken: (mapId: string, tokenId: string) => void;
 
+  // ── Data Normalization ──
+  /** Normalizes legacy PC data (currency, features, speed, savingThrows, skills) */
+  normalizeCharacters: (chars: PlayerCharacter[]) => PlayerCharacter[];
+
   // ── Computed value (not a getter — recomputed on each state change) ──
   /** Reconstructs legacy monolithic Campaign from normalized state */
   campaign: Campaign | null;
@@ -170,7 +174,40 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
 
+      // Normalize legacy PC data format (called before setCampaign and setCharacters)
+      normalizeCharacters: (chars: PlayerCharacter[]): PlayerCharacter[] => {
+        return chars.map((c: any) => {
+          if (!c.currency) {
+            c.currency = { copper: c.copper ?? 0, silver: c.silver ?? 0, electrum: c.electrum ?? 0, gold: c.gold ?? 0, platinum: c.platinum ?? 0 };
+          }
+          if (c.features && c.features.length > 0 && typeof c.features[0] === 'string') {
+            c.features = c.features.map((f: string) => ({ name: f, description: f, source: 'Legacy' }));
+          }
+          if (typeof c.speed === 'number') {
+            c.speed = { walk: c.speed };
+          }
+          if (!c.savingThrows) {
+            const def = (a: number) => ({ proficient: false, bonus: Math.floor((a - 10) / 2) });
+            c.savingThrows = {
+              strength: def(c.strength), dexterity: def(c.dexterity),
+              constitution: def(c.constitution), intelligence: def(c.intelligence),
+              wisdom: def(c.wisdom), charisma: def(c.charisma),
+            };
+          }
+          if (!c.skills) {
+            c.skills = Object.fromEntries(
+              ['acrobatics','animalHandling','arcana','athletics','deception','history',
+               'insight','intimidation','investigation','medicine','nature','perception',
+               'performance','persuasion','religion','sleightOfHand','stealth','survival']
+                .map(k => [k, 'none'])
+            );
+          }
+          return c as PlayerCharacter;
+        });
+      },
+
       setCampaign: (campaign) => {
+        const normalizedPCs = get().normalizeCharacters(campaign.playerCharacters);
         const newState = {
           meta: {
             id: campaign.id,
@@ -186,7 +223,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
             createdAt: campaign.createdAt,
             updatedAt: campaign.updatedAt,
             stats: {
-              characterCount: campaign.playerCharacters.length,
+              characterCount: normalizedPCs.length,
               enemyCount: campaign.encounters.reduce((sum, e) => sum + e.enemies.reduce((s, ee) => s + (ee.count || 1), 0), 0),
               encounterCount: campaign.encounters.length,
               mapCount: campaign.battleMaps.length,
@@ -194,7 +231,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
               sessionCount: 0,
             },
           },
-          characters: campaign.playerCharacters,
+          characters: normalizedPCs,
           enemies: [] as EnemyDoc[],
           encounters: campaign.encounters,
           battleMaps: campaign.battleMaps.map((bm) => ({
@@ -510,6 +547,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
     }),
     {
       name: "vtt-campaign-store",
+      version: 2,
       partialize: (state) => ({
         meta: state.meta,
         characters: state.characters,
@@ -519,6 +557,51 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
         journal: state.journal,
         mapTokens: state.mapTokens,
       }),
+      migrate: (persisted: any, version: number) => {
+        // v1 → v2: Migrate old flat currency/features/speed to nested format
+        if (version < 2 && persisted?.characters) {
+          persisted.characters = persisted.characters.map((c: any) => {
+            // Migrate currency: flat → nested
+            if (!c.currency) {
+              c.currency = {
+                copper: c.copper ?? 0,
+                silver: c.silver ?? 0,
+                electrum: c.electrum ?? 0,
+                gold: c.gold ?? 0,
+                platinum: c.platinum ?? 0,
+              };
+            }
+            // Migrate features: string[] → FeatureEntry[]
+            if (c.features && c.features.length > 0 && typeof c.features[0] === 'string') {
+              c.features = c.features.map((f: string) => ({ name: f, description: f, source: 'Legacy' }));
+            }
+            // Migrate speed: number → Speed object
+            if (typeof c.speed === 'number') {
+              c.speed = { walk: c.speed };
+            }
+            // Add default savingThrows if missing
+            if (!c.savingThrows) {
+              const def = (a: number) => ({ proficient: false, bonus: Math.floor((a - 10) / 2) });
+              c.savingThrows = {
+                strength: def(c.strength), dexterity: def(c.dexterity),
+                constitution: def(c.constitution), intelligence: def(c.intelligence),
+                wisdom: def(c.wisdom), charisma: def(c.charisma),
+              };
+            }
+            // Add default skills if missing
+            if (!c.skills) {
+              c.skills = Object.fromEntries(
+                ['acrobatics', 'animalHandling', 'arcana', 'athletics', 'deception', 'history',
+                 'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception',
+                 'performance', 'persuasion', 'religion', 'sleightOfHand', 'stealth', 'survival']
+                  .map((k) => [k, 'none'])
+              );
+            }
+            return c;
+          });
+        }
+        return persisted as NormalizedCampaignState;
+      },
     },
   ),
 );

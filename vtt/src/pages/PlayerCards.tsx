@@ -33,21 +33,25 @@ function getAbilityScore(char: PlayerCharacter, ability: Ability): number {
 }
 
 function formatCurrency(char: PlayerCharacter, type: "cp" | "sp" | "ep" | "gp" | "pp"): number {
+  // Backward compat: support old flat currency fields
+  const c = char.currency ?? (char as any);
   switch (type) {
-    case "cp": return char.copper ?? 0;
-    case "sp": return char.silver ?? 0;
-    case "ep": return char.electrum ?? 0;
-    case "gp": return char.gold ?? 0;
-    case "pp": return char.platinum ?? 0;
+    case "cp": return c.copper ?? 0;
+    case "sp": return c.silver ?? 0;
+    case "ep": return c.electrum ?? 0;
+    case "gp": return c.gold ?? (char as any).gold ?? 0;
+    case "pp": return c.platinum ?? 0;
   }
 }
 
 function totalGoldValue(char: PlayerCharacter): number {
-  return (char.gold ?? 0)
-    + Math.floor((char.silver ?? 0) / 10)
-    + Math.floor((char.copper ?? 0) / 100)
-    + (char.electrum ?? 0) * 0.5
-    + (char.platinum ?? 0) * 10;
+  // Backward compat: support old flat currency fields
+  const c = char.currency ?? (char as any);
+  return (c.gold ?? (char as any).gold ?? 0)
+    + Math.floor((c.silver ?? 0) / 10)
+    + Math.floor((c.copper ?? 0) / 100)
+    + (c.electrum ?? 0) * 0.5
+    + (c.platinum ?? 0) * 10;
 }
 
 /** Export a single character as a downloadable JSON file */
@@ -76,6 +80,8 @@ export function PlayerCards() {
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
   const addCharacter = useCampaignStore((s) => s.addCharacter);
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+  const removeCharacter = useCampaignStore((s) => s.removeCharacter);
+  const showToast = useUiStore((s) => s.showToast);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
@@ -84,6 +90,13 @@ export function PlayerCards() {
   const [showCharacterForm, setShowCharacterForm] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<PlayerCharacter | undefined>();
   const [showInventoryId, setShowInventoryId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const handleDeleteCharacter = (charId: string, charName: string) => {
+    removeCharacter(charId);
+    setDeleteConfirmId(null);
+    showToast({ message: `"${charName}" removed from the campaign.`, type: "success" });
+  };
 
   const filtered = useMemo(() => {
     let list = [...characters];
@@ -166,12 +179,16 @@ export function PlayerCards() {
         if (!data.intelligence) data.intelligence = 10;
         if (!data.wisdom) data.wisdom = 10;
         if (!data.charisma) data.charisma = 10;
-        // Ensure flat currency exists
-        if (data.copper === undefined) data.copper = 0;
-        if (data.silver === undefined) data.silver = 0;
-        if (data.electrum === undefined) data.electrum = 0;
-        if (data.gold === undefined) data.gold = 0;
-        if (data.platinum === undefined) data.platinum = 0;
+        // Ensure flat currency exists (backward compat)
+        if (!data.currency) {
+          data.currency = {
+            copper: (data as any).copper ?? 0,
+            silver: (data as any).silver ?? 0,
+            electrum: (data as any).electrum ?? 0,
+            gold: (data as any).gold ?? 0,
+            platinum: (data as any).platinum ?? 0,
+          };
+        }
         addCharacter(data);
         useUiStore.getState().showToast({ message: `Imported "${data.name}"!`, type: "success" });
       } catch (err) {
@@ -273,9 +290,10 @@ export function PlayerCards() {
         <PartyCompendium />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((char) => (
+          {filtered.map((char, idx) => (
             <div key={char.id}
-              className="group relative rounded-xl border border-surface-700 bg-surface-850 overflow-hidden transition-all hover:border-accent-500/30 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              className={`group relative rounded-xl border border-surface-700/60 bg-surface-850/80 overflow-hidden transition-all hover:border-accent-500/30 hover:-translate-y-1 active:translate-y-0 cursor-pointer animate-slide-up stagger-${Math.min(idx + 1, 8)}`}
+              style={{ animationDelay: `${Math.min(idx * 60, 420)}ms` }}
               onClick={() => openCharacterDetail(char)}
             >
               {/* Header with class color */}
@@ -336,6 +354,7 @@ export function PlayerCards() {
                 <button onClick={(e) => { e.stopPropagation(); setShowInventoryId(char.id); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-surface-300 hover:text-surface-100 backdrop-blur-sm" title="Inventory">🎒</button>
                 <button onClick={(e) => { e.stopPropagation(); handleEditCharacter(char); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-surface-300 hover:text-surface-100 backdrop-blur-sm">✏️</button>
                 <button onClick={(e) => { e.stopPropagation(); exportCharacter(char); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-surface-300 hover:text-surface-100 backdrop-blur-sm">📤</button>
+                <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(char.id); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-warrior-400 hover:text-warrior-300 backdrop-blur-sm" title="Remove character">🗑️</button>
               </div>
             </div>
           ))}
@@ -444,9 +463,43 @@ export function PlayerCards() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInventoryId(null)}>
           <div className="w-full max-w-lg rounded-xl border border-surface-700 bg-surface-850 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <PlayerInventory
-              character={characters.find((c) => c.id === showInventoryId)!}
+              character={characters.find((c: any) => c.id === showInventoryId)!}
               onClose={() => setShowInventoryId(null)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)}>
+          <div className="w-full max-w-sm rounded-xl border border-warrior-500/30 bg-surface-850 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <span className="text-4xl text-warrior-400">⚠️</span>
+              <h3 className="mt-3 text-lg font-semibold text-surface-100">Remove Character?</h3>
+              <p className="mt-2 text-sm text-surface-400">
+                This will permanently delete{" "}
+                <span className="font-semibold text-surface-200">
+                  {characters.find((c: any) => c.id === deleteConfirmId)?.name}
+                </span>{" "}
+                from the campaign. This action cannot be undone.
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => {
+                    const char = characters.find((c: any) => c.id === deleteConfirmId);
+                    if (char) handleDeleteCharacter(char.id, char.name);
+                  }}
+                >
+                  🗑️ Remove Character
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
