@@ -14,7 +14,7 @@
  *   - Tailwind CSS with custom design system tokens
  * ─────────────────────────────────────────────────────────────── */
 
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "@/pages/LoginPage";
 import { DmDashboard } from "@/pages/DmDashboard";
@@ -27,6 +27,18 @@ import { TheatricPage } from "@/pages/TheatricPage";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
+
+// Lazy-loaded pages
+const Encounters = lazy(() => import("@/pages/Encounters").then(m => ({ default: m.Encounters })));
+const BattleMaps = lazy(() => import("@/pages/BattleMaps").then(m => ({ default: m.BattleMaps })));
+
+function SuspenseFallback() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+    </div>
+  );
+}
 
 export default function App() {
   // Monitor Firebase connection health (shows indicator, auto-reconnect)
@@ -60,6 +72,16 @@ export default function App() {
         <Route path="dashboard" element={<DmDashboard />} />
         <Route path="player-cards" element={<PlayerCards />} />
         <Route path="homebrew" element={<HomebrewPanel />} />
+        <Route path="encounters" element={
+          <Suspense fallback={<SuspenseFallback />}>
+            <Encounters />
+          </Suspense>
+        } />
+        <Route path="maps" element={
+          <Suspense fallback={<SuspenseFallback />}>
+            <BattleMaps />
+          </Suspense>
+        } />
         <Route path="journal" element={<DmJournal />} />
         <Route path="settings" element={<CampaignSettings />} />
       </Route>

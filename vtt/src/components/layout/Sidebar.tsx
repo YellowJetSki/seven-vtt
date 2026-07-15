@@ -24,13 +24,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", path: "/dashboard", icon: "◈" },
-  { label: "Players", path: "/characters", icon: "⚔" },
-  { label: "Homebrew", path: "/homebrew", icon: "⚗" },
-  { label: "Encounters", path: "/encounters", icon: "⚡" },
-  { label: "Battle Maps", path: "/maps", icon: "🗺" },
-  { label: "Journal", path: "/journal", icon: "📖" },
-  { label: "Settings", path: "/settings", icon: "⚙" },
+  { label: "Dashboard", path: "/campaign/dashboard", icon: "◈" },
+  { label: "Players", path: "/campaign/player-cards", icon: "⚔" },
+  { label: "Homebrew", path: "/campaign/homebrew", icon: "⚗" },
+  { label: "Encounters", path: "/campaign/encounters", icon: "⚡" },
+  { label: "Battle Maps", path: "/campaign/maps", icon: "🗺" },
+  { label: "Journal", path: "/campaign/journal", icon: "📖" },
+  { label: "Settings", path: "/campaign/settings", icon: "⚙" },
 ];
 
 export function Sidebar() {
@@ -52,12 +52,11 @@ export function Sidebar() {
     }
   };
 
-  // Dynamic badges for nav items (memoized via useMemo is not needed — small list)
   const navItemsWithBadges = NAV_ITEMS.map((item) => {
-    if (item.path === "/characters" && playerCount > 0) {
+    if (item.path === "/campaign/player-cards" && playerCount > 0) {
       return { ...item, badge: playerCount };
     }
-    if (item.path === "/encounters" && encounterCount > 0) {
+    if (item.path === "/campaign/encounters" && encounterCount > 0) {
       return { ...item, badge: encounterCount };
     }
     return item;
@@ -99,7 +98,6 @@ export function Sidebar() {
               )}
             </div>
           )}
-          {/* Session dot */}
           {sessionActive && !sidebarOpen && (
             <span className="absolute right-2 top-3 h-2 w-2 animate-pulse rounded-full bg-accent-400" />
           )}
@@ -111,7 +109,7 @@ export function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === "/dashboard"}
+              end={item.path === "/campaign/dashboard"}
               onClick={handleNavClick}
               className={({ isActive }) =>
                 `relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
@@ -127,13 +125,11 @@ export function Sidebar() {
               {sidebarOpen && (
                 <span className="flex-1 truncate">{item.label}</span>
               )}
-              {/* Badge in expanded state */}
               {sidebarOpen && item.badge !== undefined && (
                 <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-500/20 px-1.5 text-[10px] font-bold text-accent-400">
                   {item.badge}
                 </span>
               )}
-              {/* Badge in collapsed state — avoid clipping */}
               {!sidebarOpen && item.badge !== undefined && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent-500 px-1 text-[9px] font-bold text-white shadow-sm">
                   {item.badge}
@@ -143,7 +139,7 @@ export function Sidebar() {
           ))}
         </nav>
 
-        {/* Session Active Indicator (expanded) */}
+        {/* Session Active Indicator */}
         {sidebarOpen && sessionActive && (
           <div className="px-3 py-1">
             <div className="flex items-center gap-2 rounded-lg bg-accent-500/10 px-3 py-2">
@@ -153,7 +149,7 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Spotify Player (collapsed state only shows mini-bar) */}
+        {/* Spotify Player */}
         <SpotifyPlayer />
 
         {/* User Info + Logout */}
@@ -161,9 +157,7 @@ export function Sidebar() {
           {sidebarOpen && username && (
             <div className="px-3 py-2">
               <div className="flex items-center gap-2 rounded-lg bg-surface-800/80 px-3 py-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-500/20 text-sm text-accent-400">
-                  👑
-                </span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-500/20 text-sm text-accent-400">👑</span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-medium text-surface-200">{username}</p>
                   <p className="text-[10px] text-surface-500">Dungeon Master</p>
