@@ -20,7 +20,6 @@
 import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useCombatStore } from "@/stores/combatStore";
-import { useCampaignStore } from "@/stores/campaignStore";
 import { sessionSync, campaignSync } from "@/lib/firebase-service";
 import { isFirebaseAvailable } from "@/lib/firebase";
 
@@ -33,7 +32,6 @@ const CAMPAIGN_ID = "arkla";
 export function usePlayerFirebaseSync(): void {
   const role = useAuthStore((s) => s.role);
   const initializedRef = useRef(false);
-  const campaign = useCampaignStore((s) => s.campaign);
 
   useEffect(() => {
     // Only run for players, not DM
@@ -45,24 +43,23 @@ export function usePlayerFirebaseSync(): void {
 
     // Subscribe to live session updates (scene, map, announcements, combat state)
     const unsubSession = sessionSync.listenSession(CAMPAIGN_ID);
-    // Subscribe to campaign updates (character data, if DM updates it)
+    // Subscribe to campaign updates (character data, if DM edits a character)
     const unsubCampaign = campaignSync.listenCampaign(CAMPAIGN_ID);
 
-    // If we already have campaign data, also eagerly fetch session
-    if (campaign) {
-      sessionSync.fetchSession(CAMPAIGN_ID).then((sessionData) => {
-        if (sessionData) {
-          const store = useCombatStore.getState();
-          if (sessionData.liveSession) {
-            const ls = sessionData.liveSession;
-            if (ls.phase) store.setSessionPhase(ls.phase);
-            if (ls.currentScene) store.setCurrentScene(ls.currentScene);
-            if (ls.currentMapUrl) store.setCurrentMapUrl(ls.currentMapUrl);
-            if (ls.dmAnnouncement) store.setDmAnnouncement(ls.dmAnnouncement);
-          }
+    // Eagerly fetch the current session state to hydrate on mount
+    sessionSync.fetchSession(CAMPAIGN_ID).then((sessionData) => {
+      if (sessionData) {
+        const store = useCombatStore.getState();
+        if (sessionData.liveSession) {
+          const ls = sessionData.liveSession;
+          if (ls.phase) store.setSessionPhase(ls.phase);
+          if (ls.currentScene) store.setCurrentScene(ls.currentScene);
+          if (ls.currentMapUrl) store.setCurrentMapUrl(ls.currentMapUrl);
+          if (ls.dmAnnouncement) store.setDmAnnouncement(ls.dmAnnouncement);
+          if (ls.conditions) store.setConditions(ls.conditions);
         }
-      });
-    }
+      }
+    });
 
     return () => {
       unsubSession?.();

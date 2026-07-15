@@ -12,10 +12,18 @@
  * Note: Auth is handled locally (env-based DM check, name-matching for
  * players). Firebase Auth is NOT used — getUserId() returns a static
  * string since this is a single-DM application.
+ *
+ * ── Architecture ─────────────────────────────────────────────
+ * Three separate sync domains, each with push + listen + fetch:
+ *   • campaignSync  — campaign document (characters, encounters, maps, journal)
+ *   • sessionSync   — live session document (combat state, log, phase, scene)
+ *   • homebrewSync  — homebrew library (items, spells, feats)
+ *
+ * The syncManager orchestrator manages all three together.
  * ── Usage ─────────────────────────────────────────────────────
- *   import { campaignSync } from "@/lib/firebase-service";
  *   await campaignSync.pushCampaign("arkla");
- *   const unsub = campaignSync.listenCampaign("arkla");
+ *   const unsub = campaignSync.listenCampaign("arkla", onStatus);
+ *   const data = await campaignSync.fetchCampaign("arkla");
  * ─────────────────────────────────────────────────────────────── */
 
 import {
@@ -80,9 +88,6 @@ let pendingQueue: QueueItem[] = [];
 let processingQueue = false;
 let lastPushTime = 0;
 
-/**
- * Processes the queue one item at a time with rate limiting and retry logic.
- */
 async function processQueue(): Promise<void> {
   if (processingQueue || pendingQueue.length === 0) return;
   processingQueue = true;
@@ -291,18 +296,33 @@ export const sessionSync = {
         ref,
         (snapshot) => {
           if (snapshot.exists()) {
-            const docData = snapshot.data() as LiveSessionDocument;
-            if (docData.data) {
-              const { activeEncounter, combatLog, liveSession } = docData.data;
-              if (activeEncounter) {
-                useCombatStore.getState().setActiveEncounter(activeEncounter as CombatEncounter);
-              }
-              if (combatLog) {
-                useCombatStore.getState().setCombatLog(combatLog as CombatLogEntry[]);
-              }
-              if (liveSession) {
-                useCombatStore.getState().setLiveSession(liveSession as LiveSessionState);
-              }
+            const rawData = snapshot.data() as DocumentData;
+            const nested = rawData.data ?? rawData;
+
+            const activeEncounter = nested.activeEncounter ?? null;
+            const combatLog: CombatLogEntry[] = nested.combatLog ?? [];
+            const liveSession: LiveSessionState | undefined = nested.liveSession;
+
+            const store = useCombatStore.getState();
+
+            if (activeEncounter) {
+              store.setActiveEncounter(activeEncounter.id);
+              // Replace the entire encounter state
+              useCombatStore.setState({ activeEncounter: activeEncounter as CombatEncounter });
+            }
+
+            // Hydrate the combat log
+            if (combatLog.length > 0) {
+              useCombatStore.setState({ combatLog });
+            }
+
+            // Hydrate the live session fields individually
+            if (liveSession) {
+              if (liveSession.phase) store.setSessionPhase(liveSession.phase);
+              if (liveSession.currentScene) store.setCurrentScene(liveSession.currentScene);
+              if (liveSession.currentMapUrl) store.setCurrentMapUrl(liveSession.currentMapUrl);
+              if (liveSession.dmAnnouncement) store.setDmAnnouncement(liveSession.dmAnnouncement);
+              if (liveSession.conditions) store.setConditions(liveSession.conditions);
             }
           }
           onStatusChange?.("success");
@@ -323,8 +343,13 @@ export const sessionSync = {
 
   /**
    * Fetches session data from Firestore once (no subscription).
+   * Returns the full LiveSessionDocument, or null if not found.
    */
-  async fetchSession(campaignId: string): Promise<LiveSessionDocument | null> {
+  async fetchSession(campaignId: string): Promise<{
+    activeEncounter: CombatEncounter | null;
+    combatLog: CombatLogEntry[];
+    liveSession: LiveSessionState;
+  } | null> {
     if (!isFirebaseAvailable()) return null;
 
     try {
@@ -332,7 +357,13 @@ export const sessionSync = {
       const ref = doc(db, "liveSessions", campaignId);
       const snapshot = await getDoc(ref);
       if (snapshot.exists()) {
-        return snapshot.data() as LiveSessionDocument;
+        const rawData = snapshot.data() as DocumentData;
+        const nested = rawData.data ?? rawData;
+        return {
+          activeEncounter: nested.activeEncounter ?? null,
+          combatLog: nested.combatLog ?? [],
+          liveSession: nested.liveSession ?? null,
+        };
       }
       return null;
     } catch (err) {
@@ -423,7 +454,7 @@ export const homebrewSync = {
   /**
    * Fetches homebrew data from Firestore once (no subscription).
    */
-  async fetchHomebrew(campaignId: string): Promise<HomebrewDocument | null> {
+  async fetchHomebrew(campaignId: string): Promise<HomebrewLibrary | null> {
     if (!isFirebaseAvailable()) return null;
 
     try {
@@ -431,7 +462,9 @@ export const homebrewSync = {
       const ref = doc(db, "homebrew", campaignId);
       const snapshot = await getDoc(ref);
       if (snapshot.exists()) {
-        return snapshot.data() as HomebrewDocument;
+        const rawData = snapshot.data() as DocumentData;
+        const nested = rawData.data ?? rawData;
+        return nested as HomebrewLibrary;
       }
       return null;
     } catch (err) {
@@ -445,10 +478,19 @@ export const homebrewSync = {
 
 /**
  * Orchestrator that manages all three sync channels (campaign, session, homebrew).
- * Provides a single start/stop interface and aggregates connection status.
+ * Provides a single start/stop interface, convenience push methods,
+ * and aggregates connection status.
+ *
+ * The useFirebaseSync hook in DM routes calls these methods.
  */
 export const syncManager = {
   privateUnsubscribers: new Map<string, Unsubscribe>(),
+  privateIsListening: false,
+
+  /** Whether any listeners are currently active. */
+  get isListening(): boolean {
+    return this.privateIsListening;
+  },
 
   /**
    * Start listening to all Firestore channels for a given campaign.
@@ -472,19 +514,25 @@ export const syncManager = {
     });
     if (homebrewUnsub) this.privateUnsubscribers.set(`${campaignId}_homebrew`, homebrewUnsub);
 
+    this.privateIsListening = true;
     console.log(`[SyncManager] Started listening for campaign ${campaignId}`);
   },
 
   /**
    * Stop all listeners for a given campaign.
    */
-  stop(campaignId: string): void {
-    for (const [key, unsub] of this.privateUnsubscribers) {
-      if (key.startsWith(campaignId)) {
-        unsub();
-        this.privateUnsubscribers.delete(key);
+  stop(campaignId?: string): void {
+    if (campaignId) {
+      for (const [key, unsub] of this.privateUnsubscribers) {
+        if (key.startsWith(campaignId)) {
+          unsub();
+          this.privateUnsubscribers.delete(key);
+        }
       }
+    } else {
+      this.stopAll();
     }
+    this.privateIsListening = this.privateUnsubscribers.size > 0;
   },
 
   /**
@@ -495,22 +543,37 @@ export const syncManager = {
       unsub();
     }
     this.privateUnsubscribers.clear();
+    this.privateIsListening = false;
+  },
+
+  /** Convenience: push campaign only. */
+  async pushCampaign(): Promise<boolean> {
+    return campaignSync.pushCampaign("arkla");
+  },
+
+  /** Convenience: push session only. */
+  async pushSession(): Promise<boolean> {
+    return sessionSync.pushSession("arkla");
+  },
+
+  /** Convenience: push homebrew only. */
+  async pushHomebrew(): Promise<boolean> {
+    return homebrewSync.pushHomebrew("arkla");
   },
 
   /**
    * Push all local state to Firestore.
    */
   async pushAll(): Promise<boolean> {
-    const campaignId = "arkla";
     let allOk = true;
 
-    const campOk = await campaignSync.pushCampaign(campaignId);
+    const campOk = await this.pushCampaign();
     if (!campOk) allOk = false;
 
-    const sessionOk = await sessionSync.pushSession(campaignId);
+    const sessionOk = await this.pushSession();
     if (!sessionOk) allOk = false;
 
-    const homebrewOk = await homebrewSync.pushHomebrew(campaignId);
+    const homebrewOk = await this.pushHomebrew();
     if (!homebrewOk) allOk = false;
 
     return allOk;

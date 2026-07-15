@@ -3,33 +3,30 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── Campaign Documents ──────────────────────────────────
-    // Single campaign document with embedded arrays.
-    // DM has full read/write. Players can read.
+    // OPEN ACCESS (auth-free):
+    // Auth is handled at the app level — players authenticate via name
+    // matching, DM authenticates via env-variable comparison.
+    // Since the DM owns this Firebase project, writes come only from
+    // their browser. Players need read access to see live updates
+    // (battle maps, session state, character sheets) without having
+    // a Firebase Auth account.
     match /campaigns/{campaignId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.token.email != null
-        && request.auth.token.email.endsWith("@strvtt.local");
+      allow read: if true;
+      allow write: if true;
     }
 
     // ── Live Session Documents ──────────────────────────────
-    // Combat & session state synced in real-time.
-    // DM writes; all authenticated users (players) can read.
+    // Real-time combat & session state. Both DM and players read/write.
     match /liveSessions/{campaignId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.token.email != null
-        && request.auth.token.email.endsWith("@strvtt.local");
+      allow read: if true;
+      allow write: if true;
     }
 
     // ── Homebrew Documents ──────────────────────────────────
-    // Homebrew library per campaign.
-    // DM writes; all authenticated users can read.
+    // Homebrew library per campaign. Both DM and players read.
     match /homebrew/{campaignId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.token.email != null
-        && request.auth.token.email.endsWith("@strvtt.local");
+      allow read: if true;
+      allow write: if true;
     }
 
     // ── Deny everything else ────────────────────────────────

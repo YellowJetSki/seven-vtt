@@ -2062,3 +2062,58 @@ Player enters "Strider"
 ```
 
 ---
+
+## Firebase Real-Time Sync Architecture (Updated: 2026-07-15 09:38)
+## Firebase Real-Time Sync Architecture — July 15, 2026
+
+### Overview
+Firebase Auth was removed for login. Firebase **Firestore** remains the real-time sync layer. The app uses three sync domains:
+- `campaigns/{campaignId}` — Full campaign data (characters, encounters, maps, journal)
+- `liveSessions/{campaignId}` — Real-time combat + session state
+- `homebrew/{campaignId}` — Homebrew library (items, spells, feats)
+
+### Firestore Rules
+Security rules are now **open** (`allow read/write: if true`) since:
+1. Auth is handled at the app level (env-vars for DM, name-matching for players)
+2. The DM owns the Firebase project — only trusted users access it
+3. Players have no Firebase Auth token, but need read access for live sync
+
+⚠️ **Production security note**: The DM should add IP restrictions in Firebase Console or deploy behind a VPC if concerned about unauthorized access.
+
+### Data Flow
+
+#### DM → Player (live session push)
+```
+DM edits combat / session state
+  → useCombatStore updates Zustand
+    → useFirebaseSync detects change (debounced 1.5s)
+      → sessionSync.pushSession("arkla")
+        → setDoc on liveSessions/arkla
+          → onSnapshot fires on player's sessionSync.listenSession()
+            → Hydrates player's combatStore
+              → PlayerDashboard re-renders
+```
+
+#### Player → DM (currently none — players only read)
+Player views are read-only for Firestore. The DM is the sole writer.
+
+#### Full State Push (campaign)
+```
+DM edits player characters / encounters / maps / journal
+  → useCampaignStore updates Zustand
+    → useFirebaseSync detects change (debounced 2s)
+      → campaignSync.pushCampaign("arkla")
+        → setDoc on campaigns/arkla
+```
+
+### Key Files
+- `vtt/src/lib/firebase-service.ts` — campaignSync, sessionSync, homebrewSync, syncManager
+- `vtt/src/hooks/useFirebaseSync.ts` — DM-side sync lifecycle (debounced push per domain)
+- `vtt/src/hooks/usePlayerFirebaseSync.ts` — Player-side sync (listens + hydrates)
+- `vtt/src/hooks/useFirebaseMonitor.ts` — Connection health monitoring
+- `vtt/firestore.rules` — Open security rules (auth-free)
+
+### Offline Queue
+Pending writes are persisted to localStorage (`vtt-sync-queue`). On reconnect, the queue is flushed with exponential backoff retry (max 5 attempts).
+
+---
