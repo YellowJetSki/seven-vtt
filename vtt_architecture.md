@@ -3740,3 +3740,257 @@ All 13 Firestore schema interfaces are defined and consumed:
 5. **Missing import**: Added `EncounterDoc` to the import list in `useFirebaseSync.ts`
 
 ---
+
+## E2E Test Results (2026-07-15) (Updated: 2026-07-15 16:24)
+## E2E Test Results — Comprehensive Audit (2026-07-15)
+
+### Login System
+- **Login page**: Role selector (DM/Player), smooth transition to credential forms
+- **DM Login**: Successfully authenticated as MikeJello (password: Jello1)
+- **Error handling**: Shows "Invalid credentials. Only MikeJello is authorized as DM."
+- **Auth persistence**: Survives navigation (verified via sidebar username/role display)
+- **Status Indicators**: Online/Sync badges with live Firebase counter incrementing
+
+### Campaign CRUD (Dashboard)
+- **Create**: "New Campaign" form with name + description → campaign "The Obelisks of Arkla" created
+- **Dashboard Stats**: Shows player count, encounters, maps, journal, homebrew, combat (all 0 initially)
+- **Quick Actions**: Combat Center, New Player, Homebrew, Journal Entry buttons
+- **Weather/Lighting Conditions**: Interactive toggle buttons (Clear → highlighted)
+- **Read**: Campaign name shows in breadcrumb, description visible
+
+### Player Characters CRUD
+- **Create**: Add Character form with full fields (name, player, race, class, level, XP, background, alignment, abilities, HP, AC, currency, image) → Wendy the Wizard created
+- **Read**: Grid view shows character card with HP bar, ability scores, player name. Party stats bar shows avg level, classes, races
+- **Update**: Edit (✏️) opens pre-filled modal → Level changed from 3→4, HP 24→30 → "Wendy updated" toast
+- **Delete**: No delete button exposed in UI (removeCharacter exists in store but not in UI)
+- **Export**: Export All button (triggers JSON download)
+- **Import**: Import from File button (accepts .json)
+- **Search/Sort**: Search by name/class/race, sort by Name/Level/Class/Race
+- **View modes**: Grid and Compendium views
+- **Inventory**: 🎒 button opens PlayerInventory modal
+
+### Homebrew Library CRUD (Items)
+- **Create**: Dynamic form with category selector (weapon/armor/potion/scroll/wand/ring/wondrous/tool/ammunition/food/poison/other), rarity, weight, value, description, flavor text, weapon properties → "Flame Tongue Longsword" created
+- **Read**: Card displays category icon (⚔), rarity badge, weapon details, description, weight/value
+- **Update**: Edit (✎) opens pre-filled form with all weapon properties → Updated value 500→750, description extended → "updated" toast
+- **Delete**: ✕ button with confirmation → "deleted" toast, counter decrements
+
+### Homebrew Library CRUD (Feats)
+- **Create**: Feat form with name, description, flavor text, benefits (one per line), prerequisites, repeatable toggle → "Arcane Precision" feat created
+- **Read**: Card shows prerequisites, benefit bullet points, Homebrew badge
+- **Tab switching**: Items/Feats/Spells tabs maintain correct counts
+
+### Homebrew Library CRUD (Spells)
+- **Create**: Spell form with level, school, casting time, components (V/S/M checkboxes), ritual, concentration, duration, range, area, description, at-higher-levels, class checkboxes → "Starry Burst" 3rd-level evocation created
+- **Read**: Card displays level/school, components badge (V/S/M), class pills, description
+
+### Combat/Encounters
+- **Create Encounter**: "Goblin Ambush" created with auto-added Wendy → "created with 1 player character" toast
+- **Quick Add Enemies**: 🐺 Goblin x4 added successfully → 5 total combatants
+- **Combat Initiation**: ⚔ Start → Encounter active with timer (incrementing in real-time)
+- **Turn Order**: Wendy highlighted with ▶ indicator, timer counter (4s→16s→29s), "Wendy's Turn" label
+- **HP Controls**: -1, -5, -10, +, +5, +10 buttons per combatant
+- **Damage**: Applied -5 to Goblin 1 → HP 15/15 → 10/15 ✓
+- **Status Effects**: 16+ status toggles (Blinded, Charmed, Concentrating, etc.)
+- **Temp HP/Max HP**: Editable fields
+- **Dead Checkbox**: 💀 Dead toggle
+- **Combat Controls**: ◀ Previous, ▶ Next, ⏸ Pause, ✕ End
+- **Encounter Tabs**: Initiative (active), Session, Quick Ref, Builder
+- **Session Tab**: "No Active Session" with ▶ Start Session button
+- **Difficulty Calculator**: Collapsible panel
+- **Loot Generator**: Coins, Art, Magic, Mundane buttons
+
+### Battle Maps
+- Empty state with "Create Map" and search functionality
+
+### DM Journal
+- **Filter types**: All, Session, Note, Lore, Quest, Handout
+- **Sort**: Date, Title, Type
+- **Tag management**: 🏷️ Tags button
+- **Empty state**: "No journal entries yet" with "+ First Entry" button
+
+### Campaign Settings
+- **Campaign Info**: Name + description (editable)
+- **Game Rules**: Experience System (Milestone/XP), Currency Name
+- **Private DM Notes**: Locked/unlockable textarea
+- **Save/Reset**: Save Changes button, Reset to Defaults
+- **Danger Zone**: "Delete All Campaign Data" with warning styling
+
+### Firebase Sync
+- "Sync" badge shows incrementing counter (real-time Firebase operations count)
+- "Online" badge shows connection status
+- Toast notifications confirm all CRUD operations
+
+### Known Issues / Missing Features
+1. **No character delete button** in Player Cards UI (removeCharacter exists in store but not exposed)
+2. **Journal "+ New Entry" in header** may not open modal; only "+ First Entry" worked
+3. **Form field interaction via automation** requires React-compatible event dispatch (native input setter + input/change events)
+4. **Encounter Builder tab** shows "0" badge (feature exists but not tested in detail)
+
+---
+
+## UX/UI Enhancement Recommendations (Updated: 2026-07-15 16:24)
+## UX/UI Enhancement Recommendations (2026-07-15)
+
+### CRITICAL — Missing Functionality
+
+**1. Character Delete Button (Player Cards)**
+- **Issue**: No delete/remove button exists in the UI for player characters, even though `removeCharacter` is implemented in the store.
+- **Fix**: Add a delete button (🗑️ or ✕ with confirmation modal) to the character card's quick-actions overlay alongside 🎒/✏️/📤.
+
+**2. Journal Entry Creation**
+- **Issue**: The "+ New Entry" button in the header may not trigger the creation modal (only "+ First Entry" in the empty state works).
+- **Fix**: Ensure the header "+ New Entry" button consistently opens the journal entry form.
+
+### HIGH PRIORITY — UX Improvements
+
+**3. Mobile Hamburger Menu Overlay Dismissal**
+- **Current**: On mobile, the sidebar opens with a backdrop overlay but there's no visible close button. Only clicking the backdrop or the hamburger toggle closes it.
+- **Recommendation**: Add an explicit "✕ Close" button at the top of the mobile sidebar, or add a swipe-to-dismiss gesture.
+
+**4. Combat Timer Pause Persistence**
+- **Current**: The combat timer (⏱) runs in real-time and the counter increments even when the page is not focused.
+- **Recommendation**: Add a visible pause indicator (flashing "⏸ PAUSED" badge) when the pause button is clicked. Also, consider auto-pausing when browser tab loses focus.
+
+**5. Combatant Drag Reorder UX**
+- **Current**: "Drag to reorder · ↑↓ keys" hint is shown, but there's no visible drag handle or keyboard instruction.
+- **Recommendation**: Add a visible drag handle (⠿ could be styled as a grip indicator), and add up/down arrow buttons as an alternative to drag-and-drop for mobile users.
+
+### MEDIUM PRIORITY — Visual Polish & Modernization
+
+**6. Glassmorphism / Frosted Glass Aesthetic**
+- **Current**: Uses `backdrop-blur-md` on sidebar and header, but main content areas use solid `bg-surface-850`.
+- **Recommendation**: Apply a subtle glassmorphism effect to cards and panels (e.g., `bg-surface-900/70 backdrop-blur-lg border border-white/5`). This would give a premium "magical" feel fitting for a VTT.
+- **Implementation**: Create a `.glass-card` utility class: `bg-surface-900/60 backdrop-blur-xl border border-surface-700/30 shadow-xl`
+
+**7. Animated Micro-interactions**
+- **Current**: Hover states exist (translate-y, border changes) but transitions are basic.
+- **Recommendation**: Add:
+  - **Staggered entry animations** for card grids using CSS `animation-delay` (e.g., `stagger-1`, `stagger-2` classes)
+  - **Pulse/glow on active combatant** — the current turn marker (▶) could have a subtle pulsing glow
+  - **HP bar damage/heal animations** — when HP changes, briefly flash the bar red (damage) or green (heal)
+  - **Toast stacking with slide animation** — toasts already have `slide-in-from-right`, but could benefit from spring physics
+
+**8. Empty State Illustrations**
+- **Current**: Uses emoji + text for empty states (📦, 📓, 🗺️, ⚔).
+- **Recommendation**: Replace with subtle inline SVG illustrations (minimalist line-art style) that match the dark theme. These load faster and look more professional than emoji.
+
+**9. Typography Hierarchy**
+- **Current**: Uses `text-surface-100` for headings, `text-surface-400` for body. Good, but could be sharper.
+- **Recommendation**: 
+  - Use a more distinct font weight for page titles (e.g., `font-extrabold tracking-tight`)
+  - Add a subtle gradient text effect to the page header titles (e.g., `bg-gradient-to-r from-surface-100 to-accent-300 bg-clip-text text-transparent`)
+  - Increase line-height on description text for better readability
+
+### LOW PRIORITY — Nice-to-Haves
+
+**10. Sidebar Collapse Animation**
+- **Current**: Sidebar collapse just hides/shows with no animation on desktop.
+- **Recommendation**: Add a smooth width transition (`transition-all duration-300 ease-out`) with icon-only mode when collapsed.
+
+**11. Weather & Lighting Presets**
+- **Current**: Weather/Lighting is a series of toggle buttons on the dashboard.
+- **Recommendation**: Add atmospheric combo presets (e.g., "Night Storm" = Darkness + Stormy, "Dungeon" = Darkness + Dim Light). These could also broadcast to players via the session.
+
+**12. Scratch Pad Enhancements**
+- **Current**: 📝 button in bottom-right corner exists but functionality not tested.
+- **Recommendation**: Ensure the scratch pad supports markdown, resizable, and auto-saves to localStorage.
+
+**13. Mobile-First Refinements**
+- **Current**: Grid layouts use `sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4` which is good.
+- **Recommendation**: 
+  - Ensure the combat turn order is horizontally scrollable on mobile (swipe between combatants)
+  - Make the header status badges (Online, Sync, DM) collapse into a single compact badge on very small screens (<360px)
+  - Increase tap targets for HP adjustment buttons (min 44x44px)
+
+**14. Color Palette Refinement**
+- **Current**: Uses `accent`, `rogue`, `warrior`, `mage`, `divine` semantic colors.
+- **Recommendation**: 
+  - Add a subtle color gradient to the HP bar based on percentage (green→yellow→red)
+  - Use the class color (rogue for Wizard, warrior for Fighter) as subtle border accents on character cards
+  - Make rarity colors more distinct (Common=gray, Uncommon=green, Rare=blue, Very Rare=purple, Legendary=orange, Artifact=red-gold gradient)
+
+**15. Loading States**
+- **Current**: No skeleton loaders observed (data loads instantly from localStorage).
+- **Recommendation**: Add skeleton loaders for Firebase sync scenarios where data might load asynchronously. Use pulsing animated placeholders matching the card layout.
+
+### PERFORMANCE OBSERVATIONS
+- Firebase sync counter increments on UI interactions → confirms real-time sync working
+- Toast notifications appear instantly on all CRUD operations
+- No noticeable lag on page transitions (React Router with component-level chunks)
+- Zustand store provides instant state updates without server round-trips for local data
+- Homebrew items stored in localStorage persist across sessions
+
+---
+
+## V2 Enhancements Completed (2026-07-15) (Updated: 2026-07-15 16:45)
+## V2 Enhancements — Complete Implementation
+
+### 1. 🔴 Dice Roller Removed
+- **Deleted**: `DiceTower.tsx` — full dice rolling simulation removed
+- **Replaced with**: "Physical Dice" companion badge in header
+- **Fixed**: `InitiativeRoller.tsx` — removed `Math.random()` assignment, now sets base DEX mod only
+- **Note**: `parseDiceExpression()` retained as pure string parser (no random generation)
+
+### 2. 🔴 Character Delete Button Added
+- **Added**: 🗑️ button in player card quick-actions overlay (alongside 🎒/✏️/📤)
+- **Added**: Confirmation modal with warning styling before deletion
+- **Integration**: Uses existing `removeCharacter()` from campaignStore
+
+### 3. 🔴 Journal Creation Fixed
+- Verified journal `handleCreate()` function properly opens editor modal
+- Both "+ New Entry" header button and "+ First Entry" empty-state button trigger same flow
+
+### 4. 🟠 Glassmorphism Aesthetic
+- **CSS Classes**: `.glass`, `.glass-strong`, `.glass-card` with `backdrop-filter: blur(16-24px)` and subtle border
+- **Global Override**: All `bg-surface-850 border-surface-700` cards automatically get glass effect
+- **Sidebar**: Updated to `glass-strong` for premium feel
+- **Background**: Added subtle radial gradient to body for ambient glow
+
+### 5. 🟡 Advanced Animations
+- **Keyframes**: pulse-glow, shimmer, hp-damage/heal, float, border-pulse, scale-in, slide-in-right
+- **Staggered Entry**: `.stagger-1` through `.stagger-8` with 60ms delay gaps
+- **Applied**: Character cards use `animate-slide-up` with staggered delays
+- **Border Pulse**: Active nav items have `.animate-border-pulse`
+
+### 6. 🟡 Enhanced PlayerCharacter Schema
+- **Nested Currency**: `currency: { copper, silver, electrum, gold, platinum }` instead of flat fields
+- **Saving Throws**: `savingThrows: { strength: { proficient, bonus }, ... }` per 5e spec
+- **Skills**: `skills: { acrobatics: SkillProficiency, ... }` supporting "none" | "proficient" | "expertise"
+- **Speed**: Changed from `number` to `Speed { walk, fly?, swim?, climb?, burrow?, canHover? }`
+- **Features**: Changed from `string[]` to `FeatureEntry[]` with name, description, source, charges
+- **Proficiencies**: Changed from `string[]` to `Proficiency[]` with type discrimination
+- **Personality**: Added `personalityTraits`, `ideals`, `bonds`, `flaws`
+- **Spellcasting**: Added `Spellcasting` interface with spell slots, save DC, prepared spells
+- **Subclass**: Added `subClass` field
+
+### 7. 🟢 Homebrew UI Polish
+- Stat cards use gradient text, glass-card hover effects
+- Empty states use `glass` class for consistency
+- All major containers updated with glass/backdrop styling
+
+### 8. 🟢 Firestore Schema Alignment
+- `CharacterDoc` updated to match enhanced `PlayerCharacter` schema
+- Backward compatibility maintained for import/export
+- Seed data and import utilities updated to populate new fields
+
+---
+
+## Campaign Creation Wizard (Updated: 2026-07-15 17:19)
+## CampaignWizard (`src/components/campaign/CampaignWizard.tsx`)
+- **Multi-step wizard** with 5 steps: Choice → Details → Species → Classes & Currency → Review
+- **Step 1 - Choice**: Arkla Template (pre-populated from `/arkla.json`) vs Blank Campaign (full customization)
+- **Step 2 - Details**: Campaign name + description
+- **Step 3 - Species**: Toggle preset D&D 5e races (Dragonborn, Dwarf, Elf, Gnome, Half-Elf, Half-Orc, Halfling, Human, Tiefling) + add custom species
+- **Step 4 - Classes & Currency**: Toggle preset classes (Barbarian through Wizard) + add custom classes + choose currency preset (Standard, Arks Setting, Platinum Heavy)
+- **Step 5 - Review**: Full review before creation
+- **Arkla template**: Fetches `/arkla.json` from public, converts characters to `PlayerCharacter` format including inventory, features, stats, backstory
+- **Migration**: `buildPcsFromArkla()` converts Arkla JSON format to full v2 PlayerCharacter interface
+- **Settings extension**: `CampaignSettings` now includes `allowedRaces`, `allowedClasses`, `currencyPreset` for campaign metadata
+
+## Export/Import
+- **ExportAllButton** (`src/components/ui/ExportAllButton.tsx`): Exports campaign + homebrew as full JSON bundle
+- **DmDashboard**: `handleImportCampaign` reads JSON file, validates, and calls `setCampaign()`
+- **CampaignSettings page**: Has Import/Export JSON buttons in the Danger Zone section
+- **CampaignWizard**: Has built-in "Import Campaign" button on the choice step
+---
