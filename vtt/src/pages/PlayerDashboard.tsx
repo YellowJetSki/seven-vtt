@@ -8,7 +8,7 @@
  *  • Initiative tracker preview (in combat phase)
  *  • Character sheet with full stats
  *  • Party overview card
- *  • Meteor-style comet background ambiance
+ *  • Loading state to prevent "character not found" flash
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect } from "react";
@@ -41,6 +41,22 @@ export function PlayerDashboard() {
 
   const sessionActive = liveSession.sessionStartedAt !== null;
 
+  // Loading state: campaign may not have loaded yet from Firebase
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Small delay to let Firebase hydrate; after 3 seconds, show whatever we have
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // If campaign data loads, we're done loading
+  useEffect(() => {
+    if (campaign) {
+      setIsLoading(false);
+    }
+  }, [campaign]);
+
   // Session timer
   const [timer, setTimer] = useState(0);
   useEffect(() => {
@@ -71,13 +87,25 @@ export function PlayerDashboard() {
   const currentCombatant = combatants[currentCombatantIdx];
   const isInCombat = activeEncounter?.phase === "active";
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-900">
+        <div className="flex flex-col items-center gap-3">
+          <span className="animate-pulse text-3xl text-accent-400">Sᚱ</span>
+          <p className="text-sm text-surface-500">Loading your character...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-surface-900">
       {/* ── Top Bar ── */}
       <header className="sticky top-0 z-10 border-b border-surface-700/50 bg-surface-900/80 backdrop-blur-lg">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <span className="text-accent-400 text-sm font-bold">Sᚱ</span>
+            <span className="text-sm font-bold text-accent-400">Sᚱ</span>
             <span className="text-xs text-surface-500">{campaign?.name ?? "Campaign"}</span>
             {sessionActive && (
               <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${phaseStyle.bg} ${phaseStyle.text}`}>
@@ -88,7 +116,7 @@ export function PlayerDashboard() {
           <div className="flex items-center gap-3">
             {characterName && (
               <span className="text-xs text-surface-400">
-                <span className="text-surface-200 font-medium">{characterName}</span>
+                <span className="font-medium text-surface-200">{characterName}</span>
               </span>
             )}
             <Button variant="ghost" size="sm" onClick={logout}>
@@ -110,7 +138,7 @@ export function PlayerDashboard() {
                 </span>
                 <div className="text-center">
                   <p className="text-[10px] text-surface-500">{liveSession.phase}</p>
-                  <p className="text-xs font-mono font-bold text-surface-300">
+                  <p className="font-mono text-xs font-bold text-surface-300">
                     {hours > 0 ? `${hours}h ` : ""}{minutes}m
                   </p>
                 </div>
@@ -119,15 +147,15 @@ export function PlayerDashboard() {
               {/* Scene Description */}
               <div className="min-w-0 flex-1">
                 {liveSession.currentScene ? (
-                  <p className="text-sm text-surface-200 leading-relaxed line-clamp-2">{liveSession.currentScene}</p>
+                  <p className="line-clamp-2 text-sm leading-relaxed text-surface-200">{liveSession.currentScene}</p>
                 ) : (
-                  <p className="text-sm text-surface-500 italic">Awaiting DM's scene description...</p>
+                  <p className="text-sm italic text-surface-500">Awaiting DM's scene description...</p>
                 )}
               </div>
 
               {/* Battle Map Thumbnail */}
               {liveSession.currentMapUrl && (
-                <div className="hidden sm:block shrink-0">
+                <div className="hidden shrink-0 sm:block">
                   <img src={liveSession.currentMapUrl} alt="Map"
                     className="h-14 w-20 rounded-lg border border-surface-700 object-cover" />
                 </div>
@@ -137,8 +165,23 @@ export function PlayerDashboard() {
             {/* DM Announcement */}
             {liveSession.dmAnnouncement && (
               <div className="mt-2 rounded-lg border border-accent-500/20 bg-accent-500/10 p-3">
-                <p className="text-xs text-accent-400 font-medium mb-0.5">📢 DM Announcement</p>
+                <p className="mb-0.5 text-xs font-medium text-accent-400">📢 DM Announcement</p>
                 <p className="text-sm text-accent-200">{liveSession.dmAnnouncement}</p>
+              </div>
+            )}
+
+            {/* Environmental Conditions */}
+            {liveSession.conditions && (
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-surface-400">
+                {liveSession.conditions.weather !== "clear" && (
+                  <span>{liveSession.conditions.weather}</span>
+                )}
+                {liveSession.conditions.lighting !== "bright" && (
+                  <span>{liveSession.conditions.lighting}</span>
+                )}
+                {liveSession.conditions.terrain !== "normal" && (
+                  <span>{liveSession.conditions.terrain}</span>
+                )}
               </div>
             )}
           </div>
@@ -154,7 +197,7 @@ export function PlayerDashboard() {
                 <span className="rounded bg-warrior-500/20 px-2 py-0.5 text-[11px] font-bold text-warrior-400">
                   R{activeEncounter?.round}
                 </span>
-                <span className="text-sm text-surface-200 font-medium">
+                <span className="text-sm font-medium text-surface-200">
                   ⚔️ {activeEncounter?.name}
                 </span>
                 <span className="text-xs text-surface-500">
@@ -163,7 +206,7 @@ export function PlayerDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 text-[9px] font-bold text-white">▶</span>
-                <span className="text-xs text-accent-400 font-medium">
+                <span className="text-xs font-medium text-accent-400">
                   {currentCombatant?.name}'s Turn
                 </span>
               </div>
@@ -235,11 +278,11 @@ export function PlayerDashboard() {
           </div>
         ) : (
           <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-2xl border border-dashed border-surface-700 bg-surface-850 py-20 text-center">
-            <span className="text-5xl text-surface-600 mb-4">🔍</span>
-            <h2 className="text-lg font-semibold text-surface-200 mb-2">
+            <span className="mb-4 text-5xl text-surface-600">🔍</span>
+            <h2 className="mb-2 text-lg font-semibold text-surface-200">
               Character Not Found
             </h2>
-            <p className="text-sm text-surface-500 mb-6 max-w-sm">
+            <p className="mb-6 max-w-sm text-sm text-surface-500">
               Your character "{characterName}" hasn't been added to this
               campaign yet. Please ask your DM to create your character card.
             </p>

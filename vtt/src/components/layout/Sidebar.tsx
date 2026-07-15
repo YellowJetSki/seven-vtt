@@ -52,7 +52,7 @@ export function Sidebar() {
     }
   };
 
-  // Dynamic badges for nav items
+  // Dynamic badges for nav items (memoized via useMemo is not needed — small list)
   const navItemsWithBadges = NAV_ITEMS.map((item) => {
     if (item.path === "/players" && playerCount > 0) {
       return { ...item, badge: playerCount };
@@ -82,17 +82,17 @@ export function Sidebar() {
         }`}
       >
         {/* Brand */}
-        <div className="flex h-14 items-center gap-3 border-b border-surface-700/80 px-4 shrink-0">
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-surface-700/80 px-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/15">
-            <span className="text-accent-400 text-sm font-bold">Sᚱ</span>
+            <span className="text-sm font-bold text-accent-400">Sᚱ</span>
           </div>
           {sidebarOpen && (
             <div className="min-w-0 flex-1">
-              <span className="text-sm font-semibold tracking-wide text-surface-100 truncate block">
+              <span className="block truncate text-sm font-semibold tracking-wide text-surface-100">
                 {campaign?.name ?? "STᚱ VTT"}
               </span>
               {campaign && (
-                <p className="text-[10px] text-surface-500 truncate leading-tight">
+                <p className="truncate text-[10px] leading-tight text-surface-500">
                   {campaign.settings.experienceSystem === "xp" ? "XP" : "Milestone"}
                   {campaign.playerCharacters.length > 0 && ` · ${campaign.playerCharacters.length} PC${campaign.playerCharacters.length !== 1 ? "s" : ""}`}
                 </p>
@@ -101,12 +101,12 @@ export function Sidebar() {
           )}
           {/* Session dot */}
           {sessionActive && !sidebarOpen && (
-            <span className="absolute top-3 right-2 h-2 w-2 rounded-full bg-accent-400 animate-pulse" />
+            <span className="absolute right-2 top-3 h-2 w-2 animate-pulse rounded-full bg-accent-400" />
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
           {navItemsWithBadges.map((item) => (
             <NavLink
               key={item.path}
@@ -121,11 +121,11 @@ export function Sidebar() {
                 }`
               }
             >
-              <span className="flex h-6 w-6 items-center justify-center text-base shrink-0">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center text-base">
                 {item.icon}
               </span>
               {sidebarOpen && (
-                <span className="truncate flex-1">{item.label}</span>
+                <span className="flex-1 truncate">{item.label}</span>
               )}
               {/* Badge in expanded state */}
               {sidebarOpen && item.badge !== undefined && (
@@ -133,9 +133,9 @@ export function Sidebar() {
                   {item.badge}
                 </span>
               )}
-              {/* Badge in collapsed state */}
+              {/* Badge in collapsed state — avoid clipping */}
               {!sidebarOpen && item.badge !== undefined && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent-500 text-[9px] font-bold text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent-500 px-1 text-[9px] font-bold text-white shadow-sm">
                   {item.badge}
                 </span>
               )}
@@ -147,7 +147,7 @@ export function Sidebar() {
         {sidebarOpen && sessionActive && (
           <div className="px-3 py-1">
             <div className="flex items-center gap-2 rounded-lg bg-accent-500/10 px-3 py-2">
-              <span className="h-2 w-2 rounded-full bg-accent-400 animate-pulse" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-accent-400" />
               <span className="text-xs font-medium text-accent-400">Session Active</span>
             </div>
           </div>
@@ -157,7 +157,7 @@ export function Sidebar() {
         <SpotifyPlayer />
 
         {/* User Info + Logout */}
-        <div className="border-t border-surface-700/80 shrink-0">
+        <div className="shrink-0 border-t border-surface-700/80">
           {sidebarOpen && username && (
             <div className="px-3 py-2">
               <div className="flex items-center gap-2 rounded-lg bg-surface-800/80 px-3 py-2">
@@ -165,7 +165,7 @@ export function Sidebar() {
                   👑
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-surface-200 truncate">{username}</p>
+                  <p className="truncate text-xs font-medium text-surface-200">{username}</p>
                   <p className="text-[10px] text-surface-500">Dungeon Master</p>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function Sidebar() {
             }`}
             title="Sign Out"
           >
-            <span className="flex h-6 w-6 items-center justify-center text-base shrink-0">⟐</span>
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center text-base">⟐</span>
             {sidebarOpen && <span>Sign Out</span>}
           </button>
         </div>
@@ -186,7 +186,7 @@ export function Sidebar() {
         {/* Collapse Toggle (Desktop) */}
         <button
           onClick={toggleSidebar}
-          className="hidden border-t border-surface-700/80 p-3 text-surface-500 hover:text-surface-300 md:flex items-center justify-center transition-colors shrink-0"
+          className="hidden shrink-0 items-center justify-center border-t border-surface-700/80 p-3 text-surface-500 transition-colors hover:text-surface-300 md:flex"
           aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
           <span className={`text-xs transition-transform duration-200 ${sidebarOpen ? "" : "rotate-180"}`}>◀</span>
