@@ -5,6 +5,7 @@
  *  • Status effect toggles (blinded, poisoned, stunned, etc.)
  *  • Concentration tracking
  *  • Round counter + turn indicator + turn timer overlay
+ *  • Per-combatant turn timer (chess clock) for current turn
  *  • Combat log with search, filter, and JSON export
  *  • Quick-add combatants from player roster
  *  • Enemy group actions (bulk damage/heal)
@@ -12,7 +13,7 @@
  *  • Keyboard accessibility for reordering
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -25,6 +26,7 @@ import { CombatLogPanel } from "./CombatLogPanel";
 import { EnemyGroupActions } from "./EnemyGroupActions";
 import { InitiativeRoller } from "./InitiativeRoller";
 import { SessionRecapNotes } from "./SessionRecapNotes";
+import { CombatantTurnTimer } from "./CombatantTurnTimer";
 
 export function InitiativeTracker() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
@@ -35,174 +37,155 @@ export function InitiativeTracker() {
   const nextTurn = useCombatStore((s) => s.nextTurn);
   const previousTurn = useCombatStore((s) => s.previousTurn);
   const togglePause = useCombatStore((s) => s.togglePause);
-  const resetCombat = useCombatStore((s) => s.resetCombat);
   const addCombatant = useCombatStore((s) => s.addCombatant);
-  const reorderCombatants = useCombatStore((s) => s.reorderCombatants);
+  const addEnemyGroup = useCombatStore((s) => s.addEnemyGroup);
+  const setCombatantInitiative = useCombatStore((s) => s.setCombatantInitiative);
   const showToast = useUiStore((s) => s.showToast);
-
-  const [encounterName, setEncounterName] = useState("");
-  const [showPlayerImport, setShowPlayerImport] = useState(false);
-  const [showManualAdd, setShowManualAdd] = useState(false);
-  const [manualName, setManualName] = useState("");
-  const [manualInit, setManualInit] = useState("10");
-  const [manualHp, setManualHp] = useState("20");
-  const [manualAc, setManualAc] = useState("12");
-  const [manualType, setManualType] = useState<Combatant["type"]>("enemy");
-  const [showRecapPanel, setShowRecapPanel] = useState(false);
-
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
 
-  const handleCreate = useCallback(() => {
-    if (!encounterName.trim()) return;
-    createEncounter(encounterName.trim());
-    setEncounterName("");
-    showToast({ message: `Encounter "${encounterName.trim()}" ready!`, type: "success" });
-  }, [encounterName, createEncounter, showToast]);
+  const [showPlayerImport, setShowPlayerImport] = useState(false);
+  const [showLogPanel, setShowLogPanel] = useState(false);
+  const [showRecapPanel, setShowRecapPanel] = useState(false);
 
-  const importPlayers = () => {
-    if (!activeEncounter) return;
-    let imported = 0;
-    for (const pc of characters) {
-      const exists = activeEncounter.combatants.some(
-        (c) => c.name.toLowerCase() === pc.name.toLowerCase() && c.type === "player"
-      );
-      if (exists) continue;
-      addCombatant({
-        name: pc.name,
-        type: "player",
-        initiative: pc.initiative,
-        initiativeBonus: Math.floor((pc.abilityScores.dexterity - 10) / 2),
-        armorClass: pc.armorClass,
-        hitPoints: { current: pc.hitPoints.current, max: pc.hitPoints.max, temporary: 0 },
-        maxHitPoints: pc.hitPoints.max,
-        temporaryHitPoints: 0,
-        isDead: false,
-        isConcentrating: false,
-        statusEffects: [],
-        notes: "",
-      });
-      imported++;
-    }
-    if (imported > 0) {
-      showToast({ message: `Imported ${imported} player character${imported > 1 ? "s" : ""}.`, type: "success" });
-    }
-    setShowPlayerImport(false);
-  };
+  // Keyboard shortcuts for combat
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (!activeEncounter) return;
+      if (e.key === " " && !e.repeat) { e.preventDefault(); nextTurn(); }
+      if (e.key === "S" && !e.shiftKey && !e.ctrlKey && activeEncounter.phase === "prep") { startEncounter(); showToast({ message: "Encounter started!", type: "success" }); }
+      if (e.key === "P" && activeEncounter.phase === "active") { togglePause(); }
+      if (e.key === "E" && activeEncounter.phase === "active") { endEncounter(); showToast({ message: "Encounter ended.", type: "info" }); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [activeEncounter, nextTurn, startEncounter, endEncounter, togglePause, showToast]);
 
-  const handleManualAdd = () => {
-    if (!activeEncounter || !manualName.trim()) return;
-    const init = parseInt(manualInit) || 10;
-    const hp = parseInt(manualHp) || 20;
-    const ac = parseInt(manualAc) || 12;
-    addCombatant({
-      name: manualName.trim(),
-      type: manualType,
-      initiative: init,
-      initiativeBonus: 0,
-      armorClass: ac,
-      hitPoints: { current: hp, max: hp, temporary: 0 },
-      maxHitPoints: hp,
-      temporaryHitPoints: 0,
-      isDead: false,
-      isConcentrating: false,
-      statusEffects: [],
-      notes: "",
-    });
-    setManualName("");
-    setShowManualAdd(false);
-    showToast({ message: `"${manualName.trim()}" added.`, type: "success" });
-  };
-
-  /* ── Empty State ── */
+  // State
   if (!activeEncounter) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-700 bg-surface-850 py-16">
-        <span className="mb-3 text-5xl">⚔️</span>
-        <h3 className="mb-2 text-lg font-bold text-surface-100">Initiative Tracker</h3>
-        <p className="mb-6 text-sm text-surface-500">Create an encounter to start tracking combat turns</p>
-        <div className="flex w-full max-w-sm gap-2">
-          <input type="text" value={encounterName} onChange={(e) => setEncounterName(e.target.value)}
-            placeholder="Encounter name..." className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()} />
-          <Button size="sm" onClick={handleCreate} disabled={!encounterName.trim()}>Create</Button>
-        </div>
-      </div>
-    );
+    return <EmptyEncounterState onCreate={createEncounter} onAddEnemyGroup={addEnemyGroup} />;
   }
 
-  const isActive = activeEncounter.phase === "active";
   const isPrep = activeEncounter.phase === "prep";
+  const isActive = activeEncounter.phase === "active";
+  const currentCombatant = activeEncounter.combatants[activeEncounter.currentCombatantIndex];
+  const reorderCombatants = (ids: string[]) => {
+    ids.forEach((id, idx) => setCombatantInitiative(id, activeEncounter.combatants.length - idx));
+  };
+
+  const handleAddCharacter = (pcId: string) => {
+    const pc = characters.find((c) => c.id === pcId);
+    if (!pc) return;
+    addCombatant({
+      id: `pc_${Date.now()}`,
+      name: pc.name,
+      type: "player",
+      initiative: 0,
+      armorClass: pc.armorClass,
+      hitPoints: {
+        current: pc.hitPoints.current,
+        max: pc.hitPoints.max,
+        temporary: 0,
+      },
+      statusEffects: [],
+      isDead: false,
+      isConcentrating: false,
+      notes: "",
+    });
+    showToast({ message: `"${pc.name}" added to initiative.`, type: "success" });
+  };
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-surface-700 bg-surface-850 p-4">
+      {/* ── Toolbar ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-warrior-500/10 text-lg">⚔️</span>
-          <div>
-            <h3 className="font-bold text-surface-100">{activeEncounter.name}</h3>
-            <p className="text-xs text-surface-500">
-              {isActive
-                ? `Round ${activeEncounter.round} · ${activeEncounter.combatants.length} combatants${activeEncounter.isPaused ? " · ⏸ PAUSED" : ""}`
-                : activeEncounter.phase === "completed"
-                  ? `Ended after ${activeEncounter.round} rounds`
-                  : `${activeEncounter.combatants.length} combatants — ready to start`}
-            </p>
-          </div>
+          <Badge variant="accent" size="sm">{activeEncounter.name}</Badge>
+          {activeEncounter.round > 0 && <Badge variant="neutral" size="sm">Round {activeEncounter.round}</Badge>}
+          {isActive && (
+            <Badge variant={activeEncounter.isPaused ? "warning" : "success"} size="sm">
+              {activeEncounter.isPaused ? "⏸ Paused" : "▶ Active"}
+            </Badge>
+          )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {isActive && (
-            <>
-              <div className="rounded-md bg-warrior-500/15 px-3 py-1.5 text-center">
-                <p className="text-xs text-surface-500">Round</p>
-                <p className="text-lg font-bold text-warrior-400">{activeEncounter.round}</p>
-              </div>
-              <TurnTimer isPaused={activeEncounter.isPaused} />
-            </>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Turn Timer (chess clock) - shows on current turn */}
+          {isActive && currentCombatant && (
+            <div className="flex items-center gap-1.5 rounded-md bg-surface-800 px-2.5 py-1.5">
+              <span className="text-[10px] text-surface-500">⏱</span>
+              <CombatantTurnTimer
+                turnStartedAt={activeEncounter.turnStartedAt ?? null}
+                isPaused={activeEncounter.isPaused}
+                compact
+              />
+            </div>
           )}
-          {isPrep && (
-            <>
-              <InitiativeRoller />
-              <Button size="xs" variant="ghost" onClick={() => setShowPlayerImport(true)}>
-                📥 Import PCs
+
+          {/* Turn Controls */}
+          <div className="flex items-center gap-1">
+            {isActive && (
+              <>
+                <Button size="xs" variant="ghost" onClick={previousTurn} title="Previous Turn (Shift+Space)">◀</Button>
+                <Button size="xs" variant="secondary" onClick={nextTurn} title="Next Turn (Space)">▶</Button>
+                <Button size="xs" variant={activeEncounter.isPaused ? "success" : "warning"} onClick={togglePause}>
+                  {activeEncounter.isPaused ? "▶" : "⏸"}
+                </Button>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button size="xs" variant="ghost" onClick={() => setShowLogPanel(!showLogPanel)}>
+              📜 Log
+            </Button>
+            <Button size="xs" variant="ghost" onClick={() => setShowRecapPanel(!showRecapPanel)}>
+              📝 Notes
+            </Button>
+            <Button size="xs" variant="ghost" onClick={() => setShowPlayerImport(true)}>
+              👤 Import PC
+            </Button>
+            {isPrep && (
+              <Button size="xs" variant="primary" onClick={() => { startEncounter(); showToast({ message: "Encounter started!", type: "success" }); }}>
+                ⚔ Start
               </Button>
-              <Button size="xs" variant="ghost" onClick={() => setShowManualAdd(true)}>
-                + Add Combatant
+            )}
+            {isActive && (
+              <Button size="xs" variant="danger" onClick={() => { endEncounter(); showToast({ message: "Encounter ended.", type: "info" }); }}>
+                ✕ End
               </Button>
-              <Button
-                size="sm"
-                onClick={startEncounter}
-                disabled={activeEncounter.combatants.length === 0}
-              >
-                ▶ Start
-              </Button>
-            </>
-          )}
-          {isActive && (
-            <>
-              <Button variant="secondary" size="sm" onClick={previousTurn}>◀</Button>
-              <Button variant={activeEncounter.isPaused ? "primary" : "secondary"} size="sm" onClick={togglePause}>
-                {activeEncounter.isPaused ? "▶" : "⏸"}
-              </Button>
-              <Button size="sm" onClick={nextTurn}>Next ▶</Button>
-              <Button variant="danger" size="sm" onClick={endEncounter}>■ End</Button>
-            </>
-          )}
-          {activeEncounter.phase === "completed" && (
-            <Button variant="secondary" size="sm" onClick={resetCombat}>↺ New Combat</Button>
-          )}
-          {/* Combat log toggle */}
-          <CombatLogPanel />
-          {/* Recap toggle */}
-          <button
-            onClick={() => setShowRecapPanel((p) => !p)}
-            className="rounded-lg border border-surface-700 bg-surface-850 px-3 py-2 text-xs font-medium text-surface-300 hover:bg-surface-800 hover:text-surface-100 transition-colors"
-          >
-            <span>📝</span>
-          </button>
+            )}
+          </div>
+
+          {/* Initiative Roller */}
+          {isPrep && <InitiativeRoller combatants={activeEncounter.combatants} setCombatantInitiative={setCombatantInitiative} />}
         </div>
       </div>
+
+      {/* Quick-Add: preset enemy groups */}
+      {isPrep && (
+        <div className="flex flex-wrap gap-1.5 rounded-lg border border-surface-700 bg-surface-850 p-2">
+          <span className="mr-1 text-xs text-surface-500 py-1">Quick Add:</span>
+          <Button size="xs" variant="ghost" onClick={() => addEnemyGroup("Goblin", 4)}>
+            🐺 Goblin x4
+          </Button>
+          <Button size="xs" variant="ghost" onClick={() => addEnemyGroup("Skeleton", 3)}>
+            💀 Skeleton x3
+          </Button>
+          <Button size="xs" variant="ghost" onClick={() => addEnemyGroup("Bandit", 5)}>
+            🗡️ Bandit x5
+          </Button>
+          <Button size="xs" variant="ghost" onClick={() => addEnemyGroup("Cultist", 2)}>
+            🔮 Cultist x2
+          </Button>
+          <Button size="xs" variant="ghost" onClick={() => addEnemyGroup("Wolf", 6)}>
+            🐺 Wolf x6
+          </Button>
+          <Button size="xs" variant="ghost" onClick={() => addEnemyGroup("Kobold", 8)}>
+            🦎 Kobold x8
+          </Button>
+        </div>
+      )}
 
       {/* Main Grid: Combatant List + Session Notes */}
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
@@ -211,6 +194,8 @@ export function InitiativeTracker() {
             combatants={activeEncounter.combatants}
             currentIndex={activeEncounter.currentCombatantIndex}
             isActive={isActive}
+            isPaused={activeEncounter.isPaused}
+            turnStartedAt={activeEncounter.turnStartedAt ?? null}
             reorderCombatants={reorderCombatants}
           />
           {isPrep && activeEncounter.combatants.filter((c) => c.type === "enemy").length > 1 && (
@@ -222,12 +207,24 @@ export function InitiativeTracker() {
           {isActive && (
             <div className="rounded-xl border border-accent-500/20 bg-accent-500/5 p-4 text-center">
               <p className="text-xs text-accent-400 font-medium">
-                {activeEncounter.isPaused ? "⏸ Combat Paused" : `▶ ${activeEncounter.combatants[activeEncounter.currentCombatantIndex]?.name ?? "—"}'s Turn`}
+                {activeEncounter.isPaused ? "⏸ Combat Paused" : `▶ ${currentCombatant?.name ?? "—"}'s Turn`}
               </p>
+              {isActive && currentCombatant && (
+                <div className="mt-1 flex items-center justify-center gap-1">
+                  <span className="text-[10px] text-surface-500">⏱</span>
+                  <CombatantTurnTimer
+                    turnStartedAt={activeEncounter.turnStartedAt ?? null}
+                    isPaused={activeEncounter.isPaused}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Combat Log Panel */}
+      {showLogPanel && <CombatLogPanel />}
 
       {/* Player Import Modal */}
       {showPlayerImport && (
@@ -239,60 +236,25 @@ export function InitiativeTracker() {
               {characters.map((pc) => {
                 const exists = activeEncounter.combatants.some((c) => c.name.toLowerCase() === pc.name.toLowerCase());
                 return (
-                  <div key={pc.id} className={`flex items-center justify-between rounded-lg px-3 py-2 ${exists ? "bg-surface-800 opacity-50" : "bg-surface-800"}`}>
-                    <span className="text-sm text-surface-200">{pc.name}</span>
-                    <Badge variant={exists ? "neutral" : "success"} size="xs">{exists ? "Added" : "Ready"}</Badge>
+                  <div key={pc.id} className="flex items-center justify-between rounded-lg bg-surface-800 px-3 py-2">
+                    <div>
+                      <p className="text-sm font-medium text-surface-200">{pc.name}</p>
+                      <p className="text-xs text-surface-500">{pc.class} · Lvl {pc.level}</p>
+                    </div>
+                    {exists ? (
+                      <span className="text-xs text-surface-500">✓ Added</span>
+                    ) : (
+                      <button onClick={() => handleAddCharacter(pc.id)}
+                        className="rounded bg-accent-600 px-3 py-1 text-xs font-medium text-white hover:bg-accent-500 transition-colors">
+                        Add
+                      </button>
+                    )}
                   </div>
                 );
               })}
-              {characters.length === 0 && <p className="text-sm text-surface-500">No player characters in campaign.</p>}
             </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setShowPlayerImport(false)}>Cancel</Button>
-              <Button size="sm" onClick={importPlayers} disabled={characters.length === 0}>Import All</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Manual Add Modal */}
-      {showManualAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowManualAdd(false)}>
-          <div className="w-full max-w-sm rounded-xl border border-surface-700 bg-surface-850 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-surface-100 mb-4">Add Combatant</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs text-surface-400">Name</label>
-                <input value={manualName} onChange={(e) => setManualName(e.target.value)} placeholder="e.g. Goblin Archer" className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="mb-1 block text-xs text-surface-400">Init</label>
-                  <input type="number" value={manualInit} onChange={(e) => setManualInit(e.target.value)} className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs text-surface-400">HP</label>
-                  <input type="number" value={manualHp} onChange={(e) => setManualHp(e.target.value)} className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs text-surface-400">AC</label>
-                  <input type="number" value={manualAc} onChange={(e) => setManualAc(e.target.value)} className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
-                </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-surface-400">Type</label>
-                <select value={manualType} onChange={(e) => setManualType(e.target.value as Combatant["type"])}
-                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 focus:border-accent-500 focus:outline-none">
-                  <option value="enemy">Enemy</option>
-                  <option value="ally">Ally</option>
-                  <option value="npc">NPC</option>
-                  <option value="player">Player</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <Button variant="ghost" size="sm" onClick={() => setShowManualAdd(false)}>Cancel</Button>
-              <Button size="sm" onClick={handleManualAdd} disabled={!manualName.trim()}>Add</Button>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setShowPlayerImport(false)}>Done</Button>
             </div>
           </div>
         </div>
@@ -301,30 +263,88 @@ export function InitiativeTracker() {
   );
 }
 
-/* ── Turn Timer ─────────────────────────────────────────────── */
-function TurnTimer({ isPaused }: { isPaused: boolean }) {
-  const [elapsed, setElapsed] = useState(0);
-  const activeEncounter = useCombatStore((s) => s.activeEncounter);
+/* ── Empty Encounter State ──────────────────────────────────── */
 
-  useEffect(() => {
-    if (!activeEncounter || activeEncounter.phase !== "active" || isPaused) return;
-    const interval = setInterval(() => {
-      if (activeEncounter.startedAt) {
-        setElapsed(Math.floor((Date.now() - activeEncounter.startedAt) / 1000));
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeEncounter, isPaused]);
+function EmptyEncounterState({
+  onCreate,
+  onAddEnemyGroup,
+}: {
+  onCreate: (name: string) => void;
+  onAddEnemyGroup: (name: string, count: number) => void;
+}) {
+  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const [customName, setCustomName] = useState("");
+  const addCombatant = useCombatStore((s) => s.addCombatant);
+  const showToast = useUiStore((s) => s.showToast);
 
-  const minutes = Math.floor(elapsed / 60);
-  const seconds = elapsed % 60;
+  const handleCreate = () => {
+    const name = customName.trim() || `Encounter ${new Date().toLocaleTimeString()}`;
+    onCreate(name);
+    // Import all PCs automatically
+    characters.forEach((pc) => {
+      addCombatant({
+        id: `pc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name: pc.name,
+        type: "player",
+        initiative: 0,
+        armorClass: pc.armorClass,
+        hitPoints: {
+          current: pc.hitPoints.current,
+          max: pc.hitPoints.max,
+          temporary: 0,
+        },
+        statusEffects: [],
+        isDead: false,
+        isConcentrating: false,
+        notes: "",
+      });
+    });
+    showToast({ message: `"${name}" created with ${characters.length} player character${characters.length !== 1 ? "s" : ""}.`, type: "success" });
+  };
+
+  const handleQuickStart = () => {
+    const name = `Quick Encounter ${new Date().toLocaleTimeString()}`;
+    onCreate(name);
+    onAddEnemyGroup("Bandit", 4);
+    characters.forEach((pc) => {
+      addCombatant({
+        id: `pc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name: pc.name,
+        type: "player",
+        initiative: 0,
+        armorClass: pc.armorClass,
+        hitPoints: {
+          current: pc.hitPoints.current,
+          max: pc.hitPoints.max,
+          temporary: 0,
+        },
+        statusEffects: [],
+        isDead: false,
+        isConcentrating: false,
+        notes: "",
+      });
+    });
+    showToast({ message: `"${name}" ready with Bandits!`, type: "success" });
+  };
 
   return (
-    <div className="rounded-md bg-surface-800 px-2.5 py-1.5 text-center min-w-[60px]">
-      <p className="text-[10px] text-surface-500 uppercase tracking-wider">Timer</p>
-      <p className="text-sm font-mono font-bold text-surface-200">
-        {minutes}:{seconds.toString().padStart(2, "0")}
-      </p>
+    <div className="rounded-xl border border-dashed border-surface-700 bg-surface-850 p-8 text-center">
+      <span className="mb-4 inline-block text-4xl text-surface-600">⚔️</span>
+      <h3 className="mb-2 text-lg font-semibold text-surface-100">No Active Encounter</h3>
+      <p className="mb-6 text-sm text-surface-400">Create a new encounter to manage initiative, track HP, and run combat.</p>
+
+      <div className="mx-auto max-w-sm space-y-3">
+        <div className="flex gap-2">
+          <input value={customName} onChange={(e) => setCustomName(e.target.value)}
+            placeholder="Encounter name (optional)"
+            className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
+            onKeyDown={(e) => e.key === "Enter" && handleCreate()} />
+          <Button onClick={handleCreate} disabled={characters.length === 0}>Create</Button>
+        </div>
+        <Button variant="secondary" onClick={handleQuickStart} className="w-full">
+          ⚡ Quick-Start with {characters.length > 0 ? `${characters.length} PCs` : "Demo"} + 4 Bandits
+        </Button>
+      </div>
     </div>
   );
 }
@@ -334,11 +354,15 @@ function CombatantList({
   combatants,
   currentIndex,
   isActive,
+  isPaused,
+  turnStartedAt,
   reorderCombatants,
 }: {
   combatants: Combatant[];
   currentIndex: number;
   isActive: boolean;
+  isPaused: boolean;
+  turnStartedAt: number | null;
   reorderCombatants: (ids: string[]) => void;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -423,6 +447,16 @@ function CombatantList({
                       </p>
                     </div>
                   </div>
+                  {/* Per-Combatant Turn Timer (current turn only) */}
+                  {isCurrentTurn && (
+                    <div className="shrink-0">
+                      <CombatantTurnTimer
+                        turnStartedAt={turnStartedAt}
+                        isPaused={isPaused}
+                        compact
+                      />
+                    </div>
+                  )}
                   {/* Status Effect Badges */}
                   <div className="flex shrink-0 gap-1">
                     {combatant.statusEffects.slice(0, 3).map((s) => {

@@ -1,11 +1,100 @@
-/* ── Combat & Initiative System Types ────────────────────────── */
+/* ── Combat & Initiative Types ──────────────────────────────────
+ * Defines all combat-related data structures:
+ *  • CombatEncounter — full encounter with turn tracking
+ *  • Combatant — combatant with HP, status, concentration
+ *  • StatusEffect / StatusEffectInstance — conditions
+ *  • LiveSessionState — real-time DM->player broadcast
+ *  • LiveConditions — weather, lighting, terrain
+ *  • CombatLogEntry — activity log
+ * ─────────────────────────────────────────────────────────────── */
+
+/* ── Weather, Lighting, Terrain Options ─────────────────────── */
+
+export type WeatherCondition =
+  | "clear"
+  | "cloudy"
+  | "rainy"
+  | "stormy"
+  | "foggy"
+  | "windy"
+  | "scorching"
+  | "snowy"
+  | "misty";
+
+export const WEATHER_OPTIONS: { value: WeatherCondition; label: string; desc: string }[] = [
+  { value: "clear", label: "Clear", desc: "No modifiers" },
+  { value: "cloudy", label: "Cloudy", desc: "No modifiers" },
+  { value: "rainy", label: "Rainy", desc: "-2 Perception (sight/hearing)" },
+  { value: "stormy", label: "Stormy", desc: "-4 Perception, ranged attacks at disadvantage" },
+  { value: "foggy", label: "Foggy", desc: "Heavily obscured beyond 30ft" },
+  { value: "windy", label: "Windy", desc: "Disadvantage on ranged weapon attacks, perception checks involving hearing" },
+  { value: "scorching", label: "Scorching", desc: "Exhaustion risk every hour without water" },
+  { value: "snowy", label: "Snowy", desc: "Difficult terrain, -2 Perception" },
+  { value: "misty", label: "Misty", desc: "Lightly obscured beyond 60ft" },
+];
+
+export type LightingCondition =
+  | "bright"
+  | "dim"
+  | "darkness"
+  | "magical_darkness";
+
+export const LIGHTING_OPTIONS: { value: LightingCondition; label: string; desc: string }[] = [
+  { value: "bright", label: "Bright", desc: "No modifiers" },
+  { value: "dim", label: "Dim Light", desc: "Disadvantage on Perception (sight)" },
+  { value: "darkness", label: "Darkness", desc: "Heavily obscured without darkvision" },
+  { value: "magical_darkness", label: "Magical Darkness", desc: "Cannot be seen through even with darkvision" },
+];
+
+export type TerrainCondition =
+  | "normal"
+  | "difficult"
+  | "dense"
+  | "slippery"
+  | "lava"
+  | "poisoned"
+  | "magical"
+  | "water";
+
+export const TERRAIN_OPTIONS: { value: TerrainCondition; label: string; desc: string }[] = [
+  { value: "normal", label: "Normal", desc: "No modifiers" },
+  { value: "difficult", label: "Difficult", desc: "Movement costs double" },
+  { value: "dense", label: "Dense", desc: "Difficult terrain, 3/4 cover" },
+  { value: "slippery", label: "Slippery", desc: "DEX saves vs prone, half speed" },
+  { value: "lava", label: "Lava", desc: "18d10 fire damage per round" },
+  { value: "poisoned", label: "Poisoned", desc: "Poison damage per round, CON saves" },
+  { value: "magical", label: "Magical", desc: "Wild magic surge chance per spell cast" },
+  { value: "water", label: "Water", desc: "Swim speed required, ranged attacks at disadvantage" },
+];
+
+/* ── Live Conditions ────────────────────────────────────────── */
+
+export interface LiveConditions {
+  weather: WeatherCondition;
+  lighting: LightingCondition;
+  terrain: TerrainCondition;
+}
+
+/* ── Live Session State ─────────────────────────────────────── */
+
+export interface LiveSessionState {
+  activeEncounterId: string | null;
+  phase: "exploration" | "combat" | "rest" | "downtime";
+  currentScene?: string;
+  currentMapUrl?: string;
+  dmAnnouncement?: string;
+  sessionStartedAt: number | null;
+  lastShortRestAt: number | null;
+  lastLongRestAt: number | null;
+  conditions: LiveConditions;
+}
+
+/* ── Status Effects ──────────────────────────────────────────── */
 
 export type StatusEffect =
   | "blinded"
   | "charmed"
-  | "concentrating"
   | "deafened"
-  | "exhaustion"
   | "frightened"
   | "grappled"
   | "incapacitated"
@@ -17,41 +106,40 @@ export type StatusEffect =
   | "restrained"
   | "stunned"
   | "unconscious"
-  | "concentration";
+  | "exhaustion1"
+  | "exhaustion2"
+  | "exhaustion3"
+  | "exhaustion4"
+  | "exhaustion5"
+  | "exhaustion6";
 
 export interface StatusEffectInstance {
   id: string;
   effect: StatusEffect;
-  source?: string;          // e.g. "Hold Person", "Web"
-  duration?: string;        // e.g. "1 minute", "until save"
-  remainingRounds?: number; // decremented each round
-  sourceEntityId?: string;  // who applied it
 }
+
+/* ── Combatant ───────────────────────────────────────────────── */
 
 export interface Combatant {
   id: string;
   name: string;
-  type: "player" | "enemy" | "npc" | "ally";
+  type: "player" | "enemy" | "ally";
   initiative: number;
-  initiativeBonus: number;   // raw Dex mod for recalculation
   armorClass: number;
-  hitPoints: HitPoints;
-  maxHitPoints: number;
-  temporaryHitPoints: number;
+  hitPoints: {
+    current: number;
+    max: number;
+    temporary: number;
+  };
   statusEffects: StatusEffectInstance[];
-  notes?: string;
-  color?: string;          // token/accent color
-  portraitUrl?: string;
   isDead: boolean;
   isConcentrating: boolean;
-  concentrationOn?: string; // spell name
+  notes: string;
+  /** Optional custom portrait/image URL */
+  imageUrl?: string;
 }
 
-export interface HitPoints {
-  current: number;
-  max: number;
-  temporary: number;
-}
+/* ── Combat Encounter (with turn tracking) ──────────────────── */
 
 export interface CombatEncounter {
   id: string;
@@ -59,12 +147,16 @@ export interface CombatEncounter {
   combatants: Combatant[];
   round: number;
   currentCombatantIndex: number;
+  /** Timestamp (ms) when the current turn started. Used by CombatantTurnTimer. */
+  turnStartedAt: number | null;
   phase: "prep" | "active" | "completed";
   startedAt: number | null;
   completedAt: number | null;
   elapsedSeconds: number;
   isPaused: boolean;
 }
+
+/* ── Combat Log Entry ───────────────────────────────────────── */
 
 export interface CombatLogEntry {
   id: string;
@@ -75,63 +167,14 @@ export interface CombatLogEntry {
   targetId?: string;
   targetName?: string;
   value?: number;
+  description?: string;
+}
+
+/* ── Shared Status Effect Definitions ────────────────────────── */
+
+export interface StatusEffectDef {
+  icon: string;
+  label: string;
+  color: string;
   description: string;
-}
-
-/* ── Live Session State ─────────────────────────────────────── */
-
-export type SessionPhase = "downtime" | "exploration" | "combat" | "rest";
-
-export type WeatherCondition = "clear" | "cloudy" | "rain" | "storm" | "fog" | "snow";
-export type LightingCondition = "bright" | "dim" | "darkness" | "magical_darkness";
-export type TerrainCondition = "normal" | "difficult" | "extreme" | "water" | "lava";
-
-export interface LiveConditions {
-  weather: WeatherCondition;
-  lighting: LightingCondition;
-  terrain: TerrainCondition;
-}
-
-export const WEATHER_OPTIONS: { value: WeatherCondition; label: string; desc: string }[] = [
-  { value: "clear", label: "☀️ Clear", desc: "Standard visibility" },
-  { value: "cloudy", label: "☁️ Cloudy", desc: "Dim light, -2 to Perception" },
-  { value: "rain", label: "🌧️ Rainy", desc: "Heavy precipitation, -5 to Perception" },
-  { value: "storm", label: "⛈️ Storm", desc: "Gale winds + rain, ranged attacks disadvantage" },
-  { value: "fog", label: "🌫️ Fog", desc: "Heavily obscured, blinded beyond 30ft" },
-  { value: "snow", label: "❄️ Snow", desc: "Difficult terrain, -5 to Perception" },
-];
-
-export const LIGHTING_OPTIONS: { value: LightingCondition; label: string; desc: string }[] = [
-  { value: "bright", label: "☀️ Bright", desc: "Normal vision" },
-  { value: "dim", label: "🌅 Dim", desc: "Disadvantage on Perception (darkvision sees normally)" },
-  { value: "darkness", label: "🌑 Darkness", desc: "Heavily obscured (blinded without darkvision)" },
-  { value: "magical_darkness", label: "🔮 Magical Darkness", desc: "Can't be seen through even with darkvision" },
-];
-
-export const TERRAIN_OPTIONS: { value: TerrainCondition; label: string; desc: string }[] = [
-  { value: "normal", label: "🌿 Normal", desc: "Standard movement" },
-  { value: "difficult", label: "🌳 Difficult", desc: "Movement costs 2x speed" },
-  { value: "extreme", label: "🏔️ Extreme", desc: "Difficult terrain + climbing required" },
-  { value: "water", label: "🌊 Water", desc: "Swimming, movement halved" },
-  { value: "lava", label: "🌋 Lava", desc: "Fire damage per round in contact" },
-];
-
-export interface LiveSessionState {
-  /** Which encounter is currently active (if in combat) */
-  activeEncounterId: string | null;
-  /** Overall session phase */
-  phase: SessionPhase;
-  /** Scene description that players see */
-  currentScene?: string;
-  /** The battle map image URL currently displayed to players */
-  currentMapUrl?: string;
-  /** DM notes visible to players (e.g. quest updates) */
-  dmAnnouncement?: string;
-  /** Timestamp when session started */
-  sessionStartedAt: number | null;
-  /** Timestamps for rest tracking */
-  lastShortRestAt: number | null;
-  lastLongRestAt: number | null;
-  /** Environmental conditions synced to players */
-  conditions: LiveConditions;
 }

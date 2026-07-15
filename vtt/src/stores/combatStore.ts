@@ -1,4 +1,13 @@
-/* ── Combat & Initiative Tracker Store ───────────────────────── */
+/* ── Combat & Initiative Tracker Store ─────────────────────────
+ * Manages:
+ *  • Combat encounters (CRUD, flow)
+ *  • Combatant management (add, remove, damage, heal, status)
+ *  • Turn tracking (next/previous, round counter)
+ *  • Per-turn timer (turnStartedAt — used by CombatantTurnTimer)
+ *  • Combat log
+ *  • Live session state (broadcast to players via Firebase)
+ *  • Conditions/weather/lighting/terrain
+ * ─────────────────────────────────────────────────────────────── */
 
 import { create } from "zustand";
 import type {
@@ -40,14 +49,11 @@ const DEFAULT_LIVE_SESSION: LiveSessionState = {
   },
 };
 
-/* ── Interface ──────────────────────────────────────────────── */
+/* ── Store Interface ────────────────────────────────────────── */
 
-interface CombatStore {
-  /* ── Active Encounter ── */
+interface CombatStoreState {
   activeEncounter: CombatEncounter | null;
   combatLog: CombatLogEntry[];
-
-  /* ── Live Session ── */
   liveSession: LiveSessionState;
 
   /* ── Encounter CRUD ── */
@@ -55,11 +61,16 @@ interface CombatStore {
   setActiveEncounter: (encounterId: string | null) => void;
 
   /* ── Combatant Management ── */
-  addCombatant: (combatant: Omit<Combatant, "id">) => string;
-  removeCombatant: (combatantId: string) => void;
-  updateCombatant: (combatantId: string, updates: Partial<Combatant>) => void;
-  reorderCombatants: (combatantIds: string[]) => void;
-  clearCombatants: () => void;
+  addCombatant: (data: Omit<Combatant, "id">) => string;
+  addEnemyGroup: (name: string, count: number) => void;
+  removeCombatant: (id: string) => void;
+  setCombatantInitiative: (id: string, value: number) => void;
+  damageCombatant: (id: string, amount: number, source?: string) => void;
+  healCombatant: (id: string, amount: number, source?: string) => void;
+  setTempHp: (id: string, amount: number) => void;
+  toggleStatus: (id: string, effect: StatusEffect) => void;
+  toggleConcentration: (id: string) => void;
+  toggleDead: (id: string) => void;
 
   /* ── Combat Flow ── */
   startEncounter: () => void;
@@ -68,34 +79,19 @@ interface CombatStore {
   endEncounter: () => void;
   togglePause: () => void;
 
-  /* ── HP & Status ── */
-  damageCombatant: (combatantId: string, amount: number, source?: string) => void;
-  healCombatant: (combatantId: string, amount: number, source?: string) => void;
-  setTempHp: (combatantId: string, amount: number) => void;
-  toggleStatus: (combatantId: string, effect: StatusEffect, source?: string) => void;
-  toggleConcentration: (combatantId: string, spellName?: string) => void;
-  toggleDead: (combatantId: string) => void;
-  addNote: (combatantId: string, note: string) => void;
-
-  /* ── Logging ── */
-  clearLog: () => void;
-
   /* ── Live Session ── */
-  setSessionPhase: (phase: LiveSessionState["phase"]) => void;
-  setCurrentScene: (scene?: string) => void;
-  setCurrentMapUrl: (url?: string) => void;
-  setDmAnnouncement: (text?: string) => void;
-  setConditions: (conditions: Partial<LiveConditions>) => void;
   startSession: () => void;
-  recordRest: (type: "short" | "long") => void;
   endSession: () => void;
-
-  /* ── Orchestration ── */
-  resetCombat: () => void;
+  setSessionPhase: (phase: LiveSessionState["phase"]) => void;
+  setCurrentScene: (scene: string) => void;
+  setCurrentMapUrl: (url: string) => void;
+  setDmAnnouncement: (msg: string) => void;
+  setConditions: (conditions: Partial<LiveConditions>) => void;
 }
 
-export const useCombatStore = create<CombatStore>()((set, get) => ({
-  /* ── Defaults ── */
+/* ── Store Definition ───────────────────────────────────────── */
+
+export const useCombatStore = create<CombatStoreState>((set, get) => ({
   activeEncounter: null,
   combatLog: [],
   liveSession: { ...DEFAULT_LIVE_SESSION },
@@ -109,6 +105,7 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
       combatants: [],
       round: 1,
       currentCombatantIndex: 0,
+      turnStartedAt: null,
       phase: "prep",
       startedAt: null,
       completedAt: null,
@@ -120,7 +117,6 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
   },
 
   setActiveEncounter: (encounterId) => {
-    // For now, encounters are single-instance; clearing resets
     if (encounterId === null) {
       set({ activeEncounter: null, combatLog: [] });
     }
@@ -141,69 +137,218 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
     return id;
   },
 
-  removeCombatant: (combatantId) => {
+  addEnemyGroup: (name, count) => {
+    const encounter = get().activeEncounter;
+    if (!encounter) return;
+
+    const newCombatants: Combatant[] = Array.from({ length: count }, (_, i) => ({
+      id: uid("enemy"),
+      name: `${name} ${i + 1}`,
+      type: "enemy" as const,
+      initiative: 0,
+      armorClass: 12,
+      hitPoints: { current: 15, max: 15, temporary: 0 },
+      statusEffects: [],
+      isDead: false,
+      isConcentrating: false,
+      notes: "",
+    }));
+
+    set({
+      activeEncounter: {
+        ...encounter,
+        combatants: [...encounter.combatants, ...newCombatants],
+      },
+    });
+  },
+
+  removeCombatant: (id) => {
     const encounter = get().activeEncounter;
     if (!encounter) return;
     set({
       activeEncounter: {
         ...encounter,
-        combatants: encounter.combatants.filter((c) => c.id !== combatantId),
+        combatants: encounter.combatants.filter((c) => c.id !== id),
       },
     });
   },
 
-  updateCombatant: (combatantId, updates) => {
+  setCombatantInitiative: (id, value) => {
     const encounter = get().activeEncounter;
     if (!encounter) return;
     set({
       activeEncounter: {
         ...encounter,
         combatants: encounter.combatants.map((c) =>
-          c.id === combatantId ? { ...c, ...updates } : c,
+          c.id === id ? { ...c, initiative: value } : c,
         ),
       },
     });
   },
 
-  reorderCombatants: (combatantIds) => {
+  damageCombatant: (id, amount, source) => {
     const encounter = get().activeEncounter;
     if (!encounter) return;
-    const map = new Map(encounter.combatants.map((c) => [c.id, c]));
-    const reordered = combatantIds.map((id) => map.get(id)).filter(Boolean) as Combatant[];
+
+    const target = encounter.combatants.find((c) => c.id === id);
+    if (!target) return;
+
+    // Apply damage: temp HP first, then real HP
+    let tempRemaining = target.hitPoints.temporary;
+    let realDamage = amount;
+
+    if (tempRemaining > 0) {
+      const absorbed = Math.min(tempRemaining, amount);
+      tempRemaining -= absorbed;
+      realDamage = amount - absorbed;
+    }
+
+    const newHp = Math.max(0, target.hitPoints.current - realDamage);
+    const isDead = newHp <= 0 && !target.isDead;
+
+    const logEntry: CombatLogEntry = {
+      id: logUid(),
+      timestamp: Date.now(),
+      type: isDead ? "death" : "damage",
+      actorId: source ?? "DM",
+      actorName: source ?? "DM",
+      targetId: target.id,
+      targetName: target.name,
+      value: amount,
+      description: `${target.name} takes ${amount} damage${isDead ? " — DEAD!" : ""} (${realDamage} to HP, ${amount - realDamage} to temp)`,
+    };
+
+    const updatedCombatants = encounter.combatants.map((c) => {
+      if (c.id !== id) return c;
+      return {
+        ...c,
+        hitPoints: {
+          ...c.hitPoints,
+          current: newHp,
+          temporary: Math.max(0, tempRemaining),
+        },
+        isDead,
+      };
+    });
+
     set({
-      activeEncounter: { ...encounter, combatants: reordered },
+      activeEncounter: { ...encounter, combatants: updatedCombatants },
+      combatLog: [logEntry, ...get().combatLog],
     });
   },
 
-  clearCombatants: () => {
+  healCombatant: (id, amount, source) => {
+    const encounter = get().activeEncounter;
+    if (!encounter) return;
+
+    const target = encounter.combatants.find((c) => c.id === id);
+    if (!target) return;
+
+    const newHp = Math.min(target.hitPoints.max, target.hitPoints.current + amount);
+
+    const logEntry: CombatLogEntry = {
+      id: logUid(),
+      timestamp: Date.now(),
+      type: "heal",
+      actorId: source ?? "DM",
+      actorName: source ?? "DM",
+      targetId: target.id,
+      targetName: target.name,
+      value: amount,
+      description: `${target.name} healed for ${amount} HP (${target.hitPoints.current} → ${newHp})`,
+    };
+
+    set({
+      activeEncounter: {
+        ...encounter,
+        combatants: encounter.combatants.map((c) =>
+          c.id === id
+            ? { ...c, hitPoints: { ...c.hitPoints, current: newHp }, isDead: false }
+            : c,
+        ),
+      },
+      combatLog: [logEntry, ...get().combatLog],
+    });
+  },
+
+  setTempHp: (id, amount) => {
     const encounter = get().activeEncounter;
     if (!encounter) return;
     set({
-      activeEncounter: { ...encounter, combatants: [] },
-      combatLog: [],
+      activeEncounter: {
+        ...encounter,
+        combatants: encounter.combatants.map((c) =>
+          c.id === id
+            ? { ...c, hitPoints: { ...c.hitPoints, temporary: amount } }
+            : c,
+        ),
+      },
+    });
+  },
+
+  toggleStatus: (id, effect) => {
+    const encounter = get().activeEncounter;
+    if (!encounter) return;
+
+    const updatedCombatants = encounter.combatants.map((c) => {
+      if (c.id !== id) return c;
+      const exists = c.statusEffects.some((s) => s.effect === effect);
+      if (exists) {
+        return { ...c, statusEffects: c.statusEffects.filter((s) => s.effect !== effect) };
+      }
+      const newEffect: StatusEffectInstance = {
+        id: uid("status"),
+        effect,
+      };
+      return { ...c, statusEffects: [...c.statusEffects, newEffect] };
+    });
+
+    set({ activeEncounter: { ...encounter, combatants: updatedCombatants } });
+  },
+
+  toggleConcentration: (id) => {
+    const encounter = get().activeEncounter;
+    if (!encounter) return;
+    set({
+      activeEncounter: {
+        ...encounter,
+        combatants: encounter.combatants.map((c) =>
+          c.id === id ? { ...c, isConcentrating: !c.isConcentrating } : c,
+        ),
+      },
+    });
+  },
+
+  toggleDead: (id) => {
+    const encounter = get().activeEncounter;
+    if (!encounter) return;
+    set({
+      activeEncounter: {
+        ...encounter,
+        combatants: encounter.combatants.map((c) =>
+          c.id === id ? { ...c, isDead: !c.isDead } : c,
+        ),
+      },
     });
   },
 
   /* ── Combat Flow ── */
   startEncounter: () => {
     const encounter = get().activeEncounter;
-    if (!encounter || encounter.combatants.length === 0) return;
+    if (!encounter || encounter.phase !== "prep") return;
 
-    // Sort by initiative descending, then by initiative bonus descending
-    const sorted = [...encounter.combatants].sort((a, b) => {
-      const initDiff = b.initiative - a.initiative;
-      if (initDiff !== 0) return initDiff;
-      return b.initiativeBonus - a.initiativeBonus;
-    });
-
+    const now = Date.now();
     const logEntry: CombatLogEntry = {
       id: logUid(),
-      timestamp: Date.now(),
+      timestamp: now,
       type: "round_start",
       actorId: "system",
-      actorName: "⚔ Combat",
-      description: `Combat begins! Round 1`,
+      actorName: "⚔️ Combat",
+      description: "Combat begins!",
     };
+
+    // Sort combatants by initiative descending
+    const sorted = [...encounter.combatants].sort((a, b) => b.initiative - a.initiative);
 
     set({
       activeEncounter: {
@@ -212,7 +357,8 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
         phase: "active",
         round: 1,
         currentCombatantIndex: 0,
-        startedAt: Date.now(),
+        startedAt: now,
+        turnStartedAt: now,
         isPaused: false,
       },
       combatLog: [logEntry, ...get().combatLog],
@@ -229,18 +375,6 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
     if (nextIndex >= combatants.length) {
       // New round
       const newRound = round + 1;
-      // Decrement status effect durations
-      const updatedCombatants = combatants.map((c) => ({
-        ...c,
-        statusEffects: c.statusEffects
-          .map((s) =>
-            s.remainingRounds !== undefined
-              ? { ...s, remainingRounds: s.remainingRounds - 1 }
-              : s,
-          )
-          .filter((s) => s.remainingRounds === undefined || s.remainingRounds > 0),
-      }));
-
       const logEntry: CombatLogEntry = {
         id: logUid(),
         timestamp: Date.now(),
@@ -253,9 +387,9 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
       set({
         activeEncounter: {
           ...encounter,
-          combatants: updatedCombatants,
           round: newRound,
           currentCombatantIndex: 0,
+          turnStartedAt: Date.now(),
         },
         combatLog: [logEntry, ...get().combatLog],
       });
@@ -264,6 +398,7 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
         activeEncounter: {
           ...encounter,
           currentCombatantIndex: nextIndex,
+          turnStartedAt: Date.now(),
         },
       });
     }
@@ -274,29 +409,24 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
     if (!encounter || encounter.phase !== "active") return;
     const prevIndex = Math.max(0, encounter.currentCombatantIndex - 1);
     set({
-      activeEncounter: { ...encounter, currentCombatantIndex: prevIndex },
+      activeEncounter: {
+        ...encounter,
+        currentCombatantIndex: prevIndex,
+        turnStartedAt: Date.now(),
+      },
     });
   },
 
   endEncounter: () => {
     const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const logEntry: CombatLogEntry = {
-      id: logUid(),
-      timestamp: Date.now(),
-      type: "note",
-      actorId: "system",
-      actorName: "⚔ Combat",
-      description: `Combat ended after ${encounter.round} round(s).`,
-    };
+    if (!encounter || encounter.phase !== "active") return;
     set({
       activeEncounter: {
         ...encounter,
         phase: "completed",
         completedAt: Date.now(),
-        isPaused: false,
+        turnStartedAt: null,
       },
-      combatLog: [logEntry, ...get().combatLog],
     });
   },
 
@@ -308,194 +438,48 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
     });
   },
 
-  /* ── HP & Status ── */
-  damageCombatant: (combatantId, amount, source) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const target = encounter.combatants.find((c) => c.id === combatantId);
-    if (!target) return;
-
-    let newHp = target.hitPoints.current;
-    // Apply temp HP first
-    let tempLeft = target.hitPoints.temporary;
-    const tempAbsorbed = Math.min(tempLeft, amount);
-    tempLeft -= tempAbsorbed;
-    const remainingDamage = amount - tempAbsorbed;
-    newHp -= remainingDamage;
-
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      return {
-        ...c,
-        hitPoints: {
-          current: Math.max(0, newHp),
-          max: c.hitPoints.max,
-          temporary: Math.max(0, tempLeft),
-        },
-        isDead: newHp <= 0,
-      };
-    });
-
-    const died = newHp <= 0 && target.hitPoints.current > 0;
-    const logEntry: CombatLogEntry = {
-      id: logUid(),
-      timestamp: Date.now(),
-      type: died ? "death" : "damage",
-      actorId: source ?? "unknown",
-      actorName: source ?? "Unknown",
-      targetId: target.id,
-      targetName: target.name,
-      value: amount,
-      description: died
-        ? `${target.name} took ${amount} damage and has fallen!`
-        : `${target.name} took ${amount} damage (${Math.max(0, newHp)} HP remaining)`,
-    };
-
-    set({
-      activeEncounter: { ...encounter, combatants: updatedCombatants },
-      combatLog: [logEntry, ...get().combatLog],
-    });
-  },
-
-  healCombatant: (combatantId, amount, source) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      const newCurrent = Math.min(c.hitPoints.max, c.hitPoints.current + amount);
-      return {
-        ...c,
-        hitPoints: { ...c.hitPoints, current: newCurrent },
-        isDead: false,
-      };
-    });
-
-    const target = encounter.combatants.find((c) => c.id === combatantId);
-    const logEntry: CombatLogEntry = {
-      id: logUid(),
-      timestamp: Date.now(),
-      type: "heal",
-      actorId: source ?? "unknown",
-      actorName: source ?? "Unknown",
-      targetId: target?.id,
-      targetName: target?.name,
-      value: amount,
-      description: `${target?.name} healed for ${amount} HP.`,
-    };
-
-    set({
-      activeEncounter: { ...encounter, combatants: updatedCombatants },
-      combatLog: [logEntry, ...get().combatLog],
-    });
-  },
-
-  setTempHp: (combatantId, amount) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      return {
-        ...c,
-        hitPoints: { ...c.hitPoints, temporary: amount },
-      };
-    });
-    set({ activeEncounter: { ...encounter, combatants: updatedCombatants } });
-  },
-
-  toggleStatus: (combatantId, effect, source) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      const existing = c.statusEffects.find((s) => s.effect === effect);
-      let newStatuses: StatusEffectInstance[];
-      if (existing) {
-        newStatuses = c.statusEffects.filter((s) => s.effect !== effect);
-      } else {
-        newStatuses = [
-          ...c.statusEffects,
-          { id: uid("status"), effect, source, remainingRounds: undefined },
-        ];
-      }
-      return { ...c, statusEffects: newStatuses };
-    });
-
-    const target = encounter.combatants.find((c) => c.id === combatantId);
-    const isAdding = !target?.statusEffects.find((s) => s.effect === effect);
-    const logEntry: CombatLogEntry = {
-      id: logUid(),
-      timestamp: Date.now(),
-      type: "status",
-      actorId: "system",
-      actorName: "⚔ Combat",
-      targetId: target?.id,
-      targetName: target?.name,
-      description: isAdding
-        ? `${target?.name} is now ${effect}.`
-        : `${target?.name} is no longer ${effect}.`,
-    };
-
-    set({
-      activeEncounter: { ...encounter, combatants: updatedCombatants },
-      combatLog: [logEntry, ...get().combatLog],
-    });
-  },
-
-  toggleConcentration: (combatantId, spellName) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      return {
-        ...c,
-        isConcentrating: !c.isConcentrating,
-        concentrationOn: c.isConcentrating ? undefined : spellName,
-      };
-    });
-    set({ activeEncounter: { ...encounter, combatants: updatedCombatants } });
-  },
-
-  toggleDead: (combatantId) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      const newDead = !c.isDead;
-      return {
-        ...c,
-        isDead: newDead,
-        hitPoints: newDead ? { ...c.hitPoints, current: 0 } : { ...c.hitPoints, current: 1 },
-      };
-    });
-    set({ activeEncounter: { ...encounter, combatants: updatedCombatants } });
-  },
-
-  addNote: (combatantId, note) => {
-    const encounter = get().activeEncounter;
-    if (!encounter) return;
-    const updatedCombatants = encounter.combatants.map((c) => {
-      if (c.id !== combatantId) return c;
-      return { ...c, notes: c.notes ? `${c.notes}\n${note}` : note };
-    });
-    set({ activeEncounter: { ...encounter, combatants: updatedCombatants } });
-  },
-
-  /* ── Logging ── */
-  clearLog: () => set({ combatLog: [] }),
-
   /* ── Live Session ── */
+  startSession: () => {
+    const now = Date.now();
+    set({
+      liveSession: {
+        ...get().liveSession,
+        sessionStartedAt: now,
+        phase: "exploration",
+      },
+    });
+  },
+
+  endSession: () => {
+    set({
+      liveSession: { ...DEFAULT_LIVE_SESSION },
+    });
+  },
+
   setSessionPhase: (phase) => {
-    set({ liveSession: { ...get().liveSession, phase } });
+    set({
+      liveSession: { ...get().liveSession, phase },
+    });
   },
+
   setCurrentScene: (scene) => {
-    set({ liveSession: { ...get().liveSession, currentScene: scene } });
+    set({
+      liveSession: { ...get().liveSession, currentScene: scene },
+    });
   },
+
   setCurrentMapUrl: (url) => {
-    set({ liveSession: { ...get().liveSession, currentMapUrl: url } });
+    set({
+      liveSession: { ...get().liveSession, currentMapUrl: url },
+    });
   },
-  setDmAnnouncement: (text) => {
-    set({ liveSession: { ...get().liveSession, dmAnnouncement: text } });
+
+  setDmAnnouncement: (msg) => {
+    set({
+      liveSession: { ...get().liveSession, dmAnnouncement: msg },
+    });
   },
+
   setConditions: (conditions) => {
     set({
       liveSession: {
@@ -503,32 +487,5 @@ export const useCombatStore = create<CombatStore>()((set, get) => ({
         conditions: { ...get().liveSession.conditions, ...conditions },
       },
     });
-  },
-  startSession: () => {
-    set({
-      liveSession: {
-        ...get().liveSession,
-        sessionStartedAt: Date.now(),
-        phase: "exploration",
-      },
-    });
-  },
-  recordRest: (type) => {
-    const now = Date.now();
-    if (type === "short") {
-      set({ liveSession: { ...get().liveSession, lastShortRestAt: now, phase: "rest" } });
-    } else {
-      set({ liveSession: { ...get().liveSession, lastLongRestAt: now, phase: "rest" } });
-    }
-  },
-  endSession: () => {
-    set({
-      liveSession: { ...DEFAULT_LIVE_SESSION },
-    });
-  },
-
-  /* ── Reset ── */
-  resetCombat: () => {
-    set({ activeEncounter: null, combatLog: [] });
   },
 }));

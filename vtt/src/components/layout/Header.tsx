@@ -6,13 +6,15 @@
  *  • Player count badge
  *  • DM mode indicator
  *  • Online/offline indicator (navigator.onLine)
+ *  • Dice Tower and Global Compendium quick-access buttons
  *  • Responsive: collapses on mobile
  *
  * UPGRADED:
  *  • Online/offline indicator
  *  • Pending sync count badge
  *  • Tooltips on all badges
- *  • Quick-access shortcuts button
+ *  • Quick-access DiceTower and GlobalCompendium
+ *  • Keyboard shortcut indicator for compendium
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect } from "react";
@@ -22,6 +24,8 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { LiveSessionTimer } from "@/components/combat/LiveSessionTimer";
+import { DiceTower } from "@/components/ui/DiceTower";
+import { GlobalCompendium } from "@/components/ui/GlobalCompendium";
 import { isFirebaseAvailable } from "@/lib/firebase";
 import { getPendingSyncCount } from "@/hooks/useFirebaseSync";
 
@@ -93,9 +97,15 @@ export function Header() {
         </nav>
       </div>
 
-      {/* Right: Status Indicators */}
-      <div className="flex shrink-0 items-center gap-2">
+      {/* Right: Status Indicators + Tools */}
+      <div className="flex shrink-0 items-center gap-1.5">
         <LiveSessionTimer />
+
+        {/* Dice Tower */}
+        <DiceTower />
+
+        {/* Global Compendium */}
+        <GlobalCompendium />
 
         {/* Session Active Badge */}
         {sessionActive && (
