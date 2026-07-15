@@ -12,6 +12,7 @@
  * • Error boundary — catches render crashes gracefully
  * ─────────────────────────────────────────────────────────────── */
 
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
@@ -22,6 +23,8 @@ import { CommandPalette } from "@/components/ui/CommandPalette";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useFirebaseSync } from "@/hooks/useFirebaseSync";
 import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
+import { useCampaignStore } from "@/stores/campaignStore";
+import { useAuthStore } from "@/stores/authStore";
 
 export function AppShell() {
   // Start Firebase real-time sync for campaign, combat, and homebrew data
@@ -29,6 +32,21 @@ export function AppShell() {
 
   // Start Firebase connection health monitor with auto-reconnect
   useFirebaseMonitor();
+
+  // Sync player identifiers from campaign to auth store on mount/rehydrate
+  const campaign = useCampaignStore((s) => s.campaign);
+  const setPlayerIdentifiers = useAuthStore((s) => s.setPlayerIdentifiers);
+  const playerIdentifiers = useAuthStore((s) => s.playerIdentifiers);
+
+  useEffect(() => {
+    if (campaign?.playerCharacters && campaign.playerCharacters.length > 0 && playerIdentifiers.length === 0) {
+      const identifiers = campaign.playerCharacters.map((pc) => ({
+        label: pc.name,
+        characterId: pc.id,
+      }));
+      setPlayerIdentifiers(identifiers);
+    }
+  }, [campaign, setPlayerIdentifiers, playerIdentifiers]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-surface-900">

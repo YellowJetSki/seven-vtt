@@ -477,7 +477,7 @@ function buildPcsFromArkla(characters: Record<string, any>): any[] {
       id: `pc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name: raw.name || raw.label || "Unknown Hero",
       playerName: raw.playerName || "",
-      race: raw.race || "Unknown",
+      race: raw.species || raw.race || "Unknown",
       class: raw.class || "Unknown",
       subClass: raw.subClass || "",
       level: raw.level || 1,
@@ -524,7 +524,15 @@ function buildPcsFromArkla(characters: Record<string, any>): any[] {
       })),
       equipment: [],
       inventory: inv,
-      currency: raw.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 },
+      currency: raw.currency
+        ? {
+            copper: raw.currency.leptons ?? raw.currency.copper ?? 0,
+            silver: raw.currency.assarions ?? raw.currency.silver ?? 0,
+            electrum: raw.currency.bronzeDrakes ?? raw.currency.electrum ?? 0,
+            gold: raw.currency.silverDrakes ?? raw.currency.gold ?? 0,
+            platinum: raw.currency.goldCrowns ?? raw.currency.platinum ?? 0,
+          }
+        : { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 },
       appearance: raw.appearance || "",
       backstory: raw.backstory || "",
       allies: raw.allies || "",

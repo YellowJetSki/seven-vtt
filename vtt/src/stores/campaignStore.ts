@@ -21,6 +21,7 @@ import type { Campaign, PlayerCharacter, Encounter, BattleMap, JournalEntry, Cam
 import type { CharacterDoc, EnemyDoc, EncounterDoc, MapDoc, MapTokenDoc, JournalEntryDoc, CampaignMeta } from "@/types/firestore";
 import { normalizedSync, normalizedCampaign, normalizedCharacters, normalizedEnemies, normalizedEncounters, normalizedMaps, normalizedTokens, normalizedJournal } from "@/lib/normalized-firebase-service";
 import { isFirebaseAvailable } from "@/lib/firebase";
+import { useAuthStore } from "@/stores/authStore";
 
 /* ── Types ──────────────────────────────────────────────────── */
 
@@ -208,6 +209,15 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
 
       setCampaign: (campaign) => {
         const normalizedPCs = get().normalizeCharacters(campaign.playerCharacters);
+        // Sync player identifiers to auth store for player login
+        const authStore = useAuthStore.getState();
+        if (authStore.setPlayerIdentifiers && normalizedPCs.length > 0) {
+          const identifiers = normalizedPCs.map((pc) => ({
+            label: pc.name,
+            characterId: pc.id,
+          }));
+          authStore.setPlayerIdentifiers(identifiers);
+        }
         const newState = {
           meta: {
             id: campaign.id,
