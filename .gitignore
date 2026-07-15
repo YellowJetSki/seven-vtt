@@ -17,3 +17,6 @@ sessions/
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Embedded git repo (vtt was accidentally initialized as a submodule)
+/vtt/.git
