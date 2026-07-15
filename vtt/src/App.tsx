@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
-import { syncManager } from "@/lib/firebase-service";
+import { normalizedSync } from "@/lib/normalized-firebase-service";
 import { isFirebaseAvailable } from "@/lib/firebase";
+import { migrateLegacyCampaignData } from "@/lib/migrate-legacy-data";
 
 import { LoginPage } from "@/pages/LoginPage";
 import { DmDashboard } from "@/pages/DmDashboard";
@@ -24,19 +25,27 @@ export default function App() {
   const state = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
 
+  /* ── Migrate legacy localStorage data on first boot ──────────
+   * This runs once to convert the old monolithic campaign storage
+   * format to the new normalized format. Idempotent — safe on every load.
+   */
+  useEffect(() => {
+    migrateLegacyCampaignData();
+  }, []);
+
   /* ── Initialize Firebase sync listeners on mount ───────────
-   * This replaces the legacy fetchCampaigns() call. The syncManager
-   * subscribes to campaign, session, and homebrew Firestore documents
+   * Uses the normalized subcollection-based syncManager.
+   * Subscribes to campaign, session, and homebrew Firestore documents
    * via onSnapshot, hydrating all Zustand stores in real-time.
    */
   useEffect(() => {
     if (!isFirebaseAvailable()) return;
 
-    // Start listening to all Firestore channels for the Arkla campaign
-    syncManager.start(CAMPAIGN_ID);
+    // Start listening to all Firestore subcollections for the Arkla campaign
+    normalizedSync.start(CAMPAIGN_ID);
 
     return () => {
-      syncManager.stop(CAMPAIGN_ID);
+      normalizedSync.stop(CAMPAIGN_ID);
     };
   }, []);
 

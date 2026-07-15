@@ -3369,3 +3369,136 @@ This causes issues: 1) 1MB Firestore document limit, 2) expensive reads for nest
 - **Scalability**: As campaign grows, data stays manageable
 
 ---
+
+## MapEditor Component Architecture (Updated: 2026-07-15 14:20)
+# MapEditor Component Architecture
+
+## Fixed Bug: FogOfWarLayer & MovementRangeOverlay Prop Interface Mismatch
+
+### Root Cause
+The `MapEditor` component was passing flat props (`mapId`, `gridWidth`, `gridHeight`, `fogOfWar`, `showFogControls`, `onUpdateFog`, `gmView`) to `FogOfWarLayer`, but that component expected a completely different interface:
+- `map: BattleMap` (entire map object)
+- `isGmView: boolean`
+- `cellWidth: number` (percentage per cell)
+- `cellHeight: number`
+
+Similarly, `MovementRangeOverlay` was called with `dashMode` (boolean) but expected `movementSpeed`, `dashMultiplier`, and `cellSize`.
+
+### Fix Applied
+**File:** `vtt/src/components/maps/MapEditor.tsx`
+
+1. **FogOfWarLayer call (line ~175):** Changed from flat props to correct interface:
+```tsx
+<FogOfWarLayer
+  map={map}
+  isGmView={gmView}
+  cellWidth={cellWidth}
+  cellHeight={cellHeight}
+/>
+```
+Where `cellWidth = 100 / map.gridWidth` and `cellHeight = 100 / map.gridHeight`.
+
+2. **MovementRangeOverlay call (line ~186):** Changed from missing props to correct interface:
+```tsx
+<MovementRangeOverlay
+  token={selectedToken}
+  gridWidth={map.gridWidth}
+  gridHeight={map.gridHeight}
+  movementSpeed={selectedTokenSpeed}
+  dashMultiplier={dashMode ? 2 : 1}
+  cellSize={5}
+/>
+```
+
+3. **Fog Controls Panel:** Moved the `FogOfWarControls` out of being nested inside the FogOfWarLayer's internal logic and into its own conditional panel below the canvas. It receives `map`, `onUpdate`, and `isGmView` props.
+
+### Verification
+- Created "Dragon Barrow" map with `/images/battlemaps/Dragon_Barrow.svg`
+- Added token "Grommash" with `/images/tokens/Hero.svg`
+- MapEditor renders without any "Something went wrong" error
+- All 3 maps (Road to Bacilia, Cragmaw Hideout, Dragon Barrow) open correctly
+
+### Remaining Data Issue
+The "Cragmaw Hideout" map created in a previous session has corrupted `gridWidth: 2030` (should be `30`). This is legacy data from an earlier build that had the form fields mixing up values. New maps created with the current build work correctly ("Dragon Barrow" shows `24×18` properly).
+
+---
+
+## Migration Plan: Normalized Firestore Subcollections (Updated: 2026-07-15 14:31)
+# Migration Plan — Monolithic Document → Normalized Subcollections
+
+## Current State (3 Documents)
+```
+campaigns/arkla          → { data: Campaign }                  ← FULL nested campaign
+liveSessions/arkla        → { data: { activeEncounter, combatLog, liveSession } }
+homebrew/arkla            → { data: { items, spells, feats } }
+```
+
+## Target State (13 Subcollections)
+```
+campaigns/arkla                          → { metadata only: name, description, dmName, settings, createdAt, updatedAt }
+campaigns/arkla/characters/{charId}       → { full PlayerCharacter }
+campaigns/arkla/enemies/{enemyId}         → { full EncounterCreature }
+campaigns/arkla/encounters/{encId}        → { full Encounter (references enemies by ID) }
+campaigns/arkla/maps/{mapId}              → { full BattleMap (without tokens) }
+campaigns/arkla/maps/{mapId}/tokens/{tId} → { full MapToken }
+campaigns/arkla/journal/{entryId}         → { full JournalEntry }
+campaigns/arkla/sessions/{sessionId}      → { session metadata }
+campaigns/arkla/sessions/{sid}/combatants→ { per-combatant state }
+campaigns/arkla/combatLog/{logEntryId}    → { per-log-entry }
+homebrew/items/{itemId}                   → { per-item }
+homebrew/spells/{spellId}                 → { per-spell }
+homebrew/feats/{featId}                   → { per-feat }
+```
+
+## Migration Phases
+
+### Phase 1: Rewrite firebase-service.ts
+Create new `normalizedFirebaseService.ts` with subcollection-aware push/listen/fetch.
+Legacy `firebase-service.ts` kept for backward compatibility during migration.
+
+### Phase 2: Rewrite campaignStore.ts
+Replace monolithic arrays with normalized cache and subcollection listeners.
+Keep Zustand persist for offline resilience, but hydrate from subcollections.
+
+### Phase 3: Rewrite combatStore.ts & homebrewStore.ts
+Similar subcollection-aware patterns for sessions and homebrew.
+
+### Phase 4: Migration Script
+Read legacy `campaigns/arkla` → distribute to subcollections → delete legacy.
+
+### Phase 5: Update hooks/useFirebaseSync.ts
+Point to new normalized service.
+
+### Phase 6: Full E2E test & cleanup
+
+---
+
+## Normalized Firebase Service Created (Updated: 2026-07-15 14:33)
+# Normalized Firebase Service (`normalized-firebase-service.ts`)
+
+## Status: ✅ CREATED — TypeScript compiles cleanly
+
+### Architecture
+- New file at `vtt/src/lib/normalized-firebase-service.ts`
+- Companion types at `vtt/src/types/firestore.ts`
+- Collection path constants at `Paths.*` helper (enables compile-safe path generation)
+
+### Key Exports
+- `normalizedCampaign` — pushMeta / fetchMeta / listenMeta
+- `normalizedCharacters` — push / remove / fetchAll / listenAll
+- `normalizedEnemies` — push / remove / fetchAll / listenAll (NEW standalone enemy collection!)
+- `normalizedEncounters` — push / remove / fetchAll / listenAll
+- `normalizedMaps` — push / remove / fetchAll / listenAll (maps WITHOUT tokens)
+- `normalizedTokens` — push / remove / fetchAll / listenAll (tokens as subcollection of maps)
+- `normalizedJournal` — push / remove / fetchAll / listenAll
+- `normalizedSessions` — push / remove / fetchAll / listenAll
+- `normalizedSessionCombatants` — push / remove / fetchAll / listenAll
+- `normalizedCombatLog` — push / remove / fetchAll / listenAll
+- `normalizedHomebrewItems` / `normalizedHomebrewSpells` / `normalizedHomebrewFeats`
+
+### Orchestrator
+- `normalizedSync` — start/stop/stopAll with subcollection sub/unsub management
+- `normalizedSync.listenTokens` — per-map token listener management
+- Uses generic `writeDoc`, `readDoc`, `readAllDocs`, `listenCollection` helpers
+
+---
