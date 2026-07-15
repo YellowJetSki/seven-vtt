@@ -1,0 +1,23 @@
+{
+  "id": "arkla",
+  "name": "The Arkla Chronicles",
+  "description": "A campaign set in the world of Arkla — a land of ancient magic, political intrigue, and buried secrets. The party investigates the mysterious lizard emblem, the Jewl pirates' influence over the Crown, and the disappearance of loved ones tied to a shadowy figure known only as 'the Stranger'.",
+  "dmName": "MikeJello",
+  "playerCharacters": [],
+  "encounters": [],
+  "battleMaps": [],
+  "journal": [],
+  "settings": {
+    "homebrewRules": [
+      "Currency: 50 leptons = 1 quadrans, 5 quadrans = 1 assarion",
+      "Kol Points (Monk): Enriched ki — can be spent for enhanced mobility options",
+      "Arkla Companions: Primal Bond adds PB to companion checks/saves",
+      "Song of Rest: Works on any short rest, not just when performing"
+    ],
+    "experienceSystem": "xp",
+    "currencyName": "Assarions (Gold)",
+    "privateDmNotes": ""
+  },
+  "createdAt": 1747200000000,
+  "updatedAt": 1747200000000
+}

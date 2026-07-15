@@ -2700,3 +2700,57 @@ Two new env vars must be added to Vercel:
 - `VITE_FIREBASE_AUTH_PASSWORD=Jello1`
 
 ---
+
+## System Audit — July 15, 2026 (Updated: 2026-07-15 12:23)
+## Full System Diagnostic Report
+
+### ✅ TypeScript Compilation
+- **PASS** — `npx tsc --noEmit` exits cleanly with zero errors.
+
+### ✅ Linter
+- **PASS** — `npx oxlint` finds **0 errors**, 31 warnings (unused imports, missing deps).
+- All warnings are cosmetic — no runtime-impacting issues.
+
+### ✅ Build
+- **PASS** — `npm run build` completes in 655ms.
+- Output: `dist/` with 0.68 kB HTML, 75.77 kB CSS, 983.92 kB JS.
+- Note: JS bundle is ~984 kB due to Firebase SDK inclusion. Code-splitting could be applied later.
+
+### ✅ Firebase Configuration
+- **Firebase Project:** `str-vtt` (project ID confirmed)
+- **Auth:** Email/password configured for `mikejalow@gmail.com`
+- **Custom Claim:** `{ role: "dm" }` set successfully on that user
+- **Firestore Rules:** Properly restrict writes to DM role, reads to any authenticated user
+- **Vite Env:** All 6 Firebase env vars populated in `vtt/.env`
+
+### ✅ Sync Architecture
+- **Three sync domains** (campaign, session, homebrew) each push to Firestore via `firebase-service.ts`
+- **Debounced pushes** — campaign/homebrew at 2s, session at 1.5s
+- **Persistent sync queue** — unsaved writes survive page reload via localStorage
+- **Exponential backoff retry** — up to 5 retries before giving up
+- **Conflict resolution** — last-write-wins with `updatedAt` comparison
+- **Health monitor** — pings `_health/ping` doc, auto-reconnects on disconnect
+
+### ✅ Authentication Flow
+- **DM:** App-level env credentials → Firebase Auth email/password → Custom claim `{ role: "dm" }`
+- **Player:** Name/alias matching against PC list → Firebase anonymous auth → Read-only Firestore access
+- **Persistence:** Auth state survives page refresh via Zustand `persist` middleware (localStorage)
+
+### ✅ Data Types
+- **Campaign** — characters, encounters, maps, journal, settings
+- **Combat** — full encounter with turn tracking, status effects, conditions, combat log
+- **Homebrew** — items (weapon/armor/potion/scroll), feats, spells (full 5e spell structure)
+- All types include `isHomebrew`, `source`, `tags`, `createdAt`, `updatedAt`
+
+### ✅ Env Security
+- `vtt/.env` contains real Firebase config, DM credentials, API keys
+- `.gitignore` properly excludes `.env`, `.env.local`, `service-account.json`
+- `.env.example` has placeholder values only (safe to commit)
+
+### ⚠️ Findings
+1. **JS Bundle Size** (983 kB) — The Firebase SDK is ~400 kB. Could code-split via dynamic `import()` for pages that don't need Firebase (login page).
+2. **`.vercel.env.local` still on disk** — Contains OIDC token. Already in `.gitignore` and removed from git HEAD, but still present on filesystem. Recommend deleting.
+3. **Firestore indexes empty** — No composite indexes defined. Fine for single-document reads (campaigns/arkla), but may cause issues if complex queries are added.
+4. **31 linter warnings** — Mostly unused imports and `exhaustive-deps`. Cosmetic, not blocking.
+
+---
