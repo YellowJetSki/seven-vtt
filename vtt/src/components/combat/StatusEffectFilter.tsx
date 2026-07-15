@@ -29,7 +29,7 @@ const STATUS_EFFECT_META: { effect: StatusEffect; label: string; icon: string }[
   { effect: "restrained", label: "Restrained", icon: "🔗" },
   { effect: "stunned", label: "Stunned", icon: "💫" },
   { effect: "unconscious", label: "Unconscious", icon: "😴" },
-  { effect: "exhaustion", label: "Exhaustion", icon: "😩" },
+  { effect: "exhaustion1", label: "Exhaustion", icon: "😩" },
 ];
 
 interface StatusEffectFilterProps {

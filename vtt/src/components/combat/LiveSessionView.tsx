@@ -90,9 +90,9 @@ export function LiveSessionView() {
   const secs = timer % 60;
 
   const handlePush = useCallback(() => {
-    setCurrentScene(sceneInput || undefined);
-    setCurrentMapUrl(mapUrlInput || undefined);
-    setDmAnnouncement(announcementInput || undefined);
+    setCurrentScene(sceneInput || "");
+    setCurrentMapUrl(mapUrlInput || "");
+    setDmAnnouncement(announcementInput || "");
     setShowPushConfirmation(true);
     showToast({ message: "Session state broadcast to players!", type: "success" });
     setTimeout(() => setShowPushConfirmation(false), 2500);

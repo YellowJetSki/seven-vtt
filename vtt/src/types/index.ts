@@ -206,12 +206,12 @@ export interface EncounterEnemy {
 export interface BattleMap {
   id: string;
   name: string;
-  imageUrl: string;
-  imageFit: "cover" | "contain" | "stretch";
+  imageUrl?: string;
+  imageFit?: "cover" | "contain" | "stretch";
   gridWidth: number;
   gridHeight: number;
   gridSize: number;
-  gridColor: string;
+  gridColor?: string;
   fogOfWar: FogZone[];
   tokens: MapToken[];
   notes?: string;
@@ -249,7 +249,7 @@ export interface JournalEntry {
   title: string;
   content: string;
   tags: string[];
-  type: "session" | "lore" | "quest";
+  type: "session" | "lore" | "quest" | "note";
   sessionNumber?: number;
   createdAt: number;
   updatedAt: number;

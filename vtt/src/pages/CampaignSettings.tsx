@@ -66,7 +66,7 @@ export function CampaignSettings() {
     setCampaign({
       ...campaign,
       name: campaignName.trim() || campaign.name,
-      description: campaignDescription.trim() || undefined,
+      description: campaignDescription.trim() || campaign.description,
       settings: {
         ...campaign.settings,
         experienceSystem: xpSystem,

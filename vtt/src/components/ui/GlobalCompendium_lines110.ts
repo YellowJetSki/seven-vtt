@@ -1,0 +1,1 @@
+        subtitle: item.category ?? "Item",

@@ -6,6 +6,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useCombatStore } from "@/stores/combatStore";
+import type { CombatLogEntry } from "@/types/combat";
 import { Button } from "@/components/ui/Button";
 
 type LogFilter = "all" | "damage" | "heal" | "temp_hp" | "status" | "death" | "note" | "round_start";
@@ -34,7 +35,10 @@ export function CombatLogPanel() {
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter((e) => e.description.toLowerCase().includes(q) || (e.actorName?.toLowerCase().includes(q)));
+      list = list.filter((e) => {
+        const desc = e.description ?? "";
+        return desc.toLowerCase().includes(q) || (e.actorName?.toLowerCase().includes(q) ?? false);
+      });
     }
     return list.reverse(); // newest first
   }, [combatLog, filter, searchQuery]);
@@ -80,7 +84,9 @@ export function CombatLogPanel() {
             📥
           </button>
           <button
-            onClick={clearLog}
+            onClick={() => {
+              clearLog();
+            }}
             className="text-[11px] text-surface-500 transition-colors hover:text-warrior-400"
             title="Clear log"
           >
@@ -139,46 +145,34 @@ export function CombatLogPanel() {
 
 /* ── Log Entry Sub-Component ────────────────────────────────── */
 
-interface LogEntryCardProps {
-  entry: {
-    id: string;
-    timestamp: number;
-    type: string;
-    actorName: string;
-    targetName?: string;
-    value?: number;
-    description: string;
-  };
-}
+const TYPE_ICON: Record<string, string> = {
+  damage: "💥",
+  heal: "❤️",
+  temp_hp: "🛡️",
+  status: "🔮",
+  death: "💀",
+  revive: "✨",
+  note: "📝",
+  round_start: "🔄",
+};
 
-function LogEntryCard({ entry }: LogEntryCardProps) {
-  const typeIcon: Record<string, string> = {
-    damage: "💥",
-    heal: "❤️",
-    temp_hp: "🛡️",
-    status: "🔮",
-    death: "💀",
-    revive: "✨",
-    note: "📝",
-    round_start: "🔄",
-  };
+const TYPE_COLOR: Record<string, string> = {
+  damage: "border-l-warrior-500/50",
+  heal: "border-l-rogue-500/50",
+  temp_hp: "border-l-mage-500/50",
+  status: "border-l-accent-500/50",
+  death: "border-l-warrior-500/70",
+  revive: "border-l-divine-500/50",
+  note: "border-l-surface-500/50",
+  round_start: "border-l-divine-500/50",
+};
 
-  const typeColor: Record<string, string> = {
-    damage: "border-l-warrior-500/50",
-    heal: "border-l-rogue-500/50",
-    temp_hp: "border-l-mage-500/50",
-    status: "border-l-accent-500/50",
-    death: "border-l-warrior-500/70",
-    revive: "border-l-divine-500/50",
-    note: "border-l-surface-500/50",
-    round_start: "border-l-divine-500/50",
-  };
-
+function LogEntryCard({ entry }: { entry: CombatLogEntry }) {
   return (
-    <div className={`border-l-2 px-4 py-2.5 transition-colors hover:bg-surface-800/50 ${typeColor[entry.type] ?? "border-l-surface-600"}`}>
+    <div className={`border-l-2 px-4 py-2.5 transition-colors hover:bg-surface-800/50 ${TYPE_COLOR[entry.type] ?? "border-l-surface-600"}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-xs">{typeIcon[entry.type] ?? "📋"}</span>
+          <span className="text-xs">{TYPE_ICON[entry.type] ?? "📋"}</span>
           <span className="text-xs font-medium text-surface-200 truncate">
             {entry.actorName}
           </span>
@@ -195,7 +189,7 @@ function LogEntryCard({ entry }: LogEntryCardProps) {
           </span>
         )}
       </div>
-      <p className="mt-0.5 text-[11px] text-surface-400 leading-relaxed">{entry.description}</p>
+      <p className="mt-0.5 text-[11px] text-surface-400 leading-relaxed">{entry.description ?? ""}</p>
       <p className="mt-0.5 text-[9px] text-surface-600">
         {new Date(entry.timestamp).toLocaleTimeString()}
       </p>

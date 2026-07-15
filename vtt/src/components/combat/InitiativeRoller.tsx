@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/Button";
 
 export function InitiativeRoller() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
-  const updateCombatant = useCombatStore((s) => s.updateCombatant);
+  const setCombatantInitiative = useCombatStore((s) => s.setCombatantInitiative);
   const showToast = useUiStore((s) => s.showToast);
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
 
@@ -34,7 +34,7 @@ export function InitiativeRoller() {
       if (pc) {
         const dexMod = abilityModifier(pc.abilityScores.dexterity);
         const init = dexMod + Math.floor(Math.random() * 20) + 1;
-        updateCombatant(c.id, { initiative: init });
+        setCombatantInitiative(c.id, init);
         updated++;
       }
     }
@@ -47,15 +47,17 @@ export function InitiativeRoller() {
 
   const handleClearAll = () => {
     for (const c of allCombatants) {
-      updateCombatant(c.id, { initiative: 0 });
+      setCombatantInitiative(c.id, 0);
     }
     showToast({ message: "Cleared all initiative values.", type: "info" });
   };
 
   const handleSortByInitiative = () => {
+    // Re-order combatants by sorting their initiative values in descending order
     const sorted = [...allCombatants].sort((a, b) => b.initiative - a.initiative);
-    const sortedIds = sorted.map((c) => c.id);
-    useCombatStore.getState().reorderCombatants(sortedIds);
+    sorted.forEach((c, idx) => {
+      setCombatantInitiative(c.id, sorted.length - idx);
+    });
     showToast({ message: "Combatants sorted by initiative (highest first).", type: "success" });
   };
 
@@ -90,12 +92,12 @@ export function InitiativeRoller() {
                     className="w-14 rounded border border-surface-700 bg-surface-900 px-2 py-1 text-xs text-surface-100 text-center focus:border-accent-500 focus:outline-none"
                     onBlur={(e) => {
                       const val = parseInt(e.target.value, 10);
-                      if (!isNaN(val)) updateCombatant(c.id, { initiative: val });
+                      if (!isNaN(val)) setCombatantInitiative(c.id, val);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         const val = parseInt((e.target as HTMLInputElement).value, 10);
-                        if (!isNaN(val)) updateCombatant(c.id, { initiative: val });
+                        if (!isNaN(val)) setCombatantInitiative(c.id, val);
                       }
                     }}
                   />

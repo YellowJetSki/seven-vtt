@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import type { BattleMap, FogReveal } from "@/types";
+import type { BattleMap, FogZone } from "@/types";
 
 interface FogOfWarLayerProps {
   map: BattleMap;
@@ -111,7 +111,7 @@ export function FogOfWarControls({
   const [newRevealH, setNewRevealH] = useState(4);
 
   const handleAddReveal = useCallback(() => {
-    const reveal: FogReveal = {
+    const reveal: FogZone = {
       id: `fog_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       x: newRevealX,
       y: newRevealY,

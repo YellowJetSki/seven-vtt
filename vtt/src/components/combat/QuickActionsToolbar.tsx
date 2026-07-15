@@ -109,7 +109,7 @@ export function QuickActionsToolbar({ combatantId, combatant, onClose, anchorRec
 
   const handleStatusToggle = useCallback((effect: StatusEffect) => {
     addSnapshot();
-    toggleStatus(combatantId, effect, "QuickActions");
+    toggleStatus(combatantId, effect);
     onClose();
   }, [addSnapshot, toggleStatus, combatantId, onClose]);
 
@@ -121,10 +121,10 @@ export function QuickActionsToolbar({ combatantId, combatant, onClose, anchorRec
 
   const handleAddNote = useCallback(() => {
     if (!noteInput.trim()) return;
-    addNote(combatantId, noteInput.trim());
+    addNote(`[${combatant.name}] ${noteInput.trim()}`);
     setNoteInput("");
     onClose();
-  }, [noteInput, addNote, combatantId, onClose]);
+  }, [noteInput, addNote, combatant.name, onClose]);
 
   // Calculate toolbar position
   const style: React.CSSProperties = {};
@@ -138,7 +138,7 @@ export function QuickActionsToolbar({ combatantId, combatant, onClose, anchorRec
     style.position = "fixed";
   }
 
-  const hasTempHp = combatant.temporaryHitPoints > 0;
+  const hasTempHp = combatant.hitPoints.temporary > 0;
 
   return (
     <div
@@ -153,7 +153,7 @@ export function QuickActionsToolbar({ combatantId, combatant, onClose, anchorRec
         </span>
         <span className="text-[10px] text-surface-500">
           HP {combatant.hitPoints.current}/{combatant.hitPoints.max}
-          {hasTempHp && ` (+${combatant.temporaryHitPoints})`}
+          {hasTempHp && ` (+${combatant.hitPoints.temporary})`}
         </span>
       </div>
 
@@ -219,7 +219,7 @@ export function QuickActionsToolbar({ combatantId, combatant, onClose, anchorRec
               onClose();
             }
           }}>
-            {hasTempHp ? `Set (${combatant.temporaryHitPoints})` : "+ Set"}
+            {hasTempHp ? `Set (${combatant.hitPoints.temporary})` : "+ Set"}
           </Button>
         </div>
 

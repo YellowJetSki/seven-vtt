@@ -285,7 +285,7 @@ export function EncounterBuilder({
     const encounter: Encounter = {
       id: existingEncounter?.id ?? uid("enc"),
       name: name.trim(),
-      description: description.trim() || undefined,
+      description: description.trim() || "No description provided.",
       enemies: slots.map(
         (s): EncounterEnemy => ({
           enemyId: s.enemyId,
@@ -293,7 +293,7 @@ export function EncounterBuilder({
         }),
       ),
       environment: environment.trim() || undefined,
-      difficulty,
+      difficulty: (difficulty === "unknown" ? undefined : difficulty) as "easy" | "medium" | "hard" | "deadly" | undefined,
       experienceReward: totalXp,
       isHomebrew: false,
       createdAt: existingEncounter?.createdAt ?? Date.now(),

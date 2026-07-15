@@ -79,6 +79,10 @@ interface CombatStoreState {
   endEncounter: () => void;
   togglePause: () => void;
 
+  /* ── Combat Log ── */
+  addNote: (note: string) => void;
+  clearLog: () => void;
+
   /* ── Live Session ── */
   startSession: () => void;
   endSession: () => void;
@@ -87,6 +91,7 @@ interface CombatStoreState {
   setCurrentMapUrl: (url: string) => void;
   setDmAnnouncement: (msg: string) => void;
   setConditions: (conditions: Partial<LiveConditions>) => void;
+  recordRest: (type: "short" | "long") => void;
 }
 
 /* ── Store Definition ───────────────────────────────────────── */
@@ -438,6 +443,23 @@ export const useCombatStore = create<CombatStoreState>((set, get) => ({
     });
   },
 
+  /* ── Combat Log ── */
+  addNote: (note) => {
+    const logEntry: CombatLogEntry = {
+      id: logUid(),
+      timestamp: Date.now(),
+      type: "note",
+      actorId: "DM",
+      actorName: "DM Note",
+      description: note,
+    };
+    set({ combatLog: [logEntry, ...get().combatLog] });
+  },
+
+  clearLog: () => {
+    set({ combatLog: [] });
+  },
+
   /* ── Live Session ── */
   startSession: () => {
     const now = Date.now();
@@ -487,5 +509,16 @@ export const useCombatStore = create<CombatStoreState>((set, get) => ({
         conditions: { ...get().liveSession.conditions, ...conditions },
       },
     });
+  },
+
+  recordRest: (type) => {
+    const now = Date.now();
+    set((state) => ({
+      liveSession: {
+        ...state.liveSession,
+        phase: "rest",
+        ...(type === "short" ? { lastShortRestAt: now } : { lastLongRestAt: now }),
+      },
+    }));
   },
 }));

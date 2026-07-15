@@ -18,18 +18,21 @@ interface HomebrewState extends HomebrewLibrary {
   updateItem: (id: string, updates: Partial<HomebrewItem>) => void;
   removeItem: (id: string) => void;
   getItemById: (id: string) => HomebrewItem | undefined;
+  setItems: (items: HomebrewItem[]) => void;
 
   // ── Feats ──
   addFeat: (feat: HomebrewFeat) => void;
   updateFeat: (id: string, updates: Partial<HomebrewFeat>) => void;
   removeFeat: (id: string) => void;
   getFeatById: (id: string) => HomebrewFeat | undefined;
+  setFeats: (feats: HomebrewFeat[]) => void;
 
   // ── Spells ──
   addSpell: (spell: HomebrewSpell) => void;
   updateSpell: (id: string, updates: Partial<HomebrewSpell>) => void;
   removeSpell: (id: string) => void;
   getSpellById: (id: string) => HomebrewSpell | undefined;
+  setSpells: (spells: HomebrewSpell[]) => void;
 
   // ── General ──
   clearAll: () => void;
@@ -64,6 +67,8 @@ export const useHomebrewStore = create<HomebrewState>()(
 
       getItemById: (id) => get().items.find((i) => i.id === id),
 
+      setItems: (items) => set({ items }),
+
       /* ── Feats ── */
       addFeat: (feat) =>
         set((state) => ({ feats: [...state.feats, feat] })),
@@ -82,6 +87,8 @@ export const useHomebrewStore = create<HomebrewState>()(
 
       getFeatById: (id) => get().feats.find((f) => f.id === id),
 
+      setFeats: (feats) => set({ feats }),
+
       /* ── Spells ── */
       addSpell: (spell) =>
         set((state) => ({ spells: [...state.spells, spell] })),
@@ -99,6 +106,8 @@ export const useHomebrewStore = create<HomebrewState>()(
         })),
 
       getSpellById: (id) => get().spells.find((s) => s.id === id),
+
+      setSpells: (spells) => set({ spells }),
 
       /* ── General ── */
       clearAll: () => set({ items: [], feats: [], spells: [] }),

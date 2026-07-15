@@ -77,7 +77,6 @@ export function InitiativeTracker() {
     const pc = characters.find((c) => c.id === pcId);
     if (!pc) return;
     addCombatant({
-      id: `pc_${Date.now()}`,
       name: pc.name,
       type: "player",
       initiative: 0,
@@ -128,7 +127,7 @@ export function InitiativeTracker() {
               <>
                 <Button size="xs" variant="ghost" onClick={previousTurn} title="Previous Turn (Shift+Space)">◀</Button>
                 <Button size="xs" variant="secondary" onClick={nextTurn} title="Next Turn (Space)">▶</Button>
-                <Button size="xs" variant={activeEncounter.isPaused ? "success" : "warning"} onClick={togglePause}>
+                <Button size="xs" variant={activeEncounter.isPaused ? "secondary" : "danger"} onClick={togglePause}>
                   {activeEncounter.isPaused ? "▶" : "⏸"}
                 </Button>
               </>
@@ -157,8 +156,8 @@ export function InitiativeTracker() {
             )}
           </div>
 
-          {/* Initiative Roller */}
-          {isPrep && <InitiativeRoller combatants={activeEncounter.combatants} setCombatantInitiative={setCombatantInitiative} />}
+          {/* Initiative Roller - reads store directly */}
+          {isPrep && <InitiativeRoller />}
         </div>
       </div>
 
@@ -283,7 +282,6 @@ function EmptyEncounterState({
     // Import all PCs automatically
     characters.forEach((pc) => {
       addCombatant({
-        id: `pc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         name: pc.name,
         type: "player",
         initiative: 0,
@@ -308,7 +306,6 @@ function EmptyEncounterState({
     onAddEnemyGroup("Bandit", 4);
     characters.forEach((pc) => {
       addCombatant({
-        id: `pc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         name: pc.name,
         type: "player",
         initiative: 0,
