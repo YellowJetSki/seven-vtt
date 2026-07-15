@@ -1704,3 +1704,142 @@ Conditions are part of `liveSession` which is already pushed via `sessionSync.pu
 - **Oxlint**: 25 warnings (unused imports/variables, exhaustive-deps — all non-breaking)
 
 ---
+
+## Phase 3 & 4: Professional Features Added (Updated: 2026-07-15 08:10)
+## Phase 3 & 4 Features (2026-07-15)
+
+### New Features
+
+1. **ErrorBoundary** (`vtt/src/components/ui/ErrorBoundary.tsx`)
+   - React class-based error boundary for DM routes
+   - Graceful fallback UI with retry button
+   - Error details accordion for debugging
+   - Optional `onError` callback for analytics
+   - Wraps `<Outlet />` in `AppShell.tsx`
+
+2. **Enhanced KeyboardShortcutsOverlay** (`vtt/src/components/ui/KeyboardShortcutsOverlay.tsx`)
+   - Added 12 new shortcuts: `Ctrl+Shift+N` (scratch pad), `Ctrl+Shift+T` (session notes), `Ctrl+Shift+E` (export), `Shift+Space` (prev turn), etc.
+   - Updated session commands for recording rests
+   - Better category organization
+
+3. **Enhanced Header** (`vtt/src/components/layout/Header.tsx`)
+   - Online/offline indicator using `navigator.onLine`
+   - Pending sync count badge (polls `getPendingSyncCount()` every 5s)
+   - Tooltips on all status badges
+   - Improved responsive layout
+
+4. **Upgraded SessionNotesTimeline** (`vtt/src/components/combat/SessionNotesTimeline.tsx`)
+   - Search/filter across notes with real-time filtering
+   - Phase filter tabs (all, combat, exploration, rest, downtime)
+   - Clear all with confirmation flow
+   - LocalStorage persistence (survives page refresh)
+   - Keyboard shortcut `Ctrl+Shift+T` to toggle
+   - Improved UI with round/phase badges and delete hover reveal
+
+5. **ConditionsWidget** (`vtt/src/components/combat/ConditionsWidget.tsx`)
+   - Weather, lighting, terrain selectors synced to combat store
+   - Auto-syncs to players via Firebase (part of `LiveSessionState`)
+   - Compact and expanded modes
+   - Active condition indicator badge
+
+6. **CommandRegistry** (`vtt/src/lib/commandRegistry.ts`)
+   - Extracted from CommandPalette for modularity
+   - Exports `Command` type, `registerCommand`, `unregisterCommand`, `getCommands`, `searchCommands`
+
+### Infrastructure
+- `vtt/.git` removed (was causing submodule issues)
+- All app code now properly tracked in `vtt/` directory
+- Root `tsconfig.app.json` and `vite.config.ts` point to `./vtt/src`
+- Deployed to: **https://vtt-seven.vercel.app**
+
+---
+
+## Phase 3-5 Final: All Missing Features Now Written (Updated: 2026-07-15 08:21)
+## Phase 3-5 Final (2026-07-15) — All Gaps Closed
+
+### New Files Created
+1. **`DiceTower`** (`vtt/src/components/ui/DiceTower.tsx`)
+   - CSS-only dice rolling modal with animation
+   - Supports d4, d6, d8, d10, d12, d20, d100
+   - Multi-die selection, roll animation, total display
+   - Button in header (opens modal)
+
+2. **`GlobalCompendium`** (`vtt/src/components/ui/GlobalCompendium.tsx`)
+   - Centralized search across spells, items, feats, conditions, monsters
+   - Fuzzy search, tabbed results, detail panel
+   - Keyboard shortcut: `Ctrl+Shift+F`
+   - Uses `STATUS_EFFECTS` data (fixed from `CONDITIONS`)
+
+3. **`sessionAnalyticsStore`** (`vtt/src/stores/sessionAnalyticsStore.ts`)
+   - Tracks session time per phase, damage dealt/taken, encounter logs
+   - Local-only (not Firebase-persisted)
+   - Methods: `startSession`, `endSession`, `startEncounter`, `endEncounter`, `recordDamage`, `advanceRound`, `setPhase`, `incrementNoteCount`
+
+4. **`SessionAnalyticsPanel`** (`vtt/src/components/dashboard/SessionAnalyticsPanel.tsx`)
+   - Collapsible panel on DM Dashboard
+   - Shows: phase time breakdown with bar charts, damage summary, current encounter status, past session history
+
+5. **`CombatantTurnTimer`** (`vtt/src/components/combat/CombatantTurnTimer.tsx`)
+   - Per-combatant chess clock timer
+   - Color coding: green <30s, yellow <60s, red 60s+
+   - Pause-aware
+   - Compact mode for inline display
+
+### Types Changed
+- **`CombatEncounter`**: Added `turnStartedAt: number | null` — used by the turn timer
+
+### Store Changes
+- **`combatStore.ts`**: 
+  - `createEncounter` now includes `turnStartedAt: null`
+  - `startEncounter` sets `turnStartedAt` to `Date.now()`
+  - `nextTurn` updates `turnStartedAt` on turn/round change
+  - `previousTurn` added (maps to `previousTurn` action)
+  - `togglePause` added (replaces `pauseCombat`/`resumeCombat`)
+  - `previousTurn` now sets `turnStartedAt`
+
+### Build Status
+- `tsc` → **0 errors**
+- `oxlint` → **25 warnings** (down from 59)
+- `vite build` → **success** (947KB gzipped 262KB)
+- Deployed to: **https://vtt-seven.vercel.app**
+
+---
+
+## LootGenerator Component (Updated: 2026-07-15 08:25)
+## LootGenerator Component
+
+**File**: `vtt/src/components/combat/LootGenerator.tsx`
+
+A D&D 5e treasure generator that creates loot based on encounter difficulty, creature types, and party level. Supports:
+- Individual treasure (coins + gems/art) based on CR
+- Hoard treasure (per DMG tables)
+- Magic item tables (A-I)
+- Custom loot entries (DM can add anything)
+- Distribution to specific player characters
+
+**Props**: None (reads from stores directly)
+
+**State**: lootEntries[], selectedPlayer for distribution, roll mode (individual/hoard)
+
+---
+
+## New Components & Hooks (Phase 3-4) (Updated: 2026-07-15 08:29)
+## New Components & Hooks
+
+### LootGenerator
+- **File**: `vtt/src/components/combat/LootGenerator.tsx`
+- DMG Chapter 7 treasure generator. Individual treasure by CR tier, magic item tables (A-C), custom entries, distribution to player characters via `updatePlayerCharacter`. Used in `Encounters.tsx` combat tab.
+
+### PlayerInventory
+- **File**: `vtt/src/components/player/PlayerInventory.tsx`
+- Full inventory management: equipment add/remove/quick-add, currency editor (CP/SP/EP/GP/PP), magic items tab with rarity colors. Uses `updatePlayerCharacter` store action. Integrated into PlayerCards page via modal.
+
+### FogOfWarLayer
+- **File**: `vtt/src/components/maps/FogOfWarLayer.tsx`
+- Dynamic player vision masking using SVG masks. Player token positions create circular vision zones (configurable: normal/darkvision/torch). `FogReveal[]` zones cut rectangular holes. GM toggle for full view. Integrated into MapEditor.
+
+### useSrdApi
+- **File**: `vtt/src/hooks/useSrdApi.ts`
+- Full D&D 5e SRD API hook (https://www.dnd5eapi.co/api). Functions: `fetchSpell`, `searchSpells`, `fetchMonster`, `searchMonsters`, `fetchEquipment`, `fetchConditions`. Includes 24hr in-memory cache.
+
+---

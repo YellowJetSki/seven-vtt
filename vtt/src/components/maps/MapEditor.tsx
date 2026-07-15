@@ -1,6 +1,6 @@
 /* ── Map Editor — Interactive Battle Map ───────────────────────
  * A fully interactive battle map with grid overlay, token placement,
- * fog of war reveal, and drag-reorderable token list.
+ * fog of war with player vision masking, and drag-reorderable token list.
  * Mobile-first design with pinch-zoom considerations.
  * ─────────────────────────────────────────────────────────────── */
 
@@ -9,6 +9,7 @@ import type { BattleMap, MapToken } from "@/types";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { FogOfWarLayer, FogOfWarControls } from "@/components/maps/FogOfWarLayer";
 
 interface MapEditorProps {
   map: BattleMap;
@@ -30,6 +31,13 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [showAddToken, setShowAddToken] = useState(false);
   const [showFogControls, setShowFogControls] = useState(false);
+  const [showFog, setShowFog] = useState(true);
+  const [gmView, setGmView] = useState(true); // true = DM sees all, false = player view
+
+  // ── Container dimensions (used for cell width/height) ──
+  const containerWidth = useRef(800);
+  const cellWidth = containerWidth.current / map.gridWidth;
+  const cellHeight = containerWidth.current / map.gridHeight;
 
   // ── Grid Rendering ──
   const gridLines = useMemo(() => {
@@ -59,7 +67,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
   }, []);
 
   // ── Canvas Click (place token) ──
-  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCanvasClick = useCallback((_e: React.MouseEvent<HTMLDivElement>) => {
     if (selectedTokenId) {
       setSelectedTokenId(null);
       return;
@@ -103,11 +111,29 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-surface-200">{map.name}</h3>
-          <span className="text-[10px] text-surface-500">{map.gridWidth}×{map.gridHeight} · {map.tokens.length} tokens</span>
+          <span className="text-[10px] text-surface-500">{map.gridWidth}x{map.gridHeight} - {map.tokens.length} tokens</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <button
+            onClick={() => setGmView(!gmView)}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
+              gmView ? "bg-accent-600 text-white" : "bg-surface-800 text-surface-400"
+            }`}
+            title={gmView ? "DM View (no fog)" : "Player View (with fog)"}
+          >
+            {gmView ? "DM" : "Player"}
+          </button>
+          <button
+            onClick={() => setShowFog(!showFog)}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
+              showFog ? "bg-surface-800 text-surface-300" : "bg-surface-800 text-surface-500 opacity-50"
+            }`}
+          >
+            {showFog ? "Fog On" : "Fog Off"}
+          </button>
           <Button size="xs" variant="ghost" onClick={() => setShowFogControls((o) => !o)}>
-            {showFogControls ? "Hide Fog" : "Fog of War"}
+            {showFogControls ? "Hide Zones" : "Reveal Zones"}
           </Button>
           <Button size="xs" onClick={() => setShowAddToken(true)}>+ Token</Button>
         </div>
@@ -134,11 +160,11 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
         {/* Grid overlay */}
         {gridLines}
 
-        {/* Fog of war reveals */}
-        {map.fogOfWar.map((fog) => (
+        {/* Legacy fog reveals (kept for backward compat — rendered as semi-transparent rectangles) */}
+        {!gmView && showFog && map.fogOfWar.map((fog) => (
           <div
             key={fog.id}
-            className="absolute bg-black/60"
+            className="absolute bg-black/40 border border-accent-500/20"
             style={{
               left: `${(fog.x / map.gridWidth) * 100}%`,
               top: `${(fog.y / map.gridHeight) * 100}%`,
@@ -148,6 +174,16 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
           />
         ))}
 
+        {/* Dynamic Fog of War with player vision masking */}
+        {showFog && !gmView && (
+          <FogOfWarLayer
+            map={map}
+            isGmView={false}
+            cellWidth={cellWidth || 50}
+            cellHeight={cellHeight || 50}
+          />
+        )}
+
         {/* Tokens */}
         {map.tokens.map((token) => (
           <div
@@ -155,7 +191,9 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
             onClick={(e) => { e.stopPropagation(); handleTokenClick(token.id); }}
             className={`absolute flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110 ${
               selectedTokenId === token.id ? "ring-2 ring-accent-400 ring-offset-2 ring-offset-surface-900 z-10" : "z-0"
-            } ${!token.visible ? "opacity-50" : ""}`}
+            } ${!token.visible ? "opacity-50" : ""} ${
+              !gmView && !token.visible ? "hidden" : ""
+            }`}
             style={{
               left: `${(token.x / map.gridWidth) * 100}%`,
               top: `${(token.y / map.gridHeight) * 100}%`,
@@ -187,8 +225,8 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               <div>
                 <h4 className="font-semibold text-surface-100">{selectedToken.label}</h4>
                 <p className="text-xs text-surface-400">
-                  {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} · Position ({selectedToken.x},{selectedToken.y})
-                  {selectedToken.hp && ` · HP ${selectedToken.hp.current}/${selectedToken.hp.max}`}
+                  {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} - Position ({selectedToken.x},{selectedToken.y})
+                  {selectedToken.hp && ` - HP ${selectedToken.hp.current}/${selectedToken.hp.max}`}
                 </p>
               </div>
             </div>
@@ -196,12 +234,12 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               <button onClick={() => handleToggleVisibility(selectedToken.id)}
                 className="rounded-md px-2 py-1 text-xs text-surface-400 hover:bg-surface-700 hover:text-surface-200 transition-colors"
                 title={selectedToken.visible ? "Hide from players" : "Show to players"}>
-                {selectedToken.visible ? "👁️" : "🚫"}
+                {selectedToken.visible ? "visible" : "hidden"}
               </button>
               <button onClick={() => handleRemoveToken(selectedToken.id)}
                 className="rounded-md px-2 py-1 text-xs text-warrior-400 hover:bg-warrior-500/10 transition-colors"
                 title="Remove token">
-                🗑️
+                x
               </button>
             </div>
           </div>
@@ -209,15 +247,22 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
           {/* Movement controls */}
           <div className="mt-3 grid grid-cols-3 gap-1 max-w-[200px] mx-auto">
             <div />
-            <button onClick={() => handleMoveToken(selectedToken.id, 0, -1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">↑</button>
+            <button onClick={() => handleMoveToken(selectedToken.id, 0, -1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">up</button>
             <div />
-            <button onClick={() => handleMoveToken(selectedToken.id, -1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">←</button>
-            <div className="rounded bg-surface-800 p-2 text-center text-surface-500 text-[10px]">N/S</div>
-            <button onClick={() => handleMoveToken(selectedToken.id, 1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">→</button>
+            <button onClick={() => handleMoveToken(selectedToken.id, -1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">left</button>
+            <div className="rounded bg-surface-800 p-2 text-center text-surface-500 text-[10px]">{selectedToken.x},{selectedToken.y}</div>
+            <button onClick={() => handleMoveToken(selectedToken.id, 1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">right</button>
             <div />
-            <button onClick={() => handleMoveToken(selectedToken.id, 0, 1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">↓</button>
+            <button onClick={() => handleMoveToken(selectedToken.id, 0, 1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">down</button>
             <div />
           </div>
+        </div>
+      )}
+
+      {/* Fog of War Controls Panel */}
+      {showFogControls && (
+        <div className="rounded-xl border border-surface-700 bg-surface-850 p-4">
+          <FogOfWarControls map={map} onUpdate={onUpdate} isGmView={gmView} />
         </div>
       )}
 

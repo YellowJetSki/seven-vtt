@@ -4,6 +4,7 @@
  *  - Session controls and notes timeline
  *  - DM Quick Reference (conditions, actions)
  *  - Encounter builder with difficulty calculator
+ *  - Loot generator with post-combat distribution
  *  - Saved encounters list and encounter CRUD
  * ─────────────────────────────────────────────────────────────── */
 
@@ -16,6 +17,7 @@ import { LiveSessionView } from "@/components/combat/LiveSessionView";
 import { DmQuickReference } from "@/components/combat/DmQuickReference";
 import { EncounterBuilder } from "@/components/combat/EncounterBuilder";
 import { EncounterDifficulty } from "@/components/combat/EncounterDifficulty";
+import { LootGenerator } from "@/components/combat/LootGenerator";
 import { SessionNotesTimeline } from "@/components/combat/SessionNotesTimeline";
 import { DmQuickReferencePanel } from "@/components/combat/DmQuickReferencePanel";
 import { Button } from "@/components/ui/Button";
@@ -171,7 +173,10 @@ export function Encounters() {
             </section>
           )}
           <InitiativeTracker />
-          <EncounterDifficulty />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <EncounterDifficulty />
+            <LootGenerator />
+          </div>
         </div>
       )}
 

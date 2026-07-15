@@ -1,7 +1,7 @@
 /* ── Player Cards — Party Management ───────────────────────────
  * Full CRUD interface for player characters with grid/compendium
  * views, search, sort, character import/export, bulk export,
- * and detail modals with quick ability view.
+ * detail modals with quick ability view, and full inventory UI.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
@@ -14,7 +14,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PartyCompendium } from "@/components/player/PartyCompendium";
 import { CharacterForm } from "@/components/player/CharacterForm";
-import type { PlayerCharacter, Ability, Skill } from "@/types";
+import { PlayerInventory } from "@/components/player/PlayerInventory";
+import type { PlayerCharacter, Ability } from "@/types";
 
 type ViewMode = "grid" | "compendium";
 type SortKey = "name" | "level" | "class" | "race";
@@ -58,6 +59,7 @@ export function PlayerCards() {
   const [selectedCharacter, setSelectedCharacter] = useState<PlayerCharacter | null>(null);
   const [showCharacterForm, setShowCharacterForm] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<PlayerCharacter | undefined>();
+  const [showInventoryId, setShowInventoryId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let list = [...characters];
@@ -266,6 +268,13 @@ export function PlayerCards() {
                   </div>
                 </div>
 
+                {/* Equipment count badge */}
+                <div className="flex items-center gap-2 text-[10px] text-surface-500">
+                  <span>🎒 {(char.equipment ?? []).length} items</span>
+                  <span>·</span>
+                  <span>🪙 {(char.currency?.gp ?? 0)} gp</span>
+                </div>
+
                 {/* Ability Scores Quick View */}
                 <div className="grid grid-cols-6 gap-1">
                   {ABILITY_ORDER.map((ability) => (
@@ -283,6 +292,7 @@ export function PlayerCards() {
               </div>
               {/* Quick actions overlay */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <button onClick={(e) => { e.stopPropagation(); setShowInventoryId(char.id); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-surface-300 hover:text-surface-100 backdrop-blur-sm" title="Inventory">🎒</button>
                 <button onClick={(e) => { e.stopPropagation(); handleEditCharacter(char); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-surface-300 hover:text-surface-100 backdrop-blur-sm">✏️</button>
                 <button onClick={(e) => { e.stopPropagation(); exportCharacter(char); }} className="rounded bg-surface-900/70 px-2 py-1 text-[10px] text-surface-300 hover:text-surface-100 backdrop-blur-sm">📤</button>
               </div>
@@ -341,8 +351,41 @@ export function PlayerCards() {
                 <DetailItem label="Speed" value={`${selectedCharacter.speed || 30} ft`} />
               </div>
 
+              {/* Equipment Summary */}
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400 mb-2">
+                  Equipment ({(selectedCharacter.equipment ?? []).length} items)
+                </h4>
+                {(selectedCharacter.equipment ?? []).length === 0 ? (
+                  <p className="text-xs text-surface-500">No equipment recorded.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {(selectedCharacter.equipment ?? []).map((item, i) => (
+                      <Badge key={`eq-${i}`} size="xs" variant="neutral">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Currency Summary */}
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-surface-400 mb-2">Currency</h4>
+                <div className="flex gap-3 text-xs text-surface-300">
+                  <span>🟤 {selectedCharacter.currency?.cp ?? 0} CP</span>
+                  <span>⚪ {selectedCharacter.currency?.sp ?? 0} SP</span>
+                  <span>🔵 {selectedCharacter.currency?.ep ?? 0} EP</span>
+                  <span>🟡 {selectedCharacter.currency?.gp ?? 0} GP</span>
+                  <span>💠 {selectedCharacter.currency?.pp ?? 0} PP</span>
+                </div>
+              </div>
+
               {/* Actions */}
               <div className="flex justify-end gap-2 border-t border-surface-700 pt-4">
+                <Button variant="secondary" size="sm" onClick={() => { setShowInventoryId(selectedCharacter.id); setSelectedCharacter(null); }}>
+                  🎒 Inventory
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => handleEditCharacter(selectedCharacter)}>
                   ✏️ Edit Character
                 </Button>
@@ -351,6 +394,18 @@ export function PlayerCards() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inventory Modal */}
+      {showInventoryId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInventoryId(null)}>
+          <div className="w-full max-w-lg rounded-xl border border-surface-700 bg-surface-850 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <PlayerInventory
+              character={characters.find((c) => c.id === showInventoryId)!}
+              onClose={() => setShowInventoryId(null)}
+            />
           </div>
         </div>
       )}
