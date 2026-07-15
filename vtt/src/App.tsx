@@ -2,10 +2,7 @@ import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { registerHpSyncCallback } from "@/stores/combatStore";
-import type { Combatant } from "@/types/combat";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { AppShell } from "@/components/layout/AppShell";
+
 import { LoginPage } from "@/pages/LoginPage";
 import { DmDashboard } from "@/pages/DmDashboard";
 import { PlayerCards } from "@/pages/PlayerCards";
@@ -15,113 +12,20 @@ import { BattleMaps } from "@/pages/BattleMaps";
 import { DmJournal } from "@/pages/DmJournal";
 import { CampaignSettings } from "@/pages/CampaignSettings";
 import { PlayerDashboard } from "@/pages/PlayerDashboard";
-import type { PlayerIdentifier } from "@/stores/authStore";
+import { TheatricPage } from "@/pages/TheatricPage";
 
-/* ── HP Sync: Combat Tracker → Campaign Store ────────────────
- * This callback is registered once at app bootstrap. Every time
- * a player combatant takes damage or is healed in the combat
- * tracker, their HP is automatically propagated to the campaign
- * store's PlayerCharacter record. This ensures HP is consistent
- * between the PC sheet, DM view, and battle map tokens.
- * ─────────────────────────────────────────────────────────────── */
-
-function syncPlayerHpToCampaign(combatants: Combatant[]) {
-  try {
-    const campaignState = useCampaignStore.getState();
-    if (!campaignState.campaign) return;
-
-    const characters = campaignState.campaign.playerCharacters;
-    let hasChanges = false;
-
-    const updatedChars = characters.map((pc) => {
-      const matchingCombatant = combatants.find(
-        (c) => c.type === "player" && c.name.toLowerCase() === pc.name.toLowerCase()
-      );
-      if (!matchingCombatant) return pc;
-
-      if (
-        pc.hitPoints.current === matchingCombatant.hitPoints.current &&
-        pc.hitPoints.max === matchingCombatant.hitPoints.max &&
-        (pc.hitPoints.temporary || 0) === matchingCombatant.hitPoints.temporary
-      ) {
-        return pc;
-      }
-
-      hasChanges = true;
-      return {
-        ...pc,
-        hitPoints: {
-          current: matchingCombatant.hitPoints.current,
-          max: matchingCombatant.hitPoints.max,
-          temporary: matchingCombatant.hitPoints.temporary,
-        },
-        updatedAt: Date.now(),
-      };
-    });
-
-    if (hasChanges) {
-      updatedChars.forEach((pc) => {
-        const original = characters.find((c) => c.id === pc.id);
-        if (!original) return;
-        if (
-          original.hitPoints.current !== pc.hitPoints.current ||
-          original.hitPoints.max !== pc.hitPoints.max ||
-          (original.hitPoints.temporary || 0) !== (pc.hitPoints.temporary || 0)
-        ) {
-          campaignState.updatePlayerCharacter(pc.id, {
-            hitPoints: pc.hitPoints,
-            updatedAt: Date.now(),
-          });
-        }
-      });
-    }
-  } catch {
-    // Silently fail — stores might not be ready yet
-  }
-}
-
-// Register the sync callback at module level (runs once on import)
-registerHpSyncCallback(syncPlayerHpToCampaign);
+import { AppShell } from "@/components/layout/AppShell";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function App() {
   const state = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
-  const campaign = useCampaignStore((s) => s.campaign);
-  const setCampaign = useCampaignStore((s) => s.setCampaign);
-  const setPlayerIdentifiers = useAuthStore((s) => s.setPlayerIdentifiers);
+  const fetchCampaigns = useCampaignStore((s) => s.fetchCampaigns);
 
-  // Ensure a campaign exists in the store.
-  // If no campaign has been created yet (fresh visit), the store's
-  // default state will be used; DM actions will prompt campaign creation.
+  /* Fetch campaign data on mount (will rely on Firebase emulator or prod DB) */
   useEffect(() => {
-    if (!campaign) {
-      // The campaign store will handle seeding from localStorage persist.
-      // If nothing is persisted, the DM can create a campaign on first login.
-      return;
-    }
-  }, [campaign, setCampaign]);
-
-  // Sync character identifiers (first name + alias) to auth store for player lookup
-  useEffect(() => {
-    if (campaign) {
-      const identifiers: PlayerIdentifier[] = [];
-
-      for (const pc of campaign.playerCharacters) {
-        // First word of the character's name
-        const firstName = pc.name.split(" ")[0];
-        identifiers.push({ label: firstName, characterId: pc.id });
-
-        // Optional alias (e.g., "Strider" from "Edmund 'Strider' Tudul")
-        if (pc.alias && pc.alias.trim()) {
-          identifiers.push({ label: pc.alias.trim(), characterId: pc.id });
-        }
-      }
-
-      setPlayerIdentifiers(identifiers);
-    } else {
-      setPlayerIdentifiers([]);
-    }
-  }, [campaign, setPlayerIdentifiers]);
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   return (
     <Routes>
@@ -140,6 +44,9 @@ export default function App() {
           )
         }
       />
+
+      {/* Public: Theatric View — no auth, no sidebar, just fullscreen map */}
+      <Route path="/theatric" element={<TheatricPage />} />
 
       {/* DM Routes (wrapped in AppShell with Sidebar) */}
       <Route

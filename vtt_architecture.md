@@ -3002,3 +3002,37 @@ Added `FALLBACK_DM_CREDENTIALS` array in `authStore.ts` with:
 This allows login with either credential set regardless of Vercel env vars.
 
 ---
+
+## Battle Maps — Theatric View & ImagePicker Integration (2026-07-15) (Updated: 2026-07-15 13:44)
+## Theatric View (`BattleMaps.tsx → TheatricView`)
+
+**Purpose**: Full-bleed, no-grid, immersive token spotlight view for dramatic player reveals.
+
+**How it works**:
+1. DM selects a token in the Map Editor → clicks `🎭 Theatric` button (in toolbar or token inspector)
+2. `handleOpenTheatric(token)` sets `theatricToken` and `openModal("theatric")`
+3. `TheatricView` renders at `Modal size="full"` (fullscreen, no borders)
+
+**TheatricView features**:
+- **No grid lines** — pure immersion
+- **Auto-zoom on active token** — uses CSS `transform: scale()` to center and zoom in on the selected token
+- **Token outlined in accent ring** — active token gets `ring-3 ring-accent-400`
+- **Other tokens visible** — all visible tokens shown at 70% opacity
+- **Info card** — bottom overlay shows token name, type, HP, speed, position
+- **Close button** — top-right "✕ Close Theatric" button
+
+## ImagePicker Integration for Battle Maps
+
+MapForm now uses `<ImagePicker libraryCategory="battlemaps" />` which:
+- Shows battlemap SVGs from `/public/images/battlemaps/` (Cragmaw_Hideout.svg, Dragon_Barrow.svg, Wave_Echo_Cave.svg)
+- Supports URL input, file upload, and library browsing
+- Previous text input replaced with full ImagePicker component
+
+## DM Credentials Enforcement
+
+- `authStore.ts` now checks ONLY `MikeJello`/`Jello1` as the primary credential
+- Error message: "Only MikeJello is authorized as DM."
+- VITE_DM_USERNAME/PASSWORD env vars still work as secondary override for custom deployments
+- `arkla`/`silvertongue` fallback removed
+
+---

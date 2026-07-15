@@ -2,6 +2,13 @@
  * Full battle map management with grid overlay, token placement,
  * fog of war, map CRUD, image picker from /images/battlemaps/,
  * gallery browsing, and a Theatric Tab for dramatic reveals.
+ *
+ * ── Theatric Tab (new browser window) ────────────────────────
+ * Opens a separate tab that shows a full-bleed, no-grid view
+ * centered on the selected token. The tab reads map + token data
+ * from localStorage and listens for cross-tab updates via the
+ * 'storage' event, so the DM moving a token in the main tab
+ * updates the theatric view in real time.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
@@ -14,6 +21,15 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ImagePicker } from "@/components/ui/ImagePicker";
 import { MapEditor } from "@/components/maps/MapEditor";
 import type { BattleMap, MapToken } from "@/types";
+
+/* ── Cross-tab communication constant ──────────────────────── */
+export const THEATRIC_STORAGE_KEY = "str-vtt:theatric-data";
+
+/** Payload serialised into localStorage for the theatric tab to consume. */
+export interface TheatricPayload {
+  map: BattleMap;
+  tokenId: string;
+}
 
 function uid(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -48,7 +64,6 @@ export function BattleMaps() {
   const [selectedMap, setSelectedMap] = useState<BattleMap | null>(null);
   const [editingMap, setEditingMap] = useState<BattleMap | undefined>();
   const [confirmDelete, setConfirmDelete] = useState<BattleMap | null>(null);
-  const [theatricToken, setTheatricToken] = useState<MapToken | null>(null);
 
   const filteredMaps = useMemo(() => {
     if (!searchQuery.trim()) return maps;
@@ -110,13 +125,11 @@ export function BattleMaps() {
 
   const openMapViewer = (map: BattleMap) => {
     setSelectedMap(map);
-    setTheatricToken(null);
     openModal("map-viewer");
   };
 
   const closeMapViewer = () => {
     setSelectedMap(null);
-    setTheatricToken(null);
     closeModal();
   };
 
@@ -127,9 +140,26 @@ export function BattleMaps() {
     showToast({ message: `Token "${token.label}" added.`, type: "success" });
   };
 
+  /* ── Theatric Tab: Opens a NEW BROWSER TAB ────────────── */
   const handleOpenTheatric = (token: MapToken) => {
-    setTheatricToken(token);
-    openModal("theatric");
+    if (!selectedMap) return;
+
+    const payload: TheatricPayload = {
+      map: selectedMap,
+      tokenId: token.id,
+    };
+
+    // Serialise the full map + token into localStorage so the new tab can read it
+    try {
+      localStorage.setItem(THEATRIC_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      showToast({ message: "Failed to open theatric view: data too large.", type: "error" });
+      return;
+    }
+
+    // Open the theatric page in a new tab
+    const theatricUrl = `${window.location.origin}/theatric`;
+    window.open(theatricUrl, "str-vtt-theatric", "noopener,noreferrer");
   };
 
   return (
@@ -222,18 +252,6 @@ export function BattleMaps() {
         </Modal>
       )}
 
-      {/* Theatric Tab — full-bleed token spotlight, no grid, zooms on active token */}
-      {activeModal === "theatric" && selectedMap && theatricToken && (
-        <Modal modalId="theatric" title={`🎭 ${theatricToken.label} — Theatric View`} size="full">
-          <TheatricView
-            map={selectedMap}
-            token={theatricToken}
-            onUpdate={(updates) => updateBattleMap(selectedMap.id, updates)}
-            onClose={() => { setTheatricToken(null); closeModal(); }}
-          />
-        </Modal>
-      )}
-
       {/* Add Token Modal — lives outside MapEditor so it stays open independently */}
       {activeModal === "add-token" && selectedMap && (
         <Modal modalId="add-token" title="Add Token" size="sm">
@@ -272,109 +290,6 @@ export function BattleMaps() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
- * THEATRIC VIEW — full-bleed, no grid, zooms on active token
- * ═══════════════════════════════════════════════════════════════ */
-
-function TheatricView({
-  map,
-  token,
-  onUpdate,
-  onClose,
-}: {
-  map: BattleMap;
-  token: MapToken;
-  onUpdate: (updates: Partial<BattleMap>) => void;
-  onClose: () => void;
-}) {
-  const currentToken = map.tokens.find((t) => t.id === token.id) ?? token;
-  const containerRef = useState<HTMLDivElement | null>(null);
-
-  /* Compute a viewport that centers on the token and fills the screen */
-  const viewportStyle = useMemo(() => {
-    const tx = (currentToken.x / map.gridWidth) * 100;
-    const ty = (currentToken.y / map.gridHeight) * 100;
-    /* Zoom level: show roughly 5 cells around the token, but at least the whole map */
-    const zoomX = 100 / Math.max(map.gridWidth, 10);
-    const zoomY = 100 / Math.max(map.gridHeight, 10);
-    const zoom = Math.max(zoomX, zoomY, 0.15); /* 15% min = about 6-7 cells visible */
-    return {
-      transform: `translate(${-tx * zoom + 50 - zoom * 50}%, ${-ty * zoom + 50 - zoom * 50}%) scale(${1 / zoom})`,
-      transformOrigin: "0 0",
-    };
-  }, [currentToken.x, currentToken.y, map.gridWidth, map.gridHeight]);
-
-  const allTokens = map.tokens;
-
-  return (
-    <div className="relative w-full h-full overflow-hidden bg-surface-950">
-      {/* The zoomable/pannable scene */}
-      <div className="absolute inset-0" style={viewportStyle}>
-        {/* Map image */}
-        {map.imageUrl && (
-          <img src={map.imageUrl} alt={map.name}
-            className="absolute inset-0 h-full w-full object-cover" />
-        )}
-
-        {/* NO grid lines in theatric view — pure immersion */}
-
-        {/* All tokens — render only visible ones */}
-        {allTokens.map((t) => (
-          <div key={t.id}
-            className={`absolute flex items-center justify-center rounded-full transition-all duration-300 ${
-              t.id === currentToken.id
-                ? "ring-3 ring-accent-400 ring-offset-4 ring-offset-surface-950 z-20 scale-110"
-                : t.visible ? "z-10 opacity-70" : "hidden"
-            }`}
-            style={{
-              left: `${(t.x / map.gridWidth) * 100}%`,
-              top: `${(t.y / map.gridHeight) * 100}%`,
-              width: `${((t.size * 1.2) / map.gridWidth) * 100}%`,
-              height: `${((t.size * 1.2) / map.gridHeight) * 100}%`,
-              backgroundColor: t.color,
-              minWidth: "24px",
-              minHeight: "24px",
-            }}
-            title={`${t.label} — (${t.x},${t.y})`}>
-            {t.icon ? (
-              <span className="text-sm">{t.icon}</span>
-            ) : (
-              <span className="text-[10px] font-bold text-white uppercase">{t.label.charAt(0)}</span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Overlay controls */}
-      <div className="absolute top-4 right-4 z-30 flex gap-2">
-        <Button variant="ghost" size="xs" onClick={onClose}>
-          ✕ Close Theatric
-        </Button>
-      </div>
-
-      {/* Token info overlay */}
-      <div className="absolute bottom-4 left-4 right-4 z-30 flex items-end justify-between">
-        <div className="rounded-xl border border-surface-700/50 bg-surface-900/80 px-4 py-3 backdrop-blur-lg shadow-2xl">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: currentToken.color }}>
-              <span className="text-lg font-bold text-white">{currentToken.label.charAt(0)}</span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-surface-100">{currentToken.label}</h3>
-              <p className="text-xs text-surface-400">
-                {currentToken.type === "player" ? "PC" : currentToken.type.charAt(0).toUpperCase() + currentToken.type.slice(1)}
-                {currentToken.hp && ` · ${currentToken.hp.current}/${currentToken.hp.max} HP`}
-                {currentToken.speed && ` · ${currentToken.speed}ft`}
-                · Position ({currentToken.x},{currentToken.y})
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
