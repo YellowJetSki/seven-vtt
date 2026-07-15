@@ -2628,3 +2628,75 @@ To enable real-time cross-device sync:
 | 4 | LOW | Player view shows "⏸️ Offline" footer even when Firebase isn't configured (expected) | `PlayerDashboard.tsx` |
 
 ---
+
+## Firebase Sync: Production Configuration Fix (Updated: 2026-07-15 11:46)
+## Firebase Production Configuration (July 15, 2026)
+
+### Discovery
+- `vtt/.env` has all Firebase credentials populated and correct
+- Vite reads from `vtt/.env` (where `vite.config.ts` lives), NOT the root `.env`
+- `isFirebaseAvailable()` returns `true` in dev mode — Firebase is correctly initialized
+- **But:** Vercel deployment has NO environment variables set — `import.meta.env.VITE_FIREBASE_*` is `undefined` on production
+
+### Fixes Applied
+1. **Emulator port change:** 8080 → 8090 (port 8080 was occupied)
+2. **Emulator host:** `localhost` → `127.0.0.1` (explicit loopback)
+3. **Emulator gating:** Changed from `import.meta.env.DEV` to `VITE_USE_EMULATORS === "true"` — this allows dev testing against production Firebase when emulators aren't running
+4. **Security rules:** Updated from Firebase Auth requirement (`request.auth != null`) to permissive (`allow read, write: if true`) since this app uses app-level auth (env-based DM check + player name matching), not Firebase Auth
+
+### REMAINING ACTION REQUIRED
+Set the following environment variables in the Vercel project dashboard:
+- VITE_FIREBASE_API_KEY
+- VITE_FIREBASE_AUTH_DOMAIN  
+- VITE_FIREBASE_PROJECT_ID
+- VITE_FIREBASE_STORAGE_BUCKET
+- VITE_FIREBASE_MESSAGING_SENDER_ID
+- VITE_FIREBASE_APP_ID
+- VITE_DM_USERNAME
+- VITE_DM_PASSWORD
+- VITE_USE_EMULATORS (set to "false")
+
+All values are in `vtt/.env` (which is gitignored).
+
+---
+
+## Firebase Auth: Security Architecture (Updated: 2026-07-15 11:53)
+## Firebase Auth Integration (July 15, 2026)
+
+### Security Architecture
+The app now uses **two-layer authentication**:
+
+**Layer 1: App-level (env-based)**
+- DM: Checks `VITE_DM_USERNAME` / `VITE_DM_PASSWORD` env vars
+- Player: Name matched against campaign's player character list
+- This has NOT changed — controls access to the React UI
+
+**Layer 2: Firebase Auth (for Firestore security)**
+- DM: `signInWithEmailAndPassword()` using `VITE_FIREBASE_AUTH_EMAIL` / `VITE_FIREBASE_AUTH_PASSWORD`
+- Player: `signInAnonymously()` — read-only Firestore access
+
+### Firestore Security Rules (`firestore.rules`)
+- **Writes**: Require `request.auth.token.role == "dm"` (custom claim)
+- **Reads**: Require `request.auth != null` (any authenticated user)
+- Collections: campaigns, liveSessions, homebrew
+
+### Required Firebase Console Setup
+1. Go to Firebase Console → Authentication → Sign-in method → Enable Email/Password
+2. Go to Authentication → Users → Add user: `dm@strvtt.local` / `Jello1`
+3. Get the new user's UID, then set custom claim:
+   ```bash
+   # Via Firebase CLI:
+   firebase functions:shell
+   > admin.auth().setCustomUserClaims("USER_UID", { role: "dm" })
+   ```
+4. Deploy the security rules:
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+
+### Vercel Env Vars
+Two new env vars must be added to Vercel:
+- `VITE_FIREBASE_AUTH_EMAIL=dm@strvtt.local`
+- `VITE_FIREBASE_AUTH_PASSWORD=Jello1`
+
+---

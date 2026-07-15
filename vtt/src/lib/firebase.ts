@@ -3,8 +3,8 @@
  *
  * AUTH STRATEGY:
  *   The app uses Firebase Auth (Email/Password) for secure Firestore access.
- *   - DM user: Created once in Firebase Console. Must have a custom claim
- *     { role: "dm" } set via Firebase Admin SDK or Cloud Function.
+ *   - DM user: Created once in Firebase Console with a REAL email address.
+ *     Must have a custom claim { role: "dm" } assigned.
  *   - On DM login → app calls signInWithEmailAndPassword()
  *   - On Player login → app calls signInAnonymously() for read-only access
  *
@@ -39,7 +39,8 @@ function hasValidConfig(): boolean {
 /* ── Firebase Auth Credentials (for DM) ───────────────────────
  * These are stored in .env alongside the app-level DM credentials.
  * Must be created manually in Firebase Console (Authentication → Users).
- * The DM user must have a custom claim { role: "dm" } assigned.
+ * Use a REAL email address. The DM user must have a custom claim
+ * { role: "dm" } assigned via Firebase Admin SDK or a Cloud Function.
  */
 const FIREBASE_AUTH_EMAIL = import.meta.env.VITE_FIREBASE_AUTH_EMAIL as string | undefined;
 const FIREBASE_AUTH_PASSWORD = import.meta.env.VITE_FIREBASE_AUTH_PASSWORD as string | undefined;
@@ -92,7 +93,7 @@ export async function loginFirebaseDm(): Promise<boolean> {
   if (!FIREBASE_AUTH_EMAIL || !FIREBASE_AUTH_PASSWORD) {
     console.warn(
       "[Firebase Auth] DM credentials not configured. " +
-        "Set VITE_FIREBASE_AUTH_EMAIL and VITE_FIREBASE_AUTH_PASSWORD.",
+        "Set VITE_FIREBASE_AUTH_EMAIL and VITE_FIREBASE_AUTH_PASSWORD in .env.",
     );
     return false;
   }
