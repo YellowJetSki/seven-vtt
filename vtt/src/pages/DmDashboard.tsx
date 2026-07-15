@@ -19,6 +19,7 @@ import { useUiStore } from "@/stores/uiStore";
 import { createDemoCampaign } from "@/data/demoCampaign";
 import { RecentActivityFeed } from "@/components/dashboard/RecentActivityFeed";
 import { ExportAllButton } from "@/components/ui/ExportAllButton";
+import { ImportAllButton } from "@/components/ui/ImportAllButton";
 import { Badge } from "@/components/ui/Badge";
 import { ConditionsWidget } from "@/components/combat/ConditionsWidget";
 import { Button } from "@/components/ui/Button";
@@ -156,7 +157,8 @@ export function DmDashboard() {
           <p className="mt-1 text-sm text-surface-400 line-clamp-1">{campaign.description ?? "No description set."}</p>
         </div>
         <div className="flex items-center gap-2 self-start">
-          <ExportAllButton variant="secondary" size="sm" label="📤 Export Campaign" />
+          <ExportAllButton variant="secondary" size="sm" label="📤 Export All" />
+          <ImportAllButton variant="secondary" size="sm" label="📥 Import All" />
         </div>
       </section>
 

@@ -76,13 +76,13 @@ export function ToastContainer() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm pointer-events-none">
       {toastStack.map((toast) => {
         const style = typeStyles[toast.type];
         return (
           <div
             key={toast.id}
-            className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm animate-in slide-in-from-right-5 fade-in duration-200 ${style.bg} ${style.border}`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm animate-in slide-in-from-right-5 fade-in duration-200 ${style.bg} ${style.border}`}
             onClick={() => removeToast(toast.id)}
           >
             <span className="mt-0.5 text-lg shrink-0">{style.icon}</span>

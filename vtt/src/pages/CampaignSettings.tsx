@@ -152,7 +152,8 @@ export function CampaignSettings() {
           <p className="mt-1 text-sm text-surface-400">Manage campaign rules, notes, and data</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" size="xs" onClick={handleExport}>Export</Button>
+          <Button variant="secondary" size="xs" onClick={handleExport}>📤 Export Campaign</Button>
+          <Button variant="secondary" size="xs" onClick={handleImport}>📥 Import Campaign</Button>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelected} />
         </div>
       </div>

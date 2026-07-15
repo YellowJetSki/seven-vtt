@@ -51,8 +51,8 @@ export function ExportAllButton({
     a.click();
     URL.revokeObjectURL(url);
 
-    const totalItems = 1 + homebrewItems.length + homebrewFeats.length + homebrewSpells.length;
-    showToast({ message: `Exported ${totalItems} records in full backup.`, type: "success" });
+    const records = 1 + homebrewItems.length + homebrewFeats.length + homebrewSpells.length;
+    showToast({ message: `Exported ${records} records (campaign + ${homebrewItems.length} items, ${homebrewFeats.length} feats, ${homebrewSpells.length} spells).`, type: "success" });
   };
 
   return (

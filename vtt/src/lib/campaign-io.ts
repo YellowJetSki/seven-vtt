@@ -5,6 +5,19 @@
 
 import type { Campaign } from "@/types";
 
+/* ── Export Bundle Format ───────────────────────────────────── */
+
+export interface FullExportBundle {
+  exportedAt: number;
+  appVersion: string;
+  campaign: Campaign;
+  homebrew: {
+    items: any[];
+    feats: any[];
+    spells: any[];
+  };
+}
+
 /**
  * Triggers a browser download of the campaign as a JSON file.
  */
@@ -25,6 +38,11 @@ export function exportCampaign(campaign: Campaign): void {
 export async function importCampaignFromFile(file: File): Promise<Campaign> {
   const text = await file.text();
   const data = JSON.parse(text);
+
+  // Check if this is a full bundle with campaign + homebrew
+  if (data.campaign && data.campaign.name && data.campaign.id) {
+    return data.campaign as Campaign;
+  }
 
   // Validate required campaign fields
   if (!data.name || !data.id) {
@@ -51,4 +69,20 @@ export async function importCampaignFromFile(file: File): Promise<Campaign> {
   }
 
   return data as Campaign;
+}
+
+/**
+ * Tries to extract homebrew data from a full export bundle.
+ * Returns null if no homebrew data is present.
+ */
+export function extractHomebrewFromBundle(data: unknown): { items: any[]; feats: any[]; spells: any[] } | null {
+  if (!data || typeof data !== "object") return null;
+  const bundle = data as Record<string, unknown>;
+  if (!bundle.homebrew || typeof bundle.homebrew !== "object") return null;
+  const hb = bundle.homebrew as Record<string, unknown>;
+  return {
+    items: Array.isArray(hb.items) ? hb.items : [],
+    feats: Array.isArray(hb.feats) ? hb.feats : [],
+    spells: Array.isArray(hb.spells) ? hb.spells : [],
+  };
 }
