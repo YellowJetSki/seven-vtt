@@ -1,5 +1,12 @@
+/* ── Player Dashboard ──────────────────────────────────────────
+ * Player-facing view that shows their character sheet.
+ * Uses `usePlayerFirebaseSync` to receive real-time updates
+ * from the DM (session state, scene, announcements).
+ * ─────────────────────────────────────────────────────────────── */
+
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { usePlayerFirebaseSync } from "@/hooks/usePlayerFirebaseSync";
 import { PlayerCharacterSheet } from "@/components/player/PlayerCharacterSheet";
 import { Button } from "@/components/ui/Button";
 
@@ -8,6 +15,9 @@ export function PlayerDashboard() {
   const characterName = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
   const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+
+  // Subscribe to real-time updates from the DM
+  usePlayerFirebaseSync();
 
   // Find the player's character (match on first name of the character name)
   const character = characters.find((c) => {
@@ -30,11 +40,7 @@ export function PlayerDashboard() {
                 Signed in as <span className="text-surface-200 font-medium">{characterName}</span>
               </span>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-            >
+            <Button variant="ghost" size="sm" onClick={logout}>
               Sign Out
             </Button>
           </div>
