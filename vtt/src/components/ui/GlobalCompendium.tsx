@@ -108,7 +108,7 @@ export function GlobalCompendium() {
         id: `item_${item.id}`,
         type: "item",
         name: item.name,
-        subtitle: item.type ?? "Item",
+        subtitle: item.category ?? "Item",
         description: item.description ?? "",
         icon: "⚗️",
         source: "Homebrew",
@@ -134,7 +134,9 @@ export function GlobalCompendium() {
         id: `feat_${feat.id}`,
         type: "feat",
         name: feat.name,
-        subtitle: feat.prerequisites ? `Requires: ${feat.prerequisites}` : "Feat",
+        subtitle: feat.prerequisites.length > 0
+          ? `Requires: ${feat.prerequisites.map((p) => p.description).join(", ")}`
+          : "Feat",
         description: feat.description ?? "",
         icon: "💪",
         source: "Homebrew",

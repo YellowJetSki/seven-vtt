@@ -168,10 +168,15 @@ export const useSessionAnalyticsStore = create<SessionAnalyticsState>((set, get)
       result: "ongoing",
     };
 
-    set({
+    set((state) => ({
       currentEncounter: newEncounter,
-      peakCombatants: Math.max(currentSession.peakCombatants, combatantCount),
-    });
+      currentSession: state.currentSession
+        ? {
+            ...state.currentSession,
+            peakCombatants: Math.max(state.currentSession.peakCombatants, combatantCount),
+          }
+        : null,
+    }));
   },
 
   endEncounter: (result: EncounterLog["result"]) => {

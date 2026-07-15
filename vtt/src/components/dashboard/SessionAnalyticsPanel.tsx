@@ -82,7 +82,7 @@ export function SessionAnalyticsPanel() {
 
       {isExpanded && (
         <div className="border-t border-surface-700 p-5">
-          {activeSession && analytics ? (
+          {sessionActive && analytics ? (
             <div className="space-y-5">
               {/* Quick Stats Grid */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
