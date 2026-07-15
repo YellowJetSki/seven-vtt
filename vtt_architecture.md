@@ -1843,3 +1843,29 @@ A D&D 5e treasure generator that creates loot based on encounter difficulty, cre
 - Full D&D 5e SRD API hook (https://www.dnd5eapi.co/api). Functions: `fetchSpell`, `searchSpells`, `fetchMonster`, `searchMonsters`, `fetchEquipment`, `fetchConditions`. Includes 24hr in-memory cache.
 
 ---
+
+## PlayerCharacterSheet v2 — Combat Tab + Notes + Spell Slots (Updated: 2026-07-15 08:40)
+## PlayerCharacterSheet v2 (Major Upgrade)
+
+**File**: `vtt/src/components/player/PlayerCharacterSheet.tsx`
+
+**Three tabs**: Character Sheet (existing), Combat (new), Notes (new)
+
+### Combat Tab Features:
+- **HP Management**: Input field + Damage/Heal buttons, Set Temp HP, Short Rest (restores to full)
+- **Senses**: Passive Perception, Proficiency Bonus display
+- **Weapon Attacks**: Auto-generated from equipment list — parses longsword, shortsword, bow, etc. Shows attack bonus + damage dice
+- **Spellcasting**: Auto-detected spellcasting ability (WIS for cleric, CHA for paladin, INT for wizard)
+- **Spell Slots**: Visual dot display, "Use" button to expend, "Restore" to recover. Real-time `updatePlayerCharacter` mutations
+
+### Notes Tab Features:
+- Textarea for session notes with Save/Reset
+- Quick Reference panel (AC, Speed, Initiative, Hit Dice)
+- Notes persist to campaign store
+
+### Architecture Changes:
+- Added `updatePlayerCharacter` alias in campaignStore.ts
+- Uses `updatePlayerCharacter` for all mutations
+- Clean separated constants for abilities and skills (no inline arrays)
+
+---

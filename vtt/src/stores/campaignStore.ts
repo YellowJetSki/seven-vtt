@@ -7,6 +7,9 @@
  * The `forcePushCounter` is a manual increment for wholesale
  * replacements (import JSON, reset to demo) that triggers an
  * immediate sync regardless of other watchers.
+ *
+ * NOTE: `updatePlayerCharacter` is an alias for `updateCharacter`
+ * provided for semantic clarity in player-facing components.
  * ─────────────────────────────────────────────────────────────── */
 
 import { create } from "zustand";
@@ -36,6 +39,9 @@ interface CampaignState {
   addCharacter: (character: PlayerCharacter) => void;
   updateCharacter: (id: string, updates: Partial<PlayerCharacter>) => void;
   removeCharacter: (id: string) => void;
+
+  // Alias for semantic clarity in player-facing components
+  updatePlayerCharacter: (id: string, updates: Partial<PlayerCharacter>) => void;
 
   // Encounters
   addEncounter: (encounter: Encounter) => void;
@@ -92,6 +98,20 @@ export const useCampaignStore = create<CampaignState>((set) => ({
     }),
 
   updateCharacter: (id, updates) =>
+    set((state) => {
+      if (!state.campaign) return state;
+      return {
+        campaign: {
+          ...state.campaign,
+          playerCharacters: state.campaign.playerCharacters.map((c) =>
+            c.id === id ? { ...c, ...updates, updatedAt: Date.now() } : c,
+          ),
+          updatedAt: Date.now(),
+        },
+      };
+    }),
+
+  updatePlayerCharacter: (id, updates) =>
     set((state) => {
       if (!state.campaign) return state;
       return {

@@ -1,22 +1,16 @@
-/* ── Map Editor — Interactive Battle Map ───────────────────────
- * A fully interactive battle map with grid overlay, token placement,
- * fog of war with player vision masking, and drag-reorderable token list.
- * Mobile-first design with pinch-zoom considerations.
- * ─────────────────────────────────────────────────────────────── */
-
 import { useState, useRef, useCallback, useMemo } from "react";
 import type { BattleMap, MapToken } from "@/types";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { FogOfWarLayer, FogOfWarControls } from "@/components/maps/FogOfWarLayer";
+import { MovementRangeOverlay } from "@/components/maps/MovementRangeOverlay";
 
 interface MapEditorProps {
   map: BattleMap;
   onUpdate: (updates: Partial<BattleMap>) => void;
 }
 
-/** A palette of token colors for quick selection */
 const TOKEN_COLORS = [
   "#8b30ff", "#3b82f6", "#27ae60", "#f39c12",
   "#e74c3c", "#ec4899", "#14b8a6", "#f97316",
@@ -27,25 +21,26 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
   const showToast = useUiStore((s) => s.showToast);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // ── State ──
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [showAddToken, setShowAddToken] = useState(false);
   const [showFogControls, setShowFogControls] = useState(false);
   const [showFog, setShowFog] = useState(true);
-  const [gmView, setGmView] = useState(true); // true = DM sees all, false = player view
+  const [gmView, setGmView] = useState(true);
+  const [showMovement, setShowMovement] = useState(false);
+  const [dashMode, setDashMode] = useState(false);
 
-  // ── Container dimensions (used for cell width/height) ──
   const containerWidth = useRef(800);
   const cellWidth = containerWidth.current / map.gridWidth;
   const cellHeight = containerWidth.current / map.gridHeight;
 
-  // ── Grid Rendering ──
+  const selectedToken = map.tokens.find((t) => t.id === selectedTokenId);
+
   const gridLines = useMemo(() => {
     const lines: React.ReactNode[] = [];
     for (let x = 0; x <= map.gridWidth; x++) {
       lines.push(
         <div key={`v${x}`}
-          className="absolute top-0 bottom-0"
+          className="absolute top-0 bottom-0 pointer-events-none"
           style={{ left: `${(x / map.gridWidth) * 100}%`, width: `${(100 / map.gridWidth)}%`, borderLeft: x > 0 ? "1px solid rgba(255,255,255,0.08)" : "none" }}
         />
       );
@@ -53,7 +48,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     for (let y = 0; y <= map.gridHeight; y++) {
       lines.push(
         <div key={`h${y}`}
-          className="absolute left-0 right-0"
+          className="absolute left-0 right-0 pointer-events-none"
           style={{ top: `${(y / map.gridHeight) * 100}%`, height: `${(100 / map.gridHeight)}%`, borderTop: y > 0 ? "1px solid rgba(255,255,255,0.08)" : "none" }}
         />
       );
@@ -61,12 +56,10 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     return lines;
   }, [map.gridWidth, map.gridHeight]);
 
-  // ── Token Click Handler ──
   const handleTokenClick = useCallback((tokenId: string) => {
     setSelectedTokenId((prev) => (prev === tokenId ? null : tokenId));
   }, []);
 
-  // ── Canvas Click (place token) ──
   const handleCanvasClick = useCallback((_e: React.MouseEvent<HTMLDivElement>) => {
     if (selectedTokenId) {
       setSelectedTokenId(null);
@@ -74,25 +67,16 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     }
   }, [selectedTokenId]);
 
-  // ── Remove Token ──
   const handleRemoveToken = useCallback((tokenId: string) => {
-    onUpdate({
-      tokens: map.tokens.filter((t) => t.id !== tokenId),
-    });
+    onUpdate({ tokens: map.tokens.filter((t) => t.id !== tokenId) });
     setSelectedTokenId(null);
     showToast({ message: "Token removed.", type: "info" });
   }, [map.tokens, onUpdate, showToast]);
 
-  // ── Toggle Token Visibility ──
   const handleToggleVisibility = useCallback((tokenId: string) => {
-    onUpdate({
-      tokens: map.tokens.map((t) =>
-        t.id === tokenId ? { ...t, visible: !t.visible } : t
-      ),
-    });
+    onUpdate({ tokens: map.tokens.map((t) => t.id === tokenId ? { ...t, visible: !t.visible } : t) });
   }, [map.tokens, onUpdate]);
 
-  // ── Move Token ──
   const handleMoveToken = useCallback((tokenId: string, deltaX: number, deltaY: number) => {
     onUpdate({
       tokens: map.tokens.map((t) =>
@@ -103,33 +87,31 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     });
   }, [map.tokens, map.gridWidth, map.gridHeight, onUpdate]);
 
-  const selectedToken = map.tokens.find((t) => t.id === selectedTokenId);
+  const handleDragToCell = useCallback((tokenId: string, targetX: number, targetY: number) => {
+    onUpdate({
+      tokens: map.tokens.map((t) =>
+        t.id === tokenId
+          ? { ...t, x: Math.max(0, Math.min(map.gridWidth - 1, targetX)), y: Math.max(0, Math.min(map.gridHeight - 1, targetY)) }
+          : t
+      ),
+    });
+  }, [map.tokens, map.gridWidth, map.gridHeight, onUpdate]);
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-surface-200">{map.name}</h3>
           <span className="text-[10px] text-surface-500">{map.gridWidth}x{map.gridHeight} - {map.tokens.length} tokens</span>
         </div>
         <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <button
-            onClick={() => setGmView(!gmView)}
-            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-              gmView ? "bg-accent-600 text-white" : "bg-surface-800 text-surface-400"
-            }`}
-            title={gmView ? "DM View (no fog)" : "Player View (with fog)"}
-          >
+          <button onClick={() => setGmView(!gmView)}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${gmView ? "bg-accent-600 text-white" : "bg-surface-800 text-surface-400"}`}
+            title={gmView ? "DM View (no fog)" : "Player View (with fog)"}>
             {gmView ? "DM" : "Player"}
           </button>
-          <button
-            onClick={() => setShowFog(!showFog)}
-            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-              showFog ? "bg-surface-800 text-surface-300" : "bg-surface-800 text-surface-500 opacity-50"
-            }`}
-          >
+          <button onClick={() => setShowFog(!showFog)}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${showFog ? "bg-surface-800 text-surface-300" : "bg-surface-800 text-surface-500 opacity-50"}`}>
             {showFog ? "Fog On" : "Fog Off"}
           </button>
           <Button size="xs" variant="ghost" onClick={() => setShowFogControls((o) => !o)}>
@@ -139,61 +121,83 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
         </div>
       </div>
 
-      {/* Grid canvas */}
-      <div
-        ref={containerRef}
+      <div ref={containerRef}
         className="relative w-full overflow-hidden rounded-xl border border-surface-700 bg-surface-900"
         style={{ aspectRatio: `${map.gridWidth}/${map.gridHeight}` }}
-        onClick={handleCanvasClick}
-      >
-        {/* Background image */}
+        onClick={handleCanvasClick}>
+
         {map.imageUrl && (
-          <img
-            src={map.imageUrl}
-            alt={map.name}
-            className={`absolute inset-0 h-full w-full ${
-              map.imageFit === "contain" ? "object-contain" : map.imageFit === "stretch" ? "object-fill" : "object-cover"
-            }`}
-          />
+          <img src={map.imageUrl} alt={map.name}
+            className={`absolute inset-0 h-full w-full ${map.imageFit === "contain" ? "object-contain" : map.imageFit === "stretch" ? "object-fill" : "object-cover"}`} />
         )}
 
-        {/* Grid overlay */}
         {gridLines}
 
-        {/* Legacy fog reveals (kept for backward compat — rendered as semi-transparent rectangles) */}
+        {/* Legacy fog reveals */}
         {!gmView && showFog && map.fogOfWar.map((fog) => (
-          <div
-            key={fog.id}
-            className="absolute bg-black/40 border border-accent-500/20"
+          <div key={fog.id} className="absolute bg-black/40 border border-accent-500/20"
             style={{
               left: `${(fog.x / map.gridWidth) * 100}%`,
               top: `${(fog.y / map.gridHeight) * 100}%`,
               width: `${(fog.width / map.gridWidth) * 100}%`,
               height: `${(fog.height / map.gridHeight) * 100}%`,
-            }}
-          />
+            }} />
         ))}
 
-        {/* Dynamic Fog of War with player vision masking */}
+        {/* Dynamic Fog */}
         {showFog && !gmView && (
-          <FogOfWarLayer
-            map={map}
-            isGmView={false}
-            cellWidth={cellWidth || 50}
-            cellHeight={cellHeight || 50}
+          <FogOfWarLayer map={map} isGmView={false} cellWidth={cellWidth || 50} cellHeight={cellHeight || 50} />
+        )}
+
+        {/* Movement Range Overlay for selected token */}
+        {showMovement && selectedToken && (
+          <MovementRangeOverlay
+            token={selectedToken}
+            gridWidth={map.gridWidth}
+            gridHeight={map.gridHeight}
+            movementSpeed={30}
+            dashMultiplier={dashMode ? 2 : 1}
+            cellSize={5}
           />
         )}
 
+        {/* Clickable cells for drag movement */}
+        {showMovement && selectedToken && (() => {
+          const cells = [];
+          const totalCells = Math.floor((30 * (dashMode ? 2 : 1)) / 5);
+          for (let dx = -totalCells; dx <= totalCells; dx++) {
+            for (let dy = -totalCells; dy <= totalCells; dy++) {
+              const dist = Math.abs(dx) + Math.abs(dy);
+              if (dist === 0 || dist > totalCells) continue;
+              const x = selectedToken.x + dx;
+              const y = selectedToken.y + dy;
+              if (x < 0 || x >= map.gridWidth || y < 0 || y >= map.gridHeight) continue;
+              cells.push({ x, y });
+            }
+          }
+          return cells.map((c) => (
+            <div
+              key={`click-${c.x}-${c.y}`}
+              onClick={(e) => { e.stopPropagation(); handleDragToCell(selectedToken.id, c.x, c.y); }}
+              className="absolute cursor-pointer z-20 hover:bg-white/10 transition-colors"
+              style={{
+                left: `${(c.x / map.gridWidth) * 100}%`,
+                top: `${(c.y / map.gridHeight) * 100}%`,
+                width: `${(100 / map.gridWidth)}%`,
+                height: `${(100 / map.gridHeight)}%`,
+              }}
+              title={`Move ${selectedToken.label} to (${c.x}, ${c.y})`}
+            />
+          ));
+        })()}
+
         {/* Tokens */}
         {map.tokens.map((token) => (
-          <div
-            key={token.id}
+          <div key={token.id}
             onClick={(e) => { e.stopPropagation(); handleTokenClick(token.id); }}
             className={`absolute flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110 ${
               selectedTokenId === token.id ? "ring-2 ring-accent-400 ring-offset-2 ring-offset-surface-900 z-10" : "z-0"
-            } ${!token.visible ? "opacity-50" : ""} ${
-              !gmView && !token.visible ? "hidden" : ""
-            }`}
+            } ${!token.visible ? "opacity-50" : ""} ${!gmView && !token.visible ? "hidden" : ""}`}
             style={{
               left: `${(token.x / map.gridWidth) * 100}%`,
               top: `${(token.y / map.gridHeight) * 100}%`,
@@ -203,8 +207,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               minWidth: "16px",
               minHeight: "16px",
             }}
-            title={`${token.label} (${token.x},${token.y})`}
-          >
+            title={`${token.label} (${token.x},${token.y})`}>
             {token.icon ? (
               <span className="text-xs">{token.icon}</span>
             ) : (
@@ -238,28 +241,50 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               </button>
               <button onClick={() => handleRemoveToken(selectedToken.id)}
                 className="rounded-md px-2 py-1 text-xs text-warrior-400 hover:bg-warrior-500/10 transition-colors"
-                title="Remove token">
-                x
-              </button>
+                title="Remove token">x</button>
             </div>
           </div>
 
-          {/* Movement controls */}
-          <div className="mt-3 grid grid-cols-3 gap-1 max-w-[200px] mx-auto">
-            <div />
-            <button onClick={() => handleMoveToken(selectedToken.id, 0, -1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">up</button>
-            <div />
-            <button onClick={() => handleMoveToken(selectedToken.id, -1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">left</button>
-            <div className="rounded bg-surface-800 p-2 text-center text-surface-500 text-[10px]">{selectedToken.x},{selectedToken.y}</div>
-            <button onClick={() => handleMoveToken(selectedToken.id, 1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">right</button>
-            <div />
-            <button onClick={() => handleMoveToken(selectedToken.id, 0, 1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">down</button>
-            <div />
+          {/* Movement Controls */}
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-medium text-surface-400">Movement</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => { setShowMovement(!showMovement); setDashMode(false); }}
+                  className={`rounded px-2 py-0.5 text-[9px] font-medium transition-colors ${showMovement && !dashMode ? "bg-rogue-500/20 text-rogue-400" : "bg-surface-800 text-surface-400 hover:text-surface-200"}`}
+                >
+                  Move
+                </button>
+                <button
+                  onClick={() => { setShowMovement(!showMovement); setDashMode(true); }}
+                  className={`rounded px-2 py-0.5 text-[9px] font-medium transition-colors ${showMovement && dashMode ? "bg-warrior-500/20 text-warrior-400" : "bg-surface-800 text-surface-400 hover:text-surface-200"}`}
+                >
+                  Dash
+                </button>
+              </div>
+            </div>
+            {showMovement && (
+              <p className="text-[10px] text-surface-500 mb-2">
+                {dashMode ? "Double movement (dash) — click a yellow or green cell to move" : "Normal movement — click a green cell to move"}
+              </p>
+            )}
+            <div className="grid grid-cols-3 gap-1 max-w-[200px] mx-auto">
+              <div />
+              <button onClick={() => handleMoveToken(selectedToken.id, 0, -1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">up</button>
+              <div />
+              <button onClick={() => handleMoveToken(selectedToken.id, -1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">left</button>
+              <div className="rounded bg-surface-800 p-2 text-center text-surface-500 text-[10px]">{selectedToken.x},{selectedToken.y}</div>
+              <button onClick={() => handleMoveToken(selectedToken.id, 1, 0)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">right</button>
+              <div />
+              <button onClick={() => handleMoveToken(selectedToken.id, 0, 1)} className="rounded bg-surface-800 p-2 text-center text-surface-400 hover:bg-surface-700 hover:text-surface-200 text-xs">down</button>
+              <div />
+            </div>
           </div>
         </div>
       )}
 
-      {/* Fog of War Controls Panel */}
+      {/* Fog Controls */}
       {showFogControls && (
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-4">
           <FogOfWarControls map={map} onUpdate={onUpdate} isGmView={gmView} />
@@ -284,8 +309,6 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
     </div>
   );
 }
-
-/* ── Add Token Form ─────────────────────────────────────────── */
 
 function AddTokenForm({
   gridWidth,

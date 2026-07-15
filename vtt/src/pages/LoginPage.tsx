@@ -9,18 +9,18 @@ export function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const loginAsPlayer = useAuthStore((s) => s.loginAsPlayer);
   const showToast = useUiStore((s) => s.showToast);
-  /* ── DM Form State ── */
+  /* DM Form State */
   const [dmUsername, setDmUsername] = useState("");
   const [dmPassword, setDmPassword] = useState("");
   const [dmError, setDmError] = useState("");
   const [dmLoading, setDmLoading] = useState(false);
 
-  /* ── Player Form State ── */
+  /* Player Form State */
   const [playerName, setPlayerName] = useState("");
   const [playerError, setPlayerError] = useState("");
   const [playerLoading, setPlayerLoading] = useState(false);
 
-  /* ── Handlers ── */
+  /* Handlers */
 
   const handleDmLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -84,11 +84,11 @@ export function LoginPage() {
             </div>
             <h1 className="text-xl font-bold text-surface-100">STᚱ VTT</h1>
             <p className="mt-1 text-sm text-surface-500">
-              Arkla Campaign · Sign In
+              Virtual Tabletop · Sign In
             </p>
           </div>
 
-          {/* ── Mode Selector ── */}
+          {/* Mode Selector */}
           {mode === "select" && (
             <div className="space-y-4">
               <p className="text-center text-sm text-surface-400">
@@ -129,136 +129,73 @@ export function LoginPage() {
             </div>
           )}
 
-          {/* ── DM Login Form ── */}
+          {/* DM Login Form */}
           {mode === "dm" && (
-            <form onSubmit={handleDmLogin} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="dm-username"
-                  className="mb-1.5 block text-xs font-medium text-surface-400"
-                >
-                  Username
-                </label>
-                <input
-                  id="dm-username"
-                  type="text"
-                  value={dmUsername}
-                  onChange={(e) => setDmUsername(e.target.value)}
-                  placeholder=""
-                  autoComplete="off"
-                  autoFocus
-                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3.5 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 transition-colors focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none"
-                />
+            <form onSubmit={handleDmLogin} className="space-y-5">
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={handleBack} className="rounded-lg p-1 text-surface-500 hover:bg-surface-800 hover:text-surface-200 transition-colors">
+                  ← Back
+                </button>
+                <p className="text-sm font-medium text-surface-200">DM Sign In</p>
               </div>
+
               <div>
-                <label
-                  htmlFor="dm-password"
-                  className="mb-1.5 block text-xs font-medium text-surface-400"
-                >
-                  Password
-                </label>
-                <input
-                  id="dm-password"
-                  type="password"
-                  value={dmPassword}
-                  onChange={(e) => setDmPassword(e.target.value)}
-                  placeholder=""
-                  autoComplete="off"
-                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3.5 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 transition-colors focus:border-accent-500 focus:ring-1 focus:ring-accent-500 focus:outline-none"
-                />
+                <label className="mb-1.5 block text-xs font-medium text-surface-400">Username</label>
+                <input value={dmUsername} onChange={(e) => setDmUsername(e.target.value)} placeholder="Enter your DM username" required
+                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-surface-400">Password</label>
+                <input type="password" value={dmPassword} onChange={(e) => setDmPassword(e.target.value)} placeholder="Enter your password" required
+                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none" />
               </div>
 
               {dmError && (
-                <p className="rounded-lg bg-warrior-500/10 px-3 py-2 text-xs text-warrior-400">
-                  {dmError}
-                </p>
+                <div className="rounded-lg bg-warrior-500/10 px-3 py-2 text-xs text-warrior-400">{dmError}</div>
               )}
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-surface-400 transition-colors hover:bg-surface-800 hover:text-surface-200"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={dmLoading}
-                  className="flex-1 rounded-lg bg-accent-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-accent-700 disabled:pointer-events-none disabled:opacity-50"
-                >
-                  {dmLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Signing in...
-                    </span>
-                  ) : (
-                    "Sign In as DM"
-                  )}
-                </button>
-              </div>
+              <button type="submit" disabled={dmLoading || !dmUsername || !dmPassword}
+                className="w-full rounded-lg bg-accent-600 py-2.5 text-sm font-medium text-white hover:bg-accent-500 disabled:opacity-40 transition-colors">
+                {dmLoading ? "Signing in..." : "Sign In"}
+              </button>
             </form>
           )}
 
-          {/* ── Player Login Form ── */}
+          {/* Player Login Form */}
           {mode === "player" && (
-            <form onSubmit={handlePlayerLogin} className="space-y-4">
+            <form onSubmit={handlePlayerLogin} className="space-y-5">
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={handleBack} className="rounded-lg p-1 text-surface-500 hover:bg-surface-800 hover:text-surface-200 transition-colors">
+                  ← Back
+                </button>
+                <p className="text-sm font-medium text-surface-200">Player Sign In</p>
+              </div>
+
               <div>
-                <label
-                  htmlFor="player-name"
-                  className="mb-1.5 block text-xs font-medium text-surface-400"
-                >
-                  Your Character's First Name
-                </label>
-                <input
-                  id="player-name"
-                  type="text"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="e.g. Wendy, Strider, Toern"
-                  autoFocus
-                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3.5 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 transition-colors focus:border-rogue-500 focus:ring-1 focus:ring-rogue-500 focus:outline-none"
-                />
-                <p className="mt-1.5 text-[11px] text-surface-500">
-                  Enter the first name of your character (case-insensitive).
-                </p>
+                <label className="mb-1.5 block text-xs font-medium text-surface-400">Your Name</label>
+                <input value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Enter your character name" required
+                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 focus:border-rogue-500 focus:outline-none" />
               </div>
 
               {playerError && (
-                <p className="rounded-lg bg-warrior-500/10 px-3 py-2 text-xs text-warrior-400">
-                  {playerError}
-                </p>
+                <div className="rounded-lg bg-warrior-500/10 px-3 py-2 text-xs text-warrior-400">{playerError}</div>
               )}
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-surface-400 transition-colors hover:bg-surface-800 hover:text-surface-200"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={playerLoading}
-                  className="flex-1 rounded-lg bg-rogue-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-rogue-700 disabled:pointer-events-none disabled:opacity-50"
-                >
-                  {playerLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Checking...
-                    </span>
-                  ) : (
-                    "Enter as Player"
-                  )}
-                </button>
-              </div>
+              <button type="submit" disabled={playerLoading || !playerName.trim()}
+                className="w-full rounded-lg bg-rogue-600 py-2.5 text-sm font-medium text-white hover:bg-rogue-500 disabled:opacity-40 transition-colors">
+                {playerLoading ? "Entering..." : "Enter Game"}
+              </button>
+
+              <p className="text-center text-xs text-surface-500">
+                Sign in with the name your DM used for your character.
+              </p>
             </form>
           )}
 
           {/* Footer */}
           <p className="mt-6 text-center text-[11px] text-surface-600">
-            STᚱ VTT · Powered by the Arkla Campaign
+            STᚱ VTT · Virtual Tabletop
           </p>
         </div>
       </div>
