@@ -1,4 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+/* ── Premium Homebrew Library Panel ────────────────────────────
+ * Full CRUD interface for custom items, feats, and spells with
+ * search, filtering, modal forms, image viewer, and import/export.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useHomebrewStore } from "@/stores/homebrewStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
@@ -27,20 +32,19 @@ export function HomebrewPanel() {
   const openModal = useUiStore((s) => s.openModal);
   const closeModal = useUiStore((s) => s.closeModal);
 
-  const {
-    items,
-    feats,
-    spells,
-    addItem,
-    updateItem,
-    removeItem,
-    addFeat,
-    updateFeat,
-    removeFeat,
-    addSpell,
-    updateSpell,
-    removeSpell,
-  } = useHomebrewStore();
+  // Use individual length selectors to avoid infinite re-render
+  const items = useHomebrewStore((s) => s.items);
+  const feats = useHomebrewStore((s) => s.feats);
+  const spells = useHomebrewStore((s) => s.spells);
+  const addItem = useHomebrewStore((s) => s.addItem);
+  const updateItem = useHomebrewStore((s) => s.updateItem);
+  const removeItem = useHomebrewStore((s) => s.removeItem);
+  const addFeat = useHomebrewStore((s) => s.addFeat);
+  const updateFeat = useHomebrewStore((s) => s.updateFeat);
+  const removeFeat = useHomebrewStore((s) => s.removeFeat);
+  const addSpell = useHomebrewStore((s) => s.addSpell);
+  const updateSpell = useHomebrewStore((s) => s.updateSpell);
+  const removeSpell = useHomebrewStore((s) => s.removeSpell);
 
   const [activeTab, setActiveTab] = useState<Tab>("items");
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,15 +57,18 @@ export function HomebrewPanel() {
 
   const importInputRef = useRef<HTMLInputElement>(null);
 
-  const stats = useHomebrewStore((s) => s.getStats());
+  const totalItems = items.length;
+  const totalFeats = feats.length;
+  const totalSpells = spells.length;
+  const grandTotal = totalItems + totalFeats + totalSpells;
 
   const handleExport = () => {
-    if (items.length === 0 && feats.length === 0 && spells.length === 0) {
+    if (totalItems === 0 && totalFeats === 0 && totalSpells === 0) {
       showToast({ message: "Nothing to export. Add some homebrew data first.", type: "warning" });
       return;
     }
     exportHomebrew(items, feats, spells);
-    showToast({ message: `Exported ${items.length + feats.length + spells.length} items.`, type: "success" });
+    showToast({ message: `Exported ${grandTotal} items.`, type: "success" });
   };
 
   const handleImport = () => {
@@ -188,26 +195,33 @@ export function HomebrewPanel() {
 
   const query = searchQuery.toLowerCase().trim();
 
-  const filteredItems = query
-    ? items.filter((i) => i.name.toLowerCase().includes(query) || i.tags.some((t) => t.toLowerCase().includes(query)) || i.category.toLowerCase().includes(query))
-    : items;
+  const filteredItems = useMemo(
+    () => query
+      ? items.filter((i) => i.name.toLowerCase().includes(query) || i.tags.some((t) => t.toLowerCase().includes(query)) || i.category.toLowerCase().includes(query))
+      : items,
+    [items, query],
+  );
 
-  const filteredFeats = query
-    ? feats.filter((f) => f.name.toLowerCase().includes(query) || f.tags.some((t) => t.toLowerCase().includes(query)))
-    : feats;
+  const filteredFeats = useMemo(
+    () => query
+      ? feats.filter((f) => f.name.toLowerCase().includes(query) || f.tags.some((t) => t.toLowerCase().includes(query)))
+      : feats,
+    [feats, query],
+  );
 
-  const filteredSpells = query
-    ? spells.filter((s) => s.name.toLowerCase().includes(query) || s.school.toLowerCase().includes(query) || s.tags.some((t) => t.toLowerCase().includes(query)))
-    : spells;
-
-  const totalItems = items.length + feats.length + spells.length;
+  const filteredSpells = useMemo(
+    () => query
+      ? spells.filter((s) => s.name.toLowerCase().includes(query) || s.school.toLowerCase().includes(query) || s.tags.some((t) => t.toLowerCase().includes(query)))
+      : spells,
+    [spells, query],
+  );
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Page Header */}
       <PageHeader
         title="Homebrew Library"
-        subtitle={totalItems > 0 ? `${totalItems} custom ${totalItems === 1 ? "item" : "items"} in your library` : "Create and manage custom items, feats, and spells"}
+        subtitle={grandTotal > 0 ? `${grandTotal} custom ${grandTotal === 1 ? "item" : "items"} in your library` : "Create and manage custom items, feats, and spells"}
         icon="⚗️"
         actions={
           <div className="flex items-center gap-2">
@@ -221,16 +235,19 @@ export function HomebrewPanel() {
 
       {/* Stats Bar */}
       <div className="grid grid-cols-3 gap-3">
-        {(["items", "feats", "spells"] as const).map((tab) => (
-          <div
-            key={tab}
-            className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${activeTab === tab ? "border-accent-500/50 bg-accent-500/10" : "border-surface-700 bg-surface-850 hover:border-surface-600"}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            <p className="text-2xl font-bold text-surface-100">{tab === "items" ? stats.totalItems : tab === "feats" ? stats.totalFeats : stats.totalSpells}</p>
-            <p className="text-xs text-surface-400 capitalize">{tab}</p>
-          </div>
-        ))}
+        {(["items", "feats", "spells"] as const).map((tab) => {
+          const count = tab === "items" ? totalItems : tab === "feats" ? totalFeats : totalSpells;
+          return (
+            <div
+              key={tab}
+              className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${activeTab === tab ? "border-accent-500/50 bg-accent-500/10" : "border-surface-700 bg-surface-850 hover:border-surface-600"}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              <p className="text-2xl font-bold text-surface-100">{count}</p>
+              <p className="text-xs text-surface-400 capitalize">{tab}</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Tabs + Search */}
@@ -277,9 +294,9 @@ export function HomebrewPanel() {
 
       {/* Form Modal */}
       <Modal modalId={FORM_MODAL_ID} title={formTitle} size="lg">
-        {activeTab === "items" && <ItemForm key={editingItem?.id ?? `new-item-${Date.now()}`} initialData={editingItem} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />}
-        {activeTab === "feats" && <FeatForm key={editingFeat?.id ?? `new-feat-${Date.now()}`} initialData={editingFeat} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />}
-        {activeTab === "spells" && <SpellForm key={editingSpell?.id ?? `new-spell-${Date.now()}`} initialData={editingSpell} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />}
+        {activeTab === "items" && <ItemForm key={editingItem?.id ?? "new-item"} initialData={editingItem} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />}
+        {activeTab === "feats" && <FeatForm key={editingFeat?.id ?? "new-feat"} initialData={editingFeat} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />}
+        {activeTab === "spells" && <SpellForm key={editingSpell?.id ?? "new-spell"} initialData={editingSpell} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />}
       </Modal>
 
       {/* Image Viewer */}

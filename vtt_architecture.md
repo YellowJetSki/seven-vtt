@@ -2117,3 +2117,164 @@ DM edits player characters / encounters / maps / journal
 Pending writes are persisted to localStorage (`vtt-sync-queue`). On reconnect, the queue is flushed with exponential backoff retry (max 5 attempts).
 
 ---
+
+## App.tsx — Campaign Initialization (Updated: 2026-07-15 10:05)
+## App.tsx — Campaign Initialization (Removed Arkla Auto-Import)
+
+**Date:** July 15, 2026  
+**Change:** Removed the `importArklaJson` auto-import from `App.tsx`.
+
+### What Changed:
+1. **Deleted imports:** Removed `importArklaJson` import and `createDemoCampaign` import.
+2. **Deleted `STORAGE_KEY` constant:** No longer tracking "str_vtt_campaign_loaded" in localStorage.
+3. **Deleted `isArklaLoading` state:** Removed the global loading spinner that displayed while parsing Arkla.json.
+4. **Deleted the entire `useEffect` block** that:
+   - Checked if a campaign already existed in the store.
+   - Checked `STORAGE_KEY` to avoid re-importing.
+   - Fetched `/Arkla.json` from the public folder.
+   - Parsed it via `importArklaJson()`.
+   - Fell back to `createDemoCampaign()` on error.
+5. **Replaced with a minimal guard** — just returns early if no campaign exists. The Zustand persist middleware handles hydration from localStorage.
+
+### New Behavior:
+- No characters are pre-loaded on a fresh visit.
+- The DM must create or import characters via the **Player Cards** UI.
+- Campaign data persists across refreshes via Zustand persist middleware (`str-vtt-campaign` in localStorage).
+
+---
+
+## Wendy Warmwind — Character Data (Arkla Campaign) (Updated: 2026-07-15 10:06)
+## Wendy Warmwind — PlayerCharacter Object
+
+**Created:** July 15, 2026  
+**Campaign:** The Obelisks of Arkla  
+**Source:** Manually populated from `public/arkla.json` (char_1775151236257)
+
+### Core Stats
+| Field | Value |
+|-------|-------|
+| **Name** | Wendy Warmwind |
+| **Player** | Wendy |
+| **Race** | Rock Gnome |
+| **Class** | Monk (Level 2) |
+| **Alignment** | — (blank) |
+| **Background** | — (blank) |
+| **Experience** | 0 |
+
+### Ability Scores
+| STR | DEX | CON | INT | WIS | CHA |
+|-----|-----|-----|-----|-----|-----|
+| 10 | 17 | 16 | 15 | 16 | 11 |
+
+### Combat
+| HP | AC | Initiative | Speed | Prof Bonus |
+|----|----|-----------|-------|------------|
+| 19/19 | 16 | +3 | 30 ft | +2 |
+
+### Features (10)
+1. Rock Gnome Trait: Darkvision
+2. Rock Gnome Trait: Gnome Cunning
+3. Rock Gnome Trait: Artificer's Lore
+4. Rock Gnome Trait: Tinker
+5. Rock Gnome Trait: Kol points
+6. Class Feature: Unarmored Defense (AC = 10 + DEX + WIS)
+7. Class Feature: Martial Arts
+8. Class Feature: Flurry of Blows
+9. Class Feature: Patient Defense
+10. Class Feature: Step of the Wind
+
+### Equipment (15 items)
+Bag of Caltrops, Tinker's Tools, Worn Overalls & Gnome cap, Quarterstaff, Gear-shaped ninja stars (Shuriken) x10, Thieves' Tools, Disguise Kit, Explorer's Pack, Flute, Faded photo, Sketch of restaurant, Loof's Loaf, Invitation to Tudul's Party, Scimitar, Strange Coin
+
+### Currency (Arkla)
+- **52 Leptons** → 52 CP
+- **23 Quadrans** → 23 SP
+- **9 Assarions** → 9 GP
+
+### Companion
+- **Little mouse** (Ordinary Mouse)
+- HP: 1, AC: 10, Speed: 45 ft
+- Skills: The Ultimate Scout, The Infiltrator
+
+### Portraits
+- Portrait: `/wendy.png`
+- Token: `/wendy_bm.png`
+
+### Backstory (summary)
+Trained in the Kolari way in Foarn. Master Duku disappeared leaving only a lizard-monogrammed belt. Wendy seeks the restaurant by the sea.
+
+---
+
+## Full Arkla Campaign Party (All 4 PCs) + NPC Enemies (Updated: 2026-07-15 10:09)
+## Full Party — PC Characters (The Obelisks of Arkla)
+
+**Date:** July 15, 2026  
+**All 4 PCs loaded into campaign store (localStorage).**
+
+### Party Composition
+| Character | Race | Class | Level | HP | AC | Init |
+|-----------|------|-------|-------|----|----|------|
+| Wendy Warmwind | Rock Gnome | Monk | 2 | 19/19 | 16 | +3 |
+| Kehrfuffle Songroot | Wood Elf | Bard | 2 | 17/17 | 13 | +3 |
+| Edmund "Strider" Tudul | Human (Variant) | Ranger | 2 | 20/20 | 14 | +3 |
+| Toern Treetap | Salt Gnome | Artificer | 2 | 18/18 | 15 | +2 |
+
+### Kehrfuffle Songroot (Bard)
+- **Stats:** STR 10, DEX 17, CON 14, INT 10, WIS 16, CHA 17
+- **Saves:** DEX +5, CHA +5
+- **Skills:** Acrobatics, Deception, Insight, Perception, Performance, Persuasion
+- **Spell Slots:** 1st level: 3/3
+- **Features:** Bardic Inspiration (d6, 3/LR), Jack of All Trades, Song of Rest (d6), By Popular Demand
+- **Equipment:** Leather Armor, Sickle, The Cursed Accordion, Entertainer's Pack, Locket, etc.
+- **Currency:** 50cp, 54sp, 35gp
+- **Companion:** Tiny Bear (HP 20, AC 13) — Verdant Strike, Maul, Entangling Growl
+- **Portrait:** `/kehrfuffle.png`, Token: `/kehrfuffle_bm.png`
+
+### Edmund "Strider" Tudul (Ranger)
+- **Stats:** STR 14, DEX 16, CON 14, INT 11, WIS 16, CHA 11
+- **Saves:** STR +4, DEX +5
+- **Skills:** Deception (Expertise), History, Stealth, Perception, Insight, Persuasion
+- **Features:** Favored Foe (2/LR), Sharpshooter, Fighting Style: Defense, False Identity
+- **Equipment:** Longbow, Longsword, Leather Armor, Disguise Kit, Forgery Kit, etc.
+- **Resources:** Arrows (17/20), Favored Foe (2/2 LR)
+- **Alias:** "Strider" — can login as "Edmund" or "Strider"
+- **Portrait:** `/strider.png`, Token: `/strider_bm.png`
+
+### Toern Treetap (Artificer)
+- **Stats:** STR 8, DEX 14, CON 14, INT 17, WIS 12, CHA 12
+- **Saves:** CON +4, INT +5
+- **Skills:** Arcana, Investigation, Perception, Sleight of Hand
+- **Spell Slots:** 1st level: 2/2
+- **Features:** Magical Tinkering, Infuse Item (2 active/LR), The Right Tool for the Job
+- **Equipment:** Light Crossbow, Scale Mail, Shield, Bombs (3), Mines (2), etc.
+- **Race:** Salt Gnome (homebrew) — swim speed, cold resistance
+- **Portrait:** `/toern.png`, Token: `/toern_bm.png`
+
+### NPC Enemy Notes (in campaign settings)
+The campaign's `privateDmNotes` field contains detailed notes on 20+ NPCs including:
+- **Jewl** — Dreaded Pirate, leader of Jewl Pirates
+- **Scant/Skant** — Traitor elf from Ivory Hollow
+- **Bolan** — Quartz Goliath, leads Quartz Pirates
+- **Captain Pavel** — Sympathetic Crown Guard officer
+- **The Stranger** — Mysterious shrouded figure
+- **Haven Tudul** — Strider's brother
+- **Lord Puty** — Crab knight awaiting execution
+- **Clarion** — Reptilian dream entity
+- Plus 12+ more detailed NPC entries
+
+---
+
+## QA Fix — HomebrewStore infinite loop (2026-07-15) (Updated: 2026-07-15 10:18)
+## Root Cause
+`HomebrewPanel.tsx` called `useHomebrewStore((s) => s.getStats())` which returns a **new object reference** every render. Zustand's shallow comparison detects the new reference and triggers a re-render, causing a `setState` -> render -> new object -> re-render infinite loop, resulting in "Maximum update depth exceeded".
+
+## Fix
+- **`homebrewStore.ts`**: Deprecated `getStats()` with JSDoc warning. No code changes to the function itself.
+- **`HomebrewPanel.tsx`**: Replaced `useHomebrewStore((s) => s.getStats())` with individual selectors: `useHomebrewStore((s) => s.items)`, `.feats`, `.spells`. Derive `totalItems`, `totalFeats`, `totalSpells` from the stable array references.
+- Added `useMemo` wrappers around `.filter()` calls (`filteredItems`, `filteredFeats`, `filteredSpells`) to avoid recomputing on every render.
+- Replaced `Date.now()` in `key` prop of form components (which caused different keys every render) with static fallback keys (`"new-item"`, `"new-feat"`, `"new-spell"`).
+
+## Result
+Homebrew page now renders correctly without crash. All three tabs (Items, Feats, Spells) render with proper empty states.
+
+---

@@ -33,6 +33,7 @@ interface HomebrewState extends HomebrewLibrary {
 
   // ── General ──
   clearAll: () => void;
+  /** @deprecated Use individual `items.length`, `feats.length`, `spells.length` selectors instead to avoid infinite re-renders */
   getStats: () => { totalItems: number; totalFeats: number; totalSpells: number };
 }
 
@@ -102,6 +103,8 @@ export const useHomebrewStore = create<HomebrewState>()(
       /* ── General ── */
       clearAll: () => set({ items: [], feats: [], spells: [] }),
 
+      /** @deprecated Produces a new object reference on every call.
+       *  Use individual `items.length`, `feats.length`, `spells.length` selectors. */
       getStats: () => {
         const { items, feats, spells } = get();
         return {

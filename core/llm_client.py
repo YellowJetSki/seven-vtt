@@ -1,5 +1,7 @@
 import os
 import json
+import re
+import time
 from datetime import datetime
 from openai import OpenAI
 
@@ -11,7 +13,7 @@ from tools.map_navigator import get_nearby_locations
 from tools.notes_manager import log_system_note
 from tools.terminal_executor import execute_terminal_command
 from tools.git_manager import run_git_command
-from tools.visual_qa import scan_local_dom
+from tools.visual_qa import scan_local_dom, click_ui_element, fill_input_field, evaluate_javascript
 from tools.firebase_emulator import run_firebase_emulator_query
 from core.session_manager import SessionManager
 from core.ui import console
@@ -65,7 +67,7 @@ class DeepSeekAgent:
                 "- MODULARITY: Wherever possible, build individual, highly re-usable components. Absolutely avoid creating giant, monolithic files.\n"
                 "- MOBILE-FIRST: Approach every UI element with a strict mobile-first methodology, prioritizing elite User Experience (UX) and responsiveness.\n"
                 "- LINTER LOOP: After modifying ANY TypeScript or React file, immediately run 'npx tsc --noEmit' and 'npx eslint'.\n"
-                "- VISUAL QA LOOP: Before finalizing a complex UI layout, use 'scan_local_dom' to read the live Tailwind DOM structure.\n"
+                "- INTERACTIVE QA LOOP: Before finalizing a complex UI layout, use 'scan_local_dom' to read the live structure. You can actively test the UI by using 'click_ui_element' and 'fill_input_field'.\n"
                 "- BACKEND SANDBOX: Test data schemas using 'run_firebase_emulator_query' before testing in production.\n\n"
                 "VTT DOMAIN EXPERTISE:\n"
                 "- You possess encyclopedic knowledge of D&D 5e mechanics, class progressions, and intricate multi-classing synergies.\n"
@@ -83,7 +85,8 @@ class DeepSeekAgent:
             active_tools = [
                 "perform_web_search", "read_workspace_file", "write_workspace_file", "delete_workspace_file", 
                 "list_workspace_files", "search_workspace_code", "execute_terminal_command", "flush_node_processes", 
-                "run_git_command", "update_architecture_ledger", "scan_local_dom", "run_firebase_emulator_query"
+                "run_git_command", "update_architecture_ledger", "scan_local_dom", "click_ui_element", "fill_input_field", 
+                "evaluate_javascript", "run_firebase_emulator_query"
             ]
             
         else:
@@ -132,7 +135,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "write_workspace_file",
-                    "description": "Securely write code to a local file. This will ALWAYS overwrite the ENTIRE file. You must provide the complete, production-ready file content. Snippets are BANNED.",
+                    "description": "Securely write code to a local file. This will ALWAYS overwrite the ENTIRE file. You must provide the complete, production-ready file content. Snippets are BANNED. Ensure all string properties safely escape raw newlines (\\n) to preserve valid JSON.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -221,13 +224,59 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "scan_local_dom",
-                    "description": "Reads the live, rendered HTML structure from the local Vite development server. Use this to 'see' the current Tailwind CSS layout, verify UI alignment, and perform Visual QA.",
+                    "description": "Reads the live, hydrated HTML structure from the local Vite development server via a headless browser. Use this to 'see' the current Tailwind CSS layout and React UI state.",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "port": {"type": "integer", "description": "The localhost port to scan (defaults to 5173 for Vite)."},
                             "path": {"type": "string", "description": "The URL path to scan (defaults to '/')."}
                         },
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "click_ui_element",
+                    "description": "Clicks an interactive element on the live React UI (button, link, modal toggle) using a standard CSS selector. Automatically returns the new DOM state after the click.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "selector": {"type": "string", "description": "The CSS selector to click (e.g., '#login-btn', '.dropdown-toggle', '[data-testid=\"submit\"]')."}
+                        },
+                        "required": ["selector"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "fill_input_field",
+                    "description": "Types text into an active input field or textarea on the live React UI using a CSS selector. Automatically returns the new DOM state.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "selector": {"type": "string", "description": "The CSS selector of the input field."},
+                            "text": {"type": "string", "description": "The string to type into the field."}
+                        },
+                        "required": ["selector", "text"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "evaluate_javascript",
+                    "description": "Executes raw JavaScript within the active browser session. Use this to check localStorage, inspect the window object, or force client-side React state triggers.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "script": {"type": "string", "description": "The raw JavaScript string to execute."}
+                        },
+                        "required": ["script"],
                         "additionalProperties": False
                     }
                 }
@@ -354,7 +403,6 @@ class DeepSeekAgent:
             else:
                 valid_messages.append(msg)
                 
-        # Clean hanging tool chains at the end of the history
         while len(valid_messages) > 1:
             last_msg = valid_messages[-1]
             if last_msg.get("role") == "assistant" and last_msg.get("tool_calls"):
@@ -410,74 +458,99 @@ class DeepSeekAgent:
     def chat(self, user_input: str):
         # RUN THE PRE-FLIGHT CHECK
         self._scrub_history()
-        
         self._prune_context()
         self.messages.append({"role": "user", "content": user_input})
         
-        with console.status("[bold cyan]Processing...[/bold cyan]", spinner="line") as status:
-            while True:
-                stream = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=self.messages,
-                    tools=self.tools,
-                    stream=True,
-                    stream_options={"include_usage": True}
-                )
-                
-                tool_calls_dict = {}
-                content_streamed = False
-                final_content = ""
-                usage_data = None
-                
-                for chunk in stream:
-                    if len(chunk.choices) == 0:
-                        if chunk.usage:
-                            usage_data = chunk.usage
-                        continue
+        # === THE AGENTIC LOOP ===
+        while True:
+            # === THE COGNITIVE RETRY LOOP ===
+            max_api_retries = 3
+            stream_success = False
+            
+            for attempt in range(max_api_retries):
+                try:
+                    with console.status("[bold cyan]Processing...[/bold cyan]" if attempt == 0 else f"[bold yellow]Connection dropped. Re-establishing link (Attempt {attempt+1}/{max_api_retries})...[/bold yellow]", spinner="line") as status:
+                        stream = self.client.chat.completions.create(
+                            model=self.model,
+                            messages=self.messages,
+                            tools=self.tools,
+                            stream=True,
+                            stream_options={"include_usage": True}
+                        )
                         
-                    delta = chunk.choices[0].delta
-                    
-                    if delta.tool_calls:
-                        for tc in delta.tool_calls:
-                            idx = tc.index
-                            if idx not in tool_calls_dict:
-                                tool_calls_dict[idx] = {
-                                    "id": tc.id, 
-                                    "type": "function", 
-                                    "function": {"name": tc.function.name or "", "arguments": tc.function.arguments or ""}
-                                }
-                            else:
-                                if tc.function.name:
-                                    tool_calls_dict[idx]["function"]["name"] += tc.function.name
-                                if tc.function.arguments:
-                                    tool_calls_dict[idx]["function"]["arguments"] += tc.function.arguments
-                    
-                    if delta.content:
-                        if not content_streamed:
-                            status.stop()
-                            yield {"type": "start"}
-                            content_streamed = True
-                        final_content += delta.content
-                        yield {"type": "chunk", "content": final_content}
+                        tool_calls_dict = {}
+                        content_streamed = False
+                        final_content = ""
+                        usage_data = None
                         
-                    if chunk.usage:
-                        usage_data = chunk.usage
+                        for chunk in stream:
+                            if len(chunk.choices) == 0:
+                                if chunk.usage:
+                                    usage_data = chunk.usage
+                                continue
+                                
+                            delta = chunk.choices[0].delta
+                            
+                            if delta.tool_calls:
+                                for tc in delta.tool_calls:
+                                    idx = tc.index
+                                    if idx not in tool_calls_dict:
+                                        tool_calls_dict[idx] = {
+                                            "id": tc.id, 
+                                            "type": "function", 
+                                            "function": {"name": tc.function.name or "", "arguments": tc.function.arguments or ""}
+                                        }
+                                    else:
+                                        if tc.function.name:
+                                            tool_calls_dict[idx]["function"]["name"] += tc.function.name
+                                        if tc.function.arguments:
+                                            tool_calls_dict[idx]["function"]["arguments"] += tc.function.arguments
+                            
+                            if delta.content:
+                                if not content_streamed:
+                                    status.stop()
+                                    yield {"type": "start"}
+                                    content_streamed = True
+                                final_content += delta.content
+                                yield {"type": "chunk", "content": final_content}
+                                
+                            if chunk.usage:
+                                usage_data = chunk.usage
 
-                if tool_calls_dict:
-                    tool_calls_list = [v for k, v in sorted(tool_calls_dict.items())]
+                        stream_success = True
+                        break
+
+                except Exception as e:
+                    if attempt < max_api_retries - 1:
+                        time.sleep(2 ** attempt)  
+                        continue
+                    else:
+                        error_msg = f"\n\n[SYSTEM ERROR: Uplink to DeepSeek API severed after {max_api_retries} attempts. The servers are currently overloaded. Please try your prompt again in a moment. Details: {str(e)}]"
+                        if not content_streamed:
+                            yield {"type": "start"}
+                        yield {"type": "chunk", "content": error_msg}
+                        yield {"type": "done", "usage": None, "content": error_msg}
+                        return
+
+            if not stream_success:
+                return
+
+            # --- PROCESS TOOL CALLS IF STREAM SUCCEEDED ---
+            if tool_calls_dict:
+                tool_calls_list = [v for k, v in sorted(tool_calls_dict.items())]
+                
+                safe_message = {
+                    "role": "assistant",
+                    "content": final_content if final_content else None,
+                    "tool_calls": tool_calls_list
+                }
+                self.messages.append(safe_message)
+                
+                if content_streamed:
+                    yield {"type": "pause"}
                     
-                    safe_message = {
-                        "role": "assistant",
-                        "content": final_content if final_content else None,
-                        "tool_calls": tool_calls_list
-                    }
-                    self.messages.append(safe_message)
-                    
-                    if content_streamed:
-                        yield {"type": "pause"}
-                        
-                    status.start()
-                    
+                console.print("") 
+                with console.status("[bold green]Executing System Tools...[/bold green]", spinner="line") as status:
                     for tool_call in tool_calls_list:
                         tool_name = tool_call["function"]["name"]
                         tool_id = tool_call["id"]
@@ -485,16 +558,21 @@ class DeepSeekAgent:
                         
                         try:
                             try:
-                                args = json.loads(tool_call["function"]["arguments"])
+                                args_str = tool_call["function"]["arguments"]
+                                args = json.loads(args_str, strict=False)
                             except json.JSONDecodeError as e:
-                                tool_result = (
-                                    f"SYSTEM DIRECTIVE: Critical Tool Error. Your JSON arguments were invalid and could not be parsed. "
-                                    f"This usually occurs when writing large code blocks if quotes or newlines are not properly escaped. "
-                                    f"Do NOT assume the file was written. Error details: {str(e)}. "
-                                    f"Try breaking the write into smaller chunks or verify your string formatting."
-                                )
-                                self.messages.append({"role": "tool", "tool_call_id": tool_id, "content": tool_result})
-                                continue 
+                                cleaned_str = re.sub(r'```[a-z]*\n(.*?)\n```', r'\1', args_str, flags=re.DOTALL)
+                                try:
+                                    args = json.loads(cleaned_str, strict=False)
+                                except Exception:
+                                    tool_result = (
+                                        f"SYSTEM DIRECTIVE: Critical Tool Error. Your JSON arguments were invalid and could not be parsed. "
+                                        f"This usually occurs when writing large code blocks if quotes or newlines are not properly escaped. "
+                                        f"Do NOT assume the file was written. Error details: {str(e)}. "
+                                        f"Ensure your 'content' string correctly escapes standard quotes and backslashes."
+                                    )
+                                    self.messages.append({"role": "tool", "tool_call_id": tool_id, "content": tool_result})
+                                    continue 
                                 
                             if tool_name == "perform_web_search":
                                 status.update(f"[bold blue]Accessing global networks for:[/bold blue] {args.get('query', '')}...")
@@ -529,6 +607,15 @@ class DeepSeekAgent:
                             elif tool_name == "scan_local_dom":
                                 status.update(f"[bold magenta]Running Visual QA on localhost...[/bold magenta]")
                                 tool_result = scan_local_dom(args.get("port", 5173), args.get("path", "/"))
+                            elif tool_name == "click_ui_element":
+                                status.update(f"[bold magenta]Interacting with UI Element:[/bold magenta] {args.get('selector', '')}...")
+                                tool_result = click_ui_element(args.get("selector", ""))
+                            elif tool_name == "fill_input_field":
+                                status.update(f"[bold magenta]Typing into Input Field:[/bold magenta] {args.get('selector', '')}...")
+                                tool_result = fill_input_field(args.get("selector", ""), args.get("text", ""))
+                            elif tool_name == "evaluate_javascript":
+                                status.update(f"[bold yellow]Executing Browser Script...[/bold yellow]")
+                                tool_result = evaluate_javascript(args.get("script", ""))
                             elif tool_name == "run_firebase_emulator_query":
                                 status.update(f"[bold yellow]Accessing local Firebase Emulator...[/bold yellow]")
                                 tool_result = run_firebase_emulator_query(
@@ -571,8 +658,8 @@ class DeepSeekAgent:
                             "tool_call_id": tool_id,
                             "content": str(tool_result)
                         })
-                else:
-                    self.messages.append({"role": "assistant", "content": final_content})
-                    self.session_manager.save_session(self.session_name, self.messages)
-                    yield {"type": "done", "usage": usage_data, "content": final_content}
-                    break
+            else:
+                self.messages.append({"role": "assistant", "content": final_content})
+                self.session_manager.save_session(self.session_name, self.messages)
+                yield {"type": "done", "usage": usage_data, "content": final_content}
+                break
