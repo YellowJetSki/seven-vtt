@@ -18,8 +18,8 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./vtt/src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["vtt/src"]
 }
