@@ -129,8 +129,8 @@ export function LoginPage() {
         <div className="rounded-2xl border border-surface-700/50 bg-surface-900/80 p-8 shadow-2xl backdrop-blur-xl">
           {/* Brand Header */}
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-accent-500/10 ring-1 ring-accent-500/20">
-              <span className="text-3xl font-bold text-accent-400">Sᚱ</span>
+            <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-xl bg-accent-500/10 ring-1 ring-accent-500/20 overflow-hidden">
+              <img src="/AppIcon.png" alt="App Icon" className="h-20 w-20 object-cover" />
             </div>
             <h1 className="text-xl font-bold text-surface-100">STᚱ VTT</h1>
             <p className="mt-1 text-sm text-surface-500">Virtual Tabletop · Sign In</p>

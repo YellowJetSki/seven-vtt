@@ -74,16 +74,16 @@ export function Sidebar() {
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-30 flex h-full flex-col border-r border-surface-700/80 bg-surface-850/95 backdrop-blur-md transition-all duration-300 ease-out md:static md:z-auto ${
+        className={`fixed left-0 top-0 z-30 flex h-full flex-col border-r border-surface-700/60 glass-strong transition-all duration-300 ease-out md:static md:z-auto ${
           sidebarOpen
             ? "w-64 translate-x-0 shadow-2xl"
             : "w-0 -translate-x-full md:w-16 md:translate-x-0"
         }`}
       >
         {/* Brand */}
-        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-surface-700/80 px-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/15">
-            <span className="text-sm font-bold text-accent-400">Sᚱ</span>
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-surface-700/60 px-4">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/15 ring-1 ring-accent-500/20 overflow-hidden">
+            <img src="/AppIcon.png" alt="App Icon" className="h-8 w-8 object-cover" />
           </div>
           {sidebarOpen && (
             <div className="min-w-0 flex-1">
@@ -114,7 +114,7 @@ export function Sidebar() {
               className={({ isActive }) =>
                 `relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-accent-500/12 text-accent-300 shadow-sm before:absolute before:left-0 before:top-1/4 before:h-1/2 before:w-0.5 before:rounded-full before:bg-accent-400"
+                    ? "bg-accent-500/12 text-accent-300 shadow-sm card-glow before:absolute before:left-0 before:top-1/4 before:h-1/2 before:w-0.5 before:rounded-full before:bg-accent-400 animate-border-pulse"
                     : "text-surface-400 hover:bg-surface-800 hover:text-surface-200"
                 }`
               }

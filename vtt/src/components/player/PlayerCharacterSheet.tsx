@@ -82,6 +82,22 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
   );
   const [showResourceEditor, setShowResourceEditor] = useState(false);
 
+  // Inventory editing
+  const [showInventoryEditor, setShowInventoryEditor] = useState(false);
+  const [equipmentDraft, setEquipmentDraft] = useState<{ item: string; quantity: number }[]>(
+    character.equipment.map(e => ({ item: e.item, quantity: e.quantity }))
+  );
+
+  // Currency editing
+  const [showCurrencyEditor, setShowCurrencyEditor] = useState(false);
+  const [draftCurrency, setDraftCurrency] = useState({
+    platinum: character.currency?.platinum ?? 0,
+    gold: character.currency?.gold ?? 0,
+    electrum: character.currency?.electrum ?? 0,
+    silver: character.currency?.silver ?? 0,
+    copper: character.currency?.copper ?? 0,
+  });
+
   const handleHpSave = useCallback(() => {
     const val = parseInt(hpInput, 10);
     if (isNaN(val)) return;
@@ -284,6 +300,64 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
         </div>
       </section>
 
+      {/* Rest & Level Up Controls */}
+      <div className="flex gap-2">
+        <button onClick={() => {
+          // Short rest: restore some HP, refresh short-rest resources
+          const healAmt = Math.floor(character.hitPoints.max * 0.25);
+          const newHp = Math.min(character.hitPoints.max, character.hitPoints.current + healAmt);
+          updateCharacter(character.id, {
+            hitPoints: { ...character.hitPoints, current: newHp },
+            updatedAt: Date.now(),
+          } as any);
+          // Reset short-rest resources
+          const updatedResources = ((character as any).resources ?? []).map((r: any) =>
+            r.recharge === "short" ? { ...r, current: r.max } : r
+          );
+          if (updatedResources.length > 0) {
+            updateCharacter(character.id, { resources: updatedResources, updatedAt: Date.now() } as any);
+          }
+          showToast({ message: `Short rest! Healed ${healAmt} HP. Short-rest resources restored.`, type: "success" });
+        }}
+          className="flex-1 rounded-xl border border-divine-500/30 bg-divine-500/10 p-3 text-center hover:bg-divine-500/20 transition-colors">
+          <span className="text-lg">🏕️</span>
+          <p className="text-xs font-medium text-divine-400 mt-1">Short Rest</p>
+          <p className="text-[9px] text-divine-500/70">Heal 25% HP + recharge</p>
+        </button>
+        <button onClick={() => {
+          // Long rest: full heal, restore all resources
+          updateCharacter(character.id, {
+            hitPoints: { ...character.hitPoints, current: character.hitPoints.max, temporary: 0 },
+            updatedAt: Date.now(),
+          } as any);
+          const updatedResources = ((character as any).resources ?? []).map((r: any) =>
+            ({ ...r, current: r.max })
+          );
+          if (updatedResources.length > 0) {
+            updateCharacter(character.id, { resources: updatedResources, updatedAt: Date.now() } as any);
+          }
+          showToast({ message: `Long rest! Fully healed. All resources restored.`, type: "success" });
+        }}
+          className="flex-1 rounded-xl border border-rogue-500/30 bg-rogue-500/10 p-3 text-center hover:bg-rogue-500/20 transition-colors">
+          <span className="text-lg">🛌</span>
+          <p className="text-xs font-medium text-rogue-400 mt-1">Long Rest</p>
+          <p className="text-[9px] text-rogue-500/70">Full heal + all resources</p>
+        </button>
+        <button onClick={() => {
+          const newLevel = (character.level ?? 1) + 1;
+          updateCharacter(character.id, {
+            level: newLevel,
+            updatedAt: Date.now(),
+          } as any);
+          showToast({ message: `Level up! ${character.name} is now level ${newLevel}! 🎉`, type: "success" });
+        }}
+          className="flex-1 rounded-xl border border-accent-500/30 bg-accent-500/10 p-3 text-center hover:bg-accent-500/20 transition-colors">
+          <span className="text-lg">⬆️</span>
+          <p className="text-xs font-medium text-accent-400 mt-1">Level Up</p>
+          <p className="text-[9px] text-accent-500/70">Current: Level {character.level ?? 1}</p>
+        </button>
+      </div>
+
       {/* Resources & Spell Slots */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Custom Resources */}
@@ -454,10 +528,15 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
         </section>
       )}
 
-      {/* Equipment */}
-      {character.equipment.length > 0 && (
-        <section className="rounded-xl border border-surface-700 bg-surface-850 p-4 md:p-5">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Equipment</h2>
+      {/* Inventory Management */}
+      <section className="rounded-xl border border-surface-700 bg-surface-850 p-4 md:p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-surface-400">🎒 Inventory</h2>
+          <button onClick={() => setShowInventoryEditor(true)} className="text-xs text-accent-400 hover:text-accent-300 transition-colors">✏️ Edit</button>
+        </div>
+        {character.equipment.length === 0 ? (
+          <p className="text-xs text-surface-500">No items in inventory.</p>
+        ) : (
           <div className="grid grid-cols-2 gap-1.5">
             {character.equipment.map((item, i) => (
               <div key={"eq-" + i} className="rounded-lg bg-surface-800 px-3 py-2 text-xs text-surface-300">
@@ -465,12 +544,63 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
               </div>
             ))}
           </div>
-        </section>
+        )}
+      </section>
+
+      {/* Inventory Editor Modal */}
+      {showInventoryEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInventoryEditor(false)}>
+          <div className="w-full max-w-md rounded-xl border border-surface-700 bg-surface-850 p-5 shadow-2xl max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <h3 className="text-sm font-semibold text-surface-100">Edit Inventory</h3>
+              <Button size="xs" variant="ghost" onClick={() => {
+                setEquipmentDraft([...equipmentDraft, { item: "", quantity: 1 }]);
+              }}>+ Add Item</Button>
+            </div>
+            <div className="space-y-2 overflow-y-auto flex-1">
+              {equipmentDraft.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 rounded-lg bg-surface-800 p-2">
+                  <input value={item.item} onChange={(e) => {
+                    const newDraft = [...equipmentDraft];
+                    newDraft[idx] = { ...newDraft[idx], item: e.target.value };
+                    setEquipmentDraft(newDraft);
+                  }} placeholder="Item name"
+                    className="flex-1 rounded border border-surface-700 bg-surface-900 px-2 py-1 text-xs text-surface-100 focus:border-accent-500 focus:outline-none" />
+                  <input type="number" value={item.quantity} onChange={(e) => {
+                    const newDraft = [...equipmentDraft];
+                    newDraft[idx] = { ...newDraft[idx], quantity: parseInt(e.target.value) || 1 };
+                    setEquipmentDraft(newDraft);
+                  }} min={1} className="w-14 rounded border border-surface-700 bg-surface-900 px-1 py-1 text-xs text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+                  <button onClick={() => setEquipmentDraft(prev => prev.filter((_, i) => i !== idx))}
+                    className="text-warrior-400 hover:text-warrior-300 text-xs shrink-0">🗑️</button>
+                </div>
+              ))}
+              {equipmentDraft.length === 0 && (
+                <p className="text-xs text-surface-500 text-center py-4">No items. Click "+ Add Item" to start.</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 mt-3 shrink-0 border-t border-surface-700 pt-3">
+              <Button variant="ghost" size="sm" onClick={() => setShowInventoryEditor(false)}>Cancel</Button>
+              <Button size="sm" onClick={() => {
+                const validEquipment = equipmentDraft.filter(e => e.item.trim());
+                updateCharacter(character.id, {
+                  equipment: validEquipment,
+                  updatedAt: Date.now(),
+                });
+                setShowInventoryEditor(false);
+                showToast({ message: `Inventory updated (${validEquipment.length} items)`, type: "success" });
+              }}>Save Inventory</Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Currency */}
       <section className="rounded-xl border border-surface-700 bg-surface-850 p-4 md:p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">Currency</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-surface-400">🪙 Currency</h2>
+          <button onClick={() => setShowCurrencyEditor(true)} className="text-xs text-accent-400 hover:text-accent-300 transition-colors">✏️ Edit</button>
+        </div>
         <div className="grid grid-cols-5 gap-2 text-center">
           <CurrencyCell label="PP" value={character.currency?.platinum ?? 0} color="gold" />
           <CurrencyCell label="GP (Assarion)" value={character.currency?.gold ?? 0} color="gold" />
@@ -480,6 +610,38 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
         </div>
         <p className="mt-2 text-center text-[9px] text-surface-500">50 Leptons = 1 Quadrans | 5 Quadrans = 1 Assarion</p>
       </section>
+
+      {/* Currency Editor Modal */}
+      {showCurrencyEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowCurrencyEditor(false)}>
+          <div className="w-full max-w-sm rounded-xl border border-surface-700 bg-surface-850 p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-surface-100 mb-4">Edit Currency</h3>
+            <div className="grid grid-cols-5 gap-2 mb-4">
+              {(["platinum", "gold", "electrum", "silver", "copper"] as const).map((coin) => (
+                <div key={coin} className="text-center">
+                  <label className="text-[10px] text-surface-400 uppercase block mb-1">
+                    {coin === "platinum" ? "PP" : coin === "gold" ? "GP" : coin === "electrum" ? "EP" : coin === "silver" ? "SP" : "CP"}
+                  </label>
+                  <input type="number" min={0} value={draftCurrency[coin]}
+                    onChange={(e) => setDraftCurrency(prev => ({ ...prev, [coin]: parseInt(e.target.value) || 0 }))}
+                    className="w-full rounded border border-surface-700 bg-surface-900 px-1 py-1 text-xs text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowCurrencyEditor(false)}>Cancel</Button>
+              <Button size="sm" onClick={() => {
+                updateCharacter(character.id, {
+                  currency: draftCurrency,
+                  updatedAt: Date.now(),
+                });
+                setShowCurrencyEditor(false);
+                showToast({ message: "Currency updated", type: "success" });
+              }}>Save Currency</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Backstory */}
       {character.backstory && (
