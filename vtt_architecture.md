@@ -1599,3 +1599,42 @@ syncManager.pushCampaign() →  setDoc()  →  onSnapshot callback
 ```
 
 ---
+
+## Phase 1-5: Third Overhaul - QuickActions, EncounterPresets, Sync Queue, Conditions Widget (Updated: 2026-07-14 21:34)
+## Phase 1-5: Third Major Overhaul
+
+### Phase 1: New Features
+| Feature | File | Description |
+|---|---|---|
+| **QuickActionsToolbar** | `components/combat/QuickActionsToolbar.tsx` | Floating context toolbar for combatants. One-click damage (1/3/5/10/25), heal (1/5/10/25/50), custom input, status effect toggles (prone/stunned/blinded/unconscious/restrained/paralyzed/poisoned/frightened), temp HP set, kill/revive, quick note. Keyboard accessible (Esc to close). |
+| **EncounterPresets** | `components/combat/EncounterPresets.tsx` | Save/Load encounter templates from localStorage. 8 built-in presets (Goblin Ambush, Undead Rising, Bandit Raid, Cultist Rite, Elemental Fury, The Horde, Dragon's Lair, Lycanthrope Hunt). Custom presets with save/delete. Organized by difficulty (easy/medium/hard/deadly) and environment icon. |
+| **StatusEffectFilter** | `components/combat/StatusEffectFilter.tsx` | Filter bar for initiative tracker. Clickable status effect pills with count badges. Active filter highlights matching combatants. Clear button to reset. Only shows effects currently present on combatants. |
+
+### Phase 2: Feature Upgrades
+| Upgrade | Changes |
+|---|---|
+| **useFirebaseSync** | Added persistent sync queue (localStorage). Pending writes survive page reload. Exponential backoff retry (max 5). Queue flush on reconnect. `getPendingSyncCount()` for UI badge. |
+| **DmDashboard** | Added Conditions & Environment widget (Weather: clear/cloudy/rain/storm/fog/snow, Lighting: bright/dim/darkness/magical, Terrain: normal/difficult/extreme/water/lava). Added Homebrew stats card. Quick-start encounter/map buttons. 6-column stat grid. Responsive conditions panel with show/hide toggle. |
+
+### Phase 3: Firebase Connections
+- **`useFirebaseSync.ts`**: New `Persistent Sync Queue` using localStorage (`vtt-sync-queue`). Each domain (campaign/session/homebrew) gets queued on debounced push. Failed pushes increment retry count. Queue flushed on Firebase reconnection (`firebaseConnected` change).
+- **`triggerFullSync()`**: Now flushes queue before pushing all domains.
+- **`getPendingSyncCount()`**: New export for UI badge indicators.
+
+### Phase 4: UI/UX
+- **DmDashboard**: 6-column stat grid (was 5), added Homebrew card, Conditions environment widget with 3 categories (Weather/Lighting/Terrain), quick-start encounter/map buttons, responsive conditions show/hide.
+- **EncounterPresets**: Built-in presets with difficulty colors, environment icons, enemy count badges, custom preset save/delete.
+
+### Phase 5: Cleanup & Deployment
+- Build verified: 117 modules, 0 errors, CSS 70.69 KB, JS 923.18 KB
+
+### Files Changed
+```
+ A vtt/src/components/combat/QuickActionsToolbar.tsx  (floating combatant toolbar)
+ A vtt/src/components/combat/EncounterPresets.tsx      (save/load encounter templates)
+ A vtt/src/components/combat/StatusEffectFilter.tsx    (status effect filter bar)
+ M vtt/src/hooks/useFirebaseSync.ts                    (persistent sync queue + retry)
+ M vtt/src/pages/DmDashboard.tsx                       (conditions widget, homebrew stats)
+```
+
+---
