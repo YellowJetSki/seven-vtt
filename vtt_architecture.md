@@ -1316,3 +1316,55 @@ src/components/layout/Sidebar.tsx        — Mounts SpotifyPlayer above user inf
 - `VITE_SPOTIFY_CLIENT_SECRET` — Reserved for future use (not needed for PKCE flow but kept for extensibility)
 
 ---
+
+## Firebase Integration — Design Blueprint (Updated: 2026-07-14 20:34)
+## Firebase Integration — Real-Time Sync Layer (Design)
+
+### Architecture
+A **service layer** sits between Zustand stores and Firestore. Each store's `set()` call can optionally push to Firestore. Real-time listeners (`onSnapshot`) hydrate stores when remote data changes.
+
+### Key Design Decisions
+1. **Firebase Auth for DM only** — DM logs in via email/password (Firebase Auth). Players still use local name matching (no Firebase UIs for players).
+2. **Single campaign document** — All campaign data stored in one `campaigns/{campaignId}` document for simplicity. At 1MB Firestore doc limit, this is fine for a single campaign with moderate text.
+3. **Combat/LiveSession state** stored as a separate `liveSessions/{campaignId}` doc — real-time for initiative tracking.
+4. **Homebrew** stored as `homebrew/{campaignId}` doc — synced per-campaign.
+5. **Last-write-wins** conflict resolution (sufficient for single-DM operation).
+6. **Offline-first** — Zustand persists to localStorage. Firebase sync is additive (never erases local data).
+
+### Files to Create
+- `src/lib/firebase-service.ts` — `CampaignSyncService` class with `pushCampaign()`, `listenCampaign()`, `pushCombatState()`, `listenCombatState()`, `pushHomebrew()`, `listenHomebrew()`
+- `src/lib/firebase-auth.ts` — `loginWithFirebase()`, `logout()`, `onAuthChange()` wrappers
+
+### Files to Modify
+- `src/stores/authStore.ts` — Add Firebase Auth integration for DM login
+- `src/lib/firebase.ts` — Remove optional init guard (Firebase is now required)
+
+### Firestore Schema (Updated)
+```
+campaigns/{campaignId} — Single document
+  ├── name: string
+  ├── description: string
+  ├── dmName: string
+  ├── settings: CampaignSettings
+  ├── playerCharacters: PlayerCharacter[] (embedded array)
+  ├── encounters: Encounter[] (embedded array)
+  ├── battleMaps: BattleMap[] (embedded array)
+  ├── journal: JournalEntry[] (embedded array)
+  ├── createdAt: number
+  └── updatedAt: number
+
+liveSessions/{campaignId} — Single document
+  ├── activeEncounter: CombatEncounter | null
+  ├── combatLog: CombatLogEntry[]
+  ├── liveSession: LiveSessionState
+  ├── updatedAt: number
+  └── updatedBy: string (UID)
+
+homebrew/{campaignId} — Single document
+  ├── items: HomebrewItem[]
+  ├── feats: HomebrewFeat[]
+  ├── spells: HomebrewSpell[]
+  └── updatedAt: number
+```
+
+---
