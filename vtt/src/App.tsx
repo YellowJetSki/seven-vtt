@@ -33,7 +33,10 @@ export default function App() {
   }, [initialize]);
 
   // Seed the campaign from Arkla.json on first mount if no campaign exists
+  // and no persisted campaign is found in localStorage.
   useEffect(() => {
+    // If campaign already exists in store (hydrated from localStorage persist),
+    // skip the Arkla.json import entirely.
     if (campaign) {
       setIsArklaLoading(false);
       return;
@@ -41,7 +44,9 @@ export default function App() {
 
     const alreadyLoaded = localStorage.getItem(STORAGE_KEY);
     if (alreadyLoaded) {
-      // Already imported the Arkla campaign this session; use empty demo
+      // Already imported the Arkla campaign this session; use empty demo.
+      // Note: localStorage persistence in campaignStore should have hydrated
+      // the real campaign by now. This is a fallback for edge cases.
       const demo = createDemoCampaign();
       setCampaign(demo);
       setIsArklaLoading(false);

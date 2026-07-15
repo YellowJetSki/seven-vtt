@@ -1902,3 +1902,26 @@ A D&D 5e treasure generator that creates loot based on encounter difficulty, cre
 4. Sets localStorage flag to prevent re-import on refresh
 
 ---
+
+## campaignStore — Persistence (Updated: 2026-07-15 08:54)
+## campaignStore — Persistence via Zustand Persist Middleware
+
+**File**: `vtt/src/stores/campaignStore.ts`
+
+### Persistence Strategy
+- **Middleware**: `zustand/middleware` — `persist`
+- **Storage Key**: `str-vtt-campaign` (localStorage)
+- **`partialize`**: Only `campaign` and `forcePushCounter` are persisted. Transient state (`isLoading`, `error`) is excluded to avoid stale loading states.
+
+### Data Flow Summary
+1. **First visit (no persisted data)**: `App.tsx` fetches `/Arkla.json` → `importArklaJson()` → `setCampaign()` → campaign written to Zustand store → **persisted to localStorage** + `setDoc` to Firestore (if Firebase configured).
+2. **Page refresh**: Zustand `persist` middleware hydrates store from localStorage → campaign available immediately → `isArklaLoading` sees `campaign !== null` and skips re-fetch.
+3. **File deleted + Firebase offline**: Campaign survives in localStorage.
+4. **Firebase connected later**: `useFirebaseSync` detect changes and pushes to Firestore.
+5. **Demo / Reset**: `CampaignSettings` page calls `clearCampaign()` which also resets persisted state.
+
+### Why Not Just Persist Everything?
+- `isLoading` and `error` are transient UI states that should never survive a refresh.
+- `forcePushCounter` is persisted so queued Firebase syncs don't re-trigger on rehydrate.
+
+---
