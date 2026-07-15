@@ -387,29 +387,38 @@ class DeepSeekAgent:
             self.messages = [{"role": "system", "content": system_instruction}]
 
     def _scrub_history(self):
-        """Sanitizes the conversation history to prevent API crash loops."""
+        """Sanitizes the conversation history and autonomously heals corrupted tool logic."""
         valid_messages = []
+        
+        # Step 1: Ensure tool results match standard formatting
         for msg in self.messages:
-            if msg.get("role") == "tool":
+            safe_msg = dict(msg) # Copy to prevent modifying frozen dictionary state
+            if safe_msg.get("role") == "tool":
                 if not valid_messages:
                     continue
                 prev = valid_messages[-1]
                 if prev.get("role") == "assistant" and prev.get("tool_calls"):
-                    valid_messages.append(msg)
+                    valid_messages.append(safe_msg)
                 elif prev.get("role") == "tool":
-                    valid_messages.append(msg)
+                    valid_messages.append(safe_msg)
                 else:
                     continue 
             else:
-                valid_messages.append(msg)
+                valid_messages.append(safe_msg)
                 
-        while len(valid_messages) > 1:
-            last_msg = valid_messages[-1]
-            if last_msg.get("role") == "assistant" and last_msg.get("tool_calls"):
-                valid_messages.pop()
-            else:
-                break
+        # Step 2: The Auto-Healer - Seek out and destroy orphaned tool_calls
+        for i in range(len(valid_messages)):
+            msg = valid_messages[i]
+            if msg.get("role") == "assistant" and msg.get("tool_calls"):
+                # Ensure the very next message is the tool output
+                has_tool_response = (i + 1 < len(valid_messages)) and (valid_messages[i+1].get("role") == "tool")
                 
+                if not has_tool_response:
+                    # Healing process: Delete the corrupted parameter
+                    del msg["tool_calls"]
+                    if not msg.get("content"):
+                        msg["content"] = "[SYSTEM LOG: Tool execution forcefully aborted by crash/override.]"
+                        
         self.messages = valid_messages
 
     def _prune_context(self):
@@ -467,6 +476,11 @@ class DeepSeekAgent:
             max_api_retries = 3
             stream_success = False
             
+            content_streamed = False
+            tool_calls_dict = {}
+            final_content = ""
+            usage_data = None
+            
             for attempt in range(max_api_retries):
                 try:
                     with console.status("[bold cyan]Processing...[/bold cyan]" if attempt == 0 else f"[bold yellow]Connection dropped. Re-establishing link (Attempt {attempt+1}/{max_api_retries})...[/bold yellow]", spinner="line") as status:
@@ -477,11 +491,6 @@ class DeepSeekAgent:
                             stream=True,
                             stream_options={"include_usage": True}
                         )
-                        
-                        tool_calls_dict = {}
-                        content_streamed = False
-                        final_content = ""
-                        usage_data = None
                         
                         for chunk in stream:
                             if len(chunk.choices) == 0:

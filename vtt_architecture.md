@@ -2353,3 +2353,91 @@ Homebrew page now renders correctly without crash. All three tabs (Items, Feats,
 - React Router `<NavLink>` components render as `<a>` tags — they work correctly in real usage
 
 ---
+
+## Testing Report: Battle Map + Encounter Integration (July 15, 2026) (Updated: 2026-07-15 11:14)
+## Comprehensive Testing Report: Battle Map + Encounter Integration
+
+### Test Setup
+- Created campaign "Test Battle Campaign" with 2 PCs (Torvin Ironmantle - Paladin, Elara Moonshadow - Wizard)
+- Created battle map "Goblin Ambush Ridge" (20x15 grid) with 6 tokens (2 PC, 4 enemy)
+- Created saved encounter "Goblin Ambush" (3 goblins + 1 hobgoblin)
+- Launched active combat encounter with 6 combatants (Torvin, Elara, Goblin 1-4)
+
+### Combat Flow Tested
+
+**1. Encounter Creation (Prep Phase)**
+- ✅ Created encounter via "Create" button with name input
+- ✅ Added player characters via "Import PC" modal (Torvin + Elara added with ✓ indicator)
+- ✅ Quick-add enemies via "Goblin x4" button (Goblin 1-4 created with default stats)
+- ✅ Initiatives set via "Init Tools ▼" panel (Torvin=18, Elara=14, Goblins=12/10/8/6)
+- ✅ Started encounter via "Start" button → phase changed to "active"
+
+**2. Turn Tracking**
+- ✅ Turn indicator shows correct active combatant
+- ✅ Next Turn (▶) advances properly through initiative order
+- ✅ Round counter increments correctly (Round 1 → Round 2)
+- ✅ Combatant cards show AC and HP values
+- ✅ Active combatant highlighted with accent border
+
+**3. Damage/HP Tracking**
+- ✅ Damage dealt via preset buttons (-1, -5, -10)
+- ✅ Custom damage via HP input + "−" button
+- ✅ HP updates in real-time on combatant cards
+- ✅ "0/15" shown when combatant reaches 0 HP
+- ✅ Dead combatant shows with death styling
+
+**4. Combatant Card Expansion**
+- ✅ ▼/▲ toggle for expanded combatant detail view
+- ✅ Expanded view shows: HP input, damage/heal buttons, Temp HP
+- ✅ Status effect toggle buttons (Blinded, Poisoned, Stunned, etc.)
+- ✅ Concentrating checkbox, Dead checkbox, Remove button
+
+### Issues Found
+
+**🔴 Issue 1: Combat Store Not Persistent**
+- **Severity:** High
+- **Description:** `combatStore.ts` does NOT use Zustand `persist` middleware. The active combat encounter is lost on page refresh or navigation away. This means ALL combat progress is erased if the DM accidentally refreshes.
+- **Location:** `vtt/src/stores/combatStore.ts` (line 98: `export const useCombatStore = create<CombatStoreState>((set, get) => ({` — no persist wrapper)
+- **Impact:** DM loses all combat state on refresh. Very disruptive during live sessions.
+
+**🔴 Issue 2: "Load" Button Does Not Populate Combatants**
+- **Severity:** High
+- **Description:** Clicking "Load" on a saved Encounter only creates an empty combat encounter (just the name). It does NOT populate combatants from the saved encounter's enemies list. The DM must manually add all combatants via Quick Add or Import PC.
+- **Location:** `vtt/src/pages/Encounters.tsx` line ~70-75, `handleLoadIntoEncounter` only calls `createEncounter(encounter.name)`
+- **Impact:** Saved encounters are essentially just name labels with no automated combat setup.
+
+**🟡 Issue 3: Damage Input Ambiguity**
+- **Severity:** Medium
+- **Description:** The damage input field and −/+ buttons apply to whichever combatant card is currently expanded, not to the current turn's active combatant. This can easily lead to mis-clicks where the DM damages the wrong creature.
+- **Suggestion:** Visual indicator showing which combatant's controls are active, or auto-expand the current turn's combatant.
+
+**🟡 Issue 4: Quick-Add Enemies Use Default HP/AC**
+- **Severity:** Medium
+- **Description:** `addEnemyGroup()` in `combatStore.ts` creates enemies with hardcoded HP 15, AC 12. These don't match the saved Encounter's custom HP or enemy type stats.
+- **Location:** `combatStore.ts` lines ~120-133
+
+**🟢 Issue 5: Login Auth Flow Fragility**
+- **Severity:** Low (workaround exists)
+- **Description:** The `login()` function in authStore checks env vars via `ENV.DM_USERNAME()`/`ENV.DM_PASSWORD()`. If env vars aren't injected during build, login silently fails. Setting localStorage directly works as fallback.
+
+**🟢 Issue 6: tool click_ui_element Doesn't Trigger React State Changes**
+- **Severity:** Low (workaround exists)
+- **Description:** The `click_ui_element` tool dispatches clicks that don't properly trigger React's synthetic event system. Must use JavaScript `__reactProps.onClick()` directly.
+
+### Battle Map Testing (Summary)
+- ✅ Map created with 20x15 grid, 40px cell size
+- ✅ 6 tokens placed (2 purple/blue players, 4 red/yellow enemies)
+- ✅ Token positions set with x,y coordinates
+- ✅ Map gallery shows thumbnail with token count
+
+### Combat Log
+- ✅ Combat log shows damage entries
+- ✅ Round start entries logged
+- ✅ Death notifications logged
+
+### Cleanup
+- ✅ All test data cleared from localStorage
+- ✅ Auth reset to unauthenticated state
+- ✅ App returned to clean login screen
+
+---
