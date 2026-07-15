@@ -2827,3 +2827,98 @@ Two new env vars must be added to Vercel:
 - ❌ `VITE_USE_EMULATORS=true` means app connects to emulators, not real Firebase
 
 ---
+
+## Live E2E Test Results (vtt-seven.vercel.app — 2026-07-15) (Updated: 2026-07-15 13:02)
+## Live Production E2E Test — Verified on https://vtt-seven.vercel.app
+
+### Authentication & Firebase
+- ✅ DM login works: username `arkla`, password `silvertongue` (Vercel env values)
+- ✅ Firebase Real Auth connected — NOT emulator (VITE_USE_EMULATORS=false baked into build)
+- ✅ Cloud sync active — sync badge shows counts (46+) confirming real Firestore writes
+- ✅ "Cloud sync is active. Offline queue ready." toast shown
+- ✅ "Online" badge green pulse — Firebase real-time connection established
+
+### Homebrew Features
+- ✅ Items tab: "+ New Item" form with 15 fields (name, category, rarity, weight, value, description, flavor text, attunement, charges, recharge, cursed, tags, source, image upload)
+- ✅ Item created: "Loof's Loaf" (Food/Drink, Common, 0.5lbs, 2gp)
+- ✅ Feats tab: "+ New Feat" button present, empty state
+- ✅ Spells tab: "+ New Spell" button present, empty state
+- ✅ Import/Export buttons functional
+- ✅ Search bar functional
+
+### Encounter & Combat Features
+- ✅ Quick-Start Encounter: 4 Bandits auto-created with AC 12, HP 15/15
+- ✅ Turn order display with drag-to-reorder (8 combatants after adding goblins)
+- ✅ HP Controls: -1, -5, -10 quick damage; +/- manual; +5, +10 buttons
+- ✅ Temp HP field, Max HP display
+- ✅ Damage tracking: Bandit 1 15→5→0 HP
+- ✅ Status Effects grid: 17 effects (Blinded, Charmed, Concentrating, Deafened, Exhaustion, Frightened, Grappled, Incapacitated, Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, Unconscious, Dead)
+- ✅ Status applied: Bandit 1 marked "💤 Unconscious"
+- ✅ Enemy grouping: "0 alive · 1 down" shown for unconscious enemies
+- ✅ Mid-combat enemy addition: 4 Goblins added mid-encounter (4→8 combatants)
+- ✅ Quick Add buttons: Goblin x4, Skeleton x3, Bandit x5, Cultist x2, Wolf x6, Kobold x8
+- ✅ Import PC button (opens modal listing campaign characters)
+- ✅ Session, Quick Ref, Builder tabs available
+
+### Pages Verified
+- ✅ Dashboard — stat cards, quick actions, weather/lighting/terrain conditions
+- ✅ Players — empty state, + Add Character, Import from File
+- ✅ Homebrew — Items/Feats/Spells tabs, + New Item, Import/Export
+- ✅ Encounters — Combat Center, Initiative tracker, Session manager
+- ✅ Battle Maps — list view, + New Map, Create Map empty state
+- ✅ Journal — DM Journal, filters, + New Entry, tag system
+- ✅ Settings — campaign info, XP/Milestone toggle, DM Notes, Scratch Pad, Data Management
+
+### Pending Tests (Require Map + Token Creation)
+- ❌ Token movement on grid maps (speed calculations)
+- ❌ Dash confirmation dialog when moving beyond speed range
+- ❌ PC death tracking (full unconscious → death saves)
+- ❌ Partial PC combat (not all PCs involved)
+- ❌ Enemy joining after several rounds (tested add mid-encounter ✓ but not mid-initiative)
+- ❌ D&D 5e speed rule validation (grid movement matching token speed)
+
+---
+
+## Battle Maps — Movement & Token System (Issue Analysis) (Updated: 2026-07-15 13:04)
+## Battle Maps Movement & Token System — Code Analysis
+
+### MapToken Type (types/index.ts)
+```ts
+interface MapToken {
+  id: string;
+  type: "player" | "enemy" | "npc" | "custom";
+  label: string;
+  x: number; y: number;
+  color: string;
+  size: number;
+  visible: boolean;
+  icon?: string;
+  hp?: { current: number; max: number };  // OPTIONAL — not in AddTokenForm
+  imageUrl?: string;
+}
+```
+
+### Identified Issues
+
+**Issue 1: MovementSpeed Hard-coded to 30ft**
+- `MapEditor.tsx` line: `<MovementRangeOverlay token={selectedToken} ... movementSpeed={30} ... />`
+- No per-token speed property exists in `MapToken` type
+- A Monk (45ft) or a slowed PC (15ft) would show incorrect range
+- **Fix needed**: Add `speed?: number` to MapToken, use it in overlay
+
+**Issue 2: No Dash Confirmation Dialog**
+- Toggle `dashMode` button just shows yellow range cells
+- Clicking a yellow cell directly moves token without warning
+- **Fix needed**: Show modal confirming "Use Dash action?" when clicking dash-range cell
+
+**Issue 3: HP Not in AddTokenForm**
+- MapToken supports `hp: { current, max }` but form only has label, type, position, color, size
+- **Fix needed**: Add HP fields to AddTokenForm
+
+**Issue 4: Clickable Cells Performance**
+- `MapEditor.tsx` renders individual `div` for every reachable cell
+- For 30ft dash (12 cells) → 168 divs for manhattan distance
+- No obstacle/collision checking
+- **Fix needed**: Add debounced hover preview, cell occupancy check
+
+---

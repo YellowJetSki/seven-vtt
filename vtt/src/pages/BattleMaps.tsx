@@ -40,10 +40,12 @@ export function BattleMaps() {
   const updateBattleMap = useCampaignStore((s) => s.updateBattleMap);
   const removeBattleMap = useCampaignStore((s) => s.removeBattleMap);
   const showToast = useUiStore((s) => s.showToast);
+  const openModal = useUiStore((s) => s.openModal);
+  const closeModal = useUiStore((s) => s.closeModal);
+  const activeModal = useUiStore((s) => s.activeModal);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMap, setSelectedMap] = useState<BattleMap | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingMap, setEditingMap] = useState<BattleMap | undefined>();
   const [confirmDelete, setConfirmDelete] = useState<BattleMap | null>(null);
 
@@ -67,7 +69,7 @@ export function BattleMaps() {
       updatedAt: Date.now(),
     };
     addBattleMap(map);
-    setShowCreateForm(false);
+    closeModal();
     showToast({ message: `Map "${map.name}" created!`, type: "success" });
   };
 
@@ -82,7 +84,7 @@ export function BattleMaps() {
       updatedAt: Date.now(),
     });
     setEditingMap(undefined);
-    setShowCreateForm(false);
+    closeModal();
     showToast({ message: `Map "${data.name}" updated.`, type: "success" });
   };
 
@@ -90,18 +92,29 @@ export function BattleMaps() {
     removeBattleMap(map.id);
     setSelectedMap(null);
     setConfirmDelete(null);
+    closeModal();
     showToast({ message: `"${map.name}" deleted.`, type: "info" });
   };
 
   const openCreateForm = () => {
     setEditingMap(undefined);
-    setShowCreateForm(true);
+    openModal("map-form");
   };
 
   const openEditForm = (map: BattleMap) => {
     setEditingMap(map);
-    setShowCreateForm(true);
+    openModal("map-form");
     setSelectedMap(null);
+  };
+
+  const openMapViewer = (map: BattleMap) => {
+    setSelectedMap(map);
+    openModal("map-viewer");
+  };
+
+  const closeMapViewer = () => {
+    setSelectedMap(null);
+    closeModal();
   };
 
   return (
@@ -137,7 +150,7 @@ export function BattleMaps() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredMaps.map((map) => (
-            <button key={map.id} onClick={() => setSelectedMap(map)}
+            <button key={map.id} onClick={() => openMapViewer(map)}
               className="group relative w-full text-left rounded-xl border border-surface-700 bg-surface-850 overflow-hidden transition-all hover:border-accent-500/30 hover:-translate-y-0.5 active:translate-y-0">
               {/* Thumbnail */}
               <div className="relative h-36 w-full bg-surface-800 flex items-center justify-center">
@@ -172,9 +185,9 @@ export function BattleMaps() {
         </div>
       )}
 
-      {/* Map Editor Modal */}
-      {selectedMap && (
-        <Modal modalId="map-editor" title={selectedMap.name} size="xl">
+      {/* Map Viewer Modal */}
+      {activeModal === "map-viewer" && selectedMap && (
+        <Modal modalId="map-viewer" title={selectedMap.name} size="xl">
           <div className="space-y-4">
             <MapEditor
               map={selectedMap}
@@ -186,7 +199,7 @@ export function BattleMaps() {
               </div>
               <div className="flex gap-2">
                 <Button variant="ghost" size="xs" onClick={() => openEditForm(selectedMap)}>⚙️ Edit Details</Button>
-                <Button variant="ghost" size="xs" onClick={() => setSelectedMap(null)}>Close</Button>
+                <Button variant="ghost" size="xs" onClick={closeMapViewer}>Close</Button>
               </div>
             </div>
           </div>
@@ -194,16 +207,12 @@ export function BattleMaps() {
       )}
 
       {/* Create/Edit Map Form Modal */}
-      {showCreateForm && (
-        <Modal
-          modalId="map-form"
-          title={editingMap ? `Edit: ${editingMap.name}` : "New Battle Map"}
-          size="md"
-        >
+      {activeModal === "map-form" && (
+        <Modal modalId="map-form" title={editingMap ? `Edit: ${editingMap.name}` : "New Battle Map"} size="md">
           <MapForm
             existingMap={editingMap}
             onSave={editingMap ? handleUpdateMap : handleCreateMap}
-            onCancel={() => { setShowCreateForm(false); setEditingMap(undefined); }}
+            onCancel={() => { closeModal(); setEditingMap(undefined); }}
           />
         </Modal>
       )}

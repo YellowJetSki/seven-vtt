@@ -19,15 +19,18 @@ const TOKEN_COLORS = [
 
 export function MapEditor({ map, onUpdate }: MapEditorProps) {
   const showToast = useUiStore((s) => s.showToast);
+  const openModal = useUiStore((s) => s.openModal);
+  const closeModal = useUiStore((s) => s.closeModal);
+  const activeModal = useUiStore((s) => s.activeModal);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
-  const [showAddToken, setShowAddToken] = useState(false);
   const [showFogControls, setShowFogControls] = useState(false);
   const [showFog, setShowFog] = useState(true);
   const [gmView, setGmView] = useState(true);
   const [showMovement, setShowMovement] = useState(false);
   const [dashMode, setDashMode] = useState(false);
+  const [pendingDashMove, setPendingDashMove] = useState<{ tokenId: string; x: number; y: number } | null>(null);
 
   const containerWidth = useRef(800);
   const cellWidth = containerWidth.current / map.gridWidth;
@@ -88,6 +91,23 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
   }, [map.tokens, map.gridWidth, map.gridHeight, onUpdate]);
 
   const handleDragToCell = useCallback((tokenId: string, targetX: number, targetY: number) => {
+    const token = map.tokens.find((t) => t.id === tokenId);
+    if (!token) return;
+
+    const dist = Math.abs(targetX - token.x) + Math.abs(targetY - token.y);
+    const tokenSpeed = token.speed ?? 30;
+    const normalRange = Math.floor(tokenSpeed / 5);
+
+    // If the move exceeds normal range and dash mode is not active, prompt for dash confirmation
+    if (dist > normalRange && !dashMode) {
+      setPendingDashMove({ tokenId, x: targetX, y: targetY });
+      return;
+    }
+
+    performMove(tokenId, targetX, targetY);
+  }, [map.tokens, map.gridWidth, map.gridHeight, dashMode, onUpdate]);
+
+  const performMove = useCallback((tokenId: string, targetX: number, targetY: number) => {
     onUpdate({
       tokens: map.tokens.map((t) =>
         t.id === tokenId
@@ -96,6 +116,28 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
       ),
     });
   }, [map.tokens, map.gridWidth, map.gridHeight, onUpdate]);
+
+  const handleConfirmDash = useCallback(() => {
+    if (!pendingDashMove) return;
+    setDashMode(true);
+    setShowMovement(true);
+    performMove(pendingDashMove.tokenId, pendingDashMove.x, pendingDashMove.y);
+    setPendingDashMove(null);
+  }, [pendingDashMove, performMove]);
+
+  const handleCancelDash = useCallback(() => {
+    setPendingDashMove(null);
+  }, []);
+
+  const selectedTokenSpeed = selectedToken?.speed ?? 30;
+  const normalRange = Math.floor(selectedTokenSpeed / 5);
+  const dashRange = normalRange * 2;
+
+  const handleAddToken = (token: MapToken) => {
+    onUpdate({ tokens: [...map.tokens, token] });
+    closeModal();
+    showToast({ message: `Token "${token.label}" added.`, type: "success" });
+  };
 
   return (
     <div className="space-y-4">
@@ -117,7 +159,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
           <Button size="xs" variant="ghost" onClick={() => setShowFogControls((o) => !o)}>
             {showFogControls ? "Hide Zones" : "Reveal Zones"}
           </Button>
-          <Button size="xs" onClick={() => setShowAddToken(true)}>+ Token</Button>
+          <Button size="xs" onClick={() => openModal("add-token")}>+ Token</Button>
         </div>
       </div>
 
@@ -155,7 +197,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
             token={selectedToken}
             gridWidth={map.gridWidth}
             gridHeight={map.gridHeight}
-            movementSpeed={30}
+            movementSpeed={selectedTokenSpeed}
             dashMultiplier={dashMode ? 2 : 1}
             cellSize={5}
           />
@@ -164,7 +206,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
         {/* Clickable cells for drag movement */}
         {showMovement && selectedToken && (() => {
           const cells = [];
-          const totalCells = Math.floor((30 * (dashMode ? 2 : 1)) / 5);
+          const totalCells = Math.floor((selectedTokenSpeed * (dashMode ? 2 : 1)) / 5);
           for (let dx = -totalCells; dx <= totalCells; dx++) {
             for (let dy = -totalCells; dy <= totalCells; dy++) {
               const dist = Math.abs(dx) + Math.abs(dy);
@@ -172,7 +214,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               const x = selectedToken.x + dx;
               const y = selectedToken.y + dy;
               if (x < 0 || x >= map.gridWidth || y < 0 || y >= map.gridHeight) continue;
-              cells.push({ x, y });
+              cells.push({ x, y, dist });
             }
           }
           return cells.map((c) => (
@@ -186,7 +228,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
                 width: `${(100 / map.gridWidth)}%`,
                 height: `${(100 / map.gridHeight)}%`,
               }}
-              title={`Move ${selectedToken.label} to (${c.x}, ${c.y})`}
+              title={`Move ${selectedToken.label} to (${c.x}, ${c.y})${c.dist > normalRange ? ' — Dash action required' : ''}`}
             />
           ));
         })()}
@@ -207,7 +249,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               minWidth: "16px",
               minHeight: "16px",
             }}
-            title={`${token.label} (${token.x},${token.y})`}>
+            title={`${token.label} (${token.x},${token.y})${token.speed ? ` - speed: ${token.speed}ft` : ''}`}>
             {token.icon ? (
               <span className="text-xs">{token.icon}</span>
             ) : (
@@ -230,6 +272,7 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
                 <p className="text-xs text-surface-400">
                   {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} - Position ({selectedToken.x},{selectedToken.y})
                   {selectedToken.hp && ` - HP ${selectedToken.hp.current}/${selectedToken.hp.max}`}
+                  {selectedToken.speed && ` - Speed ${selectedToken.speed}ft`}
                 </p>
               </div>
             </div>
@@ -248,25 +291,27 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
           {/* Movement Controls */}
           <div className="mt-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-medium text-surface-400">Movement</span>
+              <span className="text-[10px] font-medium text-surface-400">Movement ({selectedTokenSpeed}ft)</span>
               <div className="flex gap-1">
                 <button
                   onClick={() => { setShowMovement(!showMovement); setDashMode(false); }}
                   className={`rounded px-2 py-0.5 text-[9px] font-medium transition-colors ${showMovement && !dashMode ? "bg-rogue-500/20 text-rogue-400" : "bg-surface-800 text-surface-400 hover:text-surface-200"}`}
                 >
-                  Move
+                  Move ({normalRange} cells)
                 </button>
                 <button
                   onClick={() => { setShowMovement(!showMovement); setDashMode(true); }}
                   className={`rounded px-2 py-0.5 text-[9px] font-medium transition-colors ${showMovement && dashMode ? "bg-warrior-500/20 text-warrior-400" : "bg-surface-800 text-surface-400 hover:text-surface-200"}`}
                 >
-                  Dash
+                  Dash ({dashRange} cells)
                 </button>
               </div>
             </div>
             {showMovement && (
               <p className="text-[10px] text-surface-500 mb-2">
-                {dashMode ? "Double movement (dash) — click a yellow or green cell to move" : "Normal movement — click a green cell to move"}
+                {dashMode
+                  ? "Double movement (dash) — click a yellow or green cell to move"
+                  : `Normal movement — click a green cell to move (cells beyond ${normalRange} cells require Dash confirmation)`}
               </p>
             )}
             <div className="grid grid-cols-3 gap-1 max-w-[200px] mx-auto">
@@ -281,6 +326,41 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
               <div />
             </div>
           </div>
+
+          {/* HP Display & Edit (if token has HP) */}
+          {selectedToken.hp && (
+            <div className="mt-3 pt-3 border-t border-surface-700">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-medium text-surface-400">HP</span>
+                <span className="text-xs font-semibold text-surface-200">
+                  {selectedToken.hp.current}/{selectedToken.hp.max}
+                </span>
+              </div>
+              <div className="mt-1 h-2 w-full rounded-full bg-surface-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.max(0, (selectedToken.hp.current / selectedToken.hp.max) * 100)}%`,
+                    backgroundColor: selectedToken.hp.current > selectedToken.hp.max * 0.5
+                      ? "#27ae60"
+                      : selectedToken.hp.current > 0
+                        ? "#f39c12"
+                        : "#e74c3c",
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <button onClick={() => {
+                  const newHp = Math.max(0, (selectedToken.hp?.current ?? 0) - 5);
+                  onUpdate({ tokens: map.tokens.map((t) => t.id === selectedToken.id ? { ...t, hp: { ...t.hp!, current: newHp } } : t) });
+                }} className="rounded bg-surface-800 px-2 py-1 text-xs text-warrior-400 hover:bg-warrior-500/10">-5</button>
+                <button onClick={() => {
+                  const newHp = Math.min(selectedToken.hp?.max ?? 999, (selectedToken.hp?.current ?? 0) + 5);
+                  onUpdate({ tokens: map.tokens.map((t) => t.id === selectedToken.id ? { ...t, hp: { ...t.hp!, current: newHp } } : t) });
+                }} className="rounded bg-surface-800 px-2 py-1 text-xs text-divine-400 hover:bg-divine-500/10">+5</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -291,18 +371,30 @@ export function MapEditor({ map, onUpdate }: MapEditorProps) {
         </div>
       )}
 
-      {/* Add Token Modal */}
-      {showAddToken && (
+      {/* Dash Confirmation Modal */}
+      {pendingDashMove && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleCancelDash}>
+          <div className="w-full max-w-sm rounded-xl border border-surface-700 bg-surface-850 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-surface-100 mb-2">⚡ Dash Action Required</h3>
+            <p className="text-sm text-surface-400 mb-4">
+              Moving to that cell requires using your <strong className="text-warrior-400">Dash action</strong>, which uses your full action for this turn. Only movement speed (×2) will be applied — you won't be able to attack or use other actions.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" size="sm" onClick={handleCancelDash}>Cancel</Button>
+              <Button size="sm" onClick={handleConfirmDash}>Use Dash Action</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Token Modal — uses openModal/activeModal pattern */}
+      {activeModal === "add-token" && (
         <Modal modalId="add-token" title="Add Token" size="sm">
           <AddTokenForm
             gridWidth={map.gridWidth}
             gridHeight={map.gridHeight}
-            onAdd={(token) => {
-              onUpdate({ tokens: [...map.tokens, token] });
-              setShowAddToken(false);
-              showToast({ message: `Token "${token.label}" added.`, type: "success" });
-            }}
-            onCancel={() => setShowAddToken(false)}
+            onAdd={handleAddToken}
+            onCancel={() => closeModal()}
           />
         </Modal>
       )}
@@ -327,6 +419,8 @@ function AddTokenForm({
   const [y, setY] = useState(Math.floor(gridHeight / 4));
   const [color, setColor] = useState(TOKEN_COLORS[0]);
   const [size, setSize] = useState(1);
+  const [speed, setSpeed] = useState(30);
+  const [hpMax, setHpMax] = useState(15);
 
   const handleAdd = () => {
     if (!label.trim()) return;
@@ -338,7 +432,9 @@ function AddTokenForm({
       y: Math.max(0, Math.min(gridHeight - 1, y)),
       color,
       size,
+      speed,
       visible: true,
+      hp: { current: hpMax, max: hpMax },
     };
     onAdd(token);
   };
@@ -364,6 +460,18 @@ function AddTokenForm({
         <div>
           <label className="mb-1 block text-xs font-medium text-surface-400">Size (cells)</label>
           <input type="number" min={1} max={4} value={size} onChange={(e) => setSize(parseInt(e.target.value) || 1)}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-surface-400">Speed (ft)</label>
+          <input type="number" min={0} max={120} step={5} value={speed} onChange={(e) => setSpeed(parseInt(e.target.value) || 30)}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-surface-400">Max HP</label>
+          <input type="number" min={1} max={999} value={hpMax} onChange={(e) => setHpMax(parseInt(e.target.value) || 15)}
             className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
         </div>
       </div>

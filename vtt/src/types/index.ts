@@ -1,126 +1,69 @@
-/* ── STᚱ VTT Central Type Definitions ────────────────────────── */
+/* ── STᚱ VTT Type Definitions ──────────────────────────────────
+ * Core data types shared across the app.
+ * ─────────────────────────────────────────────────────────────── */
 
-/** Represents a single player character in the Arkla campaign. */
+/* ── Player Character ───────────────────────────────────────── */
+
 export interface PlayerCharacter {
   id: string;
   name: string;
-  /** Alternate name used for player login lookup.
-   *  Example: For "Edmund 'Strider' Tudul", alias would be "Strider".
-   *  Players can log in using their first name OR alias (case-insensitive). */
-  alias?: string;
   playerName: string;
   race: string;
   class: string;
   level: number;
-  subclass?: string;
-  background?: string;
-  alignment?: string;
-  experience: number;
+  experiencePoints: number;
+  background: string;
+  alignment: string;
+  inspiration: boolean;
 
-  abilityScores: AbilityScores;
-  savingThrows: Partial<Record<Ability, number>>;
-  skills: Partial<Record<Skill, number>>;
-
-  hitPoints: HitPoints;
-  armorClass: number;
-  initiative: number;
-  speed: number;
-  proficiencyBonus: number;
-
-  features: string[];
-  traits: string[];
-  spells: SpellSlot[];
-  equipment: string[];
-  currency: Currency;
-
-  backstory?: string;
-  notes?: string;
-  portraitUrl?: string;
-  tokenUrl?: string;
-
-  /** Arkla-specific: companions (mouse, bear cub, etc.) */
-  companion?: ArklaCompanion;
-  /** Arkla-specific: class resources (Bardic Inspiration, Arrows, etc.) */
-  resources?: ArklaResource[];
-
-  createdAt: number;
-  updatedAt: number;
-}
-
-/** Companion data from the Arkla export */
-export interface ArklaCompanion {
-  name: string;
-  species: string;
-  hp: number;
-  ac: number;
-  speed: number;
-  isDormant: boolean;
-  awakeLevel: number;
-  desc: string;
-  attacks?: string;
-  stats?: Partial<AbilityScores>;
-  traits?: string;
-}
-
-/** Trackable resource (Bardic Inspiration uses, arrows, etc.) */
-export interface ArklaResource {
-  name: string;
-  current: number;
-  max: number;
-  recharge: "long" | "short" | "none";
-}
-
-export interface AbilityScores {
+  // Core Stats
   strength: number;
   dexterity: number;
   constitution: number;
   intelligence: number;
   wisdom: number;
   charisma: number;
+
+  // Combat Stats
+  hitPoints: HitPoints;
+  armorClass: number;
+  initiative: number;
+  speed: number;
+  hitDice: string;
+  proficiencyBonus: number;
+  conditions: string[];
+  deathSaves: DeathSaves;
+  temporaryHitPoints: number;
+
+  // Traits
+  traits: TraitEntry[];
+  proficiencies: string[];
+  languages: string[];
+  features: string[];
+
+  // Equipment
+  equipment: EquipmentSlot[];
+  inventory: InventoryItem[];
+  copper: number;
+  silver: number;
+  electrum: number;
+  gold: number;
+  platinum: number;
+
+  // Biography
+  appearance: string;
+  backstory: string;
+  allies: string;
+  characterNotes: string;
+
+  // Meta
+  imageUrl?: string;
+  isHomebrew: boolean;
+  createdAt: number;
+  updatedAt: number;
 }
 
-export type Ability = keyof AbilityScores;
-
-export type Skill =
-  | "acrobatics"
-  | "animalHandling"
-  | "arcana"
-  | "athletics"
-  | "deception"
-  | "history"
-  | "insight"
-  | "intimidation"
-  | "investigation"
-  | "medicine"
-  | "nature"
-  | "perception"
-  | "performance"
-  | "persuasion"
-  | "religion"
-  | "sleightOfHand"
-  | "stealth"
-  | "survival";
-
-export const SKILL_ABILITY_MAP: Record<Skill, Ability> = {
-  acrobatics: "dexterity",
-  animalHandling: "wisdom",
-  arcana: "intelligence",
-  athletics: "strength",
-  deception: "charisma",
-  history: "intelligence",
-  insight: "wisdom",
-  intimidation: "charisma",
-  investigation: "intelligence",
-  medicine: "wisdom",
-  nature: "intelligence",
-  perception: "wisdom",
-  performance: "charisma",
-  persuasion: "charisma",
-  religion: "intelligence",
-  sleightOfHand: "dexterity",
-  stealth: "dexterity",
-  survival: "wisdom",
-};
+/* ── Hit Points & Death Saves ───────────────────────────────── */
 
 export interface HitPoints {
   current: number;
@@ -128,47 +71,66 @@ export interface HitPoints {
   temporary: number;
 }
 
-export interface SpellSlot {
-  level: number;
-  total: number;
-  expended: number;
+export interface DeathSaves {
+  successes: number;
+  failures: number;
 }
 
-/**
- * Universal currency system.
- * The Arkla campaign uses custom denominations mapped here:
- *   leptons (cp) → quadrans (sp) → assarions (gp)
- * Exchange: 50 leptons = 1 quadrans, 5 quadrans = 1 assarion
- * ep and pp remain optional for homebrew.
- */
-export interface Currency {
-  /** Copper pieces (standard) / Leptons (Arkla) */
-  cp: number;
-  /** Silver pieces (standard) / Quadrans (Arkla) */
-  sp: number;
-  /** Electrum pieces (standard, rarely used in Arkla) */
-  ep: number;
-  /** Gold pieces (standard) / Assarions (Arkla) */
-  gp: number;
-  /** Platinum pieces (standard, rarely used in Arkla) */
-  pp: number;
+/* ── Traits & Equipment ─────────────────────────────────────── */
+
+export interface TraitEntry {
+  name: string;
+  description: string;
+  source: string;
 }
 
-/* ── Enemies & Encounters ───────────────────────────────────── */
+export interface EquipmentSlot {
+  slot: string;
+  item: string;
+  quantity: number;
+  weight: number;
+  notes: string;
+}
 
-export interface Enemy {
+export interface InventoryItem {
+  name: string;
+  quantity: number;
+  weight: number;
+  description: string;
+  isEquipped: boolean;
+}
+
+/* ── Encounters & Combatants ────────────────────────────────── */
+
+export interface Encounter {
   id: string;
   name: string;
-  size: CreatureSize;
+  description: string;
+  creatures: EncounterCreature[];
+  environment: string;
+  difficulty: string;
+  isActive: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface EncounterCreature {
+  id: string;
+  name: string;
   type: CreatureType;
-  alignment?: string;
+  size: CreatureSize;
   armorClass: number;
-  hitPoints: number;
-  speed: string;
-  abilityScores: AbilityScores;
-  skills?: string;
-  senses?: string;
-  languages?: string;
+  hitPoints: HitPoints;
+  speed: number;
+  abilities: AbilityScores;
+  savingThrows: Partial<AbilityScores>;
+  skills: Record<string, number>;
+  damageVulnerabilities: string[];
+  damageResistances: string[];
+  damageImmunities: string[];
+  conditionImmunities: string[];
+  senses: string;
+  languages: string;
   challengeRating: number;
   traits?: string;
   actions?: string;
@@ -186,19 +148,21 @@ export interface Encounter {
   id: string;
   name: string;
   description: string;
-  enemies: EncounterEnemy[];
-  environment?: string;
-  difficulty?: "easy" | "medium" | "hard" | "deadly";
-  experienceReward?: number;
-  isHomebrew: boolean;
+  creatures: EncounterCreature[];
+  environment: string;
+  difficulty: string;
+  isActive: boolean;
   createdAt: number;
   updatedAt: number;
 }
 
-export interface EncounterEnemy {
-  enemyId: string;
-  count: number;
-  customHp?: number;
+export interface AbilityScores {
+  strength: number;
+  dexterity: number;
+  constitution: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
 }
 
 /* ── Battle Maps ────────────────────────────────────────────── */
@@ -239,6 +203,7 @@ export interface MapToken {
   visible: boolean;
   icon?: string;
   hp?: { current: number; max: number };
+  speed?: number; // Movement speed in feet (D&D 5e default: 30). Used by MovementRangeOverlay.
   imageUrl?: string;
 }
 
@@ -249,7 +214,7 @@ export interface JournalEntry {
   title: string;
   content: string;
   tags: string[];
-  type: "session" | "lore" | "quest" | "note";
+  type: "session" | "lore" | "quest" | "note" | "handout";
   sessionNumber?: number;
   createdAt: number;
   updatedAt: number;
@@ -320,3 +285,67 @@ export interface SessionConditions {
   lighting: "bright" | "dim" | "darkness" | "magical_darkness";
   terrain: "normal" | "difficult" | "obscured" | "dangerous";
 }
+
+/* ── Homebrew ───────────────────────────────────────────────── */
+
+export interface HomebrewItem {
+  id: string;
+  name: string;
+  category: ItemCategory;
+  rarity: ItemRarity;
+  weight: number;
+  value: number;
+  description: string;
+  flavorText?: string;
+  requiresAttunement: boolean;
+  charges?: number;
+  maxCharges?: number;
+  recharge?: string;
+  isCursed: boolean;
+  tags: string[];
+  source: string;
+  imageUrl?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type ItemCategory =
+  | "weapon" | "armor" | "potion" | "scroll" | "wand" | "ring"
+  | "wondrous" | "tool" | "ammunition" | "food" | "poison" | "other";
+
+export type ItemRarity =
+  | "common" | "uncommon" | "rare" | "very rare" | "legendary" | "artifact" | "varies";
+
+export interface HomebrewFeat {
+  id: string;
+  name: string;
+  description: string;
+  prerequisites: string;
+  benefits: string[];
+  tags: string[];
+  source: string;
+  imageUrl?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface HomebrewSpell {
+  id: string;
+  name: string;
+  level: number;
+  school: SpellSchool;
+  castingTime: string;
+  range: string;
+  components: string[];
+  duration: string;
+  description: string;
+  higherLevels?: string;
+  source: string;
+  imageUrl?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type SpellSchool =
+  | "Abjuration" | "Conjuration" | "Divination" | "Enchantment"
+  | "Evocation" | "Illusion" | "Necromancy" | "Transmutation";
