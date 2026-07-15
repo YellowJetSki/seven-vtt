@@ -1,10 +1,14 @@
 /* ── Firebase Initialization ───────────────────────────────────
  * Central Firebase config. In dev mode, connects to local emulators.
+ *
+ * NOTE: Auth is no longer managed via Firebase. DM login uses a simple
+ * environment-variable comparison. Firebase is used solely for Firestore
+ * (campaign sync) and Storage (assets). The Firebase Auth module is not
+ * initialized here.
  * ─────────────────────────────────────────────────────────────── */
 
 import { initializeApp, type FirebaseOptions } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
-import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth";
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from "firebase/storage";
 
 /* ── Check if Firebase config is valid ────────────────────────
@@ -29,19 +33,16 @@ const firebaseConfig: FirebaseOptions = {
 
 let _app: ReturnType<typeof initializeApp> | null = null;
 let _db: Firestore | null = null;
-let _auth: Auth | null = null;
 let _storage: FirebaseStorage | null = null;
 
 if (hasValidConfig()) {
   _app = initializeApp(firebaseConfig);
   _db = getFirestore(_app);
-  _auth = getAuth(_app);
   _storage = getStorage(_app);
 
   /* ── Emulator Connection (Dev Mode) ─────────────────────────── */
   if (import.meta.env.DEV) {
     connectFirestoreEmulator(_db, "localhost", 8080);
-    connectAuthEmulator(_auth, "http://localhost:9099", { disableWarnings: true });
     connectStorageEmulator(_storage, "localhost", 9199);
   }
 } else {
@@ -55,7 +56,7 @@ if (hasValidConfig()) {
  * Components should call this before making Firestore/Firebase calls.
  */
 export function isFirebaseAvailable(): boolean {
-  return _db !== null && _auth !== null;
+  return _db !== null;
 }
 
 /**
@@ -68,14 +69,6 @@ export function getDb(): Firestore {
 }
 
 /**
- * Returns the Auth instance. Throws if Firebase is not initialized.
- */
-export function getAuthInstance(): Auth {
-  if (!_auth) throw new Error("Firebase is not initialized. Check your .env configuration.");
-  return _auth;
-}
-
-/**
  * Returns the Storage instance. Throws if Firebase is not initialized.
  */
 export function getStorageInstance(): FirebaseStorage {
@@ -84,5 +77,5 @@ export function getStorageInstance(): FirebaseStorage {
 }
 
 // Legacy named exports for backwards compat with existing imports
-export { _app as app, _db as db, _auth as auth, _storage as storage };
+export { _app as app, _db as db, _storage as storage };
 export default _app;

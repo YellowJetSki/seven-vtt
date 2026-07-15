@@ -4,6 +4,10 @@
 export interface PlayerCharacter {
   id: string;
   name: string;
+  /** Alternate name used for player login lookup.
+   *  Example: For "Edmund 'Strider' Tudul", alias would be "Strider".
+   *  Players can log in using their first name OR alias (case-insensitive). */
+  alias?: string;
   playerName: string;
   race: string;
   class: string;

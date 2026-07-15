@@ -15,6 +15,7 @@ import { CampaignSettings } from "@/pages/CampaignSettings";
 import { PlayerDashboard } from "@/pages/PlayerDashboard";
 import { createDemoCampaign } from "@/data/demoCampaign";
 import { importArklaJson } from "@/utils/importArklaCampaign";
+import type { PlayerIdentifier } from "@/stores/authStore";
 
 const STORAGE_KEY = "str_vtt_campaign_loaded";
 
@@ -23,14 +24,8 @@ export default function App() {
   const role = useAuthStore((s) => s.role);
   const campaign = useCampaignStore((s) => s.campaign);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
-  const setPlayerCharacterNames = useAuthStore((s) => s.setPlayerCharacterNames);
-  const initialize = useAuthStore((s) => s.initialize);
+  const setPlayerIdentifiers = useAuthStore((s) => s.setPlayerIdentifiers);
   const [isArklaLoading, setIsArklaLoading] = useState(true);
-
-  // On mount, ensure auth state is consistent
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   // Seed the campaign from Arkla.json on first mount if no campaign exists
   // and no persisted campaign is found in localStorage.
@@ -45,8 +40,6 @@ export default function App() {
     const alreadyLoaded = localStorage.getItem(STORAGE_KEY);
     if (alreadyLoaded) {
       // Already imported the Arkla campaign this session; use empty demo.
-      // Note: localStorage persistence in campaignStore should have hydrated
-      // the real campaign by now. This is a fallback for edge cases.
       const demo = createDemoCampaign();
       setCampaign(demo);
       setIsArklaLoading(false);
@@ -82,27 +75,35 @@ export default function App() {
     loadArkla();
   }, [campaign, setCampaign]);
 
-  // Sync character names to auth store for player login lookup
+  // Sync character identifiers (first name + alias) to auth store for player lookup
   useEffect(() => {
     if (campaign) {
-      const firstNames = campaign.playerCharacters.map((c) =>
-        c.name.split(" ")[0],
-      );
-      setPlayerCharacterNames(firstNames);
-    } else {
-      setPlayerCharacterNames([]);
-    }
-  }, [campaign, setPlayerCharacterNames]);
+      const identifiers: PlayerIdentifier[] = [];
 
-  // Global loading state (auth persistence check or Arkla.json loading)
-  if (state === "loading" || isArklaLoading) {
+      for (const pc of campaign.playerCharacters) {
+        // First word of the character's name
+        const firstName = pc.name.split(" ")[0];
+        identifiers.push({ label: firstName, characterId: pc.id });
+
+        // Optional alias (e.g., "Strider" from "Edmund 'Strider' Tudul")
+        if (pc.alias && pc.alias.trim()) {
+          identifiers.push({ label: pc.alias.trim(), characterId: pc.id });
+        }
+      }
+
+      setPlayerIdentifiers(identifiers);
+    } else {
+      setPlayerIdentifiers([]);
+    }
+  }, [campaign, setPlayerIdentifiers]);
+
+  // Global loading state (Arkla.json loading)
+  if (isArklaLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-surface-950">
         <div className="flex flex-col items-center gap-3">
           <span className="text-3xl text-accent-400 animate-pulse">Sᚱ</span>
-          <p className="text-sm text-surface-500">
-            {isArklaLoading ? "Loading campaign..." : "Loading..."}
-          </p>
+          <p className="text-sm text-surface-500">Loading campaign...</p>
         </div>
       </div>
     );

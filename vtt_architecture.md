@@ -2004,3 +2004,61 @@ vtt/
 - Synthetic Email: `dm_mikejello@strvtt.app`
 
 ---
+
+## Auth Simplification (Removed Firebase Auth) (Updated: 2026-07-15 09:35)
+## Auth Simplification — July 15, 2026
+
+**Goal:** Eliminated Firebase Authentication dependency. DM login is now a simple env-variable comparison. Player login matches against character first names + aliases.
+
+### Changes Made
+
+1. **Deleted `vtt/src/lib/firebase-auth.ts`** — Entire Firebase Auth wrapper removed.
+
+2. **`vtt/src/lib/firebase.ts`** — Stripped out `getAuth`/`connectAuthEmulator`/`getAuthInstance`. Firebase now only initializes Firestore + Storage. `isFirebaseAvailable()` checks `_db !== null` (no longer checks `_auth`).
+
+3. **`vtt/src/types/index.ts`** — Added optional `alias` field to `PlayerCharacter` interface. Used for player login matching (e.g., "Edmund 'Strider' Tudul" → alias: "Strider").
+
+4. **`vtt/src/stores/authStore.ts`** — Complete rewrite:
+   - Removed `AuthState` "loading" (no longer needed — no Firebase auth listener)
+   - `login()` is now synchronous — compares against `ENV.DM_USERNAME()` and `ENV.DM_PASSWORD()`
+   - `loginAsPlayer()` matches against a `PlayerIdentifier[]` array (label + characterId)
+   - Added `playerIdentifiers` state + `setPlayerIdentifiers` action
+   - Kept `firebaseConnected` boolean (runtime flag for sync UI, not persisted)
+   - Removed `initialize()` action, all Firebase Auth imports
+   - Persistence partializes: `state`, `role`, `username`, `characterId`
+
+5. **`vtt/src/App.tsx`** — 
+   - Removed `initialize()` call
+   - Changed `setPlayerCharacterNames` to `setPlayerIdentifiers` — syncs `{ label: firstName, characterId }` + `{ label: alias, characterId }` per character
+   - Removed `loading` state check from auth (still keeps `isArklaLoading`)
+
+6. **`vtt/src/pages/LoginPage.tsx`** — 
+   - DM login no longer uses `await` on the store (it's synchronous now)
+   - Added brief `setTimeout` delay for UX consistency
+   - Player form label changed to "Your Name or Alias" with placeholder "e.g. Edmund or Strider"
+   - Player hint text updated
+
+7. **`vtt/src/components/auth/AuthGuard.tsx`** — Removed `loading` state branch (no longer needed).
+
+8. **`vtt/src/lib/firebase-service.ts`** — Changed `getUserId()` to return static `"dm"` instead of `getCurrentUser()?.uid`. Removed `getCurrentUser` import.
+
+### DM Login Flow
+```
+User enters "MikeJello" + "Jello1"
+  → login("MikeJello", "Jello1")
+  → ENV.DM_USERNAME() = "MikeJello", ENV.DM_PASSWORD() = "Jello1"
+  → Direct string comparison → match → authenticated
+```
+
+### Player Login Flow
+```
+Character: "Edmund 'Strider' Tudul" (alias: "Strider")
+  → Identifiers synced: [{ label: "Edmund", characterId: "pc_..." }, { label: "Strider", characterId: "pc_..." }]
+
+Player enters "Strider"
+  → loginAsPlayer("Strider")
+  → Case-insensitive lookup in playerIdentifiers → match on "Strider"
+  → authenticated as player, characterId = "pc_..."
+```
+
+---

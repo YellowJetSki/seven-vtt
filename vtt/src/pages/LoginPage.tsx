@@ -9,6 +9,7 @@ export function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const loginAsPlayer = useAuthStore((s) => s.loginAsPlayer);
   const showToast = useUiStore((s) => s.showToast);
+
   /* DM Form State */
   const [dmUsername, setDmUsername] = useState("");
   const [dmPassword, setDmPassword] = useState("");
@@ -27,37 +28,38 @@ export function LoginPage() {
     setDmError("");
     setDmLoading(true);
 
-    try {
-      const result = await login(dmUsername, dmPassword);
-      if (!result.success) {
-        setDmError(result.error ?? "Login failed.");
-      } else {
-        showToast({ message: "Welcome back, Dungeon Master.", type: "success" });
-      }
-    } catch {
-      setDmError("An unexpected error occurred. Please try again.");
-    } finally {
-      setDmLoading(false);
+    // Simulate a brief delay for UX consistency
+    await new Promise((r) => setTimeout(r, 300));
+
+    const result = login(dmUsername, dmPassword);
+    setDmLoading(false);
+
+    if (!result.success) {
+      setDmError(result.error ?? "Login failed.");
+    } else {
+      showToast({ message: "Welcome back, Dungeon Master.", type: "success" });
     }
   };
 
-  const handlePlayerLogin = (e: FormEvent) => {
+  const handlePlayerLogin = async (e: FormEvent) => {
     e.preventDefault();
     setPlayerError("");
     setPlayerLoading(true);
 
-    setTimeout(() => {
-      const result = loginAsPlayer(playerName);
-      setPlayerLoading(false);
-      if (!result.success) {
-        setPlayerError(result.error ?? "Login failed.");
-      } else {
-        showToast({
-          message: `Welcome, ${result.characterId}!`,
-          type: "success",
-        });
-      }
-    }, 400);
+    // Simulate a brief delay for UX consistency
+    await new Promise((r) => setTimeout(r, 300));
+
+    const result = loginAsPlayer(playerName);
+    setPlayerLoading(false);
+
+    if (!result.success) {
+      setPlayerError(result.error ?? "Login failed.");
+    } else {
+      showToast({
+        message: `Welcome, ${result.characterId}!`,
+        type: "success",
+      });
+    }
   };
 
   const handleBack = () => {
@@ -173,8 +175,8 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-surface-400">Your Name</label>
-                <input value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Enter your character name" required
+                <label className="mb-1.5 block text-xs font-medium text-surface-400">Your Name or Alias</label>
+                <input value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="e.g. Edmund or Strider" required
                   className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2.5 text-sm text-surface-100 placeholder:text-surface-500 focus:border-rogue-500 focus:outline-none" />
               </div>
 
@@ -188,7 +190,7 @@ export function LoginPage() {
               </button>
 
               <p className="text-center text-xs text-surface-500">
-                Sign in with the name your DM used for your character.
+                Sign in with your character's first name or alias.
               </p>
             </form>
           )}
