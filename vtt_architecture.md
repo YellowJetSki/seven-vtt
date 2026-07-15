@@ -2441,3 +2441,95 @@ Homebrew page now renders correctly without crash. All three tabs (Items, Feats,
 - ✅ App returned to clean login screen
 
 ---
+
+## FIX: combatStore Persistence + HP Sync (July 15, 2026) (Updated: 2026-07-15 11:22)
+## Critical Fixes Applied
+
+### Fix 1: Combat Store Persistence
+**File:** `vtt/src/stores/combatStore.ts`
+- **Before:** Store used `create()` without `persist` middleware. All combat state (active encounter, HP, turn tracking) was lost on page refresh or SPA navigation.
+- **After:** Store now wraps with `persist()` middleware, saving to localStorage key `"str-vtt-combat"`.
+- Persisted fields: `activeEncounter`, `combatLog`, `liveSession`.
+- **Impact:** Combat state now survives page refreshes. DM can safely navigate away or refresh.
+
+### Fix 2: HP Sync (Combat → Campaign Store)
+**File:** `vtt/src/stores/combatStore.ts`
+- **New function:** `syncPlayerHpToCampaign(combatants)` — after any damage/heal/temp HP change on a player combatant, the function finds the matching `PlayerCharacter` in the campaign store and updates their `hitPoints`.
+- Triggered by: `damageCombatant`, `healCombatant`, `setTempHp`, `toggleDead`.
+- **Impact:** PC HP is now synced between combat tracker, PlayerCards grid, PlayerDashboard (player login), and battle map tokens. Damage dealt in combat automatically propagates everywhere.
+
+### Fix 3: New `createEncounterWithCombatants` API
+**File:** `vtt/src/stores/combatStore.ts`
+- **New method:** `createEncounterWithCombatants(name, combatantData[])` — creates an encounter pre-populated with combatants in one call.
+- Used by the "Load" button fix.
+
+### Fix 4: "Load" Button Populates Combatants
+**File:** `vtt/src/pages/Encounters.tsx`
+- **Before:** `handleLoadIntoCombat` called `createEncounter(name)` which created an empty encounter with no combatants. DM had to manually add everything.
+- **After:** `handleLoadIntoCombat` builds combatants from both the saved encounter's enemies (with custom HP) AND the campaign's player characters (with current HP), then uses `createEncounterWithCombatants` to create a fully populated encounter.
+- **Impact:** One-click "Load" now creates a complete combat encounter with all PCs and enemies ready.
+
+---
+
+## FINAL: Comprehensive Testing Report + Fix Summary (July 15, 2026) (Updated: 2026-07-15 11:28)
+## Comprehensive E2E Testing — Complete Report
+
+### Issues Fixed (This Session)
+
+| # | Issue | Fix | Status |
+|---|-------|-----|--------|
+| 1 | **Combat store not persisted** | Added Zustand `persist` middleware to `combatStore.ts` — saves to `str-vtt-combat` localStorage | ✅ Deployed |
+| 2 | **Load button didn't populate combatants** | Rewrote `handleLoadIntoCombat` to build PCs + enemies from saved encounter template; added `createEncounterWithCombatants` API | ✅ Deployed |
+| 3 | **HP not synced between combat and campaign** | Added `registerHpSyncCallback` pattern; wired `syncPlayerHpToCampaign` in `App.tsx` — damage/heal in combat automatically updates PlayerCharacter HP | ✅ Deployed |
+| 4 | **Auth store rehydrates incorrectly on page load** | Auth persist was correctly configured but env vars not injected in testing; set localStorage directly as workaround | 🟡 Docs updated |
+
+### Features Verified Working
+
+#### Core Pages
+- ✅ **LoginPage** — DM and Player role selection
+- ✅ **DmDashboard** — Stats cards (PCs, encounters, maps, journal counts)
+- ✅ **PlayerCards** — Grid/compendium views, HP bars, search/sort, character CRUD
+- ✅ **Encounters** — 4 sub-tabs (Initiative, Session, Quick Ref, Builder)
+- ✅ **BattleMaps** — Map gallery, grid editor, token placement, fog of war
+- ✅ **DmJournal** — Session/quest/lore entries
+- ✅ **CampaignSettings** — Homebrew rules, XP system, private notes
+
+#### Combat System
+- ✅ **Encounter creation** with auto-populated PCs from roster
+- ✅ **Quick-add** enemy groups (Goblin x4, Skeleton x3, etc.)
+- ✅ **Import PC** modal with ✓ Added indicator
+- ✅ **Initiative management** via Init Tools panel (per-combatant numeric inputs)
+- ✅ **Start Encounter** (prep → active, sorts by initiative descending)
+- ✅ **Turn tracking** (Next/Previous/Pause, round counter, turn timer)
+- ✅ **Damage/Heal** via preset buttons (-1, -5, -10, +5, +10) and custom input
+- ✅ **Temp HP** input with proper damage absorption logic
+- ✅ **Status effects** (Blinded, Charmed, Poisoned, Stunned, etc.)
+- ✅ **Dead checkbox** and automatic death styling (line-through, 0 HP)
+- ✅ **Concentration tracking** 
+- ✅ **Combatant drag-reorder**
+- ✅ **Combat log** with damage/heal/death/round entries
+- ✅ **Keyboard shortcuts** (Space=next, S=start, P=pause, E=end)
+- ✅ **Combat state persists across page refreshes** 🆕
+- ✅ **HP syncs from combat → campaign store** 🆕
+
+#### Battle Map System
+- ✅ **Map CRUD** (create with grid size, edit details, delete)
+- ✅ **Token placement** (label, type, position, color, size, visibility)
+- ✅ **Token movement** (directional buttons, click-to-move with range overlay)
+- ✅ **DM/Player view toggle**
+- ✅ **Fog of War** controls and zone management
+- ✅ **Image backgrounds** with fit options
+
+### Remaining Issues
+
+| Issue | Severity | Description |
+|-------|----------|-------------|
+| **Auth peristence** | Medium | Zustand auth store uses `partialize` but the env vars (`VITE_DM_USERNAME`/`VITE_DM_PASSWORD`) are required at login time. If the build doesn't have them, login silently fails. Workaround: set localStorage auth directly for testing. |
+| **Damage input ambiguity** | Low | Damage buttons apply to the expanded combatant, not the current turn's active combatant. DM must be careful which card they expand. |
+| **Quick-add enemies use hardcoded stats** | Low | `addEnemyGroup` uses HP 15, AC 12 regardless of enemy type. Future: import from compendium. |
+| **No undo for damage** | Low | Once damage is applied, there's no undo button. Must manually heal. |
+
+### Deployed
+All fixes are deployed to **https://deepseek-dnd-cli.vercel.app**.
+
+---
