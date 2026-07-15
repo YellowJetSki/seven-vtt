@@ -1276,3 +1276,43 @@ All API keys and secrets must only exist in:
 - The `env.ts` guard separates required vs optional with `requiredEnv()` and `optionalEnv()`
 
 ---
+
+## Spotify Integration (PKCE OAuth, Mini-Player) (Updated: 2026-07-14 20:19)
+## Spotify Integration
+
+### Architecture
+```
+src/lib/spotify.ts          — Pure service layer (auth + API). Zero React deps.
+src/stores/spotifyStore.ts   — Zustand state management (auth, playback, search, polling)
+src/components/layout/SpotifyPlayer.tsx  — Collapsible mini-player UI
+src/components/layout/Sidebar.tsx        — Mounts SpotifyPlayer above user info
+```
+
+### Auth Flow
+- Uses **PKCE OAuth** (no backend proxy needed — the client secret is safe since Spotify's PKCE flow uses a `code_verifier` challenge instead)
+- Tokens persisted in `localStorage` under `str_vtt_spotify_tokens`
+- Token auto-refresh when expired (60s margin)
+- On app mount, `SpotifyPlayer` calls `initialize()` which checks for OAuth callback code + refreshes existing tokens
+
+### Key Design Decisions
+| Decision | Rationale |
+|----------|-----------|
+| Service layer separate from React | Testable, reusable, no hook dependencies |
+| 3-second polling for playback state | Balances UX freshness vs API rate limits |
+| Search results render above the input (absolute) | Prevents layout shift when expanding the player |
+| Player collapses to a thin mini-bar | Maximizes sidebar real estate for navigation |
+| Spotify client ID check before rendering | If env var is blank, component renders nothing — no broken state |
+| `optionalEnv()` in env.ts for Spotify keys | App works fully without Spotify configured |
+
+### Component States
+1. **No client ID configured** — Renders `null` (invisible)
+2. **Not connected** — Green "Connect Spotify" button
+3. **Connecting** — Disabled button with "Connecting..." text
+4. **Connected (mini)** — Album art + track info + play/pause toggle + expand arrow
+5. **Connected (expanded)** — Progress bar, full controls (prev/play/next/volume), search input with dropdown results, device list
+
+### Env Vars Used
+- `VITE_SPOTIFY_CLIENT_ID` — Required for OAuth flow
+- `VITE_SPOTIFY_CLIENT_SECRET` — Reserved for future use (not needed for PKCE flow but kept for extensibility)
+
+---
