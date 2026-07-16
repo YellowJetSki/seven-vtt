@@ -4,6 +4,6 @@
   "installCommand": "cd vtt && npm install",
   "framework": "vite",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/vtt/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

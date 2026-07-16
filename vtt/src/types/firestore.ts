@@ -63,12 +63,13 @@ export interface CampaignStats {
 
 /** Document stored at campaigns/{campaignId}/characters/{charId} */
 export interface CharacterDoc {
-  /* Matches PlayerCharacter from types/index.ts */
+  /* Enhanced PlayerCharacter schema (v2) — see @/types for full documentation */
   id: string;
   name: string;
   playerName: string;
   race: string;
   class: string;
+  subClass?: string;
   level: number;
   experiencePoints: number;
   background: string;
@@ -80,30 +81,39 @@ export interface CharacterDoc {
   intelligence: number;
   wisdom: number;
   charisma: number;
+  savingThrows: {
+    strength: { proficient: boolean; bonus: number };
+    dexterity: { proficient: boolean; bonus: number };
+    constitution: { proficient: boolean; bonus: number };
+    intelligence: { proficient: boolean; bonus: number };
+    wisdom: { proficient: boolean; bonus: number };
+    charisma: { proficient: boolean; bonus: number };
+  };
+  skills: Record<string, string>;    // key → "none" | "proficient" | "expertise"
   hitPoints: { current: number; max: number; temporary: number };
   armorClass: number;
   initiative: number;
-  speed: number;
+  speed: { walk: number; fly?: number; swim?: number; climb?: number; burrow?: number; canHover?: boolean };
   hitDice: string;
   proficiencyBonus: number;
   conditions: string[];
   deathSaves: { successes: number; failures: number };
   temporaryHitPoints: number;
   traits: { name: string; description: string; source: string }[];
-  proficiencies: string[];
+  proficiencies: { name: string; type: string; isProficient: boolean; notes?: string }[];
   languages: string[];
-  features: string[];
+  features: { name: string; description: string; source: string }[];
   equipment: { slot: string; item: string; quantity: number; weight: number; notes: string }[];
   inventory: { name: string; quantity: number; weight: number; description: string; isEquipped: boolean }[];
-  copper: number;
-  silver: number;
-  electrum: number;
-  gold: number;
-  platinum: number;
+  currency: { copper: number; silver: number; electrum: number; gold: number; platinum: number };
   appearance: string;
   backstory: string;
   allies: string;
   characterNotes: string;
+  personalityTraits?: string;
+  ideals?: string;
+  bonds?: string;
+  flaws?: string;
   imageUrl?: string;
   isHomebrew: boolean;
   createdAt: number;

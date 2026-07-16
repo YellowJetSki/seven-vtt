@@ -3,15 +3,15 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
-// Use process.cwd() to get the actual working directory (vtt/)
-const rootDir = process.cwd();
+// Resolve from the vtt/ directory
+const projectDir = path.resolve(import.meta.dirname ?? __dirname, ".");
 
 export default defineConfig({
-  root: rootDir,
+  root: projectDir,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(rootDir, "./src"),
+      "@": path.resolve(projectDir, "src"),
     },
   },
   server: {
@@ -19,6 +19,6 @@ export default defineConfig({
     strictPort: true,
   },
   build: {
-    outDir: path.resolve(rootDir, "dist"),
+    outDir: path.resolve(projectDir, "dist"),
   },
 });

@@ -222,3 +222,37 @@ def update_architecture_ledger(section: str, content: str, base_dir: str = ".") 
         return "System Action Complete: Architecture Ledger successfully updated. You may now recall this schema in future sessions."
     except Exception as e:
         return f"Error updating architecture ledger: {str(e)}"
+    
+def edit_workspace_file(file_path: str, search_text: str, replace_text: str, base_dir: str = ".") -> str:
+    """
+    Surgically replaces a specific block of code with a new block, preventing file corruption 
+    caused by AI truncation.
+    """
+    base_path = Path(base_dir).resolve()
+    target_path = (base_path / file_path).resolve()
+
+    if not target_path.is_relative_to(base_path):
+        return "Error: Security violation. Cannot edit outside workspace."
+    if not target_path.exists():
+        return f"Error: File '{file_path}' does not exist."
+
+    try:
+        with open(target_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        occurrences = content.count(search_text)
+        
+        if occurrences == 0:
+            return "System Error: Could not find the exact 'search_text' block in the file. Ensure indentation and line breaks match perfectly. Try fetching the file again to see the exact current text."
+        elif occurrences > 1:
+            return f"System Error: Found {occurrences} instances of 'search_text'. Provide a larger block of code in 'search_text' to uniquely identify the section you want to replace."
+
+        # Perform the surgical replacement
+        new_content = content.replace(search_text, replace_text)
+
+        with open(target_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+
+        return f"System Action Complete: Successfully patched the targeted code block in '{file_path}'."
+    except Exception as e:
+        return f"System Error editing file: {str(e)}"

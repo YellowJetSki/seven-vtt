@@ -27,19 +27,20 @@ export function InitiativeRoller() {
   const handleAssignAll = () => {
     let updated = 0;
     for (const c of allCombatants) {
-      // For player characters, calculate from DEX
+      // For player characters, calculate from DEX only (no random roll)
+      // The player rolls their physical die and the DM inputs the total
       const pc = characters.find(
         (pc) => pc.name.toLowerCase() === c.name.toLowerCase()
       );
       if (pc) {
         const dexMod = abilityModifier(pc.dexterity);
-        const init = dexMod + Math.floor(Math.random() * 20) + 1;
-        setCombatantInitiative(c.id, init);
+        // Set base initiative (DEX mod) — DM manually adds physical die roll
+        setCombatantInitiative(c.id, dexMod);
         updated++;
       }
     }
     if (updated > 0) {
-      showToast({ message: `Assigned initiative for ${updated} PC(s) from DEX modifier.`, type: "success" });
+      showToast({ message: `Base initiative (DEX mod) assigned for ${updated} PC(s). Players roll physical dice for final value.`, type: "success" });
     } else {
       showToast({ message: "No player characters found in combat to assign initiative.", type: "warning" });
     }

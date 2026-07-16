@@ -6,14 +6,15 @@
  *  • Player count badge
  *  • DM mode indicator
  *  • Online/offline indicator (navigator.onLine)
- *  • Dice Tower and Global Compendium quick-access buttons
+ *  • Physical Dice indicator (no digital dice — real dice only)
+ *  • Global Compendium quick-access button
  *  • Responsive: collapses on mobile
  *
  * UPGRADED:
  *  • Online/offline indicator
  *  • Pending sync count badge
  *  • Tooltips on all badges
- *  • Quick-access DiceTower and GlobalCompendium
+ *  • Physical Dice companion badge
  *  • Keyboard shortcut indicator for compendium
  * ─────────────────────────────────────────────────────────────── */
 
@@ -24,7 +25,6 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { LiveSessionTimer } from "@/components/combat/LiveSessionTimer";
-import { DiceTower } from "@/components/ui/DiceTower";
 import { GlobalCompendium } from "@/components/ui/GlobalCompendium";
 import { isFirebaseAvailable } from "@/lib/firebase";
 import { getPendingSyncCount } from "@/hooks/useFirebaseSync";
@@ -101,8 +101,14 @@ export function Header() {
       <div className="flex shrink-0 items-center gap-1.5">
         <LiveSessionTimer />
 
-        {/* Dice Tower */}
-        <DiceTower />
+        {/* Physical Dice Companion Badge */}
+        <span
+          className="hidden items-center gap-1.5 rounded-full bg-mage-500/10 px-2.5 py-1 text-[11px] font-medium text-mage-400 sm:flex"
+          title="STᚱ VTT uses real dice — roll physical dice alongside the app"
+        >
+          <span className="text-xs">🎲</span>
+          <span className="hidden md:inline">Physical Dice</span>
+        </span>
 
         {/* Global Compendium */}
         <GlobalCompendium />

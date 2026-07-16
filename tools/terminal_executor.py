@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 from pathlib import Path
 
 # Only these base commands are allowed to run
@@ -11,15 +12,13 @@ BANNED_SYMBOLS = {"&&", ";", "|", ">", "<", "`", "$("}
 # Keywords that indicate the AI is trying to use the terminal to bypass file writing protocols
 BANNED_KEYWORDS = {"-e", "--eval", "fs.", "writeFileSync", "writeFile", "appendFile", ".cjs", ".mjs"}
 
-# Persistent servers and interactive text editors that will hang the subprocess indefinitely
-BANNED_SERVERS = {"run dev", "vite", "serve", "nodemon", "start", "vim", "nano", "less"}
-
 # Maximum characters to return to the AI (prevents token explosions on massive build logs)
 MAX_OUTPUT_CHARS = 10_000
 
 def execute_terminal_command(command: str, base_dir: str = ".") -> str:
     """
     Securely executes a terminal command with a strict whitelist, anti-chaining guards, and an auto-'yes' pipeline.
+    This is for quick, terminating commands (like builds or linters).
     """
     command = command.strip()
     if not command:
@@ -28,46 +27,30 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
     # Guard 1: Anti-Chaining
     for symbol in BANNED_SYMBOLS:
         if symbol in command:
-            return f"Error: Security violation. Command chaining or redirection ('{symbol}') is strictly prohibited."
-            
-    # Guard 2: The Backdoor Block
+            return f"Error: Security violation. Command chaining or redirection ('{symbol}') is strictly forbidden. Execute one command at a time."
+
+    # Guard 2: Anti-Bypass
     for keyword in BANNED_KEYWORDS:
         if keyword in command:
-            return (
-                f"Error: SECURITY OVERRIDE. You attempted to use the terminal to manipulate files using '{keyword}'. "
-                f"You are strictly forbidden from executing custom JS scripts or editing files via the terminal. "
-                f"You MUST use the 'write_workspace_file' tool."
-            )
+            return f"Error: Security violation. You are attempting to write or evaluate code via the terminal. Use the 'write_workspace_file' tool instead."
 
-    # Guard 3: The Anti-Daemon Block (Prevents hanging on persistent servers or editors)
-    cmd_lower = command.lower()
-    for server_cmd in BANNED_SERVERS:
-        if server_cmd in cmd_lower and "build" not in cmd_lower:
-            return (
-                f"SYSTEM DIRECTIVE: SECURITY OVERRIDE. You attempted to start a persistent server or interactive tool ('{command}'). "
-                f"This terminal tool is strictly for short-lived commands (build, test, lint, deploy). "
-                f"Starting a dev server here will cause the system to hang indefinitely. "
-                f"Please ask the user to manually run their dev server in a separate terminal window."
-            )
-            
-    # Guard 4: Whitelist check
-    base_cmd = command.split()[0].lower()
-    if base_cmd not in ALLOWED_PREFIXES:
-        return f"Error: Security violation. Command '{base_cmd}' is not permitted. Allowed commands: {', '.join(ALLOWED_PREFIXES)}"
-        
+    # Guard 3: Prefix Whitelist
+    first_word = command.split()[0]
+    if first_word not in ALLOWED_PREFIXES:
+        return f"Error: The command '{first_word}' is not whitelisted. Allowed prefixes: {', '.join(ALLOWED_PREFIXES)}"
+
+    # Guard 4: Persistent Server Check
+    for server in {"run dev", "vite", "serve", "nodemon", "start", "emulators:start"}:
+        if server in command:
+            return f"SYSTEM DIRECTIVE: You are trying to start a persistent server using the standard executor. This will hang the system. You MUST use the 'start_persistent_terminal' tool for this command instead."
+
     base_path = Path(base_dir).resolve()
     
-    # --- THE BOT PROTOCOL ---
+    # Force CI mode to prevent tools from waiting for interactive prompts
     secure_env = os.environ.copy()
-    secure_env["CI"] = "true"                  
-    secure_env["NPM_CONFIG_YES"] = "true"      
-    secure_env["NPM_CONFIG_FUND"] = "false"    
-    secure_env["NPM_CONFIG_AUDIT"] = "false"   
-    # Critical: Prevents 'git log' or 'git diff' from hanging inside the 'less' pager
-    secure_env["GIT_PAGER"] = "cat"            
-    
+    secure_env["CI"] = "true"
+
     try:
-        # Execute the command with a 30-second killswitch, bot environment, and the Auto-Yes Pipeline
         result = subprocess.run(
             command,
             cwd=base_path,
@@ -95,9 +78,30 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
         return (
             f"SYSTEM DIRECTIVE: The command '{command}' timed out after 30 seconds. "
             f"It was forcefully terminated to prevent the system from hanging. "
-            f"This usually means the command is waiting for manual interactive input that cannot be bypassed, "
-            f"or it started an unrecognized persistent process. Do NOT try this exact command again. "
-            f"Attempt an alternative approach, use a different flag, or ask the user for manual assistance."
+            f"If this is a server, use the 'start_persistent_terminal' tool. Otherwise, ask the user for manual assistance."
         )
     except Exception as e:
         return f"System error executing terminal command: {str(e)}"
+
+def start_persistent_terminal(command: str, base_dir: str = ".") -> str:
+    """
+    Spawns a physically separate, persistent terminal window for long-running servers.
+    This prevents blocking the main AI thread.
+    """
+    base_path = Path(base_dir).resolve()
+    try:
+        if sys.platform == "win32":
+            # Physically open a new command prompt window that stays open (/k)
+            full_cmd = f'start cmd.exe /k "{command}"'
+            subprocess.Popen(full_cmd, cwd=base_path, shell=True)
+        elif sys.platform == "darwin":
+            # Mac fallback via AppleScript
+            full_cmd = f"""osascript -e 'tell app "Terminal" to do script "cd {base_path} && {command}"'"""
+            subprocess.Popen(full_cmd, shell=True)
+        else:
+            # Linux fallback
+            subprocess.Popen(f"x-terminal-emulator -e '{command}'", cwd=base_path, shell=True)
+            
+        return f"System Action Complete: Successfully spawned a new, persistent terminal window running '{command}'. It is running safely in the background."
+    except Exception as e:
+        return f"System Error starting persistent terminal: {str(e)}"

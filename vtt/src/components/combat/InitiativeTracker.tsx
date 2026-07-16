@@ -325,7 +325,7 @@ function EmptyEncounterState({
   };
 
   return (
-    <div className="rounded-xl border border-dashed border-surface-700 bg-surface-850 p-8 text-center">
+    <div className="rounded-xl border border-dashed border-surface-700/60 bg-surface-850/80 glass p-8 text-center">
       <span className="mb-4 inline-block text-4xl text-surface-600">⚔️</span>
       <h3 className="mb-2 text-lg font-semibold text-surface-100">No Active Encounter</h3>
       <p className="mb-6 text-sm text-surface-400">Create a new encounter to manage initiative, track HP, and run combat.</p>

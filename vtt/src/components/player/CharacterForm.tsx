@@ -39,15 +39,27 @@ export function CharacterForm({ initialData, onSubmit, onCancel }: CharacterForm
   const [ac, setAc] = useState(initialData?.armorClass ?? 10);
 
   // Currency
-  const [copper, setCopper] = useState(initialData?.copper ?? 0);
-  const [silver, setSilver] = useState(initialData?.silver ?? 0);
-  const [electrum, setElectrum] = useState(initialData?.electrum ?? 0);
-  const [gold, setGold] = useState(initialData?.gold ?? 0);
-  const [platinum, setPlatinum] = useState(initialData?.platinum ?? 0);
+  const [copper, setCopper] = useState(initialData?.currency?.copper ?? 0);
+  const [silver, setSilver] = useState(initialData?.currency?.silver ?? 0);
+  const [electrum, setElectrum] = useState(initialData?.currency?.electrum ?? 0);
+  const [gold, setGold] = useState(initialData?.currency?.gold ?? 0);
+  const [platinum, setPlatinum] = useState(initialData?.currency?.platinum ?? 0);
 
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl ?? "");
 
+  // Personality
+  const [personalityTraits, setPersonalityTraits] = useState(initialData?.personalityTraits ?? "");
+  const [ideals, setIdeals] = useState(initialData?.ideals ?? "");
+  const [bonds, setBonds] = useState(initialData?.bonds ?? "");
+  const [flaws, setFlaws] = useState(initialData?.flaws ?? "");
+
   const handleSubmit = useCallback(() => {
+    const dexMod = Math.floor((dexterity - 10) / 2);
+    const defaultSavingThrows = (ability: number) => ({
+      proficient: false,
+      bonus: Math.floor((ability - 10) / 2),
+    });
+
     const character: PlayerCharacter = {
       id: initialData?.id ?? `pc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name,
@@ -65,10 +77,26 @@ export function CharacterForm({ initialData, onSubmit, onCancel }: CharacterForm
       intelligence,
       wisdom,
       charisma,
+      savingThrows: initialData?.savingThrows ?? {
+        strength: defaultSavingThrows(strength),
+        dexterity: defaultSavingThrows(dexterity),
+        constitution: defaultSavingThrows(constitution),
+        intelligence: defaultSavingThrows(intelligence),
+        wisdom: defaultSavingThrows(wisdom),
+        charisma: defaultSavingThrows(charisma),
+      },
+      skills: initialData?.skills ?? {
+        acrobatics: "none", animalHandling: "none", arcana: "none",
+        athletics: "none", deception: "none", history: "none",
+        insight: "none", intimidation: "none", investigation: "none",
+        medicine: "none", nature: "none", perception: "none",
+        performance: "none", persuasion: "none", religion: "none",
+        sleightOfHand: "none", stealth: "none", survival: "none",
+      },
       hitPoints: { current: hpCurrent, max: hpMax, temporary: 0 },
       armorClass: ac,
-      initiative: initialData?.initiative ?? Math.floor((dexterity - 10) / 2),
-      speed: initialData?.speed ?? 30,
+      initiative: initialData?.initiative ?? dexMod,
+      speed: initialData?.speed ?? { walk: 30 },
       hitDice: initialData?.hitDice ?? "d10",
       proficiencyBonus: initialData?.proficiencyBonus ?? 2,
       conditions: initialData?.conditions ?? [],
@@ -80,15 +108,21 @@ export function CharacterForm({ initialData, onSubmit, onCancel }: CharacterForm
       features: initialData?.features ?? [],
       equipment: initialData?.equipment ?? [],
       inventory: initialData?.inventory ?? [],
-      copper,
-      silver,
-      electrum,
-      gold,
-      platinum,
+      currency: {
+        copper,
+        silver,
+        electrum,
+        gold,
+        platinum,
+      },
       appearance: initialData?.appearance ?? "",
       backstory: initialData?.backstory ?? "",
       allies: initialData?.allies ?? "",
       characterNotes: initialData?.characterNotes ?? "",
+      personalityTraits: personalityTraits || undefined,
+      ideals: ideals || undefined,
+      bonds: bonds || undefined,
+      flaws: flaws || undefined,
       imageUrl: imageUrl || undefined,
       isHomebrew: initialData?.isHomebrew ?? false,
       createdAt: initialData?.createdAt ?? Date.now(),
@@ -99,6 +133,7 @@ export function CharacterForm({ initialData, onSubmit, onCancel }: CharacterForm
     name, playerName, race, charClass, level, exp, background, alignment,
     strength, dexterity, constitution, intelligence, wisdom, charisma,
     hpCurrent, hpMax, ac, copper, silver, electrum, gold, platinum,
+    personalityTraits, ideals, bonds, flaws,
     imageUrl, initialData, onSubmit,
   ]);
 

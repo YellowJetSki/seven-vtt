@@ -28,11 +28,11 @@ export function PlayerInventory({ character, onClose }: PlayerInventoryProps) {
   const [isDirty, setIsDirty] = useState(false);
 
   // ── Currency state ──
-  const [copper, setCopper] = useState(character.copper ?? 0);
-  const [silver, setSilver] = useState(character.silver ?? 0);
-  const [electrum, setElectrum] = useState(character.electrum ?? 0);
-  const [gold, setGold] = useState(character.gold ?? 0);
-  const [platinum, setPlatinum] = useState(character.platinum ?? 0);
+  const [copper, setCopper] = useState(character.currency?.copper ?? 0);
+  const [silver, setSilver] = useState(character.currency?.silver ?? 0);
+  const [electrum, setElectrum] = useState(character.currency?.electrum ?? 0);
+  const [gold, setGold] = useState(character.currency?.gold ?? 0);
+  const [platinum, setPlatinum] = useState(character.currency?.platinum ?? 0);
 
   const handleAddItem = useCallback(() => {
     if (!newItemName.trim()) return;
@@ -56,11 +56,7 @@ export function PlayerInventory({ character, onClose }: PlayerInventoryProps) {
   const handleSave = useCallback(() => {
     updateCharacter(character.id, {
       equipment,
-      copper,
-      silver,
-      electrum,
-      gold,
-      platinum,
+      currency: { copper, silver, electrum, gold, platinum },
     });
     setIsDirty(false);
     showToast({ message: "Inventory saved.", type: "success" });

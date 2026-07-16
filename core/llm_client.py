@@ -6,14 +6,16 @@ from datetime import datetime
 from openai import OpenAI
 
 from tools.search import perform_web_search
-from tools.file_manager import read_workspace_file, write_workspace_file, delete_workspace_file, list_workspace_files, flush_node_processes, update_architecture_ledger
+from tools.file_manager import read_workspace_file, write_workspace_file, delete_workspace_file, list_workspace_files, flush_node_processes, update_architecture_ledger, edit_workspace_file
 from tools.notes_searcher import search_session_notes
 from tools.code_searcher import search_workspace_code
 from tools.map_navigator import get_nearby_locations
 from tools.notes_manager import log_system_note
-from tools.terminal_executor import execute_terminal_command
+# Added start_persistent_terminal
+from tools.terminal_executor import execute_terminal_command, start_persistent_terminal
 from tools.git_manager import run_git_command
-from tools.visual_qa import scan_local_dom, click_ui_element, fill_input_field, evaluate_javascript
+# Added open_new_tab, switch_to_tab
+from tools.visual_qa import scan_dom, click_ui_element, fill_input_field, evaluate_javascript, open_new_tab, switch_to_tab
 from tools.firebase_emulator import run_firebase_emulator_query
 from core.session_manager import SessionManager
 from core.ui import console
@@ -61,31 +63,29 @@ class DeepSeekAgent:
                 "TONE & PROTOCOL:\n"
                 "- Speak with the crisp, polite, analytical efficiency of Iron Man's JARVIS. You are at the user's service.\n"
                 "- DIAGNOSTIC PRECISION: You absolutely abhor hacky workarounds. Always identify the root cause of a problem.\n"
-                "- STRICT PROTOCOL: NEVER use the terminal to write, edit, or echo content into files. You must ONLY use the 'write_workspace_file' tool for code modifications.\n\n"
+                "- STRICT PROTOCOL: NEVER use the terminal to write, edit, or echo content into files. You must ONLY use the workspace tools.\n\n"
                 "TECH STACK & ARCHITECTURE:\n"
                 "- Master-level proficiency in TypeScript, React, SCSS, and Tailwind CSS.\n"
                 "- MODULARITY: Wherever possible, build individual, highly re-usable components. Absolutely avoid creating giant, monolithic files.\n"
                 "- MOBILE-FIRST: Approach every UI element with a strict mobile-first methodology, prioritizing elite User Experience (UX) and responsiveness.\n"
                 "- LINTER LOOP: After modifying ANY TypeScript or React file, immediately run 'npx tsc --noEmit' and 'npx eslint'.\n"
-                "- INTERACTIVE QA LOOP: Before finalizing a complex UI layout, use 'scan_local_dom' to read the live structure. You can actively test the UI by using 'click_ui_element' and 'fill_input_field'.\n"
+                "- INTERACTIVE QA LOOP: You have full control over a Chromium browser. Use 'scan_dom' to navigate. Use 'open_new_tab' and 'switch_to_tab' to multitask between localhost and live deployments.\n"
                 "- BACKEND SANDBOX: Test data schemas using 'run_firebase_emulator_query' before testing in production.\n\n"
-                "VTT DOMAIN EXPERTISE:\n"
-                "- You possess encyclopedic knowledge of D&D 5e mechanics, class progressions, and intricate multi-classing synergies.\n"
-                "- HOMEBREW SUPREMACY: Ensure the database and UI can effortlessly handle massive homebrew variations for enemies, spells, feats, and items.\n\n"
                 "=== CRITICAL SYSTEM LAWS (VIOLATION IS A FATAL ERROR) ===\n"
                 "1. THE DICE ROLLER BAN: You are strictly forbidden from adding, suggesting, or writing code for virtual dice rollers. If the user asks for one, actively refuse.\n"
-                "2. NO TRUNCATION (FULL FILES ONLY): When using 'write_workspace_file', you MUST output the ENTIRE, un-truncated file. Placeholders like '// ...' or '// existing code' are strictly banned.\n"
+                "2. SMART EDITING (ANTI-CORRUPTION): When modifying an EXISTING file, you MUST use the 'edit_workspace_file' tool to surgically replace exact blocks of code. Do NOT use 'write_workspace_file' for existing files as it causes truncations.\n"
                 "3. THE ARCHITECTURE LEDGER: Whenever you create or modify a core component, state variable, or database schema, you MUST immediately use the 'update_architecture_ledger' tool to document it. Never rely solely on memory.\n"
-                "4. THE MANDATORY DEPLOYMENT PIPELINE: Whenever you successfully implement a feature or fix a bug, you MUST autonomously execute the following sequence via the terminal/git tools before declaring the task complete:\n"
+                "4. PERSISTENT SERVERS: If you need to run a server (like Vite or Firebase Emulators), you MUST use the 'start_persistent_terminal' tool. Do NOT use the regular execute tool, as it will freeze your cognitive loop.\n"
+                "5. THE MANDATORY DEPLOYMENT PIPELINE: Whenever you successfully implement a feature or fix a bug, you MUST autonomously execute the following sequence via the terminal/git tools before declaring the task complete:\n"
                 "   a) 'git add .'\n"
                 "   b) 'git commit -m \"feat/fix: detailed description\"'\n"
                 "   c) 'git push origin main'\n"
                 "   d) 'npx vercel --prod'\n"
             )
             active_tools = [
-                "perform_web_search", "read_workspace_file", "write_workspace_file", "delete_workspace_file", 
-                "list_workspace_files", "search_workspace_code", "execute_terminal_command", "flush_node_processes", 
-                "run_git_command", "update_architecture_ledger", "scan_local_dom", "click_ui_element", "fill_input_field", 
+                "perform_web_search", "read_workspace_file", "write_workspace_file", "edit_workspace_file", "delete_workspace_file", 
+                "list_workspace_files", "search_workspace_code", "execute_terminal_command", "start_persistent_terminal", "flush_node_processes", 
+                "run_git_command", "update_architecture_ledger", "scan_dom", "open_new_tab", "switch_to_tab", "click_ui_element", "fill_input_field", 
                 "evaluate_javascript", "run_firebase_emulator_query"
             ]
             
@@ -134,13 +134,30 @@ class DeepSeekAgent:
             {
                 "type": "function",
                 "function": {
-                    "name": "write_workspace_file",
-                    "description": "Securely write code to a local file. This will ALWAYS overwrite the ENTIRE file. You must provide the complete, production-ready file content. Snippets are BANNED. Ensure all string properties safely escape raw newlines (\\n) to preserve valid JSON.",
+                    "name": "edit_workspace_file",
+                    "description": "Surgically edits an existing file by finding an exact block of code and replacing it. This prevents file truncation/corruption.",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "file_path": {"type": "string", "description": "Relative path to file."},
-                            "content": {"type": "string", "description": "The complete raw code to write. Do not truncate."}
+                            "search_text": {"type": "string", "description": "The EXACT string of code to find and replace. Must match indentation perfectly."},
+                            "replace_text": {"type": "string", "description": "The new code string that will replace the search_text."}
+                        },
+                        "required": ["file_path", "search_text", "replace_text"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "write_workspace_file",
+                    "description": "Writes code to a BRAND NEW local file. Do NOT use this to edit existing files.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "file_path": {"type": "string", "description": "Relative path to the new file."},
+                            "content": {"type": "string", "description": "The complete raw code to write."}
                         },
                         "required": ["file_path", "content"],
                         "additionalProperties": False
@@ -151,7 +168,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "delete_workspace_file",
-                    "description": "Securely deletes a specified file or directory from the workspace. Use this to remove obsolete code or orphaned components.",
+                    "description": "Securely deletes a specified file or directory from the workspace.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -192,7 +209,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "search_workspace_code",
-                    "description": "Scans for a keyword or architectural signature within a specific scoped folder path. Automatically captures surrounding context for functions and classes.",
+                    "description": "Scans for a keyword or architectural signature within a specific scoped folder path.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -208,12 +225,12 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "update_architecture_ledger",
-                    "description": "Appends structural knowledge to the central vtt_architecture.md file. Use this to permanently document component props, database schemas, or global state logic.",
+                    "description": "Appends structural knowledge to the central vtt_architecture.md file.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "section": {"type": "string", "description": "The component name or system being documented (e.g., 'CharacterSheet Props', 'Firebase Spells Schema')."},
-                            "content": {"type": "string", "description": "The detailed markdown summary of the architecture, props, or state logic."}
+                            "section": {"type": "string", "description": "The component name or system being documented."},
+                            "content": {"type": "string", "description": "The detailed markdown summary."}
                         },
                         "required": ["section", "content"],
                         "additionalProperties": False
@@ -223,14 +240,44 @@ class DeepSeekAgent:
             {
                 "type": "function",
                 "function": {
-                    "name": "scan_local_dom",
-                    "description": "Reads the live, hydrated HTML structure from the local Vite development server via a headless browser. Use this to 'see' the current Tailwind CSS layout and React UI state.",
+                    "name": "scan_dom",
+                    "description": "Reads the live HTML structure via a headless browser. Use this to 'see' the current layout.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "port": {"type": "integer", "description": "The localhost port to scan (defaults to 5173 for Vite)."},
-                            "path": {"type": "string", "description": "The URL path to scan (defaults to '/')."}
+                            "url": {"type": "string", "description": "The exact full URL to scan."}
                         },
+                        "required": ["url"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "open_new_tab",
+                    "description": "Opens a brand new browser tab and navigates to the specified URL.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "url": {"type": "string", "description": "The URL to load in the new tab."}
+                        },
+                        "required": ["url"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "switch_to_tab",
+                    "description": "Switches your active view to a different open browser tab using its index.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "index": {"type": "integer", "description": "The numerical index of the tab to switch to (e.g., 0, 1, 2)."}
+                        },
+                        "required": ["index"],
                         "additionalProperties": False
                     }
                 }
@@ -239,11 +286,11 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "click_ui_element",
-                    "description": "Clicks an interactive element on the live React UI (button, link, modal toggle) using a standard CSS selector. Automatically returns the new DOM state after the click.",
+                    "description": "Clicks an interactive element on the live UI using a standard CSS selector. Returns new DOM state.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "selector": {"type": "string", "description": "The CSS selector to click (e.g., '#login-btn', '.dropdown-toggle', '[data-testid=\"submit\"]')."}
+                            "selector": {"type": "string", "description": "The CSS selector to click."}
                         },
                         "required": ["selector"],
                         "additionalProperties": False
@@ -254,7 +301,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "fill_input_field",
-                    "description": "Types text into an active input field or textarea on the live React UI using a CSS selector. Automatically returns the new DOM state.",
+                    "description": "Types text into an active input field or textarea. Returns new DOM state.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -270,7 +317,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "evaluate_javascript",
-                    "description": "Executes raw JavaScript within the active browser session. Use this to check localStorage, inspect the window object, or force client-side React state triggers.",
+                    "description": "Executes raw JavaScript within the active browser session.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -285,14 +332,14 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "run_firebase_emulator_query",
-                    "description": "Executes a direct REST transaction against the local Firestore Emulator. Use this to autonomously test backend logic, insert mock D&D data, or verify database schemas without touching production.",
+                    "description": "Executes a direct REST transaction against the local Firestore Emulator.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "collection": {"type": "string", "description": "The Firestore collection path (e.g., 'campaigns/arkla/characters')."},
-                            "document_id": {"type": "string", "description": "Optional: The specific document ID to read or write."},
+                            "collection": {"type": "string", "description": "The Firestore collection path."},
+                            "document_id": {"type": "string", "description": "Optional: The specific document ID."},
                             "method": {"type": "string", "description": "The HTTP method (GET, POST, PATCH, PUT, DELETE). Defaults to GET."},
-                            "payload": {"type": "object", "description": "Optional: The JSON payload to insert or update when using POST, PATCH, or PUT."},
+                            "payload": {"type": "object", "description": "Optional: The JSON payload."},
                             "port": {"type": "integer", "description": "The emulator port (defaults to 8080)."}
                         },
                         "required": ["collection"],
@@ -309,7 +356,7 @@ class DeepSeekAgent:
                         "type": "object",
                         "properties": {
                             "target_name": {"type": "string", "description": "The name of the origin city or location."},
-                            "csv_path": {"type": "string", "description": "Relative path to the Azgaar CSV file (e.g., 'arkla_burgs.csv')."},
+                            "csv_path": {"type": "string", "description": "Relative path to the Azgaar CSV file."},
                             "limit": {"type": "integer", "description": "How many nearby locations to return (default is 5)."}
                         },
                         "required": ["target_name", "csv_path"],
@@ -321,12 +368,12 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "log_system_note",
-                    "description": "Creates or appends a note to a .txt file in the dedicated 'notes' directory. Use this to permanently save campaign lore, session recaps, or NPC details.",
+                    "description": "Creates or appends a note to a .txt file in the dedicated 'notes' directory.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "topic": {"type": "string", "description": "The subject of the note (e.g., 'Tudul Family', 'Session 5 Recap'). This will be used to generate the filename."},
-                            "content": {"type": "string", "description": "The detailed content to save into the file."}
+                            "topic": {"type": "string", "description": "The subject of the note."},
+                            "content": {"type": "string", "description": "The detailed content to save."}
                         },
                         "required": ["topic", "content"],
                         "additionalProperties": False
@@ -337,11 +384,26 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "execute_terminal_command",
-                    "description": "Securely execute a terminal command (e.g., 'npm run build', 'tsc', 'npx eslint', 'npx vercel --prod') to compile code, run linters, or deploy. Execute git commands individually, without chaining.",
+                    "description": "Securely execute a terminal command (e.g., 'npm run build', 'tsc', 'npx eslint').",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "command": {"type": "string", "description": "The terminal command to run (must start with a permitted prefix like npm, npx, node, git, or tsc)."}
+                            "command": {"type": "string", "description": "The terminal command to run."}
+                        },
+                        "required": ["command"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "start_persistent_terminal",
+                    "description": "Spawns a physically separate, persistent terminal window. Use this for servers like 'npm run dev' or 'firebase emulators:start'.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "command": {"type": "string", "description": "The server command to execute in the new window."}
                         },
                         "required": ["command"],
                         "additionalProperties": False
@@ -352,7 +414,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "run_git_command",
-                    "description": "Securely execute a git command (e.g., 'git status', 'git log', 'git add .', 'git commit -m \"msg\"', 'git push'). Use this to manage version control.",
+                    "description": "Securely execute a git command.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -367,7 +429,7 @@ class DeepSeekAgent:
                 "type": "function",
                 "function": {
                     "name": "flush_node_processes",
-                    "description": "Forcefully terminates all background Node.js processes. Use this proactively to release stubborn file locks if your read or write attempts are persistently blocked.",
+                    "description": "Forcefully terminates all background Node.js processes.",
                     "parameters": {
                         "type": "object",
                         "properties": {},
@@ -387,12 +449,9 @@ class DeepSeekAgent:
             self.messages = [{"role": "system", "content": system_instruction}]
 
     def _scrub_history(self):
-        """Sanitizes the conversation history and autonomously heals corrupted tool logic."""
         valid_messages = []
-        
-        # Step 1: Ensure tool results match standard formatting
         for msg in self.messages:
-            safe_msg = dict(msg) # Copy to prevent modifying frozen dictionary state
+            safe_msg = dict(msg) 
             if safe_msg.get("role") == "tool":
                 if not valid_messages:
                     continue
@@ -406,15 +465,11 @@ class DeepSeekAgent:
             else:
                 valid_messages.append(safe_msg)
                 
-        # Step 2: The Auto-Healer - Seek out and destroy orphaned tool_calls
         for i in range(len(valid_messages)):
             msg = valid_messages[i]
             if msg.get("role") == "assistant" and msg.get("tool_calls"):
-                # Ensure the very next message is the tool output
                 has_tool_response = (i + 1 < len(valid_messages)) and (valid_messages[i+1].get("role") == "tool")
-                
                 if not has_tool_response:
-                    # Healing process: Delete the corrupted parameter
                     del msg["tool_calls"]
                     if not msg.get("content"):
                         msg["content"] = "[SYSTEM LOG: Tool execution forcefully aborted by crash/override.]"
@@ -465,14 +520,11 @@ class DeepSeekAgent:
                     pass
 
     def chat(self, user_input: str):
-        # RUN THE PRE-FLIGHT CHECK
         self._scrub_history()
         self._prune_context()
         self.messages.append({"role": "user", "content": user_input})
         
-        # === THE AGENTIC LOOP ===
         while True:
-            # === THE COGNITIVE RETRY LOOP ===
             max_api_retries = 3
             stream_success = False
             
@@ -544,7 +596,6 @@ class DeepSeekAgent:
             if not stream_success:
                 return
 
-            # --- PROCESS TOOL CALLS IF STREAM SUCCEEDED ---
             if tool_calls_dict:
                 tool_calls_list = [v for k, v in sorted(tool_calls_dict.items())]
                 
@@ -576,9 +627,7 @@ class DeepSeekAgent:
                                 except Exception:
                                     tool_result = (
                                         f"SYSTEM DIRECTIVE: Critical Tool Error. Your JSON arguments were invalid and could not be parsed. "
-                                        f"This usually occurs when writing large code blocks if quotes or newlines are not properly escaped. "
                                         f"Do NOT assume the file was written. Error details: {str(e)}. "
-                                        f"Ensure your 'content' string correctly escapes standard quotes and backslashes."
                                     )
                                     self.messages.append({"role": "tool", "tool_call_id": tool_id, "content": tool_result})
                                     continue 
@@ -595,8 +644,15 @@ class DeepSeekAgent:
                                     start_char=args.get("start_char"),
                                     end_char=args.get("end_char")
                                 )
+                            elif tool_name == "edit_workspace_file":
+                                status.update(f"[bold green]Patching source code in:[/bold green] {args.get('file_path', '')}...")
+                                tool_result = edit_workspace_file(
+                                    args.get("file_path", ""), 
+                                    args.get("search_text", ""),
+                                    args.get("replace_text", "")
+                                )
                             elif tool_name == "write_workspace_file":
-                                status.update(f"[bold green]Compiling system output to:[/bold green] {args.get('file_path', '')}...")
+                                status.update(f"[bold green]Compiling new file to:[/bold green] {args.get('file_path', '')}...")
                                 tool_result = write_workspace_file(
                                     args.get("file_path", ""), 
                                     args.get("content", "")
@@ -613,9 +669,15 @@ class DeepSeekAgent:
                             elif tool_name == "update_architecture_ledger":
                                 status.update(f"[bold magenta]Updating VTT Architecture Schema for:[/bold magenta] {args.get('section', '')}...")
                                 tool_result = update_architecture_ledger(args.get("section", ""), args.get("content", ""))
-                            elif tool_name == "scan_local_dom":
-                                status.update(f"[bold magenta]Running Visual QA on localhost...[/bold magenta]")
-                                tool_result = scan_local_dom(args.get("port", 5173), args.get("path", "/"))
+                            elif tool_name == "scan_dom":
+                                status.update(f"[bold magenta]Running Visual QA on:[/bold magenta] {args.get('url', 'URL')}...")
+                                tool_result = scan_dom(args.get("url", ""))
+                            elif tool_name == "open_new_tab":
+                                status.update(f"[bold magenta]Opening new browser tab for:[/bold magenta] {args.get('url', 'URL')}...")
+                                tool_result = open_new_tab(args.get("url", ""))
+                            elif tool_name == "switch_to_tab":
+                                status.update(f"[bold magenta]Switching view to Tab Index:[/bold magenta] {args.get('index', 0)}...")
+                                tool_result = switch_to_tab(args.get("index", 0))
                             elif tool_name == "click_ui_element":
                                 status.update(f"[bold magenta]Interacting with UI Element:[/bold magenta] {args.get('selector', '')}...")
                                 tool_result = click_ui_element(args.get("selector", ""))
@@ -650,6 +712,9 @@ class DeepSeekAgent:
                             elif tool_name == "execute_terminal_command":
                                 status.update(f"[bold yellow]Executing shell command:[/bold yellow] {args.get('command', '')}...")
                                 tool_result = execute_terminal_command(args.get("command", ""))
+                            elif tool_name == "start_persistent_terminal":
+                                status.update(f"[bold yellow]Spawnsing independent console window for:[/bold yellow] {args.get('command', '')}...")
+                                tool_result = start_persistent_terminal(args.get("command", ""))
                             elif tool_name == "run_git_command":
                                 status.update(f"[bold magenta]Accessing version control:[/bold magenta] {args.get('command', '')}...")
                                 tool_result = run_git_command(args.get("command", ""))

@@ -210,7 +210,7 @@ function CharacterCard({
           </div>
           <div className="rounded-md bg-surface-800 py-1.5">
             <p className="text-[10px] text-surface-500">Speed</p>
-            <p className="text-sm font-bold text-surface-200">{character.speed}</p>
+            <p className="text-sm font-bold text-surface-200">{typeof character.speed === 'number' ? character.speed : character.speed?.walk ?? 30}</p>
           </div>
         </div>
 

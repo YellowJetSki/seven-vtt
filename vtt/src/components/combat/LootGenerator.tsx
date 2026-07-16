@@ -133,22 +133,14 @@ export function LootGenerator() {
     const newItem: EquipmentSlot = { slot: "carried", item: entry.name, quantity: entry.quantity, weight: 0, notes: "" };
 
     if (entry.type === "coin") {
-      let updatedCopper = character.copper ?? 0;
-      let updatedSilver = character.silver ?? 0;
-      let updatedGold = character.gold ?? 0;
-      let updatedPlatinum = character.platinum ?? 0;
+      const currency = { ...(character.currency ?? { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 }) };
 
-      if (entry.name.includes("Copper")) updatedCopper += entry.quantity;
-      else if (entry.name.includes("Silver")) updatedSilver += entry.quantity;
-      else if (entry.name.includes("Gold")) updatedGold += entry.quantity;
-      else if (entry.name.includes("Platinum")) updatedPlatinum += entry.quantity;
+      if (entry.name.includes("Copper")) currency.copper += entry.quantity;
+      else if (entry.name.includes("Silver")) currency.silver += entry.quantity;
+      else if (entry.name.includes("Gold")) currency.gold += entry.quantity;
+      else if (entry.name.includes("Platinum")) currency.platinum += entry.quantity;
 
-      updatePlayerCharacter(characterId, {
-        copper: updatedCopper,
-        silver: updatedSilver,
-        gold: updatedGold,
-        platinum: updatedPlatinum,
-      });
+      updatePlayerCharacter(characterId, { currency });
     } else {
       updatePlayerCharacter(characterId, {
         equipment: [...existingEquipment, newItem],

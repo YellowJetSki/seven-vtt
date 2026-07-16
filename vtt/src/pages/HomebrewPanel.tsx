@@ -240,7 +240,7 @@ export function HomebrewPanel() {
           return (
             <div
               key={tab}
-              className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${activeTab === tab ? "border-accent-500/50 bg-accent-500/10" : "border-surface-700 bg-surface-850 hover:border-surface-600"}`}
+              className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${activeTab === tab ? "border-accent-500/50 bg-accent-500/10 shadow-lg shadow-accent-500/5" : "border-surface-700/60 bg-surface-850/80 hover:border-surface-600 glass-card"}`}
               onClick={() => setActiveTab(tab)}
             >
               <p className="text-2xl font-bold text-surface-100">{count}</p>
@@ -272,7 +272,7 @@ export function HomebrewPanel() {
 
       {/* Content */}
       {((activeTab === "items" && filteredItems.length === 0) || (activeTab === "feats" && filteredFeats.length === 0) || (activeTab === "spells" && filteredSpells.length === 0)) ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-surface-700 bg-surface-850 py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-surface-700/60 bg-surface-850/60 glass py-16 text-center">
           <span className="text-5xl text-surface-600 mb-4">{activeTab === "items" ? "📦" : activeTab === "feats" ? "⭐" : "📖"}</span>
           <h3 className="text-lg font-semibold text-surface-200 mb-1">No {activeTab} yet</h3>
           <p className="text-sm text-surface-500 mb-6 max-w-sm">{query ? `No ${activeTab} match your search.` : `Your homebrew ${activeTab} library is empty.`}</p>
