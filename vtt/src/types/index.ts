@@ -285,6 +285,10 @@ export interface BattleMap {
   fogOfWar: FogZone[];
   tokens: MapToken[];
   notes?: string;
+  // Freehand drawing layers
+  drawings?: MapDrawingStroke[];
+  // Grid opacity for theatric view
+  gridOpacity?: number;
   createdAt: number;
   updatedAt: number;
 }
@@ -311,6 +315,29 @@ export interface MapToken {
   hp?: { current: number; max: number };
   speed?: number;
   imageUrl?: string;
+  // Status markers for conditions
+  statusMarkers?: TokenStatusMarker[];
+  // Initiative tracking
+  initiative?: number;
+  // Drawing annotation
+  drawColor?: string;
+}
+
+export interface TokenStatusMarker {
+  id: string;
+  type: "blinded" | "charmed" | "deafened" | "exhaustion" | "frightened" | "grappled" | "incapacitated" | "invisible" | "paralyzed" | "petrified" | "poisoned" | "prone" | "restrained" | "stunned" | "unconscious" | "concentration" | "custom";
+  label?: string;
+  color?: string;
+}
+
+// Freehand drawing stroke on the battle map
+export interface MapDrawingStroke {
+  id: string;
+  points: { x: number; y: number }[];
+  color: string;
+  width: number;
+  opacity: number;
+  tool: "pen" | "highlighter" | "eraser";
 }
 
 /* ── Journal ────────────────────────────────────────────────── */

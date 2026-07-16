@@ -334,6 +334,7 @@ function AddTokenForm({
   const [color, setColor] = useState(TOKEN_COLORS[0]);
   const [size, setSize] = useState(1);
   const [speed, setSpeed] = useState(30);
+  const [initiative, setInitiative] = useState(0);
   const [hpMax, setHpMax] = useState(15);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -348,6 +349,7 @@ function AddTokenForm({
       color,
       size,
       speed,
+      initiative: initiative > 0 ? initiative : undefined,
       visible: true,
       hp: { current: hpMax, max: hpMax },
       imageUrl: imageUrl || undefined,
@@ -394,6 +396,13 @@ function AddTokenForm({
           <input type="number" min={0} max={120} step={5} value={speed} onChange={(e) => setSpeed(parseInt(e.target.value) || 30)}
             className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
         </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-surface-400">Initiative</label>
+          <input type="number" min={0} max={30} value={initiative} onChange={(e) => setInitiative(parseInt(e.target.value) || 0)}
+            className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-sm text-surface-100 text-center focus:border-accent-500 focus:outline-none" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-surface-400">Max HP</label>
           <input type="number" min={1} max={999} value={hpMax} onChange={(e) => setHpMax(parseInt(e.target.value) || 15)}

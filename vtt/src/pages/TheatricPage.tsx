@@ -36,6 +36,7 @@ export function TheatricPage() {
   const [map, setMap] = useState<BattleMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const [firebaseReady, setFirebaseReady] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -173,6 +174,26 @@ export function TheatricPage() {
     }
   }, []);
 
+  /* ── Auto-scroll to center the focused token ──────────── */
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!map || !payload?.tokenId) return;
+    const token = map.tokens?.find((t) => t.id === payload.tokenId);
+    if (!token || !mapContainerRef.current) return;
+
+    const container = mapContainerRef.current;
+    const tokenPercentX = token.x / map.gridWidth;
+    const tokenPercentY = token.y / map.gridHeight;
+    const scrollX = (tokenPercentX * container.scrollWidth) - container.clientWidth / 2;
+    const scrollY = (tokenPercentY * container.scrollHeight) - container.clientHeight / 2;
+
+    container.scrollTo({
+      left: Math.max(0, scrollX),
+      top: Math.max(0, scrollY),
+      behavior: "smooth",
+    });
+  }, [map, payload?.tokenId]);
+
   /* ── Fullscreen toggle ────────────────────────────────── */
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -214,23 +235,28 @@ export function TheatricPage() {
   /* ── Render main view ─────────────────────────────────── */
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-surface-900" ref={containerRef}>
+      {/* Map container with scroll for centering */}
+      <div ref={mapContainerRef} className="flex-1 relative overflow-auto">
       {/* Theatric Sidebar */}
       <TheatricSidebar
         map={map}
         tokenId={payload.tokenId}
         fullscreen={fullscreen}
+        showGrid={showGrid}
         onToggleFullscreen={toggleFullscreen}
+        onToggleGrid={() => setShowGrid(!showGrid)}
       />
 
       {/* Battle Map */}
       <div className="flex-1 relative">
-        <TheatricMap map={map} tokenId={payload.tokenId} />
+        <TheatricMap map={map} tokenId={payload.tokenId} showGrid={showGrid} />
 
         {/* Corner watermark */}
         <div className="absolute bottom-3 right-3 rounded-lg bg-black/40 px-2 py-1 text-[10px] text-surface-500 backdrop-blur-sm">
           🎭 Theatric View
         </div>
       </div>
+      </div> {/* End map container */}
     </div>
   );
 }

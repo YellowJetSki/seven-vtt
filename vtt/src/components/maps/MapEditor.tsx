@@ -7,11 +7,13 @@
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useRef, useCallback, useMemo } from "react";
-import type { BattleMap, MapToken } from "@/types";
+import type { BattleMap, MapToken, MapDrawingStroke } from "@/types";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { FogOfWarLayer, FogOfWarControls } from "@/components/maps/FogOfWarLayer";
 import { MovementRangeOverlay } from "@/components/maps/MovementRangeOverlay";
+import { StatusMarkerOverlay } from "@/components/maps/StatusMarkerOverlay";
+import { DrawingToolOverlay } from "@/components/maps/DrawingToolOverlay";
 
 interface MapEditorProps {
   map: BattleMap;
@@ -32,6 +34,13 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
   const [showMovement, setShowMovement] = useState(false);
   const [dashMode, setDashMode] = useState(false);
   const [pendingDashMove, setPendingDashMove] = useState<{ tokenId: string; x: number; y: number } | null>(null);
+
+  // Drawing tool state
+  const [drawingEnabled, setDrawingEnabled] = useState(false);
+
+  // Grid opacity for theatric mode (on the map)
+  const [gridOpacity, setGridOpacity] = useState(0.08);
+  const [showGrid, setShowGrid] = useState(true);
 
   const selectedToken = useMemo(
     () => map.tokens.find((t) => t.id === selectedTokenId) ?? null,
@@ -123,6 +132,15 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
             {showFogControls ? "Hide Zones" : "Reveal Zones"}
           </Button>
           <Button size="xs" onClick={() => openModal("add-token")}>+ Token</Button>
+          {/* Drawing tool toggle */}
+          <Button size="xs" variant={drawingEnabled ? "default" : "ghost"} onClick={() => setDrawingEnabled(!drawingEnabled)}>
+            🎨 Draw
+          </Button>
+          {/* Grid visibility */}
+          <button onClick={() => setShowGrid(!showGrid)}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${showGrid ? "bg-surface-800 text-surface-300" : "bg-surface-800 text-surface-500 opacity-50"}`}>
+            {showGrid ? "Grid" : "No Grid"}
+          </button>
           {onOpenTheatric && selectedToken && (
             <Button size="xs" variant="ghost" onClick={() => onOpenTheatric(selectedToken)}>
               🎭 Theatric
@@ -143,19 +161,21 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
             className={`absolute inset-0 h-full w-full ${map.imageFit === "contain" ? "object-contain" : map.imageFit === "stretch" ? "object-fill" : "object-cover"}`} />
         )}
 
-        {/* Grid lines */}
-        <svg className="absolute inset-0 h-full w-full pointer-events-none z-0"
-          viewBox={`0 0 ${map.gridWidth} ${map.gridHeight}`}
-          preserveAspectRatio="none">
-          {Array.from({ length: map.gridHeight + 1 }, (_, i) => (
-            <line key={`h${i}`} x1="0" y1={i} x2={map.gridWidth} y2={i}
-              stroke="rgba(255,255,255,0.08)" strokeWidth="0.02" />
-          ))}
-          {Array.from({ length: map.gridWidth + 1 }, (_, i) => (
-            <line key={`v${i}`} x1={i} y1="0" x2={i} y2={map.gridHeight}
-              stroke="rgba(255,255,255,0.08)" strokeWidth="0.02" />
-          ))}
-        </svg>
+        {/* Grid lines — conditional + variable opacity for theatric view */}
+        {showGrid && (
+          <svg className="absolute inset-0 h-full w-full pointer-events-none z-0"
+            viewBox={`0 0 ${map.gridWidth} ${map.gridHeight}`}
+            preserveAspectRatio="none">
+            {Array.from({ length: map.gridHeight + 1 }, (_, i) => (
+              <line key={`h${i}`} x1="0" y1={i} x2={map.gridWidth} y2={i}
+                stroke={`rgba(255,255,255,${gridOpacity})`} strokeWidth="0.02" />
+            ))}
+            {Array.from({ length: map.gridWidth + 1 }, (_, i) => (
+              <line key={`v${i}`} x1={i} y1="0" x2={i} y2={map.gridHeight}
+                stroke={`rgba(255,255,255,${gridOpacity})`} strokeWidth="0.02" />
+            ))}
+          </svg>
+        )}
 
         {/* Fog of War */}
         {showFog && (
@@ -178,6 +198,15 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
             cellSize={5}
           />
         )}
+
+        {/* Drawing Tool Overlay (freehand annotations) */}
+        <DrawingToolOverlay
+          drawings={map.drawings ?? []}
+          onDrawingsChange={(drawings: MapDrawingStroke[]) => onUpdate({ drawings })}
+          enabled={drawingEnabled}
+          gridWidth={map.gridWidth}
+          gridHeight={map.gridHeight}
+        />
 
         {/* Movement click targets */}
         {selectedToken && showMovement && (() => {
@@ -209,11 +238,11 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
           ));
         })()}
 
-        {/* Tokens — with image support */}
+        {/* Tokens — with image support and status markers */}
         {map.tokens.map((token) => (
           <div key={token.id}
             onClick={(e) => { e.stopPropagation(); handleTokenClick(token.id); }}
-            className={`absolute flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110 overflow-hidden ${
+            className={`absolute flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110 overflow-visible ${
               selectedTokenId === token.id ? "ring-2 ring-accent-400 ring-offset-2 ring-offset-surface-900 z-10" : "z-0"
             } ${!token.visible ? "opacity-50" : ""} ${!gmView && !token.visible ? "hidden" : ""}`}
             style={{
@@ -236,6 +265,19 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
             ) : (
               <span className="text-[8px] font-bold text-white uppercase">{token.label.charAt(0)}</span>
             )}
+
+            {/* Status Condition Markers */}
+            <StatusMarkerOverlay
+              token={token}
+              isSelected={selectedTokenId === token.id}
+              onUpdateToken={(updates) => {
+                onUpdate({
+                  tokens: map.tokens.map((t) =>
+                    t.id === token.id ? { ...t, ...updates } : t
+                  ),
+                });
+              }}
+            />
           </div>
         ))}
       </div>
@@ -256,7 +298,7 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-4 animate-slide-up">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden shrink-0"
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-full overflow-hidden shrink-0"
                 style={{ backgroundColor: selectedToken.imageUrl ? 'transparent' : selectedToken.color }}>
                 {selectedToken.imageUrl ? (
                   <img src={selectedToken.imageUrl} alt={selectedToken.label}
@@ -265,13 +307,24 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
                 ) : (
                   <span className="text-sm font-bold text-white">{selectedToken.label.charAt(0)}</span>
                 )}
+                {/* Status markers in inspector */}
+                {(selectedToken.statusMarkers ?? []).length > 0 && (
+                  <div className="absolute -top-1 -right-1 flex flex-wrap gap-0.5">
+                    {(selectedToken.statusMarkers ?? []).slice(0, 3).map((m) => {
+                      const icons: Record<string, string> = { blinded: "👁️‍🗨️", charmed: "💖", deafened: "🔇", exhaustion: "😰", frightened: "😱", grappled: "🤝", incapacitated: "💫", invisible: "👻", paralyzed: "🧊", petrified: "🗿", poisoned: "☠️", prone: "🙇", restrained: "⛓️", stunned: "✨", unconscious: "💤", concentration: "🧠" };
+                      return <span key={m.id} className="text-[8px]" title={m.type}>{icons[m.type] || "❓"}</span>;
+                    })}
+                    {(selectedToken.statusMarkers ?? []).length > 3 && <span className="text-[7px] text-surface-400">+{(selectedToken.statusMarkers ?? []).length - 3}</span>}
+                  </div>
+                )}
               </div>
               <div>
                 <h4 className="font-semibold text-surface-100">{selectedToken.label}</h4>
                 <p className="text-xs text-surface-400">
-                  {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} · Position ({selectedToken.x},{selectedToken.y})
+                  {selectedToken.type.charAt(0).toUpperCase() + selectedToken.type.slice(1)} · ({selectedToken.x},{selectedToken.y})
                   {selectedToken.hp && ` · HP ${selectedToken.hp.current}/${selectedToken.hp.max}`}
-                  {selectedToken.speed && ` · Speed ${selectedToken.speed}ft`}
+                  {selectedToken.speed && ` · ${selectedToken.speed}ft`}
+                  {selectedToken.initiative !== undefined && ` · Init ${selectedToken.initiative}`}
                 </p>
               </div>
             </div>
