@@ -28,6 +28,7 @@ import type {
   LiveSessionState,
   LiveConditions,
 } from "@/types/combat";
+import { getEnemyById } from "@/data/enemy-database";
 
 // Lazy reference to campaign store — set at runtime after all modules are loaded.
 // This avoids circular dependency issues during initialization.
@@ -104,6 +105,10 @@ interface CombatStoreState {
   /* ── Combat Log ── */
   addNote: (note: string) => void;
   clearLog: () => void;
+
+  /* ── Undo Support ── */
+  /** Pop the last combat log entry and revert the HP change. */
+  undoLastAction: () => void;
 
   /* ── Live Session ── */
   startSession: () => void;
@@ -194,13 +199,18 @@ export const useCombatStore = create<CombatStoreState>()(
         const encounter = get().activeEncounter;
         if (!encounter) return;
 
+        // Look up the enemy template — by ID or by name
+        const template = getEnemyById(name) ?? getEnemyById(name.toLowerCase().replace(/\s+/g, "_"));
+        const ac = template?.ac ?? 12;
+        const hp = template?.hp ?? 15;
+
         const newCombatants: Combatant[] = Array.from({ length: count }, (_, i) => ({
           id: uid("enemy"),
           name: `${name} ${i + 1}`,
           type: "enemy" as const,
           initiative: 0,
-          armorClass: 12,
-          hitPoints: { current: 15, max: 15, temporary: 0 },
+          armorClass: ac,
+          hitPoints: { current: hp, max: hp, temporary: 0 },
           statusEffects: [],
           isDead: false,
           isConcentrating: false,
@@ -395,6 +405,53 @@ export const useCombatStore = create<CombatStoreState>()(
           },
         });
         if (_syncPlayerHp) _syncPlayerHp(updatedCombatants);
+      },
+
+      /* ── Undo Last Action ── */
+      undoLastAction: () => {
+        const { combatLog, activeEncounter } = get();
+        if (combatLog.length === 0 || !activeEncounter) return;
+
+        // Find the first log entry that's a damage/heal/death and has a target
+        const lastEntry = combatLog[0];
+        if (!lastEntry || !lastEntry.targetId) return;
+
+        // Revert: heal reverses damage, damage reverses heal, death reverses death
+        const target = activeEncounter.combatants.find((c) => c.id === lastEntry.targetId);
+        if (!target) return;
+
+        let revertedCombatants = [...activeEncounter.combatants];
+
+        if (lastEntry.type === "damage" || lastEntry.type === "death") {
+          // Heal back the damage
+          revertedCombatants = revertedCombatants.map((c) => {
+            if (c.id !== lastEntry.targetId) return c;
+            const healed = Math.min(c.hitPoints.max, c.hitPoints.current + (lastEntry.value ?? 0));
+            return {
+              ...c,
+              hitPoints: { ...c.hitPoints, current: healed },
+              // If this damage caused death, un-dead
+              isDead: healed > 0 ? false : c.isDead,
+            };
+          });
+        } else if (lastEntry.type === "heal") {
+          // Re-damage the heal
+          revertedCombatants = revertedCombatants.map((c) => {
+            if (c.id !== lastEntry.targetId) return c;
+            const damaged = Math.max(0, c.hitPoints.current - (lastEntry.value ?? 0));
+            return {
+              ...c,
+              hitPoints: { ...c.hitPoints, current: damaged },
+            };
+          });
+        }
+
+        set({
+          activeEncounter: { ...activeEncounter, combatants: revertedCombatants },
+          combatLog: combatLog.slice(1),
+        });
+
+        if (_syncPlayerHp) _syncPlayerHp(revertedCombatants);
       },
 
       /* ── Combat Flow ── */

@@ -21,6 +21,8 @@ import { EncounterDifficulty } from "@/components/combat/EncounterDifficulty";
 import { LootGenerator } from "@/components/combat/LootGenerator";
 import { SessionNotesTimeline } from "@/components/combat/SessionNotesTimeline";
 import { DmQuickReferencePanel } from "@/components/combat/DmQuickReferencePanel";
+import { RandomEncounterGenerator } from "@/components/combat/RandomEncounterGenerator";
+import { AmbientSoundMixer } from "@/components/combat/AmbientSoundMixer";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
@@ -248,10 +250,12 @@ export function Encounters() {
       )}
 
       {subTab === "build" && (
-        <div className="rounded-xl border border-surface-700 bg-surface-850 p-5">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-surface-400">
-            Encounter Builder
-          </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Main Builder Area */}
+          <div className="lg:col-span-2 rounded-xl border border-surface-700 bg-surface-850 p-5">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-surface-400">
+              Encounter Builder
+            </h3>
           {encounters.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <span className="text-4xl text-surface-600">⚒️</span>
@@ -299,6 +303,17 @@ export function Encounters() {
             </div>
           )}
         </div>
+
+        {/* Sidebar — Random Encounter + Ambient Sound */}
+        <div className="space-y-4">
+          <RandomEncounterGenerator onAddToCombat={(enemies) => {
+            const addEnemyGroup = useCombatStore.getState().addEnemyGroup;
+            enemies.forEach((e) => addEnemyGroup(e.enemyId, e.count));
+            showToast({ message: `Loaded ${enemies.reduce((s, e) => s + e.count, 0)} enemies!`, type: "success" });
+          }} />
+          <AmbientSoundMixer />
+        </div>
+      </div>
       )}
 
       {/* Encounter Builder Modal */}

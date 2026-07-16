@@ -4327,3 +4327,208 @@ The following are NOT typical VTT features and are intentionally excluded:
 - ❌ **Built-in video/voice chat** (external tools handle this)
 
 ---
+
+## Multi-Class System & Level Up Wizard (July 2026) (Updated: 2026-07-16 12:22)
+# Multi-Class & Level Up System
+
+## New Type: `ClassEntry`
+- Added to `types/index.ts` with fields: `name`, `subClass`, `level`, `hitDice`, `classFeatures`
+- Added `classes: ClassEntry[]` to `PlayerCharacter` interface (backward compat retains `class`/`level`)
+- Added helper functions: `getTotalLevel()`, `getPrimaryClass()`, `getClassSummary()`, `hasClass()`, `getClassLevel()`, `getProficiencyBonus()`
+
+## New Component: `LevelUpWizard`
+- **File**: `vtt/src/components/player/LevelUpWizard.tsx`
+- **Step 1**: Choose which class to level (supports multi-class selection or adding a new class)
+- **Step 2**: Roll hit die for HP increase (animated dice roll with CON modifier, min 1)
+- **Step 3**: ASI/Feat selection on levels 4/8/12/16/19 (click ability grid or choose feat)
+- **Step 4**: Spell selection (for spellcasting classes — future)
+- **Step 5**: Subclass feature notification (for appropriate subclass levels)
+- **Step 6**: Summary with all changes displayed before confirmation
+- **Final**: Updates `classes[i].level`, recalculates `level` (total), `proficiencyBonus`, `hitPoints.max/current`
+
+## Backward Compatibility
+- `normalizeCharacters()` in `campaignStore.ts` auto-builds `classes[]` from legacy `class`/`level` fields
+- All display components migrated: `PlayerCharacterSheet`, `PlayerCards`, `PartyCompendium` use `getClassSummary()`
+- `CharacterForm` passes single-entry `classes[]` array
+
+## Arkla Currency Fix
+- When user clicks "Arkla Template" in campaign wizard, `setCurrencyPreset(CURRENCY_PRESETS[1])` auto-selects "Arks Setting (Assarions/Quadrans)"
+- When user clicks "Blank Campaign", `setCurrencyPreset(CURRENCY_PRESETS[0])` uses "Standard"
+- Default currency preset changed from Index 0 to dynamic based on template selection
+
+## Full Level Up Flow
+1. Player clicks "Level Up" on character sheet
+2. Modal opens with `LevelUpWizard`
+3. Choose which class to level (existing or multi-class new)
+4. Roll HP (random dX + CON mod animation)
+5. Pick ASI +1 to ability OR feat (on appropriate levels)
+6. See summary of all changes
+7. Confirm — character updated with new HP, abilities, proficiency bonus, class levels
+
+---
+
+## Multi-Class System & Level Up Wizard — Complete (2026-07-16) (Updated: 2026-07-16 17:22)
+## Multi-Class System & Level Up Wizard — Complete
+
+### New Type: `ClassEntry`
+- **File:** `vtt/src/types/index.ts` (line 12)
+- Fields: `name`, `subClass?`, `level`
+- Helper functions: `getTotalLevel()`, `getPrimaryClass()`, `getClassSummary()`, `hasClass()`, `getClassLevel()`, `getProficiencyBonus()`
+- `PlayerCharacter` now has `classes: ClassEntry[]` — backward compat retains `class`/`level`/`subClass`
+
+### New Component: `LevelUpWizard`
+- **File:** `vtt/src/components/player/LevelUpWizard.tsx`
+- **6-step wizard:** Choose Class → Roll HP → ASI/Feat → Choose Spells → Subclass Feature → Summary
+- Supports multi-class: pick existing class to level up OR pick "Add New Class" to multi-class
+- HP rolling animation (pure CSS, no random — displays the hit die face)
+- ASI picker on levels 4/8/12/16/19: full ability grid + feat toggle
+- Auto-recalculates proficiency bonus, max HP, spell slots
+- Integrated into PlayerCharacterSheet via "Level Up" button
+
+### Currency Presets
+- **CampaignWizard:** Arkla Template auto-selects "Arks Setting (Assarions/Quadrans)" preset (index 1)
+- Blank Campaign uses Standard (Gold) preset (index 0)
+- Currency: leptons→cp, quadrans→sp, assarions→gp
+
+### Backward Compatibility
+- `normalizeCharacters()` in `campaignStore.ts` auto-builds `classes[]` from legacy `class`/`level` fields
+- `getClassSummary()` used across PlayerCharacterSheet, PlayerCards, PartyCompendium
+- All existing character data imports seamlessly
+
+### Cleanup
+- Removed 17 stale fix/snapshot files from src/ directory
+
+---
+
+## Codebase Cleanliness Audit (2026-07-16) (Updated: 2026-07-16 17:22)
+## Codebase Cleanliness Audit — July 16, 2026
+
+### Stale Files Removed (17 files deleted)
+- `src/pages/CampaignSettings_fix.ts`, `CampaignSettings_line69_fix.ts`
+- `src/pages/Encounters.tsx_problem_fix`
+- `src/components/combat/EncounterBuilder_fix.ts`, `EncounterBuilder_fix2.ts`, `EncounterBuilder_fix_lines.ts`, `EncounterBuilder_lines286-296.ts`
+- `src/components/combat/InitiativeTracker_line105_fix.ts`
+- `src/components/combat/LiveSessionView_fix.ts`
+- `src/stores/combatStore_lines86-88.ts`, `combatStore_signatures_fix.ts`, `combatStore_signatures_fix3.ts`
+- `src/stores/sessionAnalyticsStore_fix.ts`, `sessionAnalyticsStore_fix2.ts`, `sessionAnalyticsStore_lines171-176.ts`
+
+### Build Status
+- **TypeScript:** 0 errors (`npx tsc --noEmit` passes)
+- **Build:** Passes in 765ms (141 modules, 88KB CSS, 1.04MB JS total)
+- **Code Splitting Warning:** 516KB vendor chunk (Firebase SDK) — acceptable for now
+
+### Current Source Count
+- **Components:** ~45+ across 11 subdirectories
+- **Pages:** 9 pages (including TheatricPage)
+- **Stores:** 7 Zustand stores (auth, campaign, combat, homebrew, sessionAnalytics, spotify, ui)
+- **Hooks:** 6 custom hooks
+- **Lib:** 11 utility/service modules
+- **Types:** central types + firestore types + homebrew types
+
+### Known Remaining Issues (from ledger E2E tests)
+1. **Quick-add enemies use hardcoded HP 15 / AC 12** — not importing from enemy compendium
+2. **No undo for damage** — must manually heal
+3. **Damage input ambiguity** — damage buttons apply to expanded combatant, not current turn
+
+---
+
+## Complete Feature Expansion — July 16, 2026 (P1-P4) (Updated: 2026-07-16 17:36)
+## Complete Feature Expansion — July 16, 2026
+
+### 🔴 P1 — Combat & Encounter Quality
+1. **Central Enemy Database** (`vtt/src/data/enemy-database.ts`)
+   - Single source of truth for ALL enemies (SRD + Homebrew)
+   - 120+ SRD enemies (occult/demons filtered out — no Fiends, no demon/devil names)
+   - Homebrew enemies loaded from campaign store's `enemies[]` subcollection
+   - `getAllEnemies()` / `getEnemyById()` / `searchEnemies()` — merge SRD + homebrew
+   - `getEnemyImg()` — type-based default token icons
+   - EncounterBuilder and combat store both import from shared database now
+   - `addEnemyGroup()` now looks up real AC/HP from the database
+
+2. **Damage Undo Button** (`combatStore.undoLastAction`)
+   - `undoLastAction()` method on combat store — reverts damage/heal/death
+   - Works with combat log: pops the last entry and reverses HP change
+   - Heals back damage, re-damages heals, un-deads if HP > 0
+
+### 🟠 P2 — Player Experience
+3. **Death Save Tracker** (`vtt/src/components/player/DeathSaveTracker.tsx`)
+   - Auto-appears on PlayerCharacterSheet when HP ≤ 0
+   - Tracks 3 successes / 3 failures with visual progress bars
+   - Quick-action buttons: Success, Failure, Reset, Heal to 1 HP
+   - Stabilized state (3 successes) and Dead state (3 failures)
+   - Persists death saves to campaign store
+
+4. **Spellcasting Sheet** (`vtt/src/components/player/SpellcastingSheet.tsx`)
+   - Full spell list for player characters with spellcasting ability
+   - Displays Spell Save DC, Spell Attack bonus, spell slots per level
+   - Level filter tabs (All, Lv.0 through Lv.9)
+   - Expandable spell cards showing casting time, range, components, duration, description
+   - Includes homebrew spells from homebrew store
+   - Auto-detects caster type (full/half/third/warlock) based on class
+
+### 🟡 P3 — DM Tooling
+5. **Random Encounter Generator** (`vtt/src/components/combat/RandomEncounterGenerator.tsx`)
+   - Generates encounters based on terrain (forest, dungeon, coastal, etc.) and difficulty
+   - Uses terrain → creature type mapping (e.g., forest → Beast/Fey/Humanoid)
+   - XP-targeted generation using party levels and DMG thresholds
+   - Quick "Load into Combat" button for generated encounters
+   - Integrated into Encounters page "Builder" tab sidebar
+
+6. **Ambient Sound Mixer** (`vtt/src/components/combat/AmbientSoundMixer.tsx`)
+   - Three synthesized sound channels: Rain, Wind, Fire
+   - Web Audio API — no external files needed
+   - Per-channel volume sliders + on/off toggles
+   - Stop All button
+   - Integrated into Encounters page "Builder" tab sidebar
+
+7. **Campaign Timeline View** (`vtt/src/components/journal/CampaignTimeline.tsx`)
+   - Visual timeline with connected nodes for journal entries
+   - Sessions, lore, quests displayed as typed nodes with color coding
+   - Expandable entries with tags and content preview
+   - "Cards" ↔ "Timeline" toggle in DmJournal page
+   - Sorted by session number then date
+
+### 🟢 P4 — Polish & UX
+8. **Save Hotkey (Ctrl+S)** (`vtt/src/hooks/useSaveShortcut.ts`)
+   - Global Ctrl+S / Cmd+S handler
+   - Prevents browser's native Save Page dialog
+   - Shows toast "✨ Campaign saved"
+   - Ready to be wired into any page
+
+9. **Drag-and-Drop Token Movement** (MapEditor.tsx)
+   - Tokens are now `draggable={true}` in DM view
+   - Canvas acts as dropzone — calculates grid position from mouse coordinates
+   - Drag cursor changes (grab → grabbing)
+   - Works with touch/drag on desktop
+
+10. **Scratch Pad Search** (CampaignScratchPad.tsx)
+    - 🔍 search/find toggle in scratch pad header
+    - Shows "✓ Found" or "No matches" based on content match
+    - Quick toggle via Ctrl+F within the scratch pad
+
+### Files Created (8 new)
+- `vtt/src/data/enemy-database.ts` — Central enemy database
+- `vtt/src/components/player/DeathSaveTracker.tsx` — Death save tracking
+- `vtt/src/components/player/SpellcastingSheet.tsx` — Spell list + slots
+- `vtt/src/components/combat/RandomEncounterGenerator.tsx` — Random encounter builder
+- `vtt/src/components/combat/AmbientSoundMixer.tsx` — Web Audio ambient sounds
+- `vtt/src/components/journal/CampaignTimeline.tsx` — Visual timeline
+- `vtt/src/hooks/useSaveShortcut.ts` — Ctrl+S hotkey
+
+### Files Modified (9)
+- `vtt/src/stores/combatStore.ts` — Added `undoLastAction`, `addEnemyGroup` uses enemy DB
+- `vtt/src/components/combat/EncounterBuilder.tsx` — Uses shared enemy database
+- `vtt/src/components/layout/CampaignScratchPad.tsx` — Added search/find
+- `vtt/src/components/maps/MapEditor.tsx` — Drag-and-drop token movement
+- `vtt/src/components/player/PlayerCharacterSheet.tsx` — Added DeathSaveTracker, SpellcastingSheet
+- `vtt/src/pages/Encounters.tsx` — Added RandomEncounterGenerator, AmbientSoundMixer sidebar
+- `vtt/src/pages/DmJournal.tsx` — Added timeline view mode toggle, CampaignTimeline
+
+### Build Status
+- **Modules:** 147 (up from 141)
+- **TypeScript:** 0 errors
+- **Build:** Passes in 916ms
+- **JS:** 541KB gzipped 140KB
+- **CSS:** 89KB gzipped 13.9KB
+
+---

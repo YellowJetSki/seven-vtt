@@ -11,11 +11,9 @@ from tools.notes_searcher import search_session_notes
 from tools.code_searcher import search_workspace_code
 from tools.map_navigator import get_nearby_locations
 from tools.notes_manager import log_system_note
-# Added start_persistent_terminal
 from tools.terminal_executor import execute_terminal_command, start_persistent_terminal
 from tools.git_manager import run_git_command
-# Added open_new_tab, switch_to_tab
-from tools.visual_qa import scan_dom, click_ui_element, fill_input_field, evaluate_javascript, open_new_tab, switch_to_tab
+from tools.visual_qa import scan_dom, open_new_tab, switch_to_tab, set_viewport, click_ui_element, click_text, click_test_id, fill_input_field, evaluate_javascript
 from tools.firebase_emulator import run_firebase_emulator_query
 from core.session_manager import SessionManager
 from core.ui import console
@@ -57,6 +55,18 @@ class DeepSeekAgent:
         elif workspace_choice == "2":
             self.session_name = "vtt_development"
             self.role_name = "Michael (Architect)"
+            
+            # --- THE CONTEXT BOOTLOADER ---
+            # Automatically loads the architecture ledger and injects it into the core system prompt
+            architecture_context = ""
+            try:
+                ledger_path = os.path.join(".", "vtt_architecture.md")
+                if os.path.exists(ledger_path):
+                    with open(ledger_path, "r", encoding="utf-8") as f:
+                        architecture_context = f"\n\n=== CURRENT VTT ARCHITECTURE LEDGER ===\n{f.read()}\n=======================================\n"
+            except Exception:
+                pass
+
             system_instruction = (
                 f"You are Baldeepicius, an elite Principal Software Architect, UI/UX Designer, and Expert VTT Product Manager. "
                 f"The current system date is {current_date}.\n\n"
@@ -81,12 +91,13 @@ class DeepSeekAgent:
                 "   b) 'git commit -m \"feat/fix: detailed description\"'\n"
                 "   c) 'git push origin main'\n"
                 "   d) 'npx vercel --prod'\n"
+                f"{architecture_context}"
             )
             active_tools = [
                 "perform_web_search", "read_workspace_file", "write_workspace_file", "edit_workspace_file", "delete_workspace_file", 
                 "list_workspace_files", "search_workspace_code", "execute_terminal_command", "start_persistent_terminal", "flush_node_processes", 
-                "run_git_command", "update_architecture_ledger", "scan_dom", "open_new_tab", "switch_to_tab", "click_ui_element", "fill_input_field", 
-                "evaluate_javascript", "run_firebase_emulator_query"
+                "run_git_command", "update_architecture_ledger", "scan_dom", "open_new_tab", "switch_to_tab", "set_viewport", "click_ui_element", 
+                "click_text", "click_test_id", "fill_input_field", "evaluate_javascript", "run_firebase_emulator_query"
             ]
             
         else:
@@ -285,6 +296,22 @@ class DeepSeekAgent:
             {
                 "type": "function",
                 "function": {
+                    "name": "set_viewport",
+                    "description": "Resizes the browser window viewport. Ideal for testing responsive layout breakpoints.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "width": {"type": "integer", "description": "The target width of the viewport in pixels."},
+                            "height": {"type": "integer", "description": "The target height of the viewport in pixels."}
+                        },
+                        "required": ["width", "height"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
                     "name": "click_ui_element",
                     "description": "Clicks an interactive element on the live UI using a standard CSS selector. Returns new DOM state.",
                     "parameters": {
@@ -293,6 +320,37 @@ class DeepSeekAgent:
                             "selector": {"type": "string", "description": "The CSS selector to click."}
                         },
                         "required": ["selector"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "click_text",
+                    "description": "A highly stable semantic tool. Clicks an element based entirely on the visible text it displays.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "text": {"type": "string", "description": "The visible string of text to find and click."},
+                            "exact": {"type": "boolean", "description": "If true, matches the text exactly. If false, matches substring. Defaults to false."}
+                        },
+                        "required": ["text"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "click_test_id",
+                    "description": "The most robust semantic tool. Clicks an element based on its data-testid attribute.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "test_id": {"type": "string", "description": "The exact value of the 'data-testid' attribute."}
+                        },
+                        "required": ["test_id"],
                         "additionalProperties": False
                     }
                 }
@@ -678,9 +736,18 @@ class DeepSeekAgent:
                             elif tool_name == "switch_to_tab":
                                 status.update(f"[bold magenta]Switching view to Tab Index:[/bold magenta] {args.get('index', 0)}...")
                                 tool_result = switch_to_tab(args.get("index", 0))
+                            elif tool_name == "set_viewport":
+                                status.update(f"[bold magenta]Resizing Viewport to:[/bold magenta] {args.get('width')}x{args.get('height')}...")
+                                tool_result = set_viewport(args.get("width", 1280), args.get("height", 720))
                             elif tool_name == "click_ui_element":
                                 status.update(f"[bold magenta]Interacting with UI Element:[/bold magenta] {args.get('selector', '')}...")
                                 tool_result = click_ui_element(args.get("selector", ""))
+                            elif tool_name == "click_text":
+                                status.update(f"[bold magenta]Clicking Text:[/bold magenta] {args.get('text', '')}...")
+                                tool_result = click_text(args.get("text", ""), args.get("exact", False))
+                            elif tool_name == "click_test_id":
+                                status.update(f"[bold magenta]Clicking Test ID:[/bold magenta] {args.get('test_id', '')}...")
+                                tool_result = click_test_id(args.get("test_id", ""))
                             elif tool_name == "fill_input_field":
                                 status.update(f"[bold magenta]Typing into Input Field:[/bold magenta] {args.get('selector', '')}...")
                                 tool_result = fill_input_field(args.get("selector", ""), args.get("text", ""))
@@ -713,7 +780,7 @@ class DeepSeekAgent:
                                 status.update(f"[bold yellow]Executing shell command:[/bold yellow] {args.get('command', '')}...")
                                 tool_result = execute_terminal_command(args.get("command", ""))
                             elif tool_name == "start_persistent_terminal":
-                                status.update(f"[bold yellow]Spawnsing independent console window for:[/bold yellow] {args.get('command', '')}...")
+                                status.update(f"[bold yellow]Spawning independent console window for:[/bold yellow] {args.get('command', '')}...")
                                 tool_result = start_persistent_terminal(args.get("command", ""))
                             elif tool_name == "run_git_command":
                                 status.update(f"[bold magenta]Accessing version control:[/bold magenta] {args.get('command', '')}...")

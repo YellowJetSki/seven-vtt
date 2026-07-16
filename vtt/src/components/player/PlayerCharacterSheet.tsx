@@ -12,6 +12,8 @@ import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LevelUpWizard } from "@/components/player/LevelUpWizard";
+import { DeathSaveTracker } from "@/components/player/DeathSaveTracker";
+import { SpellcastingSheet } from "@/components/player/SpellcastingSheet";
 import { getTotalLevel, getPrimaryClass, getClassSummary } from "@/types";
 
 const ABILITY_KEYS: Ability[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
@@ -638,6 +640,12 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
           </div>
         </div>
       )}
+
+      {/* Death Save Tracker (appears when HP <= 0) */}
+      <DeathSaveTracker character={character} />
+
+      {/* Spellcasting Sheet (appears for spellcasting classes) */}
+      <SpellcastingSheet character={character} />
 
       {/* Backstory */}
       {character.backstory && (

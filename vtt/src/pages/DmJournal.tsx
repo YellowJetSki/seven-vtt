@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TagManager } from "@/components/journal/TagManager";
+import { CampaignTimeline } from "@/components/journal/CampaignTimeline";
 import type { JournalEntry } from "@/types";
 
 function uid(prefix: string): string {
@@ -26,6 +27,7 @@ const ENTRY_TYPE_CONFIG: Record<JournalEntry["type"], { icon: string; label: str
 };
 
 export function DmJournal() {
+  const [viewMode, setViewMode] = useState<"cards" | "timeline">("cards");
   const journal = useCampaignStore((s) => s.campaign?.journal ?? []);
   const addJournalEntry = useCampaignStore((s) => s.addJournalEntry);
   const updateJournalEntry = useCampaignStore((s) => s.updateJournalEntry);
@@ -155,6 +157,16 @@ export function DmJournal() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="xs" onClick={() => setShowTagManager(true)}>🏷️ Tags</Button>
+          <div className="flex gap-0.5 rounded-lg bg-surface-800 p-0.5">
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${viewMode === "cards" ? "bg-accent-600 text-white" : "text-surface-400 hover:text-surface-200"}`}
+            >📇 Cards</button>
+            <button
+              onClick={() => setViewMode("timeline")}
+              className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${viewMode === "timeline" ? "bg-accent-600 text-white" : "text-surface-400 hover:text-surface-200"}`}
+            >📅 Timeline</button>
+          </div>
           <Button size="sm" onClick={handleCreate}>+ New Entry</Button>
         </div>
       </div>
@@ -189,8 +201,10 @@ export function DmJournal() {
         </div>
       </div>
 
-      {/* Journal Entry List */}
-      {filtered.length === 0 ? (
+      {/* Journal Entry List — Card View or Timeline View */}
+      {viewMode === "timeline" ? (
+        <CampaignTimeline />
+      ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-12 text-center">
           <span className="text-4xl">📓</span>
           <p className="mt-3 text-sm text-surface-500">

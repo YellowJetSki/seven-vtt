@@ -149,11 +149,39 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
         </div>
       </div>
 
-      {/* ── Map Canvas ────────────────────────────────────────── */}
+      {/* ── Map Canvas (with drag-and-drop dropzone) ──────────── */}
       <div ref={containerRef}
         className="relative w-full overflow-hidden rounded-xl border border-surface-700 bg-surface-900"
         style={{ aspectRatio: `${map.gridWidth}/${map.gridHeight}` }}
-        onClick={handleCanvasClick}>
+        onClick={handleCanvasClick}
+        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
+        onDrop={(e) => {
+          e.preventDefault();
+          const tokenId = e.dataTransfer.getData("text/plain");
+          if (!tokenId) return;
+
+          // Calculate grid position from mouse coordinates
+          const rect = containerRef.current?.getBoundingClientRect();
+          if (!rect) return;
+
+          const xRatio = (e.clientX - rect.left) / rect.width;
+          const yRatio = (e.clientY - rect.top) / rect.height;
+          const targetX = Math.floor(xRatio * map.gridWidth);
+          const targetY = Math.floor(yRatio * map.gridHeight);
+
+          // Clamp to grid bounds
+          const clampedX = Math.max(0, Math.min(map.gridWidth - 1, targetX));
+          const clampedY = Math.max(0, Math.min(map.gridHeight - 1, targetY));
+
+          // Move the token
+          onUpdate({
+            tokens: map.tokens.map((t) =>
+              t.id === tokenId
+                ? { ...t, x: clampedX, y: clampedY }
+                : t
+            ),
+          });
+        }}>
 
         {/* Map image */}
         {map.imageUrl && (
@@ -238,11 +266,16 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: MapEditorProps) {
           ));
         })()}
 
-        {/* Tokens — with image support and status markers */}
+        {/* Tokens — with image support, status markers, and drag-and-drop */}
         {map.tokens.map((token) => (
           <div key={token.id}
             onClick={(e) => { e.stopPropagation(); handleTokenClick(token.id); }}
-            className={`absolute flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110 overflow-visible ${
+            draggable={gmView}
+            onDragStart={(e) => {
+              e.dataTransfer.setData("text/plain", token.id);
+              e.dataTransfer.effectAllowed = "move";
+            }}
+            className={`absolute flex items-center justify-center rounded-full cursor-grab active:cursor-grabbing transition-all hover:scale-110 overflow-visible select-none ${
               selectedTokenId === token.id ? "ring-2 ring-accent-400 ring-offset-2 ring-offset-surface-900 z-10" : "z-0"
             } ${!token.visible ? "opacity-50" : ""} ${!gmView && !token.visible ? "hidden" : ""}`}
             style={{

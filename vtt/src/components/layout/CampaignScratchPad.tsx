@@ -7,7 +7,7 @@
  * to avoid overlap. z-50 keeps it above most UI but below modals (z-50+).
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { Button } from "@/components/ui/Button";
 
@@ -16,6 +16,8 @@ export function CampaignScratchPad() {
   const campaign = useCampaignStore((s) => s.campaign);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
   const [scratchText, setScratchText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -93,13 +95,42 @@ export function CampaignScratchPad() {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-200">
             Scratch Pad
           </h3>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="text-xs text-surface-500 transition-colors hover:text-surface-200"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setShowSearch(!showSearch); setSearchQuery(""); }}
+              className="text-xs text-surface-500 transition-colors hover:text-surface-200"
+              title="Search in notes (Ctrl+F)"
+            >
+              🔍
+            </button>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-xs text-surface-500 transition-colors hover:text-surface-200"
+            >
+              ✕
+            </button>
+          </div>
         </div>
+
+        {/* Search bar */}
+        {showSearch && (
+          <div className="border-b border-surface-700 px-4 py-2">
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Find in notes..."
+              className="w-full rounded border border-surface-700 bg-surface-800 px-2 py-1 text-xs text-surface-200 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
+              autoFocus
+            />
+            {searchQuery && (
+              <p className="text-[10px] text-surface-500 mt-1">
+                {scratchText.toLowerCase().includes(searchQuery.toLowerCase())
+                  ? "✓ Found"
+                  : "No matches"}
+              </p>
+            )}
+          </div>
+        )}
         <textarea
           ref={textareaRef}
           value={scratchText}

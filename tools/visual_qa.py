@@ -49,7 +49,7 @@ class DOMStripper(HTMLParser):
 
 
 class BrowserManager:
-    """Singleton to keep the Playwright browser alive and manage multiple tabs."""
+    """Singleton to keep the Playwright browser alive, manage multiple tabs, and track diagnostics."""
     _instance = None
 
     @classmethod
@@ -59,41 +59,75 @@ class BrowserManager:
         return cls._instance
 
     def __init__(self):
+        self.playwright = None
+        self.browser = None
+        self.context = None
+        self.page = None
+        
+        # The Diagnostic Matrix
+        self.recent_logs = []
+        self.recent_network_errors = []
+        
         self._boot_browser()
         atexit.register(self.cleanup)
 
     def _boot_browser(self):
-        """Initializes the browser and core context."""
+        """Initializes the browser, core context, and diagnostic listeners."""
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch(headless=False)
         self.context = self.browser.new_context()
         self.page = self.context.new_page()
+        self._attach_diagnostic_listeners(self.page)
+
+    def _attach_diagnostic_listeners(self, page):
+        """Wires the active tab directly into the AI's diagnostic feed."""
+        def handle_console(msg):
+            if msg.type in ['error', 'warning']:
+                self.recent_logs.append(f"[{msg.type.upper()}] {msg.text}")
+                
+        def handle_response(response):
+            if not response.ok and response.status >= 400:
+                self.recent_network_errors.append(f"[HTTP {response.status}] {response.url}")
+
+        page.on("console", handle_console)
+        page.on("response", handle_response)
 
     def ensure_alive(self):
-        """THE HEARTBEAT: Checks if the browser crashed or was closed, and revives it if necessary."""
+        """THE BRUTAL HEARTBEAT: Proactively hunts for dead sockets and closed windows."""
         try:
-            if not self.browser.is_connected():
-                raise Exception("Browser disconnected")
-            # This will throw an error if the context or all pages were closed
-            _ = self.context.pages
+            if self.browser is None or not self.browser.is_connected():
+                raise Exception("Fatal: Browser socket disconnected.")
             
-            # If all tabs were closed but browser is alive, spawn a default tab
-            if len(self.context.pages) == 0:
-                self.page = self.context.new_page()
-                
+            if self.page.is_closed():
+                pages = self.context.pages
+                if len(pages) == 0:
+                    self.page = self.context.new_page()
+                    self._attach_diagnostic_listeners(self.page)
+                else:
+                    self.page = pages[-1]
+            
+            self.page.evaluate("1 + 1")
+            
         except Exception:
             self.cleanup()
             self._boot_browser()
 
     def cleanup(self):
-        try: self.browser.close()
+        try: 
+            if self.browser: self.browser.close()
         except: pass
-        try: self.playwright.stop()
+        try: 
+            if self.playwright: self.playwright.stop()
         except: pass
+        
+        self.playwright = None
+        self.browser = None
+        self.context = None
+        self.page = None
 
 
 def _extract_current_dom(page) -> str:
-    """Reads the DOM exactly as it is right now."""
+    """Reads the DOM and injects any tracked Diagnostic Matrix errors."""
     page.wait_for_timeout(200)
     html_content = page.content()
     
@@ -101,20 +135,52 @@ def _extract_current_dom(page) -> str:
     parser.feed(html_content)
     dom_tree = "\n".join(parser.output)
     
-    # Get active tab index context
     manager = BrowserManager.get_instance()
     try:
         active_index = manager.context.pages.index(page)
     except ValueError:
         active_index = 0
         
-    status_header = f"Success: Live structural layout from {page.url} [Active Tab: {active_index}]:\n\n"
+    status_header = f"Success: Live structural layout from {page.url} [Active Tab: {active_index}]:\n"
+    
+    # Inject the Diagnostic Matrix if anything triggered
+    if manager.recent_logs or manager.recent_network_errors:
+        status_header += "\n=== DIAGNOSTIC MATRIX ALERT ===\n"
+        for log in manager.recent_logs[-5:]:
+            status_header += f"CONSOLE: {log}\n"
+        for err in manager.recent_network_errors[-5:]:
+            status_header += f"NETWORK: {err}\n"
+        status_header += "===============================\n\n"
+        
+        # Flush the buffer after reading
+        manager.recent_logs.clear()
+        manager.recent_network_errors.clear()
+    else:
+        status_header += "\n(Diagnostic Matrix: All Systems Nominal)\n\n"
     
     if len(dom_tree) > MAX_DOM_CHARS:
         return status_header + dom_tree[:MAX_DOM_CHARS] + "\n...[TRUNCATED]"
         
     return status_header + dom_tree
 
+def _highlight_target(locator):
+    """THE LASER POINTER: Injects JS to draw a glowing red box around the target before interaction."""
+    try:
+        script = """
+        el => {
+            const oldOutline = el.style.outline;
+            const oldBoxShadow = el.style.boxShadow;
+            el.style.outline = '4px solid red';
+            el.style.boxShadow = '0 0 15px red';
+            setTimeout(() => {
+                el.style.outline = oldOutline;
+                el.style.boxShadow = oldBoxShadow;
+            }, 1000);
+        }
+        """
+        locator.evaluate(script)
+    except Exception:
+        pass # Ignore if the element is strictly un-stylable (like SVGs in some contexts)
 
 # --- THE INTERACTIVE ACTION TOOLS ---
 
@@ -133,34 +199,28 @@ def scan_dom(url: str) -> str:
     except Exception as e:
         return f"System Error processing DOM layout: {str(e)}"
 
-
 def open_new_tab(url: str) -> str:
-    """Spawns a new tab and navigates to the URL."""
     manager = BrowserManager.get_instance()
     manager.ensure_alive()
-    
     try:
         new_page = manager.context.new_page()
-        manager.page = new_page # Set active
+        manager.page = new_page
+        manager._attach_diagnostic_listeners(new_page)
         
-        try:
-            new_page.goto(url, wait_until="networkidle", timeout=5000)
-        except PlaywrightTimeoutError:
-            pass
+        try: new_page.goto(url, wait_until="networkidle", timeout=5000)
+        except PlaywrightTimeoutError: pass
             
         return _extract_current_dom(manager.page)
     except Exception as e:
         return f"System Error opening new tab: {str(e)}"
 
-
 def switch_to_tab(index: int) -> str:
-    """Switches the active AI focus to a different open tab."""
     manager = BrowserManager.get_instance()
     manager.ensure_alive()
     
     pages = manager.context.pages
     if index < 0 or index >= len(pages):
-        return f"System Error: Tab index {index} does not exist. There are currently {len(pages)} open tabs (0 to {len(pages)-1})."
+        return f"System Error: Tab index {index} does not exist."
         
     try:
         manager.page = pages[index]
@@ -169,6 +229,16 @@ def switch_to_tab(index: int) -> str:
     except Exception as e:
         return f"System Error switching tabs: {str(e)}"
 
+def set_viewport(width: int, height: int) -> str:
+    """Dynamically shifts the browser resolution to test mobile/desktop breakpoints."""
+    manager = BrowserManager.get_instance()
+    manager.ensure_alive()
+    try:
+        manager.page.set_viewport_size({"width": width, "height": height})
+        manager.page.wait_for_timeout(500) # Wait for CSS media queries to trigger
+        return f"System Action Complete: Viewport resized to {width}x{height}.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
+    except Exception as e:
+        return f"System Error resizing viewport: {str(e)}"
 
 def click_ui_element(selector: str) -> str:
     manager = BrowserManager.get_instance()
@@ -177,6 +247,7 @@ def click_ui_element(selector: str) -> str:
         locator = manager.page.locator(selector).first
         locator.wait_for(state="visible", timeout=3000)
         
+        _highlight_target(locator)
         locator.hover()
         manager.page.wait_for_timeout(150) 
         locator.click(delay=100) 
@@ -185,10 +256,51 @@ def click_ui_element(selector: str) -> str:
         try: manager.page.wait_for_load_state("networkidle", timeout=2000)
         except PlaywrightTimeoutError: pass
         
-        return f"System Action Complete: Clicked '{selector}'.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
+        return f"System Action Complete: Clicked CSS Selector '{selector}'.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
     except Exception as e:
         return f"System Error: Could not click '{selector}'. Details: {str(e)}"
 
+def click_text(text: str, exact: bool = False) -> str:
+    """Semantic Tool: Clicks an element based entirely on the text it contains."""
+    manager = BrowserManager.get_instance()
+    manager.ensure_alive()
+    try:
+        locator = manager.page.get_by_text(text, exact=exact).first
+        locator.wait_for(state="visible", timeout=3000)
+        
+        _highlight_target(locator)
+        locator.hover()
+        manager.page.wait_for_timeout(150)
+        locator.click(delay=100)
+        
+        manager.page.wait_for_timeout(600)
+        try: manager.page.wait_for_load_state("networkidle", timeout=2000)
+        except PlaywrightTimeoutError: pass
+        
+        return f"System Action Complete: Clicked text '{text}'.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
+    except Exception as e:
+        return f"System Error: Could not find or click text '{text}'. Details: {str(e)}"
+
+def click_test_id(test_id: str) -> str:
+    """Semantic Tool: Clicks an element based on its data-testid attribute."""
+    manager = BrowserManager.get_instance()
+    manager.ensure_alive()
+    try:
+        locator = manager.page.get_by_test_id(test_id).first
+        locator.wait_for(state="visible", timeout=3000)
+        
+        _highlight_target(locator)
+        locator.hover()
+        manager.page.wait_for_timeout(150)
+        locator.click(delay=100)
+        
+        manager.page.wait_for_timeout(600)
+        try: manager.page.wait_for_load_state("networkidle", timeout=2000)
+        except PlaywrightTimeoutError: pass
+        
+        return f"System Action Complete: Clicked test ID '{test_id}'.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
+    except Exception as e:
+        return f"System Error: Could not find or click test ID '{test_id}'. Details: {str(e)}"
 
 def fill_input_field(selector: str, text: str) -> str:
     manager = BrowserManager.get_instance()
@@ -197,6 +309,7 @@ def fill_input_field(selector: str, text: str) -> str:
         locator = manager.page.locator(selector).first
         locator.wait_for(state="visible", timeout=3000)
         
+        _highlight_target(locator)
         locator.click()
         manager.page.wait_for_timeout(100)
         manager.page.keyboard.press("Control+A")
@@ -208,7 +321,6 @@ def fill_input_field(selector: str, text: str) -> str:
         return f"System Action Complete: Typed '{text}' into '{selector}'.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
     except Exception as e:
         return f"System Error: Could not fill element '{selector}'. Details: {str(e)}"
-
 
 def evaluate_javascript(script: str) -> str:
     manager = BrowserManager.get_instance()

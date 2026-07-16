@@ -11,53 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import type { Encounter, EncounterEnemy } from "@/types";
-
-/* ── Pre-built enemy templates (for reference) ──────────────── */
-
-interface EnemyTemplate {
-  id: string;
-  name: string;
-  cr: number;
-  ac: number;
-  hp: number;
-  type: string;
-  subType?: string;
-  source: string;
-}
-
-const SRD_ENEMIES: EnemyTemplate[] = [
-  { id: "bandit", name: "Bandit", cr: 0.125, ac: 12, hp: 11, type: "humanoid", subType: "any race", source: "SRD" },
-  { id: "bandit_captain", name: "Bandit Captain", cr: 2, ac: 15, hp: 65, type: "humanoid", subType: "any race", source: "SRD" },
-  { id: "skeleton", name: "Skeleton", cr: 0.25, ac: 13, hp: 13, type: "undead", source: "SRD" },
-  { id: "zombie", name: "Zombie", cr: 0.25, ac: 8, hp: 22, type: "undead", source: "SRD" },
-  { id: "wight", name: "Wight", cr: 3, ac: 14, hp: 45, type: "undead", source: "SRD" },
-  { id: "earth_elemental", name: "Earth Elemental", cr: 5, ac: 17, hp: 126, type: "elemental", source: "SRD" },
-  { id: "mud_mephit", name: "Mud Mephit", cr: 0.25, ac: 11, hp: 27, type: "elemental", source: "SRD" },
-  { id: "goblin", name: "Goblin", cr: 0.25, ac: 15, hp: 7, type: "humanoid", subType: "goblinoid", source: "SRD" },
-  { id: "hobgoblin", name: "Hobgoblin", cr: 0.5, ac: 18, hp: 11, type: "humanoid", subType: "goblinoid", source: "SRD" },
-  { id: "bugbear", name: "Bugbear", cr: 1, ac: 16, hp: 27, type: "humanoid", subType: "goblinoid", source: "SRD" },
-  { id: "specter", name: "Specter", cr: 1, ac: 12, hp: 22, type: "undead", source: "SRD" },
-  { id: "ghoul", name: "Ghoul", cr: 1, ac: 12, hp: 22, type: "undead", source: "SRD" },
-  { id: "giant_spider", name: "Giant Spider", cr: 1, ac: 14, hp: 26, type: "beast", source: "SRD" },
-  { id: "werewolf", name: "Werewolf", cr: 3, ac: 12, hp: 58, type: "humanoid", subType: "shapechanger", source: "SRD" },
-  { id: "vampire_spawn", name: "Vampire Spawn", cr: 5, ac: 15, hp: 82, type: "undead", source: "SRD" },
-  { id: "young_dragon", name: "Young Red Dragon", cr: 10, ac: 18, hp: 178, type: "dragon", source: "SRD" },
-  { id: "cultist", name: "Cultist", cr: 0.125, ac: 12, hp: 9, type: "humanoid", subType: "any race", source: "SRD" },
-  { id: "cult_fanatic", name: "Cult Fanatic", cr: 2, ac: 13, hp: 33, type: "humanoid", subType: "any race", source: "SRD" },
-  { id: "dire_wolf", name: "Dire Wolf", cr: 1, ac: 14, hp: 37, type: "beast", source: "SRD" },
-  { id: "displacer_beast", name: "Displacer Beast", cr: 3, ac: 13, hp: 85, type: "monstrosity", source: "SRD" },
-];
-
-/* ── XP by CR (D&D 5e DMG p. 274) ──────────────────────────── */
-
-const XP_BY_CR: Record<number, number> = {
-  0: 10, 0.125: 25, 0.25: 50, 0.5: 100,
-  1: 200, 2: 450, 3: 700, 4: 1100, 5: 1800,
-  6: 2300, 7: 2900, 8: 3900, 9: 5000, 10: 5900,
-  11: 7200, 12: 8400, 13: 10000, 14: 11500, 15: 13000,
-  16: 15000, 17: 18000, 18: 20000, 19: 22000, 20: 25000,
-  21: 33000, 22: 41000, 23: 50000, 24: 62000, 25: 75000, 30: 155000,
-};
+import { getAllEnemies, getEnemyById, searchEnemies, XP_BY_CR } from "@/data/enemy-database";
+import type { EnemyTemplate } from "@/data/enemy-database";
 
 const PARTY_SIZE_MULTIPLIERS: Record<number, number> = {
   1: 1, 2: 1.5, 3: 2, 4: 2, 5: 2,
@@ -113,7 +68,7 @@ function calculateExactXp(enemies: { enemyId: string; count: number }[]): {
   let enemyCount = 0;
 
   for (const e of enemies) {
-    const template = SRD_ENEMIES.find((t) => t.id === e.enemyId);
+    const template = getEnemyById(e.enemyId);
     if (template) {
       rawXp += (XP_BY_CR[template.cr] ?? 0) * e.count;
       enemyCount += e.count;
@@ -182,14 +137,7 @@ export function EncounterBuilder({
   );
 
   const filteredEnemies = useMemo(() => {
-    if (!searchQuery.trim()) return SRD_ENEMIES;
-    const q = searchQuery.toLowerCase();
-    return SRD_ENEMIES.filter(
-      (e) =>
-        e.name.toLowerCase().includes(q) ||
-        e.type.toLowerCase().includes(q) ||
-        (e.subType ?? "").toLowerCase().includes(q),
-    );
+    return searchEnemies(searchQuery);
   }, [searchQuery]);
 
   const addEnemy = (template: EnemyTemplate) => {
@@ -305,7 +253,7 @@ export function EncounterBuilder({
         ) : (
           <div className="space-y-1.5">
             {slots.map((slot, i) => {
-              const template = SRD_ENEMIES.find((t) => t.id === slot.enemyId);
+              const template = getEnemyById(slot.enemyId);
               return (
                 <div
                   key={slot.enemyId}
