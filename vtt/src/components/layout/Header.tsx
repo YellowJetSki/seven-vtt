@@ -30,13 +30,13 @@ import { isFirebaseAvailable } from "@/lib/firebase";
 import { getPendingSyncCount } from "@/hooks/useFirebaseSync";
 
 const ROUTE_LABELS: Record<string, string> = {
-  "/dashboard": "Command Center",
-  "/characters": "Player Cards",
-  "/homebrew": "Homebrew Library",
-  "/encounters": "Combat Center",
-  "/maps": "Battle Maps",
-  "/journal": "DM Journal",
-  "/settings": "Campaign Settings",
+  "/campaign/dashboard": "Command Center",
+  "/campaign/player-cards": "Player Cards",
+  "/campaign/homebrew": "Homebrew Library",
+  "/campaign/encounters": "Combat Center",
+  "/campaign/maps": "Battle Maps",
+  "/campaign/journal": "DM Journal",
+  "/campaign/settings": "Campaign Settings",
 };
 
 export function Header() {

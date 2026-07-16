@@ -45,13 +45,13 @@ export function CommandPalette({ getNavigate }: CommandPaletteProps) {
   // Register default commands
   useEffect(() => {
     const defaultCommands: Command[] = [
-      { id: "nav-dashboard", label: "Go to Dashboard", icon: "◈", category: "navigation", action: () => goToRef.current("/dashboard") },
-      { id: "nav-players", label: "Go to Player Cards", icon: "⚔", category: "navigation", action: () => goToRef.current("/characters") },
-      { id: "nav-homebrew", label: "Go to Homebrew Library", icon: "⚗", category: "navigation", action: () => goToRef.current("/homebrew") },
-      { id: "nav-encounters", label: "Go to Combat Center", icon: "⚡", category: "navigation", action: () => goToRef.current("/encounters") },
-      { id: "nav-maps", label: "Go to Battle Maps", icon: "🗺", category: "navigation", action: () => goToRef.current("/maps") },
-      { id: "nav-journal", label: "Go to DM Journal", icon: "📖", category: "navigation", action: () => goToRef.current("/journal") },
-      { id: "nav-settings", label: "Go to Campaign Settings", icon: "⚙", category: "navigation", action: () => goToRef.current("/settings") },
+      { id: "nav-dashboard", label: "Go to Dashboard", icon: "◈", category: "navigation", action: () => goToRef.current("/campaign/dashboard") },
+      { id: "nav-players", label: "Go to Player Cards", icon: "⚔", category: "navigation", action: () => goToRef.current("/campaign/player-cards") },
+      { id: "nav-homebrew", label: "Go to Homebrew Library", icon: "⚗", category: "navigation", action: () => goToRef.current("/campaign/homebrew") },
+      { id: "nav-encounters", label: "Go to Combat Center", icon: "⚡", category: "navigation", action: () => goToRef.current("/campaign/encounters") },
+      { id: "nav-maps", label: "Go to Battle Maps", icon: "🗺", category: "navigation", action: () => goToRef.current("/campaign/maps") },
+      { id: "nav-journal", label: "Go to DM Journal", icon: "📖", category: "navigation", action: () => goToRef.current("/campaign/journal") },
+      { id: "nav-settings", label: "Go to Campaign Settings", icon: "⚙", category: "navigation", action: () => goToRef.current("/campaign/settings") },
     ];
     defaultCommands.forEach((c) => registerCommand(c));
     return () => {

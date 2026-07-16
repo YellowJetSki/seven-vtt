@@ -7,13 +7,13 @@
 import { Link, useLocation } from "react-router-dom";
 
 const PAGE_LABELS: Record<string, { label: string; icon: string }> = {
-  "/dashboard": { label: "Dashboard", icon: "🏠" },
-  "/characters": { label: "Player Characters", icon: "⚔" },
-  "/homebrew": { label: "Homebrew", icon: "⚗️" },
-  "/encounters": { label: "Combat Center", icon: "⚔️" },
-  "/maps": { label: "Battle Maps", icon: "🗺️" },
-  "/journal": { label: "Journal", icon: "📖" },
-  "/settings": { label: "Settings", icon: "⚙️" },
+  "/campaign/dashboard": { label: "Dashboard", icon: "🏠" },
+  "/campaign/player-cards": { label: "Player Characters", icon: "⚔" },
+  "/campaign/homebrew": { label: "Homebrew", icon: "⚗️" },
+  "/campaign/encounters": { label: "Combat Center", icon: "⚔️" },
+  "/campaign/maps": { label: "Battle Maps", icon: "🗺️" },
+  "/campaign/journal": { label: "Journal", icon: "📖" },
+  "/campaign/settings": { label: "Settings", icon: "⚙️" },
 };
 
 export function BreadcrumbBar() {
@@ -29,10 +29,10 @@ export function BreadcrumbBar() {
 
   return (
     <nav aria-label="Breadcrumb" className="mb-2 flex items-center gap-2 text-xs text-surface-500">
-      <Link to="/dashboard" className="transition-colors hover:text-accent-400">
+      <Link to="/campaign/dashboard" className="transition-colors hover:text-accent-400">
         Dashboard
       </Link>
-      {path !== "/dashboard" && (
+      {path !== "/campaign/dashboard" && (
         <>
           <span className="text-surface-600 select-none">/</span>
           <span className="flex items-center gap-1 text-surface-300 font-medium">

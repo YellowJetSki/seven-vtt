@@ -40,7 +40,7 @@ export function RecentActivityFeed() {
         label: entry.title,
         description: `Journal · ${entry.type}`,
         timestamp: entry.createdAt,
-        href: "/journal",
+        href: "/campaign/journal",
       });
     }
 
@@ -52,7 +52,7 @@ export function RecentActivityFeed() {
         label: enc.name,
         description: `Encounter · ${enc.difficulty ?? "unknown"} · ${enc.enemies.reduce((s, e) => s + e.count, 0)} enemies`,
         timestamp: enc.createdAt,
-        href: "/encounters",
+        href: "/campaign/encounters",
       });
     }
 
@@ -64,7 +64,7 @@ export function RecentActivityFeed() {
         label: pc.name,
         description: `${pc.race} ${pc.class} · Level ${pc.level}`,
         timestamp: pc.createdAt,
-        href: "/characters",
+        href: "/campaign/player-cards",
       });
     }
 
