@@ -65,6 +65,13 @@ export function CharacterForm({ initialData, onSubmit, onCancel }: CharacterForm
       name,
       playerName,
       race,
+      classes: [{
+        name: charClass,
+        subClass: "",
+        level,
+        hitDice: "d8",
+        classFeatures: [],
+      }],
       class: charClass,
       level,
       experiencePoints: exp,

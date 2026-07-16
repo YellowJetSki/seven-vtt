@@ -12,6 +12,14 @@ import { useUiStore } from "@/stores/uiStore";
 import { createDemoCampaign } from "@/data/demoCampaign";
 import { Button } from "@/components/ui/Button";
 
+/* ── Hit dice types per class ───────────────────────────────── */
+const CLASS_HIT_DICE: Record<string, string> = {
+  artificer: "d8", barbarian: "d12", bard: "d8", cleric: "d8",
+  druid: "d8", fighter: "d10", monk: "d8", paladin: "d10",
+  ranger: "d10", rogue: "d8", sorcerer: "d6", warlock: "d8",
+  wizard: "d6",
+};
+
 /* ── Types ──────────────────────────────────────────────────── */
 
 type WizardStep = "choice" | "details" | "species" | "classes_currency" | "review";
@@ -79,6 +87,7 @@ export function CampaignWizard({ onClose, onImport }: CampaignWizardProps) {
   const [newClassName, setNewClassName] = useState("");
 
   /* ── Currency ── */
+  // Default depends on template: Arks setting for Arkla, Standard for blank
   const [currencyPreset, setCurrencyPreset] = useState(CURRENCY_PRESETS[0]);
 
   /* ── Toggle helpers ── */
@@ -212,7 +221,7 @@ export function CampaignWizard({ onClose, onImport }: CampaignWizardProps) {
       <p className="text-sm text-surface-400">Choose how to get started:</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <button
-          onClick={() => { setUseArklaTemplate(true); setStep("details"); }}
+          onClick={() => { setUseArklaTemplate(true); setCurrencyPreset(CURRENCY_PRESETS[1]); setStep("details"); }}
           className="rounded-xl border-2 border-accent-500/30 bg-accent-500/5 p-5 text-left transition-all hover:border-accent-500/60 hover:bg-accent-500/10 hover:-translate-y-0.5"
         >
           <span className="text-3xl">🏛️</span>
@@ -220,7 +229,7 @@ export function CampaignWizard({ onClose, onImport }: CampaignWizardProps) {
           <p className="mt-1 text-xs text-surface-400">Pre-populated with 4 starter PCs, custom species & classes, and the Assarions currency system</p>
         </button>
         <button
-          onClick={() => { setUseArklaTemplate(false); setStep("details"); }}
+          onClick={() => { setUseArklaTemplate(false); setCurrencyPreset(CURRENCY_PRESETS[0]); setStep("details"); }}
           className="rounded-xl border-2 border-dashed border-surface-600 bg-surface-800 p-5 text-left transition-all hover:border-mage-500/40 hover:bg-surface-700 hover:-translate-y-0.5"
         >
           <span className="text-3xl">✨</span>
@@ -473,14 +482,18 @@ function buildPcsFromArkla(characters: Record<string, any>): any[] {
       isEquipped: false,
     }));
 
+    const className = raw.class || "Unknown";
+    const classLevel = raw.level || 1;
+    const hitDieType = CLASS_HIT_DICE[className.toLowerCase()] || "d8";
     return {
       id: `pc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name: raw.name || raw.label || "Unknown Hero",
       playerName: raw.playerName || "",
       race: raw.species || raw.race || "Unknown",
-      class: raw.class || "Unknown",
+      classes: [{ name: className, subClass: raw.subClass || "", level: classLevel, hitDice: hitDieType, classFeatures: [] }],
+      class: className,
       subClass: raw.subClass || "",
-      level: raw.level || 1,
+      level: classLevel,
       experiencePoints: raw.experiencePoints || 0,
       background: raw.background || "",
       alignment: raw.alignment || "Neutral",

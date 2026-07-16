@@ -11,6 +11,8 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { LevelUpWizard } from "@/components/player/LevelUpWizard";
+import { getTotalLevel, getPrimaryClass, getClassSummary } from "@/types";
 
 const ABILITY_KEYS: Ability[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
 const ABBR_MAP: Record<Ability, string> = {
@@ -75,6 +77,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
   const [showHpEditor, setShowHpEditor] = useState(false);
   const [showResources, setShowResources] = useState(false);
   const [showSpellSlots, setShowSpellSlots] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
 
   // Resource editing
   const [resources, setResources] = useState<{ id: string; name: string; current: number; max: number; recharge: string }[]>(
@@ -189,7 +192,7 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-bold text-surface-100 md:text-3xl">{character.name}</h1>
               <p className="mt-0.5 text-sm text-surface-400">
-                {character.race} - {character.class} - Level {character.level}
+                {character.race} - {getClassSummary(character.classes)}
               </p>
               <p className="mt-0.5 text-xs text-surface-500">
                 {character.alignment ?? "Unaligned"} - {character.background ?? "No Background"}
@@ -343,18 +346,11 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
           <p className="text-xs font-medium text-rogue-400 mt-1">Long Rest</p>
           <p className="text-[9px] text-rogue-500/70">Full heal + all resources</p>
         </button>
-        <button onClick={() => {
-          const newLevel = (character.level ?? 1) + 1;
-          updateCharacter(character.id, {
-            level: newLevel,
-            updatedAt: Date.now(),
-          } as any);
-          showToast({ message: `Level up! ${character.name} is now level ${newLevel}! 🎉`, type: "success" });
-        }}
+        <button onClick={() => setShowLevelUp(true)}
           className="flex-1 rounded-xl border border-accent-500/30 bg-accent-500/10 p-3 text-center hover:bg-accent-500/20 transition-colors">
           <span className="text-lg">⬆️</span>
           <p className="text-xs font-medium text-accent-400 mt-1">Level Up</p>
-          <p className="text-[9px] text-accent-500/70">Current: Level {character.level ?? 1}</p>
+          <p className="text-[9px] text-accent-500/70">Current: {getClassSummary(character.classes)}</p>
         </button>
       </div>
 
@@ -657,6 +653,18 @@ export function PlayerCharacterSheet({ character }: PlayerCharacterSheetProps) {
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-surface-400">Notes</h2>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-surface-300">{character.characterNotes}</p>
         </section>
+      )}
+
+      {/* Level Up Wizard Modal */}
+      {showLevelUp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowLevelUp(false)}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-surface-700 bg-surface-850 p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <LevelUpWizard
+              character={character}
+              onClose={() => setShowLevelUp(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

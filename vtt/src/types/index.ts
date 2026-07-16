@@ -8,14 +8,29 @@ export type Ability = "strength" | "dexterity" | "constitution" | "intelligence"
 
 /* ── Player Character (D&D 5e Complete) ─────────────────────── */
 
+/** Represents a single class in a multi-class character */
+export interface ClassEntry {
+  name: string;                    // e.g. "Fighter", "Wizard"
+  subClass?: string;               // e.g. "School of Evocation", "Path of the Berserker"
+  level: number;                   // Individual level in THIS class
+  hitDice: string;                 // e.g. "d10", "d6" — per-class hit dice
+  classFeatures: FeatureEntry[];   // Features gained from this class
+  spellcastingAbility?: Ability;   // Only for spellcasting classes
+}
+
 export interface PlayerCharacter {
   id: string;
   name: string;
   playerName: string;
   race: string;
+  /** Multi-class support: array of classes. Backward-compat: `class` getter
+   *  returns the primary class name; `level` returns total level. */
+  classes: ClassEntry[];
+  level: number;                   // **Total** character level (computed from classes)
+  /** @deprecated Use classes[0].name instead. Kept for backward compat */
   class: string;
-  subClass?: string;               // e.g. "School of Evocation", "Path of the Berserker"
-  level: number;
+  /** @deprecated Use classes[0].subClass instead */
+  subClass?: string;
   experiencePoints: number;
   background: string;
   alignment: string;
@@ -121,6 +136,39 @@ export interface FeatureEntry {
     max: number;
     recharge: "short_rest" | "long_rest" | "dawn" | "dusk" | "special";
   };
+}
+
+/* ── Multi-class Helpers ─────────────────────────────────────── */
+
+/** Total character level across all classes */
+export function getTotalLevel(classes: ClassEntry[]): number {
+  return classes.reduce((sum, c) => sum + c.level, 0);
+}
+
+/** Primary class name (first class in the array) */
+export function getPrimaryClass(classes: ClassEntry[]): string {
+  return classes.length > 0 ? classes[0].name : "Unknown";
+}
+
+/** Comma-separated class/level summary e.g. "Fighter 3, Wizard 2" */
+export function getClassSummary(classes: ClassEntry[]): string {
+  return classes.map(c => `${c.name} ${c.level}`).join(", ");
+}
+
+/** Check if the character has a specific class */
+export function hasClass(classes: ClassEntry[], className: string): boolean {
+  return classes.some(c => c.name.toLowerCase() === className.toLowerCase());
+}
+
+/** Get the level in a specific class */
+export function getClassLevel(classes: ClassEntry[], className: string): number {
+  const entry = classes.find(c => c.name.toLowerCase() === className.toLowerCase());
+  return entry?.level ?? 0;
+}
+
+/** Calculate proficiency bonus from total level */
+export function getProficiencyBonus(totalLevel: number): number {
+  return Math.ceil(1 + totalLevel / 4);
 }
 
 export interface Speed {

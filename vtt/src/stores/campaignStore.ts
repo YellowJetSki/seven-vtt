@@ -203,6 +203,22 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
                 .map(k => [k, 'none'])
             );
           }
+          // Backward compat: build `classes` array from legacy `class`/`level` fields
+          if (!c.classes || c.classes.length === 0) {
+            const className = c.class || 'Unknown';
+            const hitDieTypes: Record<string, string> = {
+              artificer: 'd8', barbarian: 'd12', bard: 'd8', cleric: 'd8',
+              druid: 'd8', fighter: 'd10', monk: 'd8', paladin: 'd10',
+              ranger: 'd10', rogue: 'd8', sorcerer: 'd6', warlock: 'd8', wizard: 'd6',
+            };
+            c.classes = [{
+              name: className,
+              subClass: c.subClass || '',
+              level: c.level || 1,
+              hitDice: hitDieTypes[className.toLowerCase()] || 'd8',
+              classFeatures: [],
+            }];
+          }
           return c as PlayerCharacter;
         });
       },

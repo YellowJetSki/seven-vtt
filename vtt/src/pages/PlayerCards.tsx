@@ -16,6 +16,7 @@ import { PartyCompendium } from "@/components/player/PartyCompendium";
 import { CharacterForm } from "@/components/player/CharacterForm";
 import { PlayerInventory } from "@/components/player/PlayerInventory";
 import type { PlayerCharacter, Ability, EquipmentSlot } from "@/types";
+import { getClassSummary } from "@/types";
 
 type ViewMode = "grid" | "compendium";
 type SortKey = "name" | "level" | "class" | "race";
@@ -303,7 +304,7 @@ export function PlayerCards() {
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-bold text-surface-100 truncate group-hover:text-accent-300 transition-colors">{char.name}</h3>
-                    <p className="text-xs text-surface-400 mt-0.5">{char.race} {char.class}</p>
+                    <p className="text-xs text-surface-400 mt-0.5">{char.race} · {getClassSummary(char.classes)}</p>
                   </div>
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rogue-500/15 text-xs font-bold text-rogue-400">
                     {char.level}

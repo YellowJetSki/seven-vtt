@@ -8,6 +8,7 @@ import { useState, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { PlayerCharacterSheet } from "@/components/player/PlayerCharacterSheet";
 import { Button } from "@/components/ui/Button";
+import { getClassSummary } from "@/types";
 import { Modal } from "@/components/ui/Modal";
 import { useUiStore } from "@/stores/uiStore";
 import type { PlayerCharacter, Ability } from "@/types";
@@ -171,8 +172,8 @@ function CharacterCard({
               <span className="rounded bg-accent-500/10 px-1.5 py-0.5 text-[10px] font-medium text-accent-400">
                 Lvl {character.level}
               </span>
-              <span className="text-[10px] text-surface-500 capitalize">
-                {character.race.split(" ")[0]} · {character.class}
+              <span className="text-[10px] text-surface-500">
+                {character.race.split(" ")[0]} · {getClassSummary(character.classes)}
               </span>
             </div>
           </div>

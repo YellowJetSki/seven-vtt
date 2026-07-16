@@ -4261,3 +4261,69 @@ All previously read-only sections are now editable:
 - All features work together: Fog + Drawings + Status + Movement + Grid
 
 ---
+
+## E2E Audit & Complete VTT Feature Checklist (July 2026) (Updated: 2026-07-16 07:13)
+# Comprehensive E2E D&D Session Audit — July 2026
+
+## Domain Confirmation
+- **Hosted at:** `https://arkla.vercel.app` ✅
+- **App Icon:** `AppIcon.png` used in favicon, sidebar, and login page ✅
+
+## Full E2E Test Results
+
+### DM Flow (Complete ✅)
+1. **Login** → Username/Password (MikeJello/Jello1) → Authenticated with Firebase
+2. **Dashboard** → Stats grid, session controls, quick actions
+3. **Campaign Wizard** → Arkla Template: name → species → classes → currency → review → create
+4. **NPC/Encounter Management** → Encounters page with CRUD
+5. **Battle Maps** → Create map → Add tokens with initiative, speed, HP, status markers
+6. **Map Editor** → Grid, fog of war, drawing tool, movement ranges, token inspector
+7. **Initiative Tracker** → Turn order, damage/heal, status effects, combat log
+8. **Journal** → Session notes, lore, quests, handouts
+
+### Player Flow (Complete ✅)
+1. **Login** → Select character by name
+2. **Character Sheet** → Full stats, ability scores, skills, HP, temp HP
+3. **Equipment/Inventory** → Item list, currency management (CP/SP/EP/GP/PP)
+4. **Short Rest** → 25% HP restore, short-rest resource refresh
+5. **Long Rest** → Full HP restore, all resources refresh
+6. **Level Up** → Increments level
+7. **Live Session** → Real-time status bar, announcements, battle map, initiative tracker
+8. **Firebase Sync** → Real-time updates across DM and player devices
+
+### Battle Map VTT Features (Complete ✅)
+1. ✅ **Grid system** with configurable dimensions (width/height/cell size)
+2. ✅ **Map images** from URL or library
+3. ✅ **Token placement** with drag-to-move, type/color/size/icon/image
+4. ✅ **Fog of War** with DM/Player view toggle and zone management
+5. ✅ **16 Status Markers** (blinded, charmed, poisoned, etc.) with picker modal
+6. ✅ **Freehand Drawing Tool** with pen/highlighter/eraser, 8 colors, undo/clear
+7. ✅ **Movement Range Overlay** with normal/dash modes
+8. ✅ **Initiative tracking** per token (0-30)
+9. ✅ **HP tracking** with current/max and color-coded HP bar
+10. ✅ **Token visibility toggle** (show/hide from players)
+11. ✅ **Grid visibility toggle** and opacity control
+
+### Theatric View (Complete ✅)
+1. ✅ **Grid hidden by default** for pure cinematic view
+2. ✅ **Auto-hiding sidebar** (5s timeout, reappears on hover)
+3. ✅ **Cinematic vignette** overlay (dark corners)
+4. ✅ **Animated pulse ring** on focused token
+5. ✅ **Status markers visible** on tokens
+6. ✅ **Token labels** floating below each token
+7. ✅ **Grid toggle** in sidebar (show if needed)
+8. ✅ **Fullscreen** toggle support
+9. ✅ **Smooth 700ms fade-in** on mount
+10. ✅ **Auto-scroll** to center focused token
+
+## Issues Identified & Fixed
+- **Toast overlay blocking clicks**: `pointer-events-none` applied to container
+- **AppIcon.png** Already correctly referenced in sidebar and login
+- **Dead code removed**: DiceTower.tsx deleted
+
+## Gap Analysis — What's NOT Needed
+The following are NOT typical VTT features and are intentionally excluded:
+- ❌ **Dice roller** (banned by system law — physical dice rule)
+- ❌ **Built-in video/voice chat** (external tools handle this)
+
+---
