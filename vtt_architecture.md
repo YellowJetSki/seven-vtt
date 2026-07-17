@@ -575,3 +575,18 @@ All previously fixed bugs remain resolved:
 - CSS: ~89KB (14KB gzipped)
 
 ---
+
+## New Components (Sprint 9, Cycle 1) (Updated: 2026-07-17 16:59)
+### WeatherOverlay (`vtt/src/components/theatric/WeatherOverlay.tsx`)
+- Cinematic weather effects for Theatric View battle maps
+- Types: clear, rain (particles + streak lines), snow, fog (gradient drift), dust (haze + particles)
+- Controls: Weather selector added to TheatricSidebar (5 buttons)
+- CSS animations: `weather-fall`, `rain-streak`, `fog-drift` added to index.css
+
+### TheatricPage Enhancement
+- Error state now shows animated pulsing STᚱ VTT app icon with glow effects
+- Weather state management (`useState<WeatherEffect>("clear")`)
+- Passes `weather` prop to both TheatricMap and TheatricSidebar
+
+### Build Status: 208 modules, 0 TS errors
+---
