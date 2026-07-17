@@ -385,12 +385,15 @@ export const Paths = {
   combatLogEntry: (campaignId: string, logId: string) =>
     `campaigns/${campaignId}/combatLog/${logId}` as const,
 
-  homebrewItems: () => `homebrew/items` as const,
-  homebrewItem: (itemId: string) => `homebrew/items/${itemId}` as const,
+  homebrewItems: (campaignId: string) => `homebrew/${campaignId}/items` as const,
+  homebrewItem: (campaignId: string, itemId: string) =>
+    `homebrew/${campaignId}/items/${itemId}` as const,
 
-  homebrewSpells: () => `homebrew/spells` as const,
-  homebrewSpell: (spellId: string) => `homebrew/spells/${spellId}` as const,
+  homebrewSpells: (campaignId: string) => `homebrew/${campaignId}/spells` as const,
+  homebrewSpell: (campaignId: string, spellId: string) =>
+    `homebrew/${campaignId}/spells/${spellId}` as const,
 
-  homebrewFeats: () => `homebrew/feats` as const,
-  homebrewFeat: (featId: string) => `homebrew/feats/${featId}` as const,
+  homebrewFeats: (campaignId: string) => `homebrew/${campaignId}/feats` as const,
+  homebrewFeat: (campaignId: string, featId: string) =>
+    `homebrew/${campaignId}/feats/${featId}` as const,
 } as const;

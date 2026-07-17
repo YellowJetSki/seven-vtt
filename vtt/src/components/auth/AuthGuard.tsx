@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore, type UserRole } from "@/stores/authStore";
 
@@ -9,25 +9,44 @@ interface AuthGuardProps {
 
 /**
  * Route guard that redirects to /login if unauthenticated.
- * Optionally checks for a specific role (dm vs player).
+ * Handles Zustand persist async rehydration by waiting for
+ * the store to finish hydrating before making a decision.
  */
 export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const state = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
   const location = useLocation();
+  const [hydrated, setHydrated] = useState(false);
+
+  // Zustand persist middleware calls set() asynchronously on mount.
+  // We wait one tick to let the persisted state hydrate.
+  useEffect(() => {
+    const timeout = setTimeout(() => setHydrated(true), 50);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (!hydrated) {
+    // Show a loading spinner while rehydrating from localStorage
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-surface-950">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+          <span className="text-sm text-surface-400">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (state !== "authenticated") {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (requiredRole && role !== requiredRole) {
-    // If a player tries to access DM routes, redirect them to their dashboard
     if (role === "player") {
       return <Navigate to="/player" replace />;
     }
-    // If a DM tries to access player routes, redirect to DM dashboard
     if (role === "dm") {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/campaign/dashboard" replace />;
     }
   }
 

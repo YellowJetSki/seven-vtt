@@ -483,66 +483,66 @@ export const normalizedCombatLog = {
 /* ── Homebrew Items ─────────────────────────────────────────── */
 
 export const normalizedHomebrewItems = {
-  async push(item: HomebrewItemDoc): Promise<boolean> {
-    return writeDoc(Paths.homebrewItem(item.id), {
+  async push(campaignId: string, item: HomebrewItemDoc): Promise<boolean> {
+    return writeDoc(Paths.homebrewItem(campaignId, item.id), {
       data: safeStringify(item),
     });
   },
 
-  async remove(itemId: string): Promise<boolean> {
-    return deleteDocAtPath(Paths.homebrewItem(itemId));
+  async remove(campaignId: string, itemId: string): Promise<boolean> {
+    return deleteDocAtPath(Paths.homebrewItem(campaignId, itemId));
   },
 
-  async fetchAll(): Promise<HomebrewItemDoc[]> {
-    return readAllDocs<HomebrewItemDoc>(Paths.homebrewItems());
+  async fetchAll(campaignId: string): Promise<HomebrewItemDoc[]> {
+    return readAllDocs<HomebrewItemDoc>(Paths.homebrewItems(campaignId));
   },
 
-  listenAll(onChange: (items: HomebrewItemDoc[]) => void, onError?: (err: string) => void): Unsubscribe | null {
-    return listenCollection<HomebrewItemDoc>(Paths.homebrewItems(), onChange, onError);
+  listenAll(campaignId: string, onChange: (items: HomebrewItemDoc[]) => void, onError?: (err: string) => void): Unsubscribe | null {
+    return listenCollection<HomebrewItemDoc>(Paths.homebrewItems(campaignId), onChange, onError);
   },
 };
 
 /* ── Homebrew Spells ────────────────────────────────────────── */
 
 export const normalizedHomebrewSpells = {
-  async push(spell: HomebrewSpellDoc): Promise<boolean> {
-    return writeDoc(Paths.homebrewSpell(spell.id), {
+  async push(campaignId: string, spell: HomebrewSpellDoc): Promise<boolean> {
+    return writeDoc(Paths.homebrewSpell(campaignId, spell.id), {
       data: safeStringify(spell),
     });
   },
 
-  async remove(spellId: string): Promise<boolean> {
-    return deleteDocAtPath(Paths.homebrewSpell(spellId));
+  async remove(campaignId: string, spellId: string): Promise<boolean> {
+    return deleteDocAtPath(Paths.homebrewSpell(campaignId, spellId));
   },
 
-  async fetchAll(): Promise<HomebrewSpellDoc[]> {
-    return readAllDocs<HomebrewSpellDoc>(Paths.homebrewSpells());
+  async fetchAll(campaignId: string): Promise<HomebrewSpellDoc[]> {
+    return readAllDocs<HomebrewSpellDoc>(Paths.homebrewSpells(campaignId));
   },
 
-  listenAll(onChange: (spells: HomebrewSpellDoc[]) => void, onError?: (err: string) => void): Unsubscribe | null {
-    return listenCollection<HomebrewSpellDoc>(Paths.homebrewSpells(), onChange, onError);
+  listenAll(campaignId: string, onChange: (spells: HomebrewSpellDoc[]) => void, onError?: (err: string) => void): Unsubscribe | null {
+    return listenCollection<HomebrewSpellDoc>(Paths.homebrewSpells(campaignId), onChange, onError);
   },
 };
 
 /* ── Homebrew Feats ─────────────────────────────────────────── */
 
 export const normalizedHomebrewFeats = {
-  async push(feat: HomebrewFeatDoc): Promise<boolean> {
-    return writeDoc(Paths.homebrewFeat(feat.id), {
+  async push(campaignId: string, feat: HomebrewFeatDoc): Promise<boolean> {
+    return writeDoc(Paths.homebrewFeat(campaignId, feat.id), {
       data: safeStringify(feat),
     });
   },
 
-  async remove(featId: string): Promise<boolean> {
-    return deleteDocAtPath(Paths.homebrewFeat(featId));
+  async remove(campaignId: string, featId: string): Promise<boolean> {
+    return deleteDocAtPath(Paths.homebrewFeat(campaignId, featId));
   },
 
-  async fetchAll(): Promise<HomebrewFeatDoc[]> {
-    return readAllDocs<HomebrewFeatDoc>(Paths.homebrewFeats());
+  async fetchAll(campaignId: string): Promise<HomebrewFeatDoc[]> {
+    return readAllDocs<HomebrewFeatDoc>(Paths.homebrewFeats(campaignId));
   },
 
-  listenAll(onChange: (feats: HomebrewFeatDoc[]) => void, onError?: (err: string) => void): Unsubscribe | null {
-    return listenCollection<HomebrewFeatDoc>(Paths.homebrewFeats(), onChange, onError);
+  listenAll(campaignId: string, onChange: (feats: HomebrewFeatDoc[]) => void, onError?: (err: string) => void): Unsubscribe | null {
+    return listenCollection<HomebrewFeatDoc>(Paths.homebrewFeats(campaignId), onChange, onError);
   },
 };
 
@@ -627,15 +627,15 @@ export const normalizedSync = {
       register("combatLog", normalizedCombatLog.listenAll(campaignId, callbacks.onCombatLog));
     }
 
-    // Homebrew (global — no campaignId prefix)
+    // Homebrew (per-campaign subcollections)
     if (callbacks?.onItems) {
-      register("items", normalizedHomebrewItems.listenAll(callbacks.onItems));
+      register("items", normalizedHomebrewItems.listenAll(campaignId, callbacks.onItems));
     }
     if (callbacks?.onSpells) {
-      register("spells", normalizedHomebrewSpells.listenAll(callbacks.onSpells));
+      register("spells", normalizedHomebrewSpells.listenAll(campaignId, callbacks.onSpells));
     }
     if (callbacks?.onFeats) {
-      register("feats", normalizedHomebrewFeats.listenAll(callbacks.onFeats));
+      register("feats", normalizedHomebrewFeats.listenAll(campaignId, callbacks.onFeats));
     }
 
     this.privateIsListening = true;

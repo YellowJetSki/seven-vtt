@@ -3,6 +3,7 @@ import sys
 import time
 import uuid
 import shutil
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -99,7 +100,8 @@ def write_workspace_file(file_path: str, content: str, base_dir: str = ".") -> s
 
     # --- THE PRO SNIPPET SNIFFER ---
     lower_content = content.lower()
-    lazy_markers = ["// ...", "/* ...", "<!-- ...", "// existing code", "// rest of code", "/* existing", "// previous code"]
+    # FIX: Bypassing the frontend HTML parser bug by splitting the string
+    lazy_markers = ["// ...", "/* ...", "<" + "!-- ...", "// existing code", "// rest of code", "/* existing", "// previous code"]
     for marker in lazy_markers:
         if marker in lower_content:
             return (
@@ -222,7 +224,7 @@ def update_architecture_ledger(section: str, content: str, base_dir: str = ".") 
         return "System Action Complete: Architecture Ledger successfully updated. You may now recall this schema in future sessions."
     except Exception as e:
         return f"Error updating architecture ledger: {str(e)}"
-    
+
 def edit_workspace_file(file_path: str, search_text: str, replace_text: str, base_dir: str = ".") -> str:
     """
     Surgically replaces a specific block of code with a new block, preventing file corruption 
@@ -256,3 +258,41 @@ def edit_workspace_file(file_path: str, search_text: str, replace_text: str, bas
         return f"System Action Complete: Successfully patched the targeted code block in '{file_path}'."
     except Exception as e:
         return f"System Error editing file: {str(e)}"
+
+def index_workspace_components(directory: str = "src/components", base_dir: str = ".") -> str:
+    """Scans a specific directory and builds an index of exported components/functions to prevent redundant coding."""
+    base_path = Path(base_dir).resolve()
+    target_path = (base_path / directory).resolve()
+    
+    if not target_path.is_relative_to(base_path):
+        return "Error: Security violation. Cannot index outside the workspace."
+    if not target_path.exists() or not target_path.is_dir():
+        return f"Error: Directory '{directory}' does not exist."
+        
+    index_log = []
+    try:
+        for root, _, files in os.walk(target_path):
+            for file in files:
+                if file.endswith(('.tsx', '.jsx', '.ts', '.js')):
+                    file_path = Path(root) / file
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            exports = re.findall(r'export\s+(?:const|function|class)\s+([A-Za-z0-9_]+)', content)
+                            default_export = re.search(r'export\s+default\s+(?:function\s+|class\s+)?([A-Za-z0-9_]+)', content)
+                            
+                            if default_export:
+                                exports.append(f"default ({default_export.group(1)})")
+                            elif 'export default' in content:
+                                exports.append("default (anonymous)")
+                                
+                            if exports:
+                                rel_path = file_path.relative_to(base_path)
+                                index_log.append(f"- {rel_path}: {', '.join(exports)}")
+                    except Exception:
+                        pass
+        if not index_log:
+            return f"No exported components found in {directory}."
+        return f"Component Index for '{directory}':\n" + "\n".join(index_log)
+    except Exception as e:
+        return f"Error indexing components: {str(e)}"

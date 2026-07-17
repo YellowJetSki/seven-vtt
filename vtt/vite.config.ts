@@ -17,6 +17,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    historyApiFallback: true,
   },
   build: {
     outDir: path.resolve(projectDir, "dist"),
