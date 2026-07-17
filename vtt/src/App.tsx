@@ -71,8 +71,8 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<ErrorBoundary><DmDashboard /></ErrorBoundary>} />
-        <Route path="player-cards" element={<ErrorBoundary><PlayerCards /></ErrorBoundary>} />
+        <Route path="dashboard" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><DmDashboard /></ErrorBoundary></Suspense>} />
+        <Route path="player-cards" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><PlayerCards /></ErrorBoundary></Suspense>} />
         <Route path="homebrew" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><HomebrewPanel /></ErrorBoundary></Suspense>} />
         <Route path="encounters" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><Encounters /></ErrorBoundary></Suspense>} />
         <Route path="maps" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><BattleMaps /></ErrorBoundary></Suspense>} />

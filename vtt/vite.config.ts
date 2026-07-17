@@ -21,6 +21,6 @@ export default defineConfig({
   },
   build: {
     outDir: path.resolve(projectDir, "dist"),
-    // sourcemap: true,  // Enable only for debugging build errors
+    // sourcemap: true,
   },
 });

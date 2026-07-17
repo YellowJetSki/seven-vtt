@@ -115,24 +115,27 @@ export function useFirebaseSync(): void {
       const store = useCampaignStore.getState();
       if (!store.meta) return;
       const storeIds = new Set(store.characters.map((c) => c.id));
-      if (chars.some((c) => !storeIds.has(c.id)))
-        store.setCampaign({ ...store.campaign!, playerCharacters: chars as unknown as PlayerCharacter[] });
+      const hasNew = chars.some((c) => !storeIds.has(c.id));
+      if (hasNew && store.campaign)
+        store.setCampaign({ ...store.campaign, playerCharacters: chars as unknown as PlayerCharacter[] });
     });
 
     const unsubMaps = normalizedMaps.listenAll(CAMPAIGN_ID, (maps) => {
       const store = useCampaignStore.getState();
       if (!store.meta) return;
       const storeIds = new Set(store.battleMaps.map((m) => m.id));
-      if (maps.some((m) => !storeIds.has(m.id)))
-        store.setCampaign({ ...store.campaign!, battleMaps: maps as unknown as BattleMap[], playerCharacters: store.characters, encounters: store.encounters, journal: store.journal });
+      const hasNew = maps.some((m) => !storeIds.has(m.id));
+      if (hasNew && store.campaign)
+        store.setCampaign({ ...store.campaign, battleMaps: maps as unknown as BattleMap[], playerCharacters: store.characters, encounters: store.encounters, journal: store.journal });
     });
 
     const unsubJournal = normalizedJournal.listenAll(CAMPAIGN_ID, (entries) => {
       const store = useCampaignStore.getState();
       if (!store.meta) return;
       const storeIds = new Set(store.journal.map((j) => j.id));
-      if (entries.some((e) => !storeIds.has(e.id)))
-        store.setCampaign({ ...store.campaign!, journal: entries as unknown as JournalEntry[], playerCharacters: store.characters, encounters: store.encounters, battleMaps: store.battleMaps });
+      const hasNew = entries.some((e) => !storeIds.has(e.id));
+      if (hasNew && store.campaign)
+        store.setCampaign({ ...store.campaign, journal: entries as unknown as JournalEntry[], playerCharacters: store.characters, encounters: store.encounters, battleMaps: store.battleMaps });
     });
 
     const unsubCombatLog = normalizedCombatLog.listenAll(CAMPAIGN_ID, (entries) => {

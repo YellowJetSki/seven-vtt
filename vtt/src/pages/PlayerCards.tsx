@@ -3,7 +3,7 @@
  * views, search, sort, import/export, detail modals.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
@@ -23,8 +23,8 @@ type ViewMode = "grid" | "compendium";
 type SortKey = "name" | "level" | "class" | "race";
 
 export function PlayerCards() {
+  const characters = useCampaignStore((s) => s.characters);
   const campaign = useCampaignStore((s) => s.campaign);
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
   const addCharacter = useCampaignStore((s) => s.addCharacter);
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const removeCharacter = useCampaignStore((s) => s.removeCharacter);
