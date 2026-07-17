@@ -70,7 +70,8 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
             normalizedPCs.map((pc) => ({ label: pc.name, characterId: pc.id })),
           );
         }
-        const newState = {
+        const oldHash = get().campaignBuildHash;
+        const result = buildCampaignCached({
           meta: {
             id: campaign.id,
             name: campaign.name,
@@ -96,6 +97,40 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
             },
           },
           characters: normalizedPCs,
+          encounters: campaign.encounters,
+          battleMaps: campaign.battleMaps.map((bm) => ({ ...bm, fogOfWar: bm.fogOfWar ?? [] })),
+          mapTokens: Object.fromEntries(
+            campaign.battleMaps.map((bm) => [bm.id, bm.tokens ?? []]),
+          ),
+          journal: campaign.journal,
+        }, oldHash);
+
+        set({
+          meta: result.campaign ? {
+            id: campaign.id,
+            name: campaign.name,
+            description: campaign.description,
+            dmName: campaign.dmName,
+            settings: campaign.settings ?? {
+              homebrewRules: [],
+              experienceSystem: "xp" as const,
+              currencyName: "Gold",
+              privateDmNotes: "",
+            },
+            createdAt: campaign.createdAt,
+            updatedAt: campaign.updatedAt,
+            stats: {
+              characterCount: normalizedPCs.length,
+              enemyCount: campaign.encounters.reduce(
+                (sum, e) => sum + e.enemies.reduce((s, ee) => s + (ee.count || 1), 0), 0,
+              ),
+              encounterCount: campaign.encounters.length,
+              mapCount: campaign.battleMaps.length,
+              journalCount: campaign.journal.length,
+              sessionCount: 0,
+            },
+          } : get().meta,
+          characters: normalizedPCs,
           enemies: [],
           encounters: campaign.encounters,
           battleMaps: campaign.battleMaps.map((bm) => ({ ...bm, fogOfWar: bm.fogOfWar ?? [] })),
@@ -104,28 +139,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
           ),
           journal: campaign.journal,
           forcePushCounter: Date.now(),
-        } as const;
-
-        set({
-          meta: newState.meta,
-          characters: newState.characters,
-          enemies: newState.enemies,
-          encounters: newState.encounters,
-          battleMaps: newState.battleMaps,
-          mapTokens: newState.mapTokens,
-          journal: newState.journal,
-          forcePushCounter: newState.forcePushCounter,
-          campaign: (() => {
-            const result = buildCampaignCached({
-              meta: newState.meta,
-              characters: newState.characters,
-              encounters: newState.encounters,
-              battleMaps: newState.battleMaps,
-              mapTokens: newState.mapTokens,
-              journal: newState.journal,
-            }, state.campaignBuildHash);
-            return result.campaign;
-          })(),
+          ...(result.campaign ? { campaign: result.campaign, campaignBuildHash: result.hash } : {}),
         });
       },
 
