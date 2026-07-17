@@ -6,7 +6,6 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { useDerivedCampaign } from "@/stores/campaign/useDerivedCampaign";
 import { useCombatStore } from "@/stores/combatStore";
 import { useHomebrewStore } from "@/stores/homebrewStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -15,6 +14,7 @@ import { ExportAllButton } from "@/components/ui/ExportAllButton";
 import { ImportAllButton } from "@/components/ui/ImportAllButton";
 import { Badge } from "@/components/ui/Badge";
 import { ConditionsWidget } from "@/components/combat/ConditionsWidget";
+import type { Campaign } from "@/types";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { CampaignWizard } from "@/components/campaign/CampaignWizard";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -23,7 +23,11 @@ import { SummaryItem } from "@/components/dashboard/SummaryItem";
 import { SessionStatusBar } from "@/components/dashboard/SessionStatusBar";
 
 export function DmDashboard() {
-  const campaign = useDerivedCampaign();
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const encounters = useCampaignStore((s) => s.encounters);
+  const battleMaps = useCampaignStore((s) => s.battleMaps);
+  const journal = useCampaignStore((s) => s.journal);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
   const isLoading = useCampaignStore((s) => s.isLoading);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
@@ -36,6 +40,8 @@ export function DmDashboard() {
   const homebrewFeats = useHomebrewStore((s) => s.feats.length);
   const homebrewSpells = useHomebrewStore((s) => s.spells.length);
   const totalHomebrew = homebrewItems + homebrewFeats + homebrewSpells;
+
+  const campaign = meta ? { id: meta.id, name: meta.name, description: meta.description, dmName: meta.dmName, settings: meta.settings, playerCharacters: characters, encounters, battleMaps, journal, createdAt: meta.createdAt, updatedAt: meta.updatedAt } as Campaign : null;
 
   const [showNewCampaign, setShowNewCampaign] = useState(false);
 

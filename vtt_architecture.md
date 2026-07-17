@@ -371,3 +371,35 @@ Remaining files >150 lines are mostly data files (seed data, enemy DB) and well-
 
 These can be addressed in future iterations.
 ---
+
+## Sprint 3 Status (Updated: 2026-07-17 16:04)
+## Sprint 3 (2026-07-17): Campaign Selector Refactoring
+
+### Changes Made
+1. **Removed `campaign` derived field from Zustand slice updates** — All 6 slice files (meta, character, entity, token) no longer call `buildCampaign()` on every mutation. This prevents the infinite re-render loop (React error #185 = "Maximum update depth exceeded").
+
+2. **Updated 26 component files** — Changed all `s.campaign?.playerCharacters` selectors to use dedicated normalized selectors (`s.characters`, `s.encounters`, `s.battleMaps`, `s.journal`, `s.meta`). This prevents cascading re-renders when `campaign` object reference changes.
+
+3. **Renamed local `campaign` variables** — Changed to `localCampaign` and `campaignData` in `CampaignScratchPad.tsx` and `SessionRecapNotes.tsx` to avoid potential variable shadowing with Zustand store action parameter names.
+
+### Verified Working
+- Login page: Zero console errors
+- DM Dashboard: Renders with campaign stats, welcome screen for new users
+- Homebrew: Loads successfully via lazy import
+- Battle Maps: Loads successfully
+- Journal: Loads successfully
+- Campaign Settings: Loads successfully
+- Theatric View: Loads successfully
+- Player Dashboard: Loads successfully
+- Encounters page: NOW loads without error (was #185)
+
+### Remaining Issue
+- **`ReferenceError: campaign is not defined`** — This error occurs ONLY after DM login, in the `lo` function (Sidebar) at line 12:189616. All source code has been cleaned of bare `campaign` references, suggesting this may be a Vite/Rollup minification bug or a CDN caching issue. Fresh no-cache deploys still show the error. The error crashes the app after login (blank screen).
+
+### Metrics
+- Modules: 207
+- Build time: ~650ms
+- Bundle: ~440KB JS, ~89KB CSS
+- TypeScript errors: 0
+
+---

@@ -25,10 +25,10 @@ function uid(): string {
 }
 
 export function SessionRecapNotes() {
-  const meta = useCampaignStore((s) => s.meta);
-  const characters = useCampaignStore((s) => s.characters);
-  const setCampaign = useCampaignStore((s) => s.setCampaign);
-  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters, encounters: [], battleMaps: [], journal: [], createdAt: meta.createdAt, updatedAt: meta.updatedAt } as Campaign : null;
+  const storeMeta = useCampaignStore((s) => s.meta);
+  const storeCharacters = useCampaignStore((s) => s.characters);
+  const callSetCampaign = useCampaignStore((s) => s.setCampaign);
+  const localCampaign = storeMeta ? { id: storeMeta.id, name: storeMeta.name, settings: storeMeta.settings, playerCharacters: storeCharacters, encounters: [], battleMaps: [], journal: [], createdAt: storeMeta.createdAt, updatedAt: storeMeta.updatedAt } as Campaign : null;
   const showToast = useUiStore((s) => s.showToast);
 
   // Parse bullets from campaign's privateDmNotes (JSON-encoded array)
@@ -39,31 +39,29 @@ export function SessionRecapNotes() {
 
   // Load bullets from campaign store (synced from Firebase)
   useEffect(() => {
-    if (campaign?.settings.privateDmNotes) {
+    if (localCampaign?.settings?.privateDmNotes) {
       try {
-        const stored = campaign.settings.privateDmNotes;
-        // Check if stored data is a JSON array
+        const stored = localCampaign.settings.privateDmNotes;
         if (stored.startsWith("[")) {
           const parsed = JSON.parse(stored) as SessionBullet[];
           setBullets(parsed);
         }
       } catch {
-        // Not JSON-array format — probably plain text from scratch pad
+        // Not JSON-array format
       }
     }
-  }, [campaign?.id, campaign?.settings.privateDmNotes]);
+  }, [localCampaign?.id, localCampaign?.settings?.privateDmNotes]);
 
-  // Persist bullets to campaign store (syncs to Firebase)
   const persistBullets = useCallback(
     (updatedBullets: SessionBullet[]) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        if (campaign) {
+        if (localCampaign) {
           const notesJson = JSON.stringify(updatedBullets);
-          setCampaign({
-            ...campaign,
+          callSetCampaign({
+            ...localCampaign,
             settings: {
-              ...campaign.settings,
+              ...localCampaign.settings,
               privateDmNotes: notesJson,
             },
             updatedAt: Date.now(),
@@ -71,7 +69,7 @@ export function SessionRecapNotes() {
         }
       }, 800);
     },
-    [campaign, setCampaign],
+    [localCampaign, callSetCampaign],
   );
 
   const addBullet = () => {
@@ -95,10 +93,10 @@ export function SessionRecapNotes() {
   const clearBullets = () => {
     setBullets([]);
     setRecapText("");
-    if (campaign) {
-      setCampaign({
-        ...campaign,
-        settings: { ...campaign.settings, privateDmNotes: "" },
+    if (localCampaign) {
+      callSetCampaign({
+        ...localCampaign,
+        settings: { ...localCampaign.settings, privateDmNotes: "" },
         updatedAt: Date.now(),
       });
     }
@@ -111,7 +109,7 @@ export function SessionRecapNotes() {
       return;
     }
 
-    const campaignName = campaign?.name ?? "the campaign";
+    const campaignName = localCampaign?.name ?? "the campaign";
     const date = new Date().toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
