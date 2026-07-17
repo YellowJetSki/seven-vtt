@@ -13,7 +13,7 @@
  * ─────────────────────────────────────────────────────────────── */
 
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { ToastContainer } from "@/components/ui/ToastContainer";
@@ -33,6 +33,9 @@ export function AppShell() {
 
   // Start Firebase connection health monitor with auto-reconnect
   useFirebaseMonitor();
+
+  // Track route for ErrorBoundary reset key
+  const location = useLocation();
 
   // Ctrl+S save shortcut
   useSaveShortcut();
@@ -58,7 +61,7 @@ export function AppShell() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <ErrorBoundary>
+          <ErrorBoundary key={location.pathname}>
             <Outlet />
           </ErrorBoundary>
         </main>

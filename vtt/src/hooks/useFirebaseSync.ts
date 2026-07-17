@@ -193,21 +193,21 @@ async function flushQueue(): Promise<void> {
         case "item": {
           if (entry.entityId) {
             const item = useHomebrewStore.getState().items.find((i) => i.id === entry.entityId);
-            if (item) ok = await normalizedHomebrewItems.push(campaignId, item as unknown as HomebrewItemDoc);
+            if (item) ok = await normalizedHomebrewItems.push(CAMPAIGN_ID, item as unknown as HomebrewItemDoc);
           }
           break;
         }
         case "spell": {
           if (entry.entityId) {
             const spell = useHomebrewStore.getState().spells.find((s) => s.id === entry.entityId);
-            if (spell) ok = await normalizedHomebrewSpells.push(campaignId, spell as unknown as HomebrewSpellDoc);
+            if (spell) ok = await normalizedHomebrewSpells.push(CAMPAIGN_ID, spell as unknown as HomebrewSpellDoc);
           }
           break;
         }
         case "feat": {
           if (entry.entityId) {
             const feat = useHomebrewStore.getState().feats.find((f) => f.id === entry.entityId);
-            if (feat) ok = await normalizedHomebrewFeats.push(campaignId, feat as unknown as HomebrewFeatDoc);
+            if (feat) ok = await normalizedHomebrewFeats.push(CAMPAIGN_ID, feat as unknown as HomebrewFeatDoc);
           }
           break;
         }
@@ -288,15 +288,15 @@ async function pushAllDomains(): Promise<boolean> {
 
   const { items, spells, feats } = useHomebrewStore.getState();
   for (const item of items) {
-    const ok = await normalizedHomebrewItems.push(campaignId, item as unknown as HomebrewItemDoc);
+    const ok = await normalizedHomebrewItems.push(CAMPAIGN_ID, item as unknown as HomebrewItemDoc);
     if (!ok) allOk = false;
   }
   for (const spell of spells) {
-    const ok = await normalizedHomebrewSpells.push(campaignId, spell as unknown as HomebrewSpellDoc);
+    const ok = await normalizedHomebrewSpells.push(CAMPAIGN_ID, spell as unknown as HomebrewSpellDoc);
     if (!ok) allOk = false;
   }
   for (const feat of feats) {
-    const ok = await normalizedHomebrewFeats.push(campaignId, feat as unknown as HomebrewFeatDoc);
+    const ok = await normalizedHomebrewFeats.push(CAMPAIGN_ID, feat as unknown as HomebrewFeatDoc);
     if (!ok) allOk = false;
   }
 
@@ -491,7 +491,7 @@ export function useFirebaseSync(): void {
       });
 
       // ── Homebrew Items ──
-      const unsubItems = normalizedHomebrewItems.listenAll((items) => {
+      const unsubItems = normalizedHomebrewItems.listenAll(CAMPAIGN_ID, (items) => {
         const store = useHomebrewStore.getState();
         if (typeof store.setItems === "function") {
           store.setItems(items as unknown as HomebrewItem[]);
@@ -499,7 +499,7 @@ export function useFirebaseSync(): void {
       });
 
       // ── Homebrew Spells ──
-      const unsubSpells = normalizedHomebrewSpells.listenAll((spells) => {
+      const unsubSpells = normalizedHomebrewSpells.listenAll(CAMPAIGN_ID, (spells) => {
         const store = useHomebrewStore.getState();
         if (typeof store.setSpells === "function") {
           store.setSpells(spells as unknown as HomebrewSpell[]);
@@ -507,7 +507,7 @@ export function useFirebaseSync(): void {
       });
 
       // ── Homebrew Feats ──
-      const unsubFeats = normalizedHomebrewFeats.listenAll((feats) => {
+      const unsubFeats = normalizedHomebrewFeats.listenAll(CAMPAIGN_ID, (feats) => {
         const store = useHomebrewStore.getState();
         if (typeof store.setFeats === "function") {
           store.setFeats(feats as unknown as HomebrewFeat[]);
