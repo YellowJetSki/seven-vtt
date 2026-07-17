@@ -1,4 +1,4 @@
-# Sprint 9, Cycle 5 — Feature Testing & Bug Fixes
+# Sprint 9, Cycle 6 — Feature Testing & Bug Fixes
 ## Date: 2026-07-17
 ## Iteration: 6 of 10
 
