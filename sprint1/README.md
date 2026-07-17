@@ -1,6 +1,6 @@
 # Sprint 9 — Master Index
-## Total Cycles: 9 of 10
-## Status: Cycle 9 — Extra hardening/verification (COMPLETE)
+## Total Cycles: 10 of 10
+## Status: ✅ Sprint 9 Complete
 ## Date: 2026-07-17
 
 ---
@@ -18,6 +18,7 @@
 | 7 | Step 7 | `sprint9-cycle7-notes.md` | ✅ Done | Firebase sync architecture audit (security rules, health monitor, env vars) |
 | 8 | Step 8 | `sprint9-cycle8-notes.md` | ✅ Done | Consolidate notes, create index |
 | 9 | Extra Harden | `sprint9-cycle9-notes.md` | ✅ Done | Session combatant sync to players, HP callback registration |
+| 10 | Final Verify | `sprint9-cycle10-notes.md` | ✅ Done | Full E2E regression, production verification, Sprint 9 wrap |
 
 ---
 
