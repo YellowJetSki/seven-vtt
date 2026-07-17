@@ -76,11 +76,18 @@ export function useFirebaseMonitor() {
 
     try {
       const db = getDb();
-      // Subscribe to a dummy health-check document
+      // Subscribe to the campaign meta document for health checking
+      // Use campaigns/arkla (which always exists) instead of a non-existent _health doc
       const unsub = onSnapshot(
-        doc(db, "_health", "ping"),
+        doc(db, "campaigns", "arkla"),
         {
-          next: () => {
+          next: (snap) => {
+            if (snap.exists()) {
+              retryCount.current = 0;
+              setFirebaseConnected(true);
+            }
+            // If document doesn't exist, Firestore returns a 404 via snapshot,
+            // but the connection is still healthy, so we treat this as connected.
             retryCount.current = 0;
             setFirebaseConnected(true);
           },
