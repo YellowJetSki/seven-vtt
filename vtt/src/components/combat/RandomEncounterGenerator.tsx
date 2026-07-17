@@ -113,15 +113,14 @@ function generateEncounter(
 }
 
 export function RandomEncounterGenerator({ onAddToCombat }: { onAddToCombat?: (enemies: { enemyId: string; count: number }[]) => void }) {
-  const meta = useCampaignStore((s) => s.meta);
-  const campaign = meta ? { id: meta.id, name: meta.name } : null;
+  const characters = useCampaignStore((s) => s.characters);
   const showToast = useUiStore((s) => s.showToast);
 
   const [terrain, setTerrain] = useState("forest");
   const [difficulty, setDifficulty] = useState("medium");
   const [result, setResult] = useState<{ enemies: { template: EnemyTemplate; count: number }[]; description: string } | null>(null);
 
-  const partyLevels = campaign?.playerCharacters.map((pc) => pc.level) ?? [5];
+  const partyLevels = characters.length > 0 ? characters.map((pc) => pc.level) : [5];
   const allEnemies = useMemo(() => getAllEnemies(), []);
 
   const handleGenerate = () => {
