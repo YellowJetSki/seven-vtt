@@ -13,7 +13,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { useCombatStore } from "@/stores/combatStore";
+import { useCombatStore, registerHpSyncCallback } from "@/stores/combatStore";
 import { useHomebrewStore } from "@/stores/homebrewStore";
 import { isFirebaseAvailable } from "@/lib/firebase";
 import { useUiStore } from "@/stores/uiStore";
@@ -183,6 +183,18 @@ export function useFirebaseSync(): void {
     const unsubFeats = normalizedHomebrewFeats.listenAll(cid, (feats) => {
       const store = useHomebrewStore.getState();
       if (typeof store.setFeats === "function") store.setFeats(feats as unknown as HomebrewFeat[]);
+    });
+
+    /* ── Register HP sync callback ──
+     * Pushes combatant updates to Firebase whenever damage/heal/tempHP/status
+     * changes on the DM side. Players receive these via their own listener. */
+    registerHpSyncCallback((combatants) => {
+      const state = useCombatStore.getState();
+      if (!state.activeEncounter) return;
+      const cid = getCampaignId();
+      for (const combatant of combatants) {
+        normalizedSessionCombatants.push(cid, "current", combatant as unknown as SessionCombatantDoc).catch(() => {});
+      }
     });
 
     const unsubs = [unsubCharacters, unsubMaps, unsubJournal, unsubCombatLog, unsubItems, unsubSpells, unsubFeats].filter(Boolean) as (() => void)[];

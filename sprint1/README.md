@@ -1,6 +1,6 @@
 # Sprint 9 — Master Index
-## Total Cycles: 8 of 10
-## Status: Step 8 — Update notes (IN PROGRESS)
+## Total Cycles: 9 of 10
+## Status: Cycle 9 — Extra hardening/verification (COMPLETE)
 ## Date: 2026-07-17
 
 ---
@@ -16,7 +16,8 @@
 | 5 | Step 5 | `sprint9-cycle5-notes.md` | ✅ Done | Feature implementation (Theatric notes, Player conditions, 6 new presets) |
 | 6 | Step 6 | `sprint9-cycle6-notes.md` | ✅ Done | Address issues from new features, verify production deployment |
 | 7 | Step 7 | `sprint9-cycle7-notes.md` | ✅ Done | Firebase sync architecture audit (security rules, health monitor, env vars) |
-| 8 | Step 8 | *(current)* | 🔄 In Progress | Consolidate notes, create index |
+| 8 | Step 8 | `sprint9-cycle8-notes.md` | ✅ Done | Consolidate notes, create index |
+| 9 | Extra Harden | `sprint9-cycle9-notes.md` | ✅ Done | Session combatant sync to players, HP callback registration |
 
 ---
 
@@ -40,7 +41,7 @@
 ### Known Gaps (Deferred)
 | Gap | Priority | Description |
 |-----|----------|-------------|
-| Session combatant sync to players | Medium | Players can't see live HP/status mid-combat |
+| ~~Session combatant sync to players~~ | ✅ FIXED | Players now see live HP/status mid-combat (Cycle 9) |
 | Map tokens individually synced | Low | Token positions/HP bundled with MapDoc |
 | Enemies/Encounters individual push | Low | Only pushed via `pushAllDomains()` on mount |
 | Debounce-per-domain | Low | Single `pushTimerRef` shared across domains |

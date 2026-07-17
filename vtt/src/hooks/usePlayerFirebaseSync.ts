@@ -15,6 +15,7 @@ import {
   normalizedSessions, normalizedCampaign,
   normalizedCombatLog, normalizedHomebrewItems,
   normalizedHomebrewSpells, normalizedHomebrewFeats,
+  normalizedSessionCombatants,
 } from "@/lib/normalized-firebase-service";
 
 /* ── Derive campaign ID from store (or use default) ────────── */
@@ -58,6 +59,42 @@ export function usePlayerFirebaseSync(): void {
       }
     });
 
+    /* ── Live combatant sync ── */
+    let unsubCombatants: (() => void) | null = null;
+    const setupCombatantListener = () => {
+      unsubCombatants?.();
+      unsubCombatants = normalizedSessionCombatants.listenAll(cid, "current", (combatants) => {
+        const store = useCombatStore.getState();
+        if (!store.activeEncounter) return;
+        // Merge incoming combatant data into the active encounter
+        const existing = [...store.activeEncounter.combatants];
+        let changed = false;
+        for (const inc of combatants) {
+          const idx = existing.findIndex((c) => c.id === inc.id);
+          if (idx >= 0) {
+            // Update HP, status effects, dead flag from DM
+            existing[idx] = {
+              ...existing[idx],
+              hitPoints: inc.hitPoints ?? existing[idx].hitPoints,
+              statusEffects: inc.statusEffects ?? existing[idx].statusEffects,
+              isDead: inc.isDead ?? existing[idx].isDead,
+              isConcentrating: inc.isConcentrating ?? existing[idx].isConcentrating,
+              name: inc.name ?? existing[idx].name,
+              initiative: inc.initiative ?? existing[idx].initiative,
+              armorClass: inc.armorClass ?? existing[idx].armorClass,
+            };
+            changed = true;
+          }
+        }
+        if (changed) {
+          useCombatStore.setState({
+            activeEncounter: { ...store.activeEncounter, combatants: existing },
+          });
+        }
+      });
+    };
+    setupCombatantListener();
+
     const unsubItems = normalizedHomebrewItems.listenAll(cid, (items) => {
       const store = useHomebrewStore.getState();
       if (typeof store.setItems === "function") store.setItems(items);
@@ -88,6 +125,7 @@ export function usePlayerFirebaseSync(): void {
       unsubSession?.();
       unsubMeta?.();
       unsubCombatLog?.();
+      unsubCombatants?.();
       unsubItems?.();
       unsubSpells?.();
       unsubFeats?.();
