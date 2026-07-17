@@ -439,3 +439,39 @@ During Sprint 3, the `campaign` variable from Zustand's derived state was replac
 - TypeScript: 0 errors
 
 ---
+
+## Sprint 4 (2026-07-17): React Error #310 Fix (Updated: 2026-07-17 16:27)
+## Sprint 4: React Error #310 — Maximum Update Depth Exceeded
+
+### Root Cause
+The React error #310 ("Maximum update depth exceeded") was caused by violating React's **Rules of Hooks**. In `InitiativeTracker.tsx`, the `handleAddCharacter` `useCallback` was declared **after** an early `if (!activeEncounter) return (...)` statement. This meant:
+
+- **Render 1** (activeEncounter = null): 14 hooks called (selectors + 3 useStates + 1 useEffect). `useCallback` was **skipped**.
+- **Render 2** (activeEncounter = object): 15 hooks called (same + 1 useCallback). 
+
+React detected the inconsistent hook count between renders and threw error #310.
+
+Additionally, `createEncounter` + 4× `addCombatant` in sequence caused synchronous Zustand `set()` calls during React's render phase, contributing to the cascade error. The fix consolidates all combatant creation into a single `createEncounterWithCombatants()` call.
+
+### Changes Made
+1. **InitiativeTracker.tsx**: Moved `handleAddCharacter` `useCallback` declaration **before** the early `if (!activeEncounter)` return, ensuring consistent hook order across all renders.
+2. **EmptyEncounterState.tsx**: Changed from `onCreate` + `onAddEnemyGroup` to `onCreateWithPCs` + `onQuickStart` single-call pattern that passes ALL combatants in one `createEncounterWithCombatants()` call.
+3. **InitiativeTracker.tsx**: `handleCreateWithPCs` and `handleQuickStart` now build all combatant arrays and call `createEncounterWithCombatants()` once instead of `createEncounter()` + multiple `addCombatant()` calls.
+
+### Test Results
+- **Encounters page**: ✅ Zero errors, create encounter works, 4 PCs load correctly
+- **Dashboard**: ✅ Zero errors
+- **Player Cards**: ✅ Zero errors  
+- **Homebrew**: ✅ Zero errors
+- **Battle Maps**: ✅ Zero errors
+- **Journal**: ✅ Zero errors
+- **Settings**: ✅ Zero errors
+- **Player Dashboard**: ✅ Zero errors
+- **Theatric Page**: ✅ Zero errors
+
+### Key Architectural Rule
+All React hooks in a component must be called in the **same order on every render**. Early returns must be placed AFTER all hook declarations, or the hooks after the return will be inconsistent. This means:
+- `useState`, `useEffect`, `useCallback`, `useMemo` declarations must be **before** any conditional return.
+- Conditional return blocks can contain regular functions but NOT hooks.
+
+---
