@@ -2,55 +2,30 @@
  * Shown when no combat encounter is active. Offers create/quick-start.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
-import { useCombatStore } from "@/stores/combatStore";
 
 interface EmptyEncounterStateProps {
-  onCreate: (name: string) => void;
-  onAddEnemyGroup: (name: string, count: number) => void;
+  onCreateWithPCs: (name: string) => void;
+  onQuickStart: (name: string) => void;
 }
 
-export function EmptyEncounterState({ onCreate, onAddEnemyGroup }: EmptyEncounterStateProps) {
+export function EmptyEncounterState({ onCreateWithPCs, onQuickStart }: EmptyEncounterStateProps) {
   const characters = useCampaignStore((s) => s.characters);
   const [customName, setCustomName] = useState("");
-  const addCombatant = useCombatStore((s) => s.addCombatant);
   const showToast = useUiStore((s) => s.showToast);
 
-  const importPCs = (encounterName: string) => {
-    characters.forEach((pc) => {
-      addCombatant({
-        name: pc.name,
-        type: "player",
-        initiative: 0,
-        armorClass: pc.armorClass,
-        hitPoints: { current: pc.hitPoints.current, max: pc.hitPoints.max, temporary: 0 },
-        statusEffects: [],
-        isDead: false,
-        isConcentrating: false,
-        notes: "",
-      });
-    });
-    showToast({
-      message: `"${encounterName}" created with ${characters.length} PC${characters.length !== 1 ? "s" : ""}.`,
-      type: "success",
-    });
-  };
-
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     const name = customName.trim() || `Encounter ${new Date().toLocaleTimeString()}`;
-    onCreate(name);
-    importPCs(name);
-  };
+    onCreateWithPCs(name);
+  }, [customName, onCreateWithPCs]);
 
-  const handleQuickStart = () => {
+  const handleQuickStart = useCallback(() => {
     const name = `Quick Encounter ${new Date().toLocaleTimeString()}`;
-    onCreate(name);
-    onAddEnemyGroup("Bandit", 4);
-    importPCs(name);
-  };
+    onQuickStart(name);
+  }, [onQuickStart]);
 
   return (
     <div className="rounded-xl border border-dashed border-surface-700/60 bg-surface-850/80 glass p-8 text-center">

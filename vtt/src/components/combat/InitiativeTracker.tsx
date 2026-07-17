@@ -17,17 +17,17 @@ import { EnemyGroupActions } from "./EnemyGroupActions";
 import { InitiativeRoller } from "./InitiativeRoller";
 import { SessionRecapNotes } from "./SessionRecapNotes";
 import { CombatantTurnTimer } from "./CombatantTurnTimer";
+import type { Combatant } from "@/types/combat";
 
 export function InitiativeTracker() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
-  const createEncounter = useCombatStore((s) => s.createEncounter);
+  const createEncounterWithCombatants = useCombatStore((s) => s.createEncounterWithCombatants);
   const startEncounter = useCombatStore((s) => s.startEncounter);
   const endEncounter = useCombatStore((s) => s.endEncounter);
   const nextTurn = useCombatStore((s) => s.nextTurn);
   const previousTurn = useCombatStore((s) => s.previousTurn);
   const togglePause = useCombatStore((s) => s.togglePause);
   const addCombatant = useCombatStore((s) => s.addCombatant);
-  const addEnemyGroup = useCombatStore((s) => s.addEnemyGroup);
   const setCombatantInitiative = useCombatStore((s) => s.setCombatantInitiative);
   const showToast = useUiStore((s) => s.showToast);
   const characters = useCampaignStore((s) => s.characters);
@@ -35,6 +35,27 @@ export function InitiativeTracker() {
   const [showPlayerImport, setShowPlayerImport] = useState(false);
   const [showLogPanel, setShowLogPanel] = useState(false);
   const [showRecapPanel, setShowRecapPanel] = useState(false);
+
+  /* ── Handle add character (always declared for hooks consistency) ── */
+  const handleAddCharacter = useCallback(
+    (pcId: string) => {
+      const pc = characters.find((c) => c.id === pcId);
+      if (!pc) return;
+      addCombatant({
+        name: pc.name,
+        type: "player",
+        initiative: 0,
+        armorClass: pc.armorClass,
+        hitPoints: { current: pc.hitPoints.current, max: pc.hitPoints.max, temporary: 0 },
+        statusEffects: [],
+        isDead: false,
+        isConcentrating: false,
+        notes: "",
+      });
+      showToast({ message: `"${pc.name}" added to initiative.`, type: "success" });
+    },
+    [characters, addCombatant, showToast],
+  );
 
   /* ── Keyboard Shortcuts ── */
   useEffect(() => {
@@ -58,10 +79,36 @@ export function InitiativeTracker() {
 
   /* ── Empty State ── */
   if (!activeEncounter) {
+    const handleCreateWithPCs = (name: string) => {
+      const pcCombatants: Omit<Combatant, "id">[] = characters.map((pc) => ({
+        name: pc.name, type: "player" as const, initiative: 0,
+        armorClass: pc.armorClass,
+        hitPoints: { current: pc.hitPoints.current, max: pc.hitPoints.max, temporary: 0 },
+        statusEffects: [], isDead: false, isConcentrating: false, notes: "",
+      }));
+      createEncounterWithCombatants(name, pcCombatants);
+      showToast({ message: `"${name}" created with ${characters.length} PC${characters.length !== 1 ? "s" : ""}.`, type: "success" });
+    };
+    const handleQuickStart = (name: string) => {
+      const pcCombatants: Omit<Combatant, "id">[] = characters.map((pc) => ({
+        name: pc.name, type: "player" as const, initiative: 0,
+        armorClass: pc.armorClass,
+        hitPoints: { current: pc.hitPoints.current, max: pc.hitPoints.max, temporary: 0 },
+        statusEffects: [], isDead: false, isConcentrating: false, notes: "",
+      }));
+      const banditCombatants: Omit<Combatant, "id">[] = Array.from({ length: 4 }, (_, i) => ({
+        name: `Bandit ${i + 1}`, type: "enemy" as const, initiative: 0,
+        armorClass: 12,
+        hitPoints: { current: 11, max: 11, temporary: 0 },
+        statusEffects: [], isDead: false, isConcentrating: false, notes: "",
+      }));
+      createEncounterWithCombatants(name, [...pcCombatants, ...banditCombatants]);
+      showToast({ message: `"${name}" created with ${characters.length} PCs + 4 Bandits.`, type: "success" });
+    };
     return (
       <EmptyEncounterState
-        onCreate={createEncounter}
-        onAddEnemyGroup={addEnemyGroup}
+        onCreateWithPCs={handleCreateWithPCs}
+        onQuickStart={handleQuickStart}
       />
     );
   }
@@ -69,26 +116,6 @@ export function InitiativeTracker() {
   const isPrep = activeEncounter.phase === "prep";
   const isActive = activeEncounter.phase === "active";
   const currentCombatant = activeEncounter.combatants[activeEncounter.currentCombatantIndex];
-
-  const handleAddCharacter = useCallback(
-    (pcId: string) => {
-      const pc = characters.find((c) => c.id === pcId);
-      if (!pc) return;
-      addCombatant({
-        name: pc.name,
-        type: "player",
-        initiative: 0,
-        armorClass: pc.armorClass,
-        hitPoints: { current: pc.hitPoints.current, max: pc.hitPoints.max, temporary: 0 },
-        statusEffects: [],
-        isDead: false,
-        isConcentrating: false,
-        notes: "",
-      });
-      showToast({ message: `"${pc.name}" added to initiative.`, type: "success" });
-    },
-    [characters, addCombatant, showToast],
-  );
 
   return (
     <div className="space-y-4">
