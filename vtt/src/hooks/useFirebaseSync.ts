@@ -310,18 +310,26 @@ export function useFirebaseSync(): void {
   const queueFlushed = useRef(false);
   const authState = useAuthStore((s) => s.state);
   const authRole = useAuthStore((s) => s.role);
-  const campaign = useCampaignStore((s) => s.campaign);
   const showToast = useUiStore((s) => s.showToast);
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
 
+  // Use primitive selectors only — avoid `s.campaign` which creates new refs
   const meta = useCampaignStore((s) => s.meta);
   const metaUpdatedAt = meta?.updatedAt ?? 0;
+  const charactersLen = useCampaignStore((s) => s.characters.length);
+  const enemiesLen = useCampaignStore((s) => s.enemies.length);
+  const encountersLen = useCampaignStore((s) => s.encounters.length);
+  const mapsLen = useCampaignStore((s) => s.battleMaps.length);
+  const journalLen = useCampaignStore((s) => s.journal.length);
 
-  // ── Combat watchers ──
-  const activeEncounter = useCombatStore((s) => s.activeEncounter);
-  const liveSession = useCombatStore((s) => s.liveSession);
+  // ── Combat watchers (use primitive selectors) ──
+  const encounterPhase = useCombatStore((s) => s.activeEncounter?.phase ?? null);
+  const encounterRound = useCombatStore((s) => s.activeEncounter?.round ?? 0);
+  const encounterIndex = useCombatStore((s) => s.activeEncounter?.currentCombatantIndex ?? 0);
+  const sessionPhase = useCombatStore((s) => s.liveSession.phase);
+  const sessionStarted = useCombatStore((s) => s.liveSession.sessionStartedAt);
   const combatLogLen = useCombatStore((s) => s.combatLog.length);
-  const combatantsVersion = activeEncounter?.combatants.length ?? 0;
+  const combatantsVersion = useCombatStore((s) => s.activeEncounter?.combatants.length ?? 0);
 
   // ── Homebrew watchers ──
   const homebrewItemsLen = useHomebrewStore((s) => s.items.length);

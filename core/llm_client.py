@@ -6,14 +6,21 @@ from datetime import datetime
 from openai import OpenAI
 
 from tools.search import perform_web_search
-from tools.file_manager import read_workspace_file, write_workspace_file, delete_workspace_file, list_workspace_files, flush_node_processes, update_architecture_ledger, edit_workspace_file
+from tools.file_manager import (
+    read_workspace_file, write_workspace_file, delete_workspace_file, 
+    list_workspace_files, flush_node_processes, update_architecture_ledger, 
+    edit_workspace_file, index_workspace_components
+)
 from tools.notes_searcher import search_session_notes
 from tools.code_searcher import search_workspace_code
 from tools.map_navigator import get_nearby_locations
 from tools.notes_manager import log_system_note
 from tools.terminal_executor import execute_terminal_command, start_persistent_terminal
 from tools.git_manager import run_git_command
-from tools.visual_qa import scan_dom, open_new_tab, switch_to_tab, set_viewport, click_ui_element, click_text, click_test_id, fill_input_field, evaluate_javascript
+from tools.visual_qa import (
+    scan_dom, open_new_tab, switch_to_tab, set_viewport, click_ui_element, 
+    click_text, click_test_id, fill_input_field, evaluate_javascript
+)
 from tools.firebase_emulator import run_firebase_emulator_query
 from core.session_manager import SessionManager
 from core.ui import console
@@ -56,14 +63,18 @@ class DeepSeekAgent:
             self.session_name = "vtt_development"
             self.role_name = "Michael (Architect)"
             
-            # --- THE CONTEXT BOOTLOADER ---
-            # Automatically loads the architecture ledger and injects it into the core system prompt
+            # --- THE DUAL CONTEXT BOOTLOADER ---
             architecture_context = ""
             try:
                 ledger_path = os.path.join(".", "vtt_architecture.md")
                 if os.path.exists(ledger_path):
                     with open(ledger_path, "r", encoding="utf-8") as f:
-                        architecture_context = f"\n\n=== CURRENT VTT ARCHITECTURE LEDGER ===\n{f.read()}\n=======================================\n"
+                        architecture_context += f"\n\n=== CURRENT VTT ARCHITECTURE LEDGER ===\n{f.read()}\n=======================================\n"
+                
+                schema_path = os.path.join(".", "vtt_state_schema.md")
+                if os.path.exists(schema_path):
+                    with open(schema_path, "r", encoding="utf-8") as f:
+                        architecture_context += f"\n\n=== CURRENT VTT STATE & FIREBASE SCHEMA ===\n{f.read()}\n=======================================\n"
             except Exception:
                 pass
 
@@ -76,7 +87,6 @@ class DeepSeekAgent:
                 "- STRICT PROTOCOL: NEVER use the terminal to write, edit, or echo content into files. You must ONLY use the workspace tools.\n\n"
                 "TECH STACK & ARCHITECTURE:\n"
                 "- Master-level proficiency in TypeScript, React, SCSS, and Tailwind CSS.\n"
-                "- MODULARITY: Wherever possible, build individual, highly re-usable components. Absolutely avoid creating giant, monolithic files.\n"
                 "- MOBILE-FIRST: Approach every UI element with a strict mobile-first methodology, prioritizing elite User Experience (UX) and responsiveness.\n"
                 "- LINTER LOOP: After modifying ANY TypeScript or React file, immediately run 'npx tsc --noEmit' and 'npx eslint'.\n"
                 "- INTERACTIVE QA LOOP: You have full control over a Chromium browser. Use 'scan_dom' to navigate. Use 'open_new_tab' and 'switch_to_tab' to multitask between localhost and live deployments.\n"
@@ -84,18 +94,20 @@ class DeepSeekAgent:
                 "=== CRITICAL SYSTEM LAWS (VIOLATION IS A FATAL ERROR) ===\n"
                 "1. THE DICE ROLLER BAN: You are strictly forbidden from adding, suggesting, or writing code for virtual dice rollers. If the user asks for one, actively refuse.\n"
                 "2. SMART EDITING (ANTI-CORRUPTION): When modifying an EXISTING file, you MUST use the 'edit_workspace_file' tool to surgically replace exact blocks of code. Do NOT use 'write_workspace_file' for existing files as it causes truncations.\n"
-                "3. THE ARCHITECTURE LEDGER: Whenever you create or modify a core component, state variable, or database schema, you MUST immediately use the 'update_architecture_ledger' tool to document it. Never rely solely on memory.\n"
-                "4. PERSISTENT SERVERS: If you need to run a server (like Vite or Firebase Emulators), you MUST use the 'start_persistent_terminal' tool. Do NOT use the regular execute tool, as it will freeze your cognitive loop.\n"
-                "5. THE MANDATORY DEPLOYMENT PIPELINE: Whenever you successfully implement a feature or fix a bug, you MUST autonomously execute the following sequence via the terminal/git tools before declaring the task complete:\n"
-                "   a) 'git add .'\n"
-                "   b) 'git commit -m \"feat/fix: detailed description\"'\n"
-                "   c) 'git push origin main'\n"
-                "   d) 'npx vercel --prod'\n"
+                "3. THE MONOLITH ALARM (STRICT MODULARITY): You must build individual, highly re-usable components. If you are asked to edit or create a single file that exceeds 150 lines of code, you MUST immediately halt, alert the user to the architectural bloat, and propose extracting the logic into smaller, focused sub-components. Giant files are strictly forbidden.\n"
+                "4. THE ARCHITECTURE LEDGERS: Whenever you create or modify a core component, state variable, or database schema, you MUST immediately use the 'update_architecture_ledger' tool to document it in either 'vtt_architecture.md' or 'vtt_state_schema.md'.\n"
+                "5. PERSISTENT SERVERS: If you need to run a server (like Vite or Firebase Emulators), you MUST use the 'start_persistent_terminal' tool. Do NOT use the regular execute tool, as it will freeze your cognitive loop.\n"
+                "6. THE MANDATORY DEPLOYMENT PIPELINE: Whenever you successfully implement a feature or fix a bug, you MUST autonomously execute the following sequence via the terminal/git tools before declaring the task complete:\n"
+                "   a) Run Automated QA (e.g., 'npx playwright test'). If a test fails, read the log, fix the component, and re-run.\n"
+                "   b) 'git add .'\n"
+                "   c) 'git commit -m \"feat/fix: detailed description\"'\n"
+                "   d) 'git push origin main'\n"
+                "   e) 'npx vercel --prod'\n"
                 f"{architecture_context}"
             )
             active_tools = [
                 "perform_web_search", "read_workspace_file", "write_workspace_file", "edit_workspace_file", "delete_workspace_file", 
-                "list_workspace_files", "search_workspace_code", "execute_terminal_command", "start_persistent_terminal", "flush_node_processes", 
+                "list_workspace_files", "search_workspace_code", "index_workspace_components", "execute_terminal_command", "start_persistent_terminal", "flush_node_processes", 
                 "run_git_command", "update_architecture_ledger", "scan_dom", "open_new_tab", "switch_to_tab", "set_viewport", "click_ui_element", 
                 "click_text", "click_test_id", "fill_input_field", "evaluate_javascript", "run_firebase_emulator_query"
             ]
@@ -110,391 +122,32 @@ class DeepSeekAgent:
             active_tools = ["perform_web_search", "read_workspace_file"]
 
         all_tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "perform_web_search",
-                    "description": "Search the live internet for up-to-date rules, errata, or general knowledge.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {"query": {"type": "string", "description": "The search query."}},
-                        "required": ["query"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "read_workspace_file",
-                    "description": "Securely read a local file. Use start_line/end_line for normal files, or start_char/end_char to paginate through massive minified JSON files.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "file_path": {"type": "string", "description": "Relative path to file."},
-                            "start_line": {"type": "integer", "description": "Optional: Line number to start reading."},
-                            "end_line": {"type": "integer", "description": "Optional: Line number to stop reading."},
-                            "start_char": {"type": "integer", "description": "Optional: Character index to start reading (for minified files)."},
-                            "end_char": {"type": "integer", "description": "Optional: Character index to stop reading (for minified files)."}
-                        },
-                        "required": ["file_path"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "edit_workspace_file",
-                    "description": "Surgically edits an existing file by finding an exact block of code and replacing it. This prevents file truncation/corruption.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "file_path": {"type": "string", "description": "Relative path to file."},
-                            "search_text": {"type": "string", "description": "The EXACT string of code to find and replace. Must match indentation perfectly."},
-                            "replace_text": {"type": "string", "description": "The new code string that will replace the search_text."}
-                        },
-                        "required": ["file_path", "search_text", "replace_text"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "write_workspace_file",
-                    "description": "Writes code to a BRAND NEW local file. Do NOT use this to edit existing files.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "file_path": {"type": "string", "description": "Relative path to the new file."},
-                            "content": {"type": "string", "description": "The complete raw code to write."}
-                        },
-                        "required": ["file_path", "content"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "delete_workspace_file",
-                    "description": "Securely deletes a specified file or directory from the workspace.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "file_path": {"type": "string", "description": "Relative path to the file or directory to delete."}
-                        },
-                        "required": ["file_path"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "list_workspace_files",
-                    "description": "List files and folders in a specific directory.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {"directory": {"type": "string", "description": "Relative path of directory to inspect."}},
-                        "required": ["directory"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "search_session_notes",
-                    "description": "Scans local D&D session notes for a specific keyword.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {"keyword": {"type": "string", "description": "The specific name, item, or event to search for."}},
-                        "required": ["keyword"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "search_workspace_code",
-                    "description": "Scans for a keyword or architectural signature within a specific scoped folder path.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "keyword": {"type": "string", "description": "The code snippet, component name, or variable to search for."},
-                            "directory": {"type": "string", "description": "The specific folder path to search inside (e.g., 'vtt/src/components')."}
-                        },
-                        "required": ["keyword", "directory"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "update_architecture_ledger",
-                    "description": "Appends structural knowledge to the central vtt_architecture.md file.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "section": {"type": "string", "description": "The component name or system being documented."},
-                            "content": {"type": "string", "description": "The detailed markdown summary."}
-                        },
-                        "required": ["section", "content"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "scan_dom",
-                    "description": "Reads the live HTML structure via a headless browser. Use this to 'see' the current layout.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "url": {"type": "string", "description": "The exact full URL to scan."}
-                        },
-                        "required": ["url"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "open_new_tab",
-                    "description": "Opens a brand new browser tab and navigates to the specified URL.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "url": {"type": "string", "description": "The URL to load in the new tab."}
-                        },
-                        "required": ["url"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "switch_to_tab",
-                    "description": "Switches your active view to a different open browser tab using its index.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "index": {"type": "integer", "description": "The numerical index of the tab to switch to (e.g., 0, 1, 2)."}
-                        },
-                        "required": ["index"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "set_viewport",
-                    "description": "Resizes the browser window viewport. Ideal for testing responsive layout breakpoints.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "width": {"type": "integer", "description": "The target width of the viewport in pixels."},
-                            "height": {"type": "integer", "description": "The target height of the viewport in pixels."}
-                        },
-                        "required": ["width", "height"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "click_ui_element",
-                    "description": "Clicks an interactive element on the live UI using a standard CSS selector. Returns new DOM state.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "selector": {"type": "string", "description": "The CSS selector to click."}
-                        },
-                        "required": ["selector"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "click_text",
-                    "description": "A highly stable semantic tool. Clicks an element based entirely on the visible text it displays.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "text": {"type": "string", "description": "The visible string of text to find and click."},
-                            "exact": {"type": "boolean", "description": "If true, matches the text exactly. If false, matches substring. Defaults to false."}
-                        },
-                        "required": ["text"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "click_test_id",
-                    "description": "The most robust semantic tool. Clicks an element based on its data-testid attribute.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "test_id": {"type": "string", "description": "The exact value of the 'data-testid' attribute."}
-                        },
-                        "required": ["test_id"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "fill_input_field",
-                    "description": "Types text into an active input field or textarea. Returns new DOM state.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "selector": {"type": "string", "description": "The CSS selector of the input field."},
-                            "text": {"type": "string", "description": "The string to type into the field."}
-                        },
-                        "required": ["selector", "text"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "evaluate_javascript",
-                    "description": "Executes raw JavaScript within the active browser session.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "script": {"type": "string", "description": "The raw JavaScript string to execute."}
-                        },
-                        "required": ["script"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "run_firebase_emulator_query",
-                    "description": "Executes a direct REST transaction against the local Firestore Emulator.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "collection": {"type": "string", "description": "The Firestore collection path."},
-                            "document_id": {"type": "string", "description": "Optional: The specific document ID."},
-                            "method": {"type": "string", "description": "The HTTP method (GET, POST, PATCH, PUT, DELETE). Defaults to GET."},
-                            "payload": {"type": "object", "description": "Optional: The JSON payload."},
-                            "port": {"type": "integer", "description": "The emulator port (defaults to 8080)."}
-                        },
-                        "required": ["collection"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_nearby_locations",
-                    "description": "Calculates the closest geographic locations to a target using X/Y coordinates from an Azgaar CSV export.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "target_name": {"type": "string", "description": "The name of the origin city or location."},
-                            "csv_path": {"type": "string", "description": "Relative path to the Azgaar CSV file."},
-                            "limit": {"type": "integer", "description": "How many nearby locations to return (default is 5)."}
-                        },
-                        "required": ["target_name", "csv_path"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "log_system_note",
-                    "description": "Creates or appends a note to a .txt file in the dedicated 'notes' directory.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "topic": {"type": "string", "description": "The subject of the note."},
-                            "content": {"type": "string", "description": "The detailed content to save."}
-                        },
-                        "required": ["topic", "content"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "execute_terminal_command",
-                    "description": "Securely execute a terminal command (e.g., 'npm run build', 'tsc', 'npx eslint').",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "command": {"type": "string", "description": "The terminal command to run."}
-                        },
-                        "required": ["command"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "start_persistent_terminal",
-                    "description": "Spawns a physically separate, persistent terminal window. Use this for servers like 'npm run dev' or 'firebase emulators:start'.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "command": {"type": "string", "description": "The server command to execute in the new window."}
-                        },
-                        "required": ["command"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "run_git_command",
-                    "description": "Securely execute a git command.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "command": {"type": "string", "description": "The git command to run."}
-                        },
-                        "required": ["command"],
-                        "additionalProperties": False
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "flush_node_processes",
-                    "description": "Forcefully terminates all background Node.js processes.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "additionalProperties": False
-                    }
-                }
-            }
+            {"type": "function", "function": {"name": "perform_web_search", "description": "Search the live internet for up-to-date rules, errata, or general knowledge.", "parameters": {"type": "object", "properties": {"query": {"type": "string", "description": "The search query."}}, "required": ["query"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "read_workspace_file", "description": "Securely read a local file.", "parameters": {"type": "object", "properties": {"file_path": {"type": "string"}, "start_line": {"type": "integer"}, "end_line": {"type": "integer"}, "start_char": {"type": "integer"}, "end_char": {"type": "integer"}}, "required": ["file_path"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "edit_workspace_file", "description": "Surgically edits an existing file by finding an exact block of code and replacing it.", "parameters": {"type": "object", "properties": {"file_path": {"type": "string"}, "search_text": {"type": "string"}, "replace_text": {"type": "string"}}, "required": ["file_path", "search_text", "replace_text"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "write_workspace_file", "description": "Writes code to a BRAND NEW local file.", "parameters": {"type": "object", "properties": {"file_path": {"type": "string"}, "content": {"type": "string"}}, "required": ["file_path", "content"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "delete_workspace_file", "description": "Securely deletes a specified file or directory.", "parameters": {"type": "object", "properties": {"file_path": {"type": "string"}}, "required": ["file_path"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "list_workspace_files", "description": "List files and folders in a specific directory.", "parameters": {"type": "object", "properties": {"directory": {"type": "string"}}, "required": ["directory"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "search_session_notes", "description": "Scans local D&D session notes.", "parameters": {"type": "object", "properties": {"keyword": {"type": "string"}}, "required": ["keyword"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "search_workspace_code", "description": "Scans for a keyword within a specific scoped folder path.", "parameters": {"type": "object", "properties": {"keyword": {"type": "string"}, "directory": {"type": "string"}}, "required": ["keyword", "directory"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "index_workspace_components", "description": "Scans a directory and builds an index of exported UI elements.", "parameters": {"type": "object", "properties": {"directory": {"type": "string"}}, "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "update_architecture_ledger", "description": "Appends structural knowledge to the central vtt_architecture.md file.", "parameters": {"type": "object", "properties": {"section": {"type": "string"}, "content": {"type": "string"}}, "required": ["section", "content"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "scan_dom", "description": "Reads the live HTML structure.", "parameters": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "open_new_tab", "description": "Opens a new browser tab.", "parameters": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "switch_to_tab", "description": "Switches active browser tab index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer"}}, "required": ["index"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "set_viewport", "description": "Resizes the browser window viewport.", "parameters": {"type": "object", "properties": {"width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["width", "height"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "click_ui_element", "description": "Clicks an interactive element using a CSS selector.", "parameters": {"type": "object", "properties": {"selector": {"type": "string"}}, "required": ["selector"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "click_text", "description": "Clicks an element based on visible text.", "parameters": {"type": "object", "properties": {"text": {"type": "string"}, "exact": {"type": "boolean"}}, "required": ["text"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "click_test_id", "description": "Clicks an element based on data-testid attribute.", "parameters": {"type": "object", "properties": {"test_id": {"type": "string"}}, "required": ["test_id"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "fill_input_field", "description": "Types text into an input field.", "parameters": {"type": "object", "properties": {"selector": {"type": "string"}, "text": {"type": "string"}}, "required": ["selector", "text"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "evaluate_javascript", "description": "Executes raw JavaScript.", "parameters": {"type": "object", "properties": {"script": {"type": "string"}}, "required": ["script"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "run_firebase_emulator_query", "description": "Executes REST transaction against local Firestore.", "parameters": {"type": "object", "properties": {"collection": {"type": "string"}, "document_id": {"type": "string"}, "method": {"type": "string"}, "payload": {"type": "object"}, "port": {"type": "integer"}}, "required": ["collection"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "get_nearby_locations", "description": "Spatial algorithm for Azgaar CSV.", "parameters": {"type": "object", "properties": {"target_name": {"type": "string"}, "csv_path": {"type": "string"}, "limit": {"type": "integer"}}, "required": ["target_name", "csv_path"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "log_system_note", "description": "Appends note to system log.", "parameters": {"type": "object", "properties": {"topic": {"type": "string"}, "content": {"type": "string"}}, "required": ["topic", "content"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "execute_terminal_command", "description": "Executes shell command.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "start_persistent_terminal", "description": "Spawns persistent terminal window.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "run_git_command", "description": "Executes git command.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "flush_node_processes", "description": "Forcefully terminates Node processes.", "parameters": {"type": "object", "additionalProperties": False}}}
         ]
 
         self.tools = [t for t in all_tools if t["function"]["name"] in active_tools]
@@ -724,6 +377,9 @@ class DeepSeekAgent:
                             elif tool_name == "search_workspace_code":
                                 status.update(f"[bold cyan]Running semantic AST search in:[/bold cyan] {args.get('directory', '')}...")
                                 tool_result = search_workspace_code(args.get("keyword", ""), args.get("directory", "."))
+                            elif tool_name == "index_workspace_components":
+                                status.update(f"[bold blue]Indexing exported components in:[/bold blue] {args.get('directory', 'src/components')}...")
+                                tool_result = index_workspace_components(args.get("directory", "src/components"))
                             elif tool_name == "update_architecture_ledger":
                                 status.update(f"[bold magenta]Updating VTT Architecture Schema for:[/bold magenta] {args.get('section', '')}...")
                                 tool_result = update_architecture_ledger(args.get("section", ""), args.get("content", ""))

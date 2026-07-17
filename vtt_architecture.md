@@ -4532,3 +4532,27 @@ The following are NOT typical VTT features and are intentionally excluded:
 - **CSS:** 89KB gzipped 13.9KB
 
 ---
+
+## Bug Fixes & Improvements — July 16, 2026 (Session 2) (Updated: 2026-07-16 22:01)
+## Bug Fixes & Improvements — July 16, 2026 (Session 2)
+
+### Routing Fixes
+1. **BreadcrumbBar.tsx** — Changed route keys from `/dashboard` → `/campaign/dashboard`, etc. Also fixed the breadcrumb link `to="/dashboard"` → `/campaign/dashboard`.
+2. **Header.tsx** — Changed `ROUTE_LABELS` keys from `/dashboard` → `/campaign/dashboard`, etc.
+3. **CommandPalette.tsx** — Changed all navigation commands from `/dashboard` → `/campaign/dashboard`, etc.
+4. **AuthGuard.tsx** — Changed DM redirect from `/dashboard` → `/campaign/dashboard`. Added hydration wait state (50ms setTimeout) to prevent race condition where Zustand persist rehydrates asynchronously and the guard redirects to login before state is loaded.
+5. **RecentActivityFeed.tsx** — Changed hrefs from `/journal`, `/encounters`, `/characters` to `/campaign/journal`, `/campaign/encounters`, `/campaign/player-cards`.
+
+### Toast Overhaul
+- **uiStore.ts** — Changed from single `toast: Toast | null` to `toasts: Toast[]` array with auto-generated IDs. Each toast has its own auto-dismiss timer. `dismissToast` takes an ID.
+- **ToastContainer.tsx** — Rewritten to use `toasts` array. No more duplicate key errors.
+
+### Firebase Path Fixes
+- **firestore.ts** — Changed `Paths.homebrewItems()`, `Paths.homebrewSpells()`, `Paths.homebrewFeats()` to accept a `campaignId` parameter, producing `homebrew/{campaignId}/items` (3 segments, valid collection reference).
+- **normalized-firebase-service.ts** — Updated all homebrew CRUD functions to accept `campaignId` parameter.
+- **useFirebaseSync.ts** — Updated all calls to homebrew functions to pass `campaignId`.
+
+### Other Fixes
+- **Hero.svg token image** — Added fallback token images for all creature types (Elemental, Giant, Monster, Golem, Plant, Fey, Skeleton, Wolf, Dragon, Goblin) used by `enemy-database.ts` `getEnemyImg()`.
+
+---
