@@ -23,6 +23,7 @@ import { CommandPalette } from "@/components/ui/CommandPalette";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useFirebaseSync } from "@/hooks/useFirebaseSync";
 import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
+import { useSaveShortcut } from "@/hooks/useSaveShortcut";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -32,6 +33,9 @@ export function AppShell() {
 
   // Start Firebase connection health monitor with auto-reconnect
   useFirebaseMonitor();
+
+  // Ctrl+S save shortcut
+  useSaveShortcut();
 
   // Sync player identifiers from campaign to auth store on mount/rehydrate
   const campaign = useCampaignStore((s) => s.campaign);
