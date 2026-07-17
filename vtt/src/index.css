@@ -320,6 +320,55 @@ main > div {
   animation: slide-up 0.25s ease-out;
 }
 
+/* ── Weather Effect Animations ──────────────────────────────── */
+@keyframes weather-fall {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(105vh) translateX(-10px);
+    opacity: 0;
+  }
+}
+
+@keyframes rain-streak {
+  0% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes fog-drift {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(15px) scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(-10px) scale(0.95);
+    opacity: 0.4;
+  }
+}
+
+.animate-weather-fall {
+  animation: weather-fall 2s linear infinite;
+}
+
 /* ── Premium: Scan-line CRT Effect for Theatric Mode ────────── */
 .scanlines::after {
   content: '';

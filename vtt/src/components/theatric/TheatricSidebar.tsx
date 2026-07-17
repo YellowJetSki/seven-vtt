@@ -6,18 +6,30 @@
 import { useState, useEffect, useCallback } from "react";
 import type { BattleMap } from "@/types";
 
+import type { WeatherEffect } from "./WeatherOverlay";
+
 interface TheatricSidebarProps {
   map: BattleMap | null;
   tokenId: string;
   fullscreen: boolean;
   showGrid: boolean;
+  weather: WeatherEffect;
   onToggleFullscreen: () => void;
   onToggleGrid: () => void;
+  onWeatherChange: (weather: WeatherEffect) => void;
 }
 
 const AUTOHIDE_DELAY = 5000;
 
-export function TheatricSidebar({ map, tokenId, fullscreen, showGrid, onToggleFullscreen, onToggleGrid }: TheatricSidebarProps) {
+const WEATHER_OPTIONS: { value: WeatherEffect; label: string; icon: string }[] = [
+  { value: "clear", label: "Clear", icon: "☀️" },
+  { value: "rain", label: "Rain", icon: "🌧️" },
+  { value: "snow", label: "Snow", icon: "❄️" },
+  { value: "fog", label: "Fog", icon: "🌫️" },
+  { value: "dust", label: "Dust", icon: "💨" },
+];
+
+export function TheatricSidebar({ map, tokenId, fullscreen, showGrid, weather, onToggleFullscreen, onToggleGrid, onWeatherChange }: TheatricSidebarProps) {
   const [visible, setVisible] = useState(true);
   const [hovering, setHovering] = useState(false);
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -124,6 +136,28 @@ export function TheatricSidebar({ map, tokenId, fullscreen, showGrid, onToggleFu
             {map.notes}
           </p>
         )}
+
+        {/* Weather Controls */}
+        <div className="mb-4">
+          <p className="mb-2 text-[9px] text-surface-500 uppercase tracking-wider">Weather</p>
+          <div className="grid grid-cols-5 gap-1">
+            {WEATHER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => onWeatherChange(opt.value)}
+                className={`flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[9px] transition-all ${
+                  weather === opt.value
+                    ? "bg-accent-500/20 text-accent-300 ring-1 ring-accent-500/30"
+                    : "text-surface-500 hover:text-surface-300 hover:bg-surface-800/50"
+                }`}
+                title={opt.label}
+              >
+                <span className="text-sm">{opt.icon}</span>
+                <span className="truncate max-w-full">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Spacer */}
         <div className="flex-1" />

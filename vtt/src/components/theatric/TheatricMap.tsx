@@ -13,15 +13,18 @@
 
 import { useState, useEffect } from "react";
 import type { BattleMap, MapToken } from "@/types";
+import { WeatherOverlay, type WeatherEffect } from "./WeatherOverlay";
 
 interface TheatricMapProps {
   map: BattleMap | null;
   tokenId: string;
   /** When true, show the grid overlay (default: hidden for dramatic effect) */
   showGrid?: boolean;
+  /** Weather effect to overlay on the map */
+  weather?: WeatherEffect;
 }
 
-export function TheatricMap({ map, tokenId, showGrid = false }: TheatricMapProps) {
+export function TheatricMap({ map, tokenId, showGrid = false, weather = "clear" }: TheatricMapProps) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -115,6 +118,9 @@ export function TheatricMap({ map, tokenId, showGrid = false }: TheatricMapProps
           <div className="absolute inset-0 rounded-full border-2 border-accent-400 shadow-[0_0_20px_rgba(139,48,255,0.3)]" />
         </div>
       )}
+
+      {/* Weather effect overlay */}
+      <WeatherOverlay weather={weather} intensity={1.0} />
 
       {/* Map name — subtle corner label */}
       <div className="absolute bottom-4 left-4 rounded-lg bg-black/30 px-3 py-1.5 text-xs text-white/60 backdrop-blur-sm">

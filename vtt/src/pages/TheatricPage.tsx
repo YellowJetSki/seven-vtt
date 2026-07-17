@@ -20,6 +20,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { isFirebaseAvailable } from "@/lib/firebase";
 import { TheatricMap } from "@/components/theatric/TheatricMap";
 import { TheatricSidebar } from "@/components/theatric/TheatricSidebar";
+import type { WeatherEffect } from "@/components/theatric/WeatherOverlay";
 import type { BattleMap } from "@/types";
 
 const THEATRIC_STORAGE_KEY = "vtt-theatric-payload";
@@ -37,6 +38,7 @@ export function TheatricPage() {
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
+  const [weather, setWeather] = useState<WeatherEffect>("clear");
   const [firebaseReady, setFirebaseReady] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -208,13 +210,25 @@ export function TheatricPage() {
   /* ── Render error state ───────────────────────────────── */
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-900 p-8 text-center" ref={containerRef}>
-        <span className="text-5xl">🎭</span>
-        <h2 className="text-lg font-semibold text-surface-200">Theatric View</h2>
-        <p className="max-w-md text-sm text-surface-500">{error}</p>
+      <div className="relative flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-950 p-8 text-center overflow-hidden" ref={containerRef}>
+        {/* Animated background glow */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-accent-500/5 blur-3xl animate-pulse-glow" />
+          <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 h-48 w-48 rounded-full bg-mage-500/5 blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
+        </div>
+
+        {/* Animated logo with glow */}
+        <div className="relative z-10 mb-4">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-accent-500/10 ring-1 ring-accent-500/20 overflow-hidden animate-pulse-glow shadow-[0_0_40px_rgba(139,48,255,0.15)]">
+            <img src="/AppIcon.png" alt="STᚱ VTT" className="h-24 w-24 object-cover" />
+          </div>
+        </div>
+
+        <h2 className="relative z-10 text-lg font-semibold text-surface-300">STᚱ VTT</h2>
+        <p className="relative z-10 max-w-md text-sm text-surface-600">{error}</p>
         <button
           onClick={() => window.close()}
-          className="mt-4 rounded-lg border border-surface-700 bg-surface-800 px-4 py-2 text-sm text-surface-300 hover:text-surface-100 transition-colors"
+          className="relative z-10 mt-4 rounded-lg border border-surface-700 bg-surface-800/50 px-4 py-2 text-sm text-surface-400 hover:text-surface-200 hover:border-surface-600 transition-all hover:bg-surface-700/50 backdrop-blur-sm"
         >
           Close
         </button>
@@ -243,13 +257,15 @@ export function TheatricPage() {
         tokenId={payload.tokenId}
         fullscreen={fullscreen}
         showGrid={showGrid}
+        weather={weather}
         onToggleFullscreen={toggleFullscreen}
         onToggleGrid={() => setShowGrid(!showGrid)}
+        onWeatherChange={setWeather}
       />
 
       {/* Battle Map */}
       <div className="flex-1 relative">
-        <TheatricMap map={map} tokenId={payload.tokenId} showGrid={showGrid} />
+        <TheatricMap map={map} tokenId={payload.tokenId} showGrid={showGrid} weather={weather} />
 
         {/* Corner watermark */}
         <div className="absolute bottom-3 right-3 rounded-lg bg-black/40 px-2 py-1 text-[10px] text-surface-500 backdrop-blur-sm">
