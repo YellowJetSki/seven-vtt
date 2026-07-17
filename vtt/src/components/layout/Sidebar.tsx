@@ -39,12 +39,16 @@ export function Sidebar() {
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
+  const characters = useCampaignStore((s) => s.characters);
   const meta = useCampaignStore((s) => s.meta);
   const liveSession = useCombatStore((s) => s.liveSession);
-
-  const playerCount = useCampaignStore((s) => s.characters.length);
+  const playerCount = characters.length;
   const encounterCount = useCampaignStore((s) => s.encounters.length);
   const sessionActive = liveSession.sessionStartedAt !== null;
+
+  const campaignName = meta?.name ?? "STᚱ VTT";
+  const campaignExperienceSystem = meta?.settings?.experienceSystem;
+  const hasPlayers = playerCount > 0;
 
   const handleNavClick = () => {
     if (window.innerWidth < 768) {
@@ -88,12 +92,12 @@ export function Sidebar() {
           {sidebarOpen && (
             <div className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold tracking-wide text-surface-100">
-                {campaign?.name ?? "STᚱ VTT"}
+                {campaignName}
               </span>
-              {campaign && (
+              {meta && (
                 <p className="truncate text-[10px] leading-tight text-surface-500">
-                  {campaign.settings.experienceSystem === "xp" ? "XP" : "Milestone"}
-                  {campaign.playerCharacters.length > 0 && ` · ${campaign.playerCharacters.length} PC${campaign.playerCharacters.length !== 1 ? "s" : ""}`}
+                  {campaignExperienceSystem === "xp" ? "XP" : "Milestone"}
+                  {hasPlayers && ` · ${playerCount} PC${playerCount !== 1 ? "s" : ""}`}
                 </p>
               )}
             </div>

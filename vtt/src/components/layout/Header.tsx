@@ -90,7 +90,7 @@ export function Header() {
         </button>
         <nav className="flex min-w-0 items-center gap-2 text-sm" aria-label="Breadcrumb">
           <span className="hidden max-w-[140px] truncate text-surface-500 sm:inline">
-            {campaign?.name ?? "Arkla"}
+            {campaignName}
           </span>
           <span className="hidden text-surface-600 sm:inline">/</span>
           <span className="truncate font-semibold text-surface-100">{currentPage}</span>
