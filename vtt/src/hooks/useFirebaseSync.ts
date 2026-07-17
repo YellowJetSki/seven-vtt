@@ -1,22 +1,13 @@
 /* ── Firebase Sync Hook (Normalized) ───────────────────────────
  *
- * Manages the Firebase real-time sync lifecycle using the NORMALIZED
- * subcollection-based Firestore layout.
+ * Manages Firestore subcollection listeners and debounced pushes.
+ * Call ONCE at the root of all DM routes (AppShell.tsx).
  *
- * Call ONCE at the root of all DM routes (done in AppShell.tsx).
- *
- * UPGRADED FEATURES:
- * • Persistent sync queue (localStorage) — pending writes survive page reload
- * • Exponential backoff retry for failed pushes
- * • Queue flush on reconnect
- * • Debounced push per domain (campaign 2s, combat 1.5s, homebrew 2s)
- * • Subcollection-aware writes — each entity type pushes to its own path
- * • Session Combatants sync — live combatant state pushed to /sessions/{id}/combatants/
- * • Combat Log sync — full combat log pushed to /combatLog/
- *
- * ── Data Flow ───────────────────────────────────────────────
- *   onSnapshot listeners hydrate Zustand stores via set().
- *   State mutations in components → debounced push → individual Firestore doc.
+ * Architecture:
+ *   - Listener setup/teardown via onSnapshot (in useEffect with auth deps)
+ *   - Debounced push per domain (campaign 2s, combat 1.5s, homebrew 2s)
+ *   - Persistent sync queue in localStorage (via sync-queue.ts)
+ *   - Flush queue on reconnect
  * ─────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef, useCallback } from "react";
@@ -24,281 +15,50 @@ import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useHomebrewStore } from "@/stores/homebrewStore";
-import { normalizedSync, normalizedCampaign, normalizedCharacters, normalizedEnemies, normalizedEncounters, normalizedMaps, normalizedTokens, normalizedJournal, normalizedHomebrewItems, normalizedHomebrewSpells, normalizedHomebrewFeats, normalizedSessions, normalizedSessionCombatants, normalizedCombatLog } from "@/lib/normalized-firebase-service";
-import type { CampaignMeta, CharacterDoc, EnemyDoc, EncounterDoc, MapTokenDoc, JournalEntryDoc, HomebrewItemDoc, HomebrewSpellDoc, HomebrewFeatDoc, SessionDoc, SessionCombatantDoc, CombatLogEntryDoc } from "@/types/firestore";
+import { isFirebaseAvailable } from "@/lib/firebase";
+import { useUiStore } from "@/stores/uiStore";
+import { flushQueue, enqueuePush } from "@/lib/sync-queue";
+import {
+  normalizedCampaign, normalizedCharacters, normalizedEnemies,
+  normalizedMaps, normalizedJournal,
+  normalizedSessions, normalizedSessionCombatants, normalizedCombatLog,
+  normalizedHomebrewItems, normalizedHomebrewSpells, normalizedHomebrewFeats,
+} from "@/lib/normalized-firebase-service";
+import type { CampaignMeta, CharacterDoc, EnemyDoc, EncounterDoc, MapDoc, MapTokenDoc, JournalEntryDoc, SessionDoc, SessionCombatantDoc, CombatLogEntryDoc, HomebrewItemDoc, HomebrewSpellDoc, HomebrewFeatDoc } from "@/types/firestore";
 import type { PlayerCharacter, Encounter, BattleMap, JournalEntry, CampaignSettings } from "@/types";
 import type { HomebrewItem, HomebrewFeat, HomebrewSpell } from "@/types/homebrew";
 import type { Combatant, CombatLogEntry } from "@/types/combat";
-import { isFirebaseAvailable } from "@/lib/firebase";
-import { useUiStore } from "@/stores/uiStore";
 
 const CAMPAIGN_ID = "arkla";
-
-/* ── Persistent Sync Queue ──────────────────────────────────── */
-
-interface QueuedPush {
-  id: string;
-  domain: "campaign" | "session" | "homebrew" | "character" | "enemy" | "encounter" | "map" | "token" | "journal" | "item" | "spell" | "feat" | "combatant" | "combatlog";
-  entityId?: string;
-  subId?: string;
-  timestamp: number;
-  retries: number;
-}
-
-const QUEUE_KEY = "vtt-sync-queue-normalized";
-const MAX_RETRIES = 5;
-
-function loadQueue(): QueuedPush[] {
-  try {
-    const raw = localStorage.getItem(QUEUE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveQueue(queue: QueuedPush[]) {
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-}
-
-function enqueuePush(domain: QueuedPush["domain"], entityId?: string, subId?: string): string {
-  const queue = loadQueue();
-  const id = `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  queue.push({ id, domain, entityId, subId, timestamp: Date.now(), retries: 0 });
-  saveQueue(queue);
-  return id;
-}
-
-function dequeuePush(id: string) {
-  const queue = loadQueue().filter((q) => q.id !== id);
-  saveQueue(queue);
-}
-
-function incrementRetry(id: string): number {
-  const queue = loadQueue();
-  const entry = queue.find((q) => q.id === id);
-  if (entry) {
-    entry.retries += 1;
-    entry.timestamp = Date.now();
-    saveQueue(queue);
-    return entry.retries;
-  }
-  return MAX_RETRIES + 1;
-}
-
-/**
- * Flushes all queued pushes that haven't exceeded max retries.
- * Called on reconnection and on mount.
- */
-async function flushQueue(): Promise<void> {
-  const queue = loadQueue();
-  const staleIds: string[] = [];
-
-  for (const entry of queue) {
-    if (entry.retries >= MAX_RETRIES) {
-      staleIds.push(entry.id);
-      continue;
-    }
-
-    try {
-      let ok = false;
-      const campaignId = CAMPAIGN_ID;
-
-      switch (entry.domain) {
-        case "campaign": {
-          const meta = useCampaignStore.getState().meta;
-          if (meta) ok = await normalizedCampaign.pushMeta(campaignId, meta);
-          break;
-        }
-        case "character": {
-          if (entry.entityId) {
-            const char = useCampaignStore.getState().characters.find((c) => c.id === entry.entityId);
-            if (char) ok = await normalizedCharacters.push(campaignId, char as unknown as CharacterDoc);
-          }
-          break;
-        }
-        case "enemy": {
-          if (entry.entityId) {
-            const enemy = useCampaignStore.getState().enemies.find((e) => e.id === entry.entityId);
-            if (enemy) ok = await normalizedEnemies.push(campaignId, enemy);
-          }
-          break;
-        }
-        case "encounter": {
-          if (entry.entityId) {
-            const enc = useCampaignStore.getState().encounters.find((e) => e.id === entry.entityId);
-            if (enc) ok = await normalizedEncounters.push(campaignId, enc as unknown as EncounterDoc);
-          }
-          break;
-        }
-        case "map": {
-          if (entry.entityId) {
-            const map = useCampaignStore.getState().battleMaps.find((m) => m.id === entry.entityId);
-            if (map) ok = await normalizedMaps.push(campaignId, map);
-          }
-          break;
-        }
-        case "token": {
-          if (entry.entityId && entry.subId) {
-            const token = (useCampaignStore.getState().mapTokens[entry.entityId] ?? []).find((t) => t.id === entry.subId);
-            if (token) ok = await normalizedTokens.push(campaignId, entry.entityId, token as unknown as MapTokenDoc);
-          }
-          break;
-        }
-        case "journal": {
-          if (entry.entityId) {
-            const journal = useCampaignStore.getState().journal.find((j) => j.id === entry.entityId);
-            if (journal) ok = await normalizedJournal.push(campaignId, journal as unknown as JournalEntryDoc);
-          }
-          break;
-        }
-        case "session": {
-          const sessionState = useCombatStore.getState().liveSession;
-          if (sessionState) {
-            const activeEncounter = useCombatStore.getState().activeEncounter;
-            const session: SessionDoc = {
-              id: "current",
-              name: `Session ${new Date().toLocaleDateString()}`,
-              phase: sessionState.phase,
-              startedAt: sessionState.sessionStartedAt,
-              endedAt: null,
-              currentScene: sessionState.currentScene,
-              currentMapUrl: sessionState.currentMapUrl,
-              dmAnnouncement: sessionState.dmAnnouncement,
-              conditions: sessionState.conditions,
-              activeEncounterId: activeEncounter?.id ?? null,
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-            };
-            ok = await normalizedSessions.push(campaignId, session);
-          }
-          break;
-        }
-        case "combatant": {
-          if (entry.entityId) {
-            const combatant = (useCombatStore.getState().activeEncounter?.combatants ?? []).find((c) => c.id === entry.entityId);
-            if (combatant) {
-              ok = await normalizedSessionCombatants.push(campaignId, "current", combatant as unknown as SessionCombatantDoc);
-            }
-          }
-          break;
-        }
-        case "combatlog": {
-          if (entry.entityId) {
-            const logEntry = useCombatStore.getState().combatLog.find((l) => l.id === entry.entityId);
-            if (logEntry) {
-              ok = await normalizedCombatLog.push(campaignId, logEntry as unknown as CombatLogEntryDoc);
-            }
-          }
-          break;
-        }
-        case "item": {
-          if (entry.entityId) {
-            const item = useHomebrewStore.getState().items.find((i) => i.id === entry.entityId);
-            if (item) ok = await normalizedHomebrewItems.push(CAMPAIGN_ID, item as unknown as HomebrewItemDoc);
-          }
-          break;
-        }
-        case "spell": {
-          if (entry.entityId) {
-            const spell = useHomebrewStore.getState().spells.find((s) => s.id === entry.entityId);
-            if (spell) ok = await normalizedHomebrewSpells.push(CAMPAIGN_ID, spell as unknown as HomebrewSpellDoc);
-          }
-          break;
-        }
-        case "feat": {
-          if (entry.entityId) {
-            const feat = useHomebrewStore.getState().feats.find((f) => f.id === entry.entityId);
-            if (feat) ok = await normalizedHomebrewFeats.push(CAMPAIGN_ID, feat as unknown as HomebrewFeatDoc);
-          }
-          break;
-        }
-        default: {
-          ok = await pushAllDomains();
-        }
-      }
-
-      if (ok) {
-        dequeuePush(entry.id);
-      } else {
-        incrementRetry(entry.id);
-      }
-    } catch {
-      incrementRetry(entry.id);
-    }
-  }
-
-  for (const id of staleIds) {
-    dequeuePush(id);
-  }
-}
 
 /* ── Push All Domains ───────────────────────────────────────── */
 
 async function pushAllDomains(): Promise<boolean> {
-  const campaignId = CAMPAIGN_ID;
+  const cid = CAMPAIGN_ID;
   let allOk = true;
+  const { meta, characters, enemies, encounters, battleMaps, journal } = useCampaignStore.getState();
 
-  const meta = useCampaignStore.getState().meta;
-  if (meta) {
-    const ok = await normalizedCampaign.pushMeta(campaignId, meta);
-    if (!ok) allOk = false;
-  }
+  if (meta && !(await normalizedCampaign.pushMeta(cid, meta))) allOk = false;
+  for (const c of characters) if (!(await normalizedCharacters.push(cid, c as unknown as CharacterDoc))) allOk = false;
+  for (const e of enemies) if (!(await normalizedEnemies.push(cid, e))) allOk = false;
+  for (const e of encounters) if (!(await normalizedEncounters.push(cid, e as unknown as EncounterDoc))) allOk = false;
+  for (const m of battleMaps) if (!(await normalizedMaps.push(cid, m))) allOk = false;
+  for (const j of journal) if (!(await normalizedJournal.push(cid, j as unknown as JournalEntryDoc))) allOk = false;
 
-  const { characters, enemies, encounters, battleMaps, journal } = useCampaignStore.getState();
-
-  for (const char of characters) {
-    const ok = await normalizedCharacters.push(campaignId, char as unknown as CharacterDoc);
-    if (!ok) allOk = false;
-  }
-
-  for (const enemy of enemies) {
-    const ok = await normalizedEnemies.push(campaignId, enemy);
-    if (!ok) allOk = false;
-  }
-
-  for (const enc of encounters) {
-    const ok = await normalizedEncounters.push(campaignId, enc as unknown as EncounterDoc);
-    if (!ok) allOk = false;
-  }
-
-  for (const map of battleMaps) {
-    const ok = await normalizedMaps.push(campaignId, map);
-    if (!ok) allOk = false;
-  }
-
-  for (const entry of journal) {
-    const ok = await normalizedJournal.push(campaignId, entry as unknown as JournalEntryDoc);
-    if (!ok) allOk = false;
-  }
-
-  // ── Session Combatants ──
-  const activeEncounter = useCombatStore.getState().activeEncounter;
-  if (activeEncounter) {
-    for (const combatant of activeEncounter.combatants) {
-      const ok = await normalizedSessionCombatants.push(campaignId, "current", combatant as unknown as SessionCombatantDoc);
-      if (!ok) allOk = false;
+  const activeEnc = useCombatStore.getState().activeEncounter;
+  if (activeEnc) {
+    for (const combatant of activeEnc.combatants) {
+      if (!(await normalizedSessionCombatants.push(cid, "current", combatant as unknown as SessionCombatantDoc))) allOk = false;
     }
   }
-
-  // ── Combat Log ──
-  const combatLog = useCombatStore.getState().combatLog;
-  for (const entry of combatLog) {
-    const ok = await normalizedCombatLog.push(campaignId, entry as unknown as CombatLogEntryDoc);
-    if (!ok) allOk = false;
+  for (const entry of useCombatStore.getState().combatLog) {
+    if (!(await normalizedCombatLog.push(cid, entry as unknown as CombatLogEntryDoc))) allOk = false;
   }
 
   const { items, spells, feats } = useHomebrewStore.getState();
-  for (const item of items) {
-    const ok = await normalizedHomebrewItems.push(CAMPAIGN_ID, item as unknown as HomebrewItemDoc);
-    if (!ok) allOk = false;
-  }
-  for (const spell of spells) {
-    const ok = await normalizedHomebrewSpells.push(CAMPAIGN_ID, spell as unknown as HomebrewSpellDoc);
-    if (!ok) allOk = false;
-  }
-  for (const feat of feats) {
-    const ok = await normalizedHomebrewFeats.push(CAMPAIGN_ID, feat as unknown as HomebrewFeatDoc);
-    if (!ok) allOk = false;
-  }
+  for (const i of items) if (!(await normalizedHomebrewItems.push(CAMPAIGN_ID, i as unknown as HomebrewItemDoc))) allOk = false;
+  for (const s of spells) if (!(await normalizedHomebrewSpells.push(CAMPAIGN_ID, s as unknown as HomebrewSpellDoc))) allOk = false;
+  for (const f of feats) if (!(await normalizedHomebrewFeats.push(CAMPAIGN_ID, f as unknown as HomebrewFeatDoc))) allOk = false;
 
   return allOk;
 }
@@ -313,7 +73,6 @@ export function useFirebaseSync(): void {
   const showToast = useUiStore((s) => s.showToast);
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
 
-  // Use primitive selectors only — avoid `s.campaign` which creates new refs
   const meta = useCampaignStore((s) => s.meta);
   const metaUpdatedAt = meta?.updatedAt ?? 0;
   const charactersLen = useCampaignStore((s) => s.characters.length);
@@ -321,294 +80,120 @@ export function useFirebaseSync(): void {
   const encountersLen = useCampaignStore((s) => s.encounters.length);
   const mapsLen = useCampaignStore((s) => s.battleMaps.length);
   const journalLen = useCampaignStore((s) => s.journal.length);
+  const forcePushCounter = useCampaignStore((s) => s.forcePushCounter);
 
-  // ── Combat watchers (use primitive selectors) ──
   const encounterPhase = useCombatStore((s) => s.activeEncounter?.phase ?? null);
   const encounterRound = useCombatStore((s) => s.activeEncounter?.round ?? 0);
   const encounterIndex = useCombatStore((s) => s.activeEncounter?.currentCombatantIndex ?? 0);
-  const sessionPhase = useCombatStore((s) => s.liveSession.phase);
-  const sessionStarted = useCombatStore((s) => s.liveSession.sessionStartedAt);
+  const combatantsLen = useCombatStore((s) => s.activeEncounter?.combatants.length ?? 0);
   const combatLogLen = useCombatStore((s) => s.combatLog.length);
-  const combatantsVersion = useCombatStore((s) => s.activeEncounter?.combatants.length ?? 0);
 
-  // ── Homebrew watchers ──
   const homebrewItemsLen = useHomebrewStore((s) => s.items.length);
   const homebrewFeatsLen = useHomebrewStore((s) => s.feats.length);
   const homebrewSpellsLen = useHomebrewStore((s) => s.spells.length);
 
-  // ── Force push counter ──
-  const forcePushCounter = useCampaignStore((s) => s.forcePushCounter);
-
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const debouncedPush = useCallback((domain: QueuedPush["domain"], fn: () => Promise<boolean>, delay: number, entityId?: string, subId?: string) => {
-    const qId = enqueuePush(domain, entityId, subId);
+  const debouncedPush = useCallback((domain: string, fn: () => Promise<boolean>, delay: number, entityId?: string) => {
+    enqueuePush(domain as any, entityId);
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
     pushTimerRef.current = setTimeout(async () => {
-      try {
-        const ok = await fn();
-        if (ok) {
-          dequeuePush(qId);
-        } else {
-          incrementRetry(qId);
-        }
-      } catch {
-        incrementRetry(qId);
-      }
+      try { await fn(); } catch { /* retried by sync-queue */ }
     }, delay);
   }, []);
 
-  /* ── Flush pending queue on reconnect ── */
+  /* ── Flush on reconnect ── */
   useEffect(() => {
-    if (firebaseConnected && queueFlushed.current) {
-      flushQueue();
-    }
+    if (firebaseConnected && queueFlushed.current) flushQueue();
   }, [firebaseConnected]);
 
-  /* ── Start/Stop Listeners on Auth Change ── */
+  /* ── Listener setup ── */
   useEffect(() => {
-    if (!isFirebaseAvailable()) return;
+    if (!isFirebaseAvailable() || authState !== "authenticated" || authRole !== "dm") return;
 
-    if (authState === "authenticated" && authRole === "dm") {
-      // Register Firestore listeners that hydrate Zustand stores via set().
-      // All mutations go through proper Zustand set() to ensure
-      // React re-renders, persist middleware serialization, and campaign recomputation.
+    const unsubCharacters = normalizedCharacters.listenAll(CAMPAIGN_ID, (chars) => {
+      const store = useCampaignStore.getState();
+      if (!store.meta) return;
+      const storeIds = new Set(store.characters.map((c) => c.id));
+      if (chars.some((c) => !storeIds.has(c.id)))
+        store.setCampaign({ ...store.campaign!, playerCharacters: chars as unknown as PlayerCharacter[] });
+    });
 
-      // ── Characters ──
-      const unsubCharacters = normalizedCharacters.listenAll(CAMPAIGN_ID, (chars) => {
-        const store = useCampaignStore.getState();
-        if (!store.meta) return; // No campaign yet — ignore remote data
-        const storeCharIds = new Set(store.characters.map((c) => c.id));
-        // Only update if there are actual remote changes not in local store
-        const hasNewData = chars.some((c) => !storeCharIds.has(c.id));
-        if (hasNewData) {
-          store.setCampaign({
-            ...store.campaign!,
-            playerCharacters: chars as unknown as PlayerCharacter[],
-          });
-        }
-      });
+    const unsubMaps = normalizedMaps.listenAll(CAMPAIGN_ID, (maps) => {
+      const store = useCampaignStore.getState();
+      if (!store.meta) return;
+      const storeIds = new Set(store.battleMaps.map((m) => m.id));
+      if (maps.some((m) => !storeIds.has(m.id)))
+        store.setCampaign({ ...store.campaign!, battleMaps: maps as unknown as BattleMap[], playerCharacters: store.characters, encounters: store.encounters, journal: store.journal });
+    });
 
-      // ── Enemies ──
-      const unsubEnemies = normalizedEnemies.listenAll(CAMPAIGN_ID, (enemies) => {
-        const store = useCampaignStore.getState();
-        if (!store.meta) return;
-        const storeEnemyIds = new Set(store.enemies.map((e) => e.id));
-        const hasNewData = enemies.some((e) => !storeEnemyIds.has(e.id));
-        if (hasNewData) {
-          store.setCampaign({
-            ...store.campaign!,
-            encounters: store.encounters,
-            battleMaps: store.battleMaps,
-            journal: store.journal,
-            playerCharacters: store.characters,
-          });
-        }
-      });
+    const unsubJournal = normalizedJournal.listenAll(CAMPAIGN_ID, (entries) => {
+      const store = useCampaignStore.getState();
+      if (!store.meta) return;
+      const storeIds = new Set(store.journal.map((j) => j.id));
+      if (entries.some((e) => !storeIds.has(e.id)))
+        store.setCampaign({ ...store.campaign!, journal: entries as unknown as JournalEntry[], playerCharacters: store.characters, encounters: store.encounters, battleMaps: store.battleMaps });
+    });
 
-      // ── Maps ──
-      const unsubMaps = normalizedMaps.listenAll(CAMPAIGN_ID, (maps) => {
-        const store = useCampaignStore.getState();
-        if (!store.meta) return;
-        const storeMapIds = new Set(store.battleMaps.map((m) => m.id));
-        const hasNewData = maps.some((m) => !storeMapIds.has(m.id));
-        if (hasNewData) {
-          store.setCampaign({
-            ...store.campaign!,
-            battleMaps: maps as unknown as BattleMap[],
-            playerCharacters: store.characters,
-            encounters: store.encounters,
-            journal: store.journal,
-          });
-        }
-      });
+    const unsubCombatLog = normalizedCombatLog.listenAll(CAMPAIGN_ID, (entries) => {
+      const store = useCombatStore.getState();
+      const storeIds = new Set(store.combatLog.map((e) => e.id));
+      const newEntries = entries.filter((e) => !storeIds.has(e.id));
+      if (newEntries.length > 0)
+        useCombatStore.setState({ combatLog: [...store.combatLog, ...newEntries as unknown as CombatLogEntry[]] });
+    });
 
-      // ── Journal ──
-      const unsubJournal = normalizedJournal.listenAll(CAMPAIGN_ID, (entries) => {
-        const store = useCampaignStore.getState();
-        if (!store.meta) return;
-        const storeJournalIds = new Set(store.journal.map((j) => j.id));
-        const hasNewData = entries.some((e) => !storeJournalIds.has(e.id));
-        if (hasNewData) {
-          store.setCampaign({
-            ...store.campaign!,
-            journal: entries as unknown as JournalEntry[],
-            playerCharacters: store.characters,
-            encounters: store.encounters,
-            battleMaps: store.battleMaps,
-          });
-        }
-      });
+    const unsubItems = normalizedHomebrewItems.listenAll(CAMPAIGN_ID, (items) => {
+      const store = useHomebrewStore.getState();
+      if (typeof store.setItems === "function") store.setItems(items as unknown as HomebrewItem[]);
+    });
+    const unsubSpells = normalizedHomebrewSpells.listenAll(CAMPAIGN_ID, (spells) => {
+      const store = useHomebrewStore.getState();
+      if (typeof store.setSpells === "function") store.setSpells(spells as unknown as HomebrewSpell[]);
+    });
+    const unsubFeats = normalizedHomebrewFeats.listenAll(CAMPAIGN_ID, (feats) => {
+      const store = useHomebrewStore.getState();
+      if (typeof store.setFeats === "function") store.setFeats(feats as unknown as HomebrewFeat[]);
+    });
 
-      // ── Session Combatants ──
-      const unsubSessionCombatants = normalizedSessionCombatants.listenAll(CAMPAIGN_ID, "current", (combatants) => {
-        const store = useCombatStore.getState();
-        const activeEnc = store.activeEncounter;
-        if (!activeEnc) return;
-        // Only update if remote data has different combatants than local
-        const localIds = new Set(activeEnc.combatants.map((c) => c.id));
-        const hasNewData = combatants.some((c) => !localIds.has(c.id));
-        if (hasNewData) {
-          // Merge incoming combatant data into the active encounter
-          const mergedCombatants = activeEnc.combatants.map((local) => {
-            const remote = combatants.find((r) => r.id === local.id);
-            // Preserve local initiative & turn data, update HP and status from remote
-            return remote ? {
-              ...local,
-              hitPoints: remote.hitPoints,
-              statusEffects: remote.statusEffects.map((s) => ({ id: s.id, effect: s.effect })),
-              isDead: remote.isDead,
-              isConcentrating: remote.isConcentrating,
-              notes: remote.notes,
-              imageUrl: remote.imageUrl,
-            } : local;
-          });
-          // Keep any combatants that exist in remote but not locally (e.g. added by another DM device)
-          for (const remote of combatants) {
-            if (!localIds.has(remote.id)) {
-              mergedCombatants.push(remote as unknown as Combatant);
-            }
-          }
-          store.setActiveEncounter(activeEnc.id);
-        }
-      });
+    const unsubs = [unsubCharacters, unsubMaps, unsubJournal, unsubCombatLog, unsubItems, unsubSpells, unsubFeats].filter(Boolean) as (() => void)[];
 
-      // ── Combat Log ──
-      const unsubCombatLog = normalizedCombatLog.listenAll(CAMPAIGN_ID, (entries) => {
-        const store = useCombatStore.getState();
-        const localLen = store.combatLog.length;
-        if (entries.length > localLen) {
-          // New remote entries exist — merge them in
-          const localIds = new Set(store.combatLog.map((e) => e.id));
-          const newEntries = entries.filter((e) => !localIds.has(e.id));
-          if (newEntries.length > 0) {
-            // Append remote entries to local log
-            const merged = [...store.combatLog, ...newEntries as unknown as CombatLogEntry[]];
-            // No direct setter for combatLog — use the store's internal state
-            useCombatStore.setState({ combatLog: merged });
-          }
-        }
-      });
+    initialized.current = true;
+    if (!queueFlushed.current) { queueFlushed.current = true; flushQueue(); }
+    pushAllDomains().catch(() => {});
 
-      // ── Homebrew Items ──
-      const unsubItems = normalizedHomebrewItems.listenAll(CAMPAIGN_ID, (items) => {
-        const store = useHomebrewStore.getState();
-        if (typeof store.setItems === "function") {
-          store.setItems(items as unknown as HomebrewItem[]);
-        }
-      });
-
-      // ── Homebrew Spells ──
-      const unsubSpells = normalizedHomebrewSpells.listenAll(CAMPAIGN_ID, (spells) => {
-        const store = useHomebrewStore.getState();
-        if (typeof store.setSpells === "function") {
-          store.setSpells(spells as unknown as HomebrewSpell[]);
-        }
-      });
-
-      // ── Homebrew Feats ──
-      const unsubFeats = normalizedHomebrewFeats.listenAll(CAMPAIGN_ID, (feats) => {
-        const store = useHomebrewStore.getState();
-        if (typeof store.setFeats === "function") {
-          store.setFeats(feats as unknown as HomebrewFeat[]);
-        }
-      });
-
-      // Store unsubscribers for cleanup
-      const unsubs = [
-        unsubCharacters, unsubEnemies, unsubMaps, unsubJournal,
-        unsubSessionCombatants, unsubCombatLog,
-        unsubItems, unsubSpells, unsubFeats,
-      ].filter(Boolean) as (() => void)[];
-
-      initialized.current = true;
-
-      // Flush any pending offline writes on mount
-      if (!queueFlushed.current) {
-        queueFlushed.current = true;
-        flushQueue();
-      }
-
-      // Initial full sync push to Firebase
-      pushAllDomains().catch(() => {});
-
-      return () => {
-        unsubs.forEach((u) => u());
-      };
-    }
+    return () => unsubs.forEach((u) => u());
   }, [authState, authRole]);
 
-  /* ── Push Campaign Meta & Entities ── */
+  /* ── Push Campaign Meta ── */
   useEffect(() => {
-    if (authState !== "authenticated" || authRole !== "dm") return;
-    if (!meta) return;
-
-    debouncedPush("campaign", async () => {
-      return normalizedCampaign.pushMeta(CAMPAIGN_ID, meta);
-    }, 2000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (authState !== "authenticated" || authRole !== "dm" || !meta) return;
+    debouncedPush("campaign", () => normalizedCampaign.pushMeta(CAMPAIGN_ID, meta), 2000);
   }, [metaUpdatedAt, forcePushCounter, authState, authRole]);
 
-  /* ── Push Combat/Session ── */
+  /* ── Push Session State ── */
   useEffect(() => {
     if (authState !== "authenticated" || authRole !== "dm") return;
     debouncedPush("session", async () => {
-      const sessionState = useCombatStore.getState().liveSession;
-      const currentEncounter = useCombatStore.getState().activeEncounter;
-      const session: SessionDoc = {
-        id: "current",
-        name: `Session ${new Date().toLocaleDateString()}`,
-        phase: sessionState.phase,
-        startedAt: sessionState.sessionStartedAt,
-        endedAt: null,
-        currentScene: sessionState.currentScene,
-        currentMapUrl: sessionState.currentMapUrl,
-        dmAnnouncement: sessionState.dmAnnouncement,
-        conditions: sessionState.conditions,
-        activeEncounterId: currentEncounter?.id ?? null,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-      return normalizedSessions.push(CAMPAIGN_ID, session);
+      const s = useCombatStore.getState().liveSession;
+      const e = useCombatStore.getState().activeEncounter;
+      return normalizedSessions.push(CAMPAIGN_ID, {
+        id: "current", name: `Session ${new Date().toLocaleDateString()}`,
+        phase: s.phase, startedAt: s.sessionStartedAt, endedAt: null,
+        currentScene: s.currentScene, currentMapUrl: s.currentMapUrl,
+        dmAnnouncement: s.dmAnnouncement, conditions: s.conditions,
+        activeEncounterId: e?.id ?? null, createdAt: Date.now(), updatedAt: Date.now(),
+      });
     }, 1500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeEncounter?.phase, activeEncounter?.round,
-    activeEncounter?.currentCombatantIndex, activeEncounter?.combatants.length,
-    activeEncounter?.startedAt, activeEncounter?.completedAt,
-    liveSession.phase, liveSession.currentScene, liveSession.currentMapUrl,
-    liveSession.dmAnnouncement, liveSession.sessionStartedAt,
-    authState, authRole,
-  ]);
-
-  /* ── Push Session Combatants ── */
-  useEffect(() => {
-    if (authState !== "authenticated" || authRole !== "dm") return;
-    if (!activeEncounter) return;
-
-    for (const combatant of activeEncounter.combatants) {
-      debouncedPush("combatant", async () => {
-        return normalizedSessionCombatants.push(CAMPAIGN_ID, "current", combatant as unknown as SessionCombatantDoc);
-      }, 1500, combatant.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    combatantsVersion,
-    activeEncounter?.combatants.map((c) => `${c.id}:${c.hitPoints.current}:${c.hitPoints.temporary}:${c.isDead}:${c.statusEffects.length}`).join(","),
-    authState, authRole,
-  ]);
+  }, [encounterPhase, encounterRound, encounterIndex, combatantsLen, authState, authRole]);
 
   /* ── Push Combat Log ── */
   useEffect(() => {
     if (authState !== "authenticated" || authRole !== "dm") return;
     const log = useCombatStore.getState().combatLog;
     if (log.length === 0) return;
-
-    const latestEntry = log[log.length - 1];
-    debouncedPush("combatlog", async () => {
-      return normalizedCombatLog.push(CAMPAIGN_ID, latestEntry as unknown as CombatLogEntryDoc);
-    }, 1500, latestEntry.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const latest = log[log.length - 1];
+    debouncedPush("combatlog", () => normalizedCombatLog.push(CAMPAIGN_ID, latest as unknown as CombatLogEntryDoc), 1500, latest.id);
   }, [combatLogLen, authState, authRole]);
 
   /* ── Push Homebrew ── */
@@ -617,52 +202,29 @@ export function useFirebaseSync(): void {
     debouncedPush("homebrew", async () => {
       const { items, spells, feats } = useHomebrewStore.getState();
       let allOk = true;
-      for (const item of items) {
-        const ok = await normalizedHomebrewItems.push(item as unknown as HomebrewItemDoc);
-        if (!ok) allOk = false;
-      }
-      for (const spell of spells) {
-        const ok = await normalizedHomebrewSpells.push(spell as unknown as HomebrewSpellDoc);
-        if (!ok) allOk = false;
-      }
-      for (const feat of feats) {
-        const ok = await normalizedHomebrewFeats.push(feat as unknown as HomebrewFeatDoc);
-        if (!ok) allOk = false;
-      }
+      for (const i of items) if (!(await normalizedHomebrewItems.push(CAMPAIGN_ID, i as unknown as HomebrewItemDoc))) allOk = false;
+      for (const s of spells) if (!(await normalizedHomebrewSpells.push(CAMPAIGN_ID, s as unknown as HomebrewSpellDoc))) allOk = false;
+      for (const f of feats) if (!(await normalizedHomebrewFeats.push(CAMPAIGN_ID, f as unknown as HomebrewFeatDoc))) allOk = false;
       return allOk;
     }, 2000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [homebrewItemsLen, homebrewFeatsLen, homebrewSpellsLen, authState, authRole]);
 
   /* ── Welcome Toast ── */
   useEffect(() => {
-    if (!initialized.current) return;
-    initialized.current = false;
-    if (isFirebaseAvailable() && authState === "authenticated") {
-      showToast({
-        message: "Cloud sync is active. Offline queue ready.",
-        type: "info",
-        duration: 3000,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!initialized.current || !isFirebaseAvailable() || authState !== "authenticated") return;
+    showToast({ message: "Cloud sync is active. Offline queue ready.", type: "info", duration: 3000 });
   }, []);
 }
 
-/**
- * Triggers an immediate full sync push to Firestore.
- * Flushes the pending queue first, then pushes all domains.
- */
 export async function triggerFullSync(): Promise<boolean> {
   if (!isFirebaseAvailable()) return false;
   await flushQueue();
   return pushAllDomains();
 }
 
-/**
- * Returns the count of pending (unsynced) items in the queue.
- * Use this to show a "pending sync" badge in the UI.
- */
 export function getPendingSyncCount(): number {
-  return loadQueue().length;
+  try {
+    const raw = localStorage.getItem("vtt-sync-queue-normalized");
+    return raw ? JSON.parse(raw).length : 0;
+  } catch { return 0; }
 }
