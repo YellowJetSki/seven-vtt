@@ -705,3 +705,25 @@ sprint1/
 
 ### Build: 0 TS errors, deploys cleanly
 ---
+
+## Sprint 9, Cycle 9 — Sync Improvements (Updated: 2026-07-17 17:26)
+## Sprint 9, Cycle 9 — Session Combatant Sync to Players
+
+### Changes
+1. **usePlayerFirebaseSync.ts** — Added `normalizedSessionCombatants.listenAll(cid, "current", ...)` subscriber that merges combatant HP/status/dead changes into the player's combat store. Players now see live HP updates during combat.
+
+2. **useFirebaseSync.ts** — Registered the previously dead `registerHpSyncCallback()` function. Every combatant mutation (damage, heal, tempHP, status, dead) now pushes the updated combatant to Firebase via `normalizedSessionCombatants.push()`.
+
+### Data Flow
+```
+DM damageCombatant() → combatantSlice → syncHp callback → 
+normalizedSessionCombatants.push() → Firestore → onSnapshot → 
+usePlayerFirebaseSync merge → PlayerDashboard re-render
+```
+
+### Status
+- TypeScript: 0 errors
+- Build: 829ms
+- Push: `7b84c0b` — main
+
+---
