@@ -542,3 +542,36 @@ All previously fixed bugs remain resolved:
 **Build**: 0 TypeScript errors, deploys cleanly to production
 
 ---
+
+## Sprint 8 (2026-07-17): Production Regression Test — All Clear (Updated: 2026-07-17 16:39)
+## Sprint 8 — Regression Test Results
+
+**All 13 pages / views tested. 0 console errors. 0 unhandled rejections.**
+
+### Full Test Matrix
+
+| # | Feature | Role | Key Elements Tested | Result |
+|---|---------|------|---------------------|--------|
+| 1 | **Login Screen** | Public | Role selection (DM/Player), UI rendering | ✅ 0 errors |
+| 2 | **DM Login** | DM | Username/password auth, rehydration | ✅ 0 errors |
+| 3 | **CampaignWizard** | DM | 5-step: Name → Species → Classes & Currency → Review → Create | ✅ 0 errors |
+| 4 | **Dashboard** | DM | Stats cards (4 PCs, 0 encounters/maps/journal/combat), Session status, Conditions (weather/lighting/terrain), Quick Actions, Export/Import | ✅ 0 errors |
+| 5 | **Player Cards** | DM | 4 PCs (Edmund, Kehrfuffle, Wendy, Azael), ability grids, HP bars, inventory, Grid/Compendium toggle, search/sort | ✅ 0 errors |
+| 6 | **Homebrew** | DM | Items/Feats/Spells tabs, New Item modal (name, category, rarity, weight, value, description, attunement) | ✅ 0 errors |
+| 7 | **Encounters — Initiative** | DM | Quick-Start (4 PCs + 4 Bandits = 8 combatants), ⚔ Start → Round 1 active, timer, ▶ turn controls, ⏸ pause, ✕ End | ✅ 0 errors |
+| 8 | **Encounters — Session** | DM | Session view, Start Session button | ✅ 0 errors |
+| 9 | **Encounters — Quick Ref** | DM | DC Reference with collapsible categories | ✅ 0 errors |
+| 10 | **Encounters — Builder** | DM | Random Encounter Generator, terrain/difficulty, Ambient Sound | ✅ 0 errors |
+| 11 | **Battle Maps** | DM | Empty state, Create Map button, search | ✅ 0 errors |
+| 12 | **Journal** | DM | 5 type filters (All/Session/Note/Lore/Quest/Handout), Cards/Timeline toggle, Tags, sort by Date/Title/Type | ✅ 0 errors |
+| 13 | **Settings** | DM | Campaign Info, Game Rules, Private DM Notes, Export/Import Campaign, Danger Zone | ✅ 0 errors |
+| 14 | **Player Login** | Player | Character name form, validation (graceful "not found" error) | ✅ 0 errors |
+| 15 | **Theatric Page** | Public | Empty state message | ✅ 0 errors |
+
+### Build
+- 0 TypeScript errors
+- 207 modules → built in 655ms
+- JS: ~441KB (121KB gzipped)
+- CSS: ~89KB (14KB gzipped)
+
+---
