@@ -9,6 +9,8 @@
     "prebuild": "node scripts/generate-image-manifest.js",
     "build": "tsc --noEmit && vite build",
     "lint": "oxlint",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.3.2",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",

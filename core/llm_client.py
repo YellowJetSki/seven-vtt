@@ -111,7 +111,7 @@ class DeepSeekAgent:
                 "2. SMART EDITING: When modifying an EXISTING file, prioritize using the 'apply_unified_diff' tool for surgical edits, or 'edit_workspace_file'. Do NOT use 'write_workspace_file' for existing files as it causes truncations.\n"
                 "3. CASCADE PREVENTION: Before modifying any core component's props or exports, you MUST use 'map_component_dependencies' to verify how many other files rely on it.\n"
                 "4. THE ARCHITECTURE LEDGER: Whenever you create or modify a core component, state variable, or database schema, you MUST immediately use the 'update_architecture_ledger' tool to document it. Never rely solely on memory.\n"
-                "5. TERMINAL HYGIENE: If you spawn a temporary server using 'start_persistent_terminal', you MUST explicitly execute 'stop_persistent_terminal' when it is no longer required to clear system ports.\n"
+                "5. TERMINAL HYGIENE: You MUST use 'start_persistent_terminal' for any command that starts a local server or persistent process (e.g., 'npm run dev', 'npx playwright show-report'). NEVER use 'execute_terminal_command' for these, as it will fatally lock the system thread. If you spawn a temporary server, you MUST explicitly execute 'stop_persistent_terminal' when it is no longer required to clear system ports.\n"
                 "6. BROWSER SURVIVAL: Running 'flush_node_processes' kills the background engine driving your Playwright session. If you flush processes, you MUST immediately call 'restart_browser' to restore visualization capability.\n"
                 "7. THE ROLLBACK PROTOCOL: If you completely break the build during a sprint and exhaust your testing budget, you MUST use 'rollback_sprint' to instantly revert the damage. You must then write a system note detailing why it failed before proceeding.\n"
                 "8. PRODUCTION FIRST: While localhost is acceptable for immediate drafting, you must always prioritize testing and validating against the live link. Never assume a localhost fix translates to a working production build without verifying the live URL.\n"
@@ -162,8 +162,8 @@ class DeepSeekAgent:
             {"type": "function", "function": {"name": "run_firebase_emulator_query", "description": "Executes a REST transaction against Firestore Emulator.", "parameters": {"type": "object", "properties": {"collection": {"type": "string"}, "document_id": {"type": "string"}, "method": {"type": "string"}, "payload": {"type": "object"}, "port": {"type": "integer"}}, "required": ["collection"], "additionalProperties": False}}},
             {"type": "function", "function": {"name": "get_nearby_locations", "description": "Calculates nearby locations.", "parameters": {"type": "object", "properties": {"target_name": {"type": "string"}, "csv_path": {"type": "string"}, "limit": {"type": "integer"}}, "required": ["target_name", "csv_path"], "additionalProperties": False}}},
             {"type": "function", "function": {"name": "log_system_note", "description": "Creates or appends a note.", "parameters": {"type": "object", "properties": {"topic": {"type": "string"}, "content": {"type": "string"}}, "required": ["topic", "content"], "additionalProperties": False}}},
-            {"type": "function", "function": {"name": "execute_terminal_command", "description": "Securely execute a terminal command.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
-            {"type": "function", "function": {"name": "start_persistent_terminal", "description": "Spawns a separate terminal window.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "execute_terminal_command", "description": "Securely execute a short-lived terminal command. DO NOT use this for starting servers or long-running processes like 'npx playwright show-report'.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "start_persistent_terminal", "description": "Spawns a separate terminal window for continuous processes like dev servers or HTML report viewers.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
             {"type": "function", "function": {"name": "stop_persistent_terminal", "description": "Closes background terminals.", "parameters": {"type": "object", "properties": {"command_signature": {"type": "string"}}, "required": ["command_signature"], "additionalProperties": False}}},
             {"type": "function", "function": {"name": "run_git_command", "description": "Securely execute a git command.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"], "additionalProperties": False}}},
             {"type": "function", "function": {"name": "flush_node_processes", "description": "Forcefully terminates all Node.js processes.", "parameters": {"type": "object", "additionalProperties": False}}},
@@ -263,7 +263,7 @@ class DeepSeekAgent:
         self._scrub_history()
         self._prune_context()
         
-        match = re.search(r'(?:perform\s+this|repeat\s+this|run\s+this)\s+(\d+)\s+times', user_input, re.IGNORECASE)
+        match = re.search(r'(?:perform\s+this|repeat\s+this|run\s+this|do\s+this|execute\s+this)\s+(\d+)\s+times', user_input, re.IGNORECASE)
         if match:
             target_runs = int(match.group(1))
             cleaned_input = user_input.replace(match.group(0), "").strip()
@@ -285,7 +285,7 @@ class DeepSeekAgent:
                 sprint_prompt = (
                     f"SPRINT ASSIGNMENT: {base_prompt}\n"
                     f"CURRENT SPRINT CYCLE STATUS: {run_idx} of {target_runs}.\n"
-                    "Identify changes made in previous iterations, verify code alignment via validate_code_hygiene, and execute refinements."
+                    "Review the overarching assignment. Execute the specific step corresponding to your current sprint cycle, verify code alignment via validate_code_hygiene, and execute refinements."
                 )
                 self.messages.append({"role": "user", "content": sprint_prompt})
                 
@@ -294,9 +294,9 @@ class DeepSeekAgent:
                     if chunk["type"] == "done":
                         final_content = chunk["content"]
                         usage_data = chunk["usage"]
+                    else:
+                        yield chunk
             
-            yield {"type": "start"}
-            yield {"type": "chunk", "content": final_content}
             yield {"type": "done", "usage": usage_data, "content": final_content}
             return
 

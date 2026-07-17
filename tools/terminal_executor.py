@@ -58,7 +58,7 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
             shell=True, 
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=300,
             env=secure_env,
             # THE AUTO-YES PIPELINE: Feeds "y" + Enter up to 100 times to any blocking prompt
             input="y\n" * 100  
@@ -77,7 +77,7 @@ def execute_terminal_command(command: str, base_dir: str = ".") -> str:
         
     except subprocess.TimeoutExpired:
         return (
-            f"SYSTEM DIRECTIVE: The command '{command}' timed out after 30 seconds. "
+            f"SYSTEM DIRECTIVE: The command '{command}' timed out after 5 minutes (300 seconds). "
             f"It was forcefully terminated to prevent the system from hanging. "
             f"If this is a server, use the 'start_persistent_terminal' tool. Otherwise, ask the user for manual assistance."
         )
