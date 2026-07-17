@@ -29,14 +29,17 @@ import type { PlayerCharacter, Encounter, BattleMap, JournalEntry, CampaignSetti
 import type { HomebrewItem, HomebrewFeat, HomebrewSpell } from "@/types/homebrew";
 import type { Combatant, CombatLogEntry } from "@/types/combat";
 
-const CAMPAIGN_ID = "arkla";
+function getCampaignId(): string {
+  const meta = useCampaignStore.getState().meta;
+  return meta?.id ?? "arkla";
+}
 
 /* ── Push All Domains ───────────────────────────────────────── */
 
 async function pushAllDomains(): Promise<boolean> {
-  const cid = CAMPAIGN_ID;
-  let allOk = true;
   const { meta, characters, enemies, encounters, battleMaps, journal } = useCampaignStore.getState();
+  const cid = meta?.id ?? "arkla";
+  let allOk = true;
 
   if (meta && !(await normalizedCampaign.pushMeta(cid, meta))) allOk = false;
   for (const c of characters) if (!(await normalizedCharacters.push(cid, c as unknown as CharacterDoc))) allOk = false;
@@ -56,9 +59,9 @@ async function pushAllDomains(): Promise<boolean> {
   }
 
   const { items, spells, feats } = useHomebrewStore.getState();
-  for (const i of items) if (!(await normalizedHomebrewItems.push(CAMPAIGN_ID, i as unknown as HomebrewItemDoc))) allOk = false;
-  for (const s of spells) if (!(await normalizedHomebrewSpells.push(CAMPAIGN_ID, s as unknown as HomebrewSpellDoc))) allOk = false;
-  for (const f of feats) if (!(await normalizedHomebrewFeats.push(CAMPAIGN_ID, f as unknown as HomebrewFeatDoc))) allOk = false;
+  for (const i of items) if (!(await normalizedHomebrewItems.push(cid, i as unknown as HomebrewItemDoc))) allOk = false;
+  for (const s of spells) if (!(await normalizedHomebrewSpells.push(cid, s as unknown as HomebrewSpellDoc))) allOk = false;
+  for (const f of feats) if (!(await normalizedHomebrewFeats.push(cid, f as unknown as HomebrewFeatDoc))) allOk = false;
 
   return allOk;
 }
@@ -111,34 +114,57 @@ export function useFirebaseSync(): void {
   useEffect(() => {
     if (!isFirebaseAvailable() || authState !== "authenticated" || authRole !== "dm") return;
 
-    const unsubCharacters = normalizedCharacters.listenAll(CAMPAIGN_ID, (chars) => {
+    const cid = getCampaignId();
+
+    const unsubCharacters = normalizedCharacters.listenAll(cid, (chars) => {
       const store = useCampaignStore.getState();
       if (!store.meta) return;
       const storeIds = new Set(store.characters.map((c) => c.id));
-      const hasNew = chars.some((c) => !storeIds.has(c.id));
-      if (hasNew && store.campaign)
-        store.setCampaign({ ...store.campaign, playerCharacters: chars as unknown as PlayerCharacter[] });
+      const incoming = chars as unknown as PlayerCharacter[];
+      const merged = [...store.characters];
+      let changed = false;
+      for (const inc of incoming) {
+        if (!storeIds.has(inc.id)) {
+          merged.push(inc);
+          changed = true;
+        } else {
+          const idx = merged.findIndex((c) => c.id === inc.id);
+          if (idx >= 0) {
+            merged[idx] = inc;
+            changed = true;
+          }
+        }
+      }
+      if (changed) useCampaignStore.setState({ characters: merged });
     });
 
-    const unsubMaps = normalizedMaps.listenAll(CAMPAIGN_ID, (maps) => {
+    const unsubMaps = normalizedMaps.listenAll(cid, (maps) => {
       const store = useCampaignStore.getState();
       if (!store.meta) return;
       const storeIds = new Set(store.battleMaps.map((m) => m.id));
-      const hasNew = maps.some((m) => !storeIds.has(m.id));
-      if (hasNew && store.campaign)
-        store.setCampaign({ ...store.campaign, battleMaps: maps as unknown as BattleMap[], playerCharacters: store.characters, encounters: store.encounters, journal: store.journal });
+      const incoming = maps as unknown as BattleMap[];
+      const merged = [...store.battleMaps];
+      let changed = false;
+      for (const inc of incoming) {
+        if (!storeIds.has(inc.id)) { merged.push(inc); changed = true; }
+      }
+      if (changed) useCampaignStore.setState({ battleMaps: merged });
     });
 
-    const unsubJournal = normalizedJournal.listenAll(CAMPAIGN_ID, (entries) => {
+    const unsubJournal = normalizedJournal.listenAll(cid, (entries) => {
       const store = useCampaignStore.getState();
       if (!store.meta) return;
       const storeIds = new Set(store.journal.map((j) => j.id));
-      const hasNew = entries.some((e) => !storeIds.has(e.id));
-      if (hasNew && store.campaign)
-        store.setCampaign({ ...store.campaign, journal: entries as unknown as JournalEntry[], playerCharacters: store.characters, encounters: store.encounters, battleMaps: store.battleMaps });
+      const incoming = entries as unknown as JournalEntry[];
+      const merged = [...store.journal];
+      let changed = false;
+      for (const inc of incoming) {
+        if (!storeIds.has(inc.id)) { merged.push(inc); changed = true; }
+      }
+      if (changed) useCampaignStore.setState({ journal: merged });
     });
 
-    const unsubCombatLog = normalizedCombatLog.listenAll(CAMPAIGN_ID, (entries) => {
+    const unsubCombatLog = normalizedCombatLog.listenAll(cid, (entries) => {
       const store = useCombatStore.getState();
       const storeIds = new Set(store.combatLog.map((e) => e.id));
       const newEntries = entries.filter((e) => !storeIds.has(e.id));
@@ -146,15 +172,15 @@ export function useFirebaseSync(): void {
         useCombatStore.setState({ combatLog: [...store.combatLog, ...newEntries as unknown as CombatLogEntry[]] });
     });
 
-    const unsubItems = normalizedHomebrewItems.listenAll(CAMPAIGN_ID, (items) => {
+    const unsubItems = normalizedHomebrewItems.listenAll(cid, (items) => {
       const store = useHomebrewStore.getState();
       if (typeof store.setItems === "function") store.setItems(items as unknown as HomebrewItem[]);
     });
-    const unsubSpells = normalizedHomebrewSpells.listenAll(CAMPAIGN_ID, (spells) => {
+    const unsubSpells = normalizedHomebrewSpells.listenAll(cid, (spells) => {
       const store = useHomebrewStore.getState();
       if (typeof store.setSpells === "function") store.setSpells(spells as unknown as HomebrewSpell[]);
     });
-    const unsubFeats = normalizedHomebrewFeats.listenAll(CAMPAIGN_ID, (feats) => {
+    const unsubFeats = normalizedHomebrewFeats.listenAll(cid, (feats) => {
       const store = useHomebrewStore.getState();
       if (typeof store.setFeats === "function") store.setFeats(feats as unknown as HomebrewFeat[]);
     });
@@ -165,22 +191,26 @@ export function useFirebaseSync(): void {
     if (!queueFlushed.current) { queueFlushed.current = true; flushQueue(); }
     pushAllDomains().catch(() => {});
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     return () => unsubs.forEach((u) => u());
   }, [authState, authRole]);
 
   /* ── Push Campaign Meta ── */
   useEffect(() => {
     if (authState !== "authenticated" || authRole !== "dm" || !meta) return;
-    debouncedPush("campaign", () => normalizedCampaign.pushMeta(CAMPAIGN_ID, meta), 2000);
-  }, [metaUpdatedAt, forcePushCounter, authState, authRole]);
+    const cid = getCampaignId();
+    debouncedPush("campaign", () => normalizedCampaign.pushMeta(cid, meta), 2000);
+  }, [metaUpdatedAt, forcePushCounter, authState, authRole, meta]);
 
   /* ── Push Session State ── */
   useEffect(() => {
     if (authState !== "authenticated" || authRole !== "dm") return;
+    const cid = getCampaignId();
     debouncedPush("session", async () => {
       const s = useCombatStore.getState().liveSession;
       const e = useCombatStore.getState().activeEncounter;
-      return normalizedSessions.push(CAMPAIGN_ID, {
+      return normalizedSessions.push(cid, {
         id: "current", name: `Session ${new Date().toLocaleDateString()}`,
         phase: s.phase, startedAt: s.sessionStartedAt, endedAt: null,
         currentScene: s.currentScene, currentMapUrl: s.currentMapUrl,
@@ -188,7 +218,7 @@ export function useFirebaseSync(): void {
         activeEncounterId: e?.id ?? null, createdAt: Date.now(), updatedAt: Date.now(),
       });
     }, 1500);
-  }, [encounterPhase, encounterRound, encounterIndex, combatantsLen, authState, authRole]);
+  }, [encounterPhase, encounterRound, encounterIndex, combatantsLen, authState, authRole, meta]);
 
   /* ── Push Combat Log ── */
   useEffect(() => {
@@ -196,21 +226,23 @@ export function useFirebaseSync(): void {
     const log = useCombatStore.getState().combatLog;
     if (log.length === 0) return;
     const latest = log[log.length - 1];
-    debouncedPush("combatlog", () => normalizedCombatLog.push(CAMPAIGN_ID, latest as unknown as CombatLogEntryDoc), 1500, latest.id);
-  }, [combatLogLen, authState, authRole]);
+    const cid = getCampaignId();
+    debouncedPush("combatlog", () => normalizedCombatLog.push(cid, latest as unknown as CombatLogEntryDoc), 1500, latest.id);
+  }, [combatLogLen, authState, authRole, meta]);
 
   /* ── Push Homebrew ── */
   useEffect(() => {
     if (authState !== "authenticated" || authRole !== "dm") return;
+    const cid = getCampaignId();
     debouncedPush("homebrew", async () => {
       const { items, spells, feats } = useHomebrewStore.getState();
       let allOk = true;
-      for (const i of items) if (!(await normalizedHomebrewItems.push(CAMPAIGN_ID, i as unknown as HomebrewItemDoc))) allOk = false;
-      for (const s of spells) if (!(await normalizedHomebrewSpells.push(CAMPAIGN_ID, s as unknown as HomebrewSpellDoc))) allOk = false;
-      for (const f of feats) if (!(await normalizedHomebrewFeats.push(CAMPAIGN_ID, f as unknown as HomebrewFeatDoc))) allOk = false;
+      for (const i of items) if (!(await normalizedHomebrewItems.push(cid, i as unknown as HomebrewItemDoc))) allOk = false;
+      for (const s of spells) if (!(await normalizedHomebrewSpells.push(cid, s as unknown as HomebrewSpellDoc))) allOk = false;
+      for (const f of feats) if (!(await normalizedHomebrewFeats.push(cid, f as unknown as HomebrewFeatDoc))) allOk = false;
       return allOk;
     }, 2000);
-  }, [homebrewItemsLen, homebrewFeatsLen, homebrewSpellsLen, authState, authRole]);
+  }, [homebrewItemsLen, homebrewFeatsLen, homebrewSpellsLen, authState, authRole, meta]);
 
   /* ── Welcome Toast ── */
   useEffect(() => {

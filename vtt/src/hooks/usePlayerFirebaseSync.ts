@@ -9,20 +9,32 @@ import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useHomebrewStore } from "@/stores/homebrewStore";
 import { isFirebaseAvailable } from "@/lib/firebase";
-import { normalizedSessions, normalizedCampaign } from "@/lib/normalized-firebase-service";
+import {
+  normalizedSessions, normalizedCampaign,
+  normalizedCombatLog, normalizedHomebrewItems,
+  normalizedHomebrewSpells, normalizedHomebrewFeats,
+} from "@/lib/normalized-firebase-service";
 
-const CAMPAIGN_ID = "arkla";
+/* ── Derive campaign ID from store (or use default) ────────── */
+function getCampaignId(): string {
+  const meta = useCampaignStore.getState().meta;
+  return meta?.id ?? "arkla";
+}
 
 export function usePlayerFirebaseSync(): void {
   const role = useAuthStore((s) => s.role);
   const initializedRef = useRef(false);
+  const meta = useCampaignStore((s) => s.meta);
 
   useEffect(() => {
     if (role !== "player" || !isFirebaseAvailable() || initializedRef.current) return;
     initializedRef.current = true;
 
-    const unsubSession = normalizedSessions.listenAll(CAMPAIGN_ID, (sessions) => {
+    const cid = getCampaignId();
+
+    const unsubSession = normalizedSessions.listenAll(cid, (sessions) => {
       if (sessions.length === 0) return;
       const latest = sessions[0]; // ordered by updatedAt desc
       const store = useCombatStore.getState();
@@ -33,12 +45,34 @@ export function usePlayerFirebaseSync(): void {
       if (latest.conditions) store.setConditions(latest.conditions);
     });
 
-    const unsubMeta = normalizedCampaign.listenMeta(CAMPAIGN_ID, (meta) => {
+    const unsubMeta = normalizedCampaign.listenMeta(cid, (meta) => {
       if (meta) useCampaignStore.getState().setMeta(meta);
     });
 
+    const unsubCombatLog = normalizedCombatLog.listenAll(cid, (entries) => {
+      const store = useCombatStore.getState();
+      const storeIds = new Set(store.combatLog.map((e) => e.id));
+      const newEntries = entries.filter((e) => !storeIds.has(e.id));
+      if (newEntries.length > 0) {
+        useCombatStore.setState({ combatLog: [...store.combatLog, ...newEntries] });
+      }
+    });
+
+    const unsubItems = normalizedHomebrewItems.listenAll(cid, (items) => {
+      const store = useHomebrewStore.getState();
+      if (typeof store.setItems === "function") store.setItems(items);
+    });
+    const unsubSpells = normalizedHomebrewSpells.listenAll(cid, (spells) => {
+      const store = useHomebrewStore.getState();
+      if (typeof store.setSpells === "function") store.setSpells(spells);
+    });
+    const unsubFeats = normalizedHomebrewFeats.listenAll(cid, (feats) => {
+      const store = useHomebrewStore.getState();
+      if (typeof store.setFeats === "function") store.setFeats(feats);
+    });
+
     // Eager fetch on mount
-    normalizedSessions.fetchAll(CAMPAIGN_ID).then((sessions) => {
+    normalizedSessions.fetchAll(cid).then((sessions) => {
       if (sessions.length > 0) {
         const ls = sessions[0];
         const store = useCombatStore.getState();
@@ -53,7 +87,11 @@ export function usePlayerFirebaseSync(): void {
     return () => {
       unsubSession?.();
       unsubMeta?.();
+      unsubCombatLog?.();
+      unsubItems?.();
+      unsubSpells?.();
+      unsubFeats?.();
       initializedRef.current = false;
     };
-  }, [role]);
+  }, [role, meta]);
 }

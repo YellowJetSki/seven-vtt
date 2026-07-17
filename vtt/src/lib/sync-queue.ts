@@ -16,7 +16,10 @@ import type { CharacterDoc, EnemyDoc, EncounterDoc, MapTokenDoc, JournalEntryDoc
 
 const QUEUE_KEY = "vtt-sync-queue-normalized";
 const MAX_RETRIES = 5;
-const CAMPAIGN_ID = "arkla";
+function getQueueCampaignId(): string {
+  const meta = useCampaignStore.getState().meta;
+  return meta?.id ?? "arkla";
+}
 
 interface QueuedPush {
   id: string;
@@ -65,7 +68,7 @@ function incrementRetry(id: string): number {
 }
 
 async function pushEntry(entry: QueuedPush): Promise<boolean> {
-  const cid = CAMPAIGN_ID;
+  const cid = getQueueCampaignId();
   switch (entry.domain) {
     case "campaign": {
       const meta = useCampaignStore.getState().meta;
@@ -126,17 +129,17 @@ async function pushEntry(entry: QueuedPush): Promise<boolean> {
     case "item": {
       if (!entry.entityId) return false;
       const item = useHomebrewStore.getState().items.find((i) => i.id === entry.entityId);
-      return item ? await normalizedHomebrewItems.push(CAMPAIGN_ID, item as unknown as HomebrewItemDoc) : false;
+      return item ? await normalizedHomebrewItems.push(cid, item as unknown as HomebrewItemDoc) : false;
     }
     case "spell": {
       if (!entry.entityId) return false;
       const spell = useHomebrewStore.getState().spells.find((s) => s.id === entry.entityId);
-      return spell ? await normalizedHomebrewSpells.push(CAMPAIGN_ID, spell as unknown as HomebrewSpellDoc) : false;
+      return spell ? await normalizedHomebrewSpells.push(cid, spell as unknown as HomebrewSpellDoc) : false;
     }
     case "feat": {
       if (!entry.entityId) return false;
       const feat = useHomebrewStore.getState().feats.find((f) => f.id === entry.entityId);
-      return feat ? await normalizedHomebrewFeats.push(CAMPAIGN_ID, feat as unknown as HomebrewFeatDoc) : false;
+      return feat ? await normalizedHomebrewFeats.push(cid, feat as unknown as HomebrewFeatDoc) : false;
     }
     default:
       return false;

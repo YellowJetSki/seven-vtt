@@ -37,6 +37,16 @@ function generateParticles(count: number, symbol: string): Array<{
   }));
 }
 
+/* ── Rain streak lines (pre-computed for stability) ──────────── */
+
+const RAIN_STREAK_LINES: Array<{ x1: number; x2: number }> = Array.from(
+  { length: 8 },
+  (_, i) => ({
+    x1: i * 8 + 2,
+    x2: i * 8 - 1,
+  }),
+);
+
 /* ── Component ──────────────────────────────────────────────── */
 
 export function WeatherOverlay({ weather, intensity = 1.0 }: WeatherOverlayProps) {
@@ -112,20 +122,19 @@ export function WeatherOverlay({ weather, intensity = 1.0 }: WeatherOverlayProps
 
       {/* Rain streak lines (subtle slanted lines) */}
       {weather === "rain" && intensity > 0.5 && (
-        <svg className="absolute inset-0 h-full w-full opacity-[0.04]" style={{ filter: "blur(1px)" }}>
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.04]" style={{ filter: "blur(1px)" }}>
           <defs>
             <pattern id="rain-streaks" x="0" y="0" width="60" height="80" patternUnits="userSpaceOnUse">
-              {Array.from({ length: 4 }, (_, i) => (
+              {RAIN_STREAK_LINES.map((line) => (
                 <line
-                  key={i}
-                  x1={i * 18 + 5}
+                  key={line.x1}
+                  x1={line.x1}
                   y1="0"
-                  x2={i * 18 + 2}
+                  x2={line.x2}
                   y2="80"
                   stroke="white"
                   strokeWidth="0.8"
                   opacity="0.3"
-                  style={{ animation: `rain-streak ${1 + Math.random()}s linear infinite` }}
                 />
               ))}
             </pattern>
