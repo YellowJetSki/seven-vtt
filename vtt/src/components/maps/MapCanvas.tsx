@@ -44,7 +44,6 @@ export function MapCanvas({
   const cellHeight = 100 / map.gridHeight;
   const selectedToken = map.tokens.find((t) => t.id === selectedTokenId) ?? null;
   const tokenSpeed = selectedToken?.speed ?? 30;
-  const normalRange = Math.floor(tokenSpeed / 5);
 
   return (
     <div ref={containerRef}

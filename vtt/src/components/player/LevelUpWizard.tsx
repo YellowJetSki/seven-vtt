@@ -8,8 +8,8 @@
  *  6. Apply subclass features if applicable
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useCallback, useMemo } from "react";
-import type { PlayerCharacter, ClassEntry, FeatureEntry, Ability } from "@/types";
+import { useState, useCallback } from "react";
+import type { PlayerCharacter, Ability } from "@/types";
 import { getTotalLevel, getPrimaryClass, getClassSummary, getProficiencyBonus } from "@/types";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";

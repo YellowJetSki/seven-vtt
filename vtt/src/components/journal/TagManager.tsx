@@ -7,7 +7,6 @@ import { useState, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 
 interface TagManagerProps {
   selectedTags: Set<string>;

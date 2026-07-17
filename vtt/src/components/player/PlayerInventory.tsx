@@ -12,7 +12,6 @@ import type { PlayerCharacter, EquipmentSlot } from "@/types";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 
 interface PlayerInventoryProps {
   character: PlayerCharacter;

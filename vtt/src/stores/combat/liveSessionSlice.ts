@@ -4,7 +4,7 @@
 
 import type { StateCreator } from "zustand";
 import type { CombatStoreState } from "./types";
-import type { LiveSessionState, LiveConditions } from "@/types/combat";
+import type { LiveSessionState } from "@/types/combat";
 
 const DEFAULT_LIVE_SESSION: LiveSessionState = {
   activeEncounterId: null,

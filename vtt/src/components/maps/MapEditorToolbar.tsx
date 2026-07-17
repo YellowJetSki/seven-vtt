@@ -23,7 +23,7 @@ interface Props {
 }
 
 export function MapEditorToolbar({
-  gmView, showFog, showFogControls, drawingEnabled, showGrid, hasSelectedToken,
+  gmView, showFog, showFogControls, drawingEnabled, showGrid,
   onToggleGmView, onToggleFog, onToggleFogControls, onAddToken, onToggleDrawing, onToggleGrid,
   onOpenTheatric, selectedToken,
 }: Props) {
