@@ -94,21 +94,6 @@ export function PlayerCards() {
   const [showInventoryId, setShowInventoryId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Guard: no campaign yet
-  if (!campaign) {
-    return (
-      <div className="flex min-h-[200px] items-center justify-center">
-        <div className="mx-auto max-w-md text-center">
-          <span className="text-6xl text-surface-600">⚔</span>
-          <h2 className="mt-4 text-xl font-bold text-surface-100">No Campaign Active</h2>
-          <p className="mt-2 text-sm text-surface-400">
-            Create or import a campaign from the Dashboard first, then add your player characters here.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const handleDeleteCharacter = (charId: string, charName: string) => {
     removeCharacter(charId);
     setDeleteConfirmId(null);
@@ -214,6 +199,21 @@ export function PlayerCards() {
     };
     input.click();
   };
+
+  // Guard: no campaign yet (after all hooks — rules-of-hooks compliance)
+  if (!campaign) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="mx-auto max-w-md text-center">
+          <span className="text-6xl text-surface-600">⚔</span>
+          <h2 className="mt-4 text-xl font-bold text-surface-100">No Campaign Active</h2>
+          <p className="mt-2 text-sm text-surface-400">
+            Create or import a campaign from the Dashboard first, then add your player characters here.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">

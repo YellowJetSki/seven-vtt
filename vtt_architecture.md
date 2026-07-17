@@ -242,3 +242,26 @@ Badge, Button, CommandPalette, ConfirmDialog, EmptyState, ErrorBoundary, ExportA
 3. **Run `npx tsc --noEmit`** after every TS/React file change
 4. **Commit + push** after every feature/fix
 5. **Update this architecture file** when adding core components, stores, or schemas
+
+## Sprint 2 Refactoring Results (Updated: 2026-07-17 07:53)
+## Sprint 2: Refactoring Complete
+
+### Files Refactored (broken into <150 line components)
+1. **ItemForm.tsx** 766→149 lines — Extracted: Constants, ImageUpload, WeaponFields, ArmorFields, PotionFields, ScrollFields
+2. **CampaignWizard.tsx** 563→193 lines — Extracted: Choice, Details, Species, ClassesCurrency, Review; arklaPcBuilder.ts
+3. **combatStore.ts** 651→61 lines — Split into 5 slices: encounterSlice, combatantSlice, combatFlowSlice, combatLogSlice, liveSessionSlice
+4. **campaignStore.ts** 633→145 lines — Split into 4 slices: metaSlice, characterSlice, entitySlice, tokenSlice; normalization.ts
+5. **InitiativeTracker.tsx** 590→147 lines — Extracted: EmptyEncounterState, CombatantList, CombatantActions, PlayerImportModal
+6. **types/index.ts** — Removed duplicate HomebrewItem/Feat/Spell types, re-export from homebrew.ts
+
+### Dead Files Removed
+- SessionAnalyticsPanel_fix.ts
+- SessionAnalyticsPanel_fix2.ts
+- Duplicate type definitions in types/index.ts
+
+### Build Status
+- TypeScript: 0 errors
+- Build: ~841ms, 175 modules
+- Chunks: 543KB JS (141KB gzipped), 89KB CSS (14KB gzipped)
+- Ready for Sprint 3 (Testing)
+---
