@@ -47,7 +47,7 @@ interface QuickAddProps {
 }
 
 export function QuickAddFromEncounters({ onAddCombatant }: QuickAddProps) {
-  const encounters = useCampaignStore((s) => s.campaign?.encounters ?? []);
+  const encounters = useCampaignStore((s) => s.encounters);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const showToast = useUiStore((s) => s.showToast);
   const [isOpen, setIsOpen] = useState(false);

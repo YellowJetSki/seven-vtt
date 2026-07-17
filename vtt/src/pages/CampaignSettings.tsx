@@ -19,10 +19,13 @@ import { Button } from "@/components/ui/Button";
 import { LockableNotes } from "@/components/ui/LockableNotes";
 import { createDemoCampaign } from "@/data/demoCampaign";
 import { isFirebaseAvailable } from "@/lib/firebase";
+import type { Campaign } from "@/types";
 
 export function CampaignSettings() {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
+  const campaign = meta ? { id: meta.id, name: meta.name, description: meta.description, dmName: meta.dmName, settings: meta.settings, playerCharacters: characters, encounters: [], battleMaps: [], journal: [], createdAt: meta.createdAt, updatedAt: meta.updatedAt } as Campaign : null;
   const _clearCampaign = useCampaignStore((s) => s.clearCampaign);
   const showToast = useUiStore((s) => s.showToast);
 

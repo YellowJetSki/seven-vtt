@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
+import type { Campaign } from "@/types";
 
 interface SessionBullet {
   id: string;
@@ -24,8 +25,10 @@ function uid(): string {
 }
 
 export function SessionRecapNotes() {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters, encounters: [], battleMaps: [], journal: [], createdAt: meta.createdAt, updatedAt: meta.updatedAt } as Campaign : null;
   const showToast = useUiStore((s) => s.showToast);
 
   // Parse bullets from campaign's privateDmNotes (JSON-encoded array)

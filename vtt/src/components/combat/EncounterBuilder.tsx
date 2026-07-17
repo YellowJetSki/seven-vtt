@@ -23,7 +23,9 @@ interface Props {
 }
 
 export function EncounterBuilder({ existingEncounter, onSave, onCancel }: Props) {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters } : null;
   const showToast = useUiStore((s) => s.showToast);
 
   const [name, setName] = useState(existingEncounter?.name ?? "");

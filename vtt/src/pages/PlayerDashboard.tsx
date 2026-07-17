@@ -27,8 +27,9 @@ export function PlayerDashboard() {
   const characterId = useAuthStore((s) => s.characterId);
   const characterName = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
-  const campaign = useCampaignStore((s) => s.campaign);
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters } : null;
 
   // Subscribe to real-time updates from the DM via Firebase
   usePlayerFirebaseSync();

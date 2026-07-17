@@ -8,6 +8,7 @@ import { useHomebrewStore } from "@/stores/homebrewStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "./Button";
 import type { ButtonProps } from "./Button";
+import type { Campaign } from "@/types";
 
 interface ExportAllButtonProps {
   variant?: ButtonProps["variant"];
@@ -20,7 +21,12 @@ export function ExportAllButton({
   size = "sm",
   label = "📦 Export All",
 }: ExportAllButtonProps) {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const encounters = useCampaignStore((s) => s.encounters);
+  const battleMaps = useCampaignStore((s) => s.battleMaps);
+  const journal = useCampaignStore((s) => s.journal);
+  const campaign = meta ? { id: meta.id, name: meta.name, description: meta.description, dmName: meta.dmName, settings: meta.settings, playerCharacters: characters, encounters, battleMaps, journal, createdAt: meta.createdAt, updatedAt: meta.updatedAt } as Campaign : null;
   const homebrewItems = useHomebrewStore((s) => s.items);
   const homebrewFeats = useHomebrewStore((s) => s.feats);
   const homebrewSpells = useHomebrewStore((s) => s.spells);

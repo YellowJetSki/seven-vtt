@@ -17,10 +17,9 @@ export interface NormalizedCampaignState {
   error: string | null;
   forcePushCounter: number;
 
-  // Derived — cached via buildCampaign hash guard
+  /** @deprecated Use individual normalized selectors (s.characters, s.encounters, etc.)
+   *  instead of this derived field to prevent infinite re-render loops. */
   campaign: Campaign | null;
-  /** Hash of the last data used to build campaign (for change detection) */
-  campaignBuildHash: string;
 
   // ── Meta ──
   setMeta: (meta: CampaignMeta) => void;

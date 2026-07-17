@@ -10,11 +10,14 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { Button } from "@/components/ui/Button";
+import type { Campaign } from "@/types";
 
 export function CampaignScratchPad() {
   const [isOpen, setIsOpen] = useState(false);
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
   const setCampaign = useCampaignStore((s) => s.setCampaign);
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters, encounters: [], battleMaps: [], journal: [], createdAt: meta.createdAt, updatedAt: meta.updatedAt } as Campaign : null;
   const [scratchText, setScratchText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);

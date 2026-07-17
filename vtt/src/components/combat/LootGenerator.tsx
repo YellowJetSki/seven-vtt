@@ -77,8 +77,9 @@ const MAGIC_ITEMS = [
 /* ── Component ──────────────────────────────────────────────── */
 
 export function LootGenerator() {
-  const campaign = useCampaignStore((s) => s.campaign);
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters } : null;
   const updatePlayerCharacter = useCampaignStore((s) => s.updatePlayerCharacter);
   const showToast = useUiStore((s) => s.showToast);
 

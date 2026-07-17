@@ -30,7 +30,7 @@ export function InitiativeTracker() {
   const addEnemyGroup = useCombatStore((s) => s.addEnemyGroup);
   const setCombatantInitiative = useCombatStore((s) => s.setCombatantInitiative);
   const showToast = useUiStore((s) => s.showToast);
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const characters = useCampaignStore((s) => s.characters);
 
   const [showPlayerImport, setShowPlayerImport] = useState(false);
   const [showLogPanel, setShowLogPanel] = useState(false);

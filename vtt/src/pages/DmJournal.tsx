@@ -28,7 +28,7 @@ const ENTRY_TYPE_CONFIG: Record<JournalEntry["type"], { icon: string; label: str
 
 export function DmJournal() {
   const [viewMode, setViewMode] = useState<"cards" | "timeline">("cards");
-  const journal = useCampaignStore((s) => s.campaign?.journal ?? []);
+  const journal = useCampaignStore((s) => s.journal);
   const addJournalEntry = useCampaignStore((s) => s.addJournalEntry);
   const updateJournalEntry = useCampaignStore((s) => s.updateJournalEntry);
   const removeJournalEntry = useCampaignStore((s) => s.removeJournalEntry);

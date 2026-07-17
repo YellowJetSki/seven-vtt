@@ -1,12 +1,14 @@
 /* ── Campaign Meta Slice ───────────────────────────────────────
  * Meta data + settings management.
+ * NOTE: No longer builds `campaign` derived object on every update —
+ * consumers must use individual normalized selectors (s.characters,
+ * s.encounters, etc.) to prevent infinite re-render loops.
  * ─────────────────────────────────────────────────────────────── */
 
 import type { StateCreator } from "zustand";
 import type { NormalizedCampaignState } from "./types";
 import type { CampaignMeta } from "@/types/firestore";
 import type { CampaignSettings } from "@/types";
-import { buildCampaignCached } from "./campaignBuilder";
 
 export const createMetaSlice: StateCreator<
   NormalizedCampaignState,
@@ -15,11 +17,11 @@ export const createMetaSlice: StateCreator<
   Pick<NormalizedCampaignState, "setMeta" | "setLoading" | "setError" | "updateSettings">
 > = (set) => ({
   setMeta: (meta) =>
-    set((state) => {
-      const newState = { ...state, meta, forcePushCounter: state.forcePushCounter + 1 };
-      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
-      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
-    }),
+    set((state) => ({
+      ...state,
+      meta,
+      forcePushCounter: state.forcePushCounter + 1,
+    })),
 
   setLoading: (isLoading) => set({ isLoading }),
 
@@ -28,7 +30,7 @@ export const createMetaSlice: StateCreator<
   updateSettings: (updates) =>
     set((state) => {
       if (!state.meta) return state;
-      const newState = {
+      return {
         ...state,
         meta: {
           ...state.meta,
@@ -36,7 +38,5 @@ export const createMetaSlice: StateCreator<
         },
         forcePushCounter: state.forcePushCounter + 1,
       };
-      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
-      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 });

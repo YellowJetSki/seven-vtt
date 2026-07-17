@@ -66,7 +66,9 @@ export function GlobalCompendium() {
   const homebrewItems = useHomebrewStore((s) => s.items);
   const homebrewSpells = useHomebrewStore((s) => s.spells);
   const homebrewFeats = useHomebrewStore((s) => s.feats);
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters } : null;
   const showToast = useUiStore((s) => s.showToast);
 
   const [isOpen, setIsOpen] = useState(false);

@@ -28,7 +28,7 @@ function uid(prefix: string): string {
 }
 
 export function BattleMaps() {
-  const maps = useCampaignStore((s) => s.campaign?.battleMaps ?? []);
+  const maps = useCampaignStore((s) => s.battleMaps);
   const addBattleMap = useCampaignStore((s) => s.addBattleMap);
   const updateBattleMap = useCampaignStore((s) => s.updateBattleMap);
   const removeBattleMap = useCampaignStore((s) => s.removeBattleMap);

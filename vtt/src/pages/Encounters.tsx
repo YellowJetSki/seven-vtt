@@ -38,8 +38,9 @@ function totalEnemyCount(enc: Encounter): number {
 
 export function Encounters() {
   const [subTab, setSubTab] = useState<SubTab>("combat");
-  const campaign = useCampaignStore((s) => s.campaign);
-  const encounters = useCampaignStore((s) => s.campaign?.encounters ?? []);
+  const meta = useCampaignStore((s) => s.meta);
+  const encounters = useCampaignStore((s) => s.encounters);
+  const characters = useCampaignStore((s) => s.characters);
   const addEncounter = useCampaignStore((s) => s.addEncounter);
   const updateEncounter = useCampaignStore((s) => s.updateEncounter);
   const removeEncounter = useCampaignStore((s) => s.removeEncounter);
@@ -52,7 +53,8 @@ export function Encounters() {
   const [editingEncounter, setEditingEncounter] = useState<Encounter | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
 
-  const playerCharacters = campaign?.playerCharacters ?? [];
+  const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters, encounters } : null;
+  const playerCharacters = characters;
 
   const handleSaveEncounter = (encounter: Encounter) => {
     const existing = encounters.find((e) => e.id === encounter.id);

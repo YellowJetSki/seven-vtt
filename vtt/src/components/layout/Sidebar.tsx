@@ -39,11 +39,11 @@ export function Sidebar() {
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
   const liveSession = useCombatStore((s) => s.liveSession);
 
-  const playerCount = campaign?.playerCharacters.length ?? 0;
-  const encounterCount = campaign?.encounters.length ?? 0;
+  const playerCount = useCampaignStore((s) => s.characters.length);
+  const encounterCount = useCampaignStore((s) => s.encounters.length);
   const sessionActive = liveSession.sessionStartedAt !== null;
 
   const handleNavClick = () => {

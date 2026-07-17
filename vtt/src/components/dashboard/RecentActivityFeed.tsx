@@ -25,7 +25,9 @@ const TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
 };
 
 export function RecentActivityFeed() {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const characters = useCampaignStore((s) => s.characters);
+  const campaign = meta ? { name: meta.name, playerCharacters: characters } as { name: string; playerCharacters: import("@/types").PlayerCharacter[] } : null;
 
   const activities = useMemo((): ActivityItem[] => {
     if (!campaign) return [];

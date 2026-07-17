@@ -14,7 +14,7 @@ interface EmptyEncounterStateProps {
 }
 
 export function EmptyEncounterState({ onCreate, onAddEnemyGroup }: EmptyEncounterStateProps) {
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const characters = useCampaignStore((s) => s.characters);
   const [customName, setCustomName] = useState("");
   const addCombatant = useCombatStore((s) => s.addCombatant);
   const showToast = useUiStore((s) => s.showToast);

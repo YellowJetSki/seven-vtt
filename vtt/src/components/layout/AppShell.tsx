@@ -41,19 +41,20 @@ export function AppShell() {
   useSaveShortcut();
 
   // Sync player identifiers from campaign to auth store on mount/rehydrate
-  const campaign = useCampaignStore((s) => s.campaign);
+  const campaignMeta = useCampaignStore((s) => s.meta);
+  const campaignCharacters = useCampaignStore((s) => s.characters);
   const setPlayerIdentifiers = useAuthStore((s) => s.setPlayerIdentifiers);
   const playerIdentifiers = useAuthStore((s) => s.playerIdentifiers);
 
   useEffect(() => {
-    if (campaign?.playerCharacters && campaign.playerCharacters.length > 0 && playerIdentifiers.length === 0) {
-      const identifiers = campaign.playerCharacters.map((pc) => ({
+    if (campaignCharacters.length > 0 && playerIdentifiers.length === 0) {
+      const identifiers = campaignCharacters.map((pc) => ({
         label: pc.name,
         characterId: pc.id,
       }));
       setPlayerIdentifiers(identifiers);
     }
-  }, [campaign, setPlayerIdentifiers, playerIdentifiers]);
+  }, [campaignCharacters, setPlayerIdentifiers, playerIdentifiers]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-surface-900">

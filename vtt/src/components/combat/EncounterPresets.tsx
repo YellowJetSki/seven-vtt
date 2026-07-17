@@ -141,7 +141,7 @@ export function EncounterPresets({ onApplyPreset }: EncounterPresetsProps) {
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [saveName, setSaveName] = useState("");
   const showToast = useUiStore((s) => s.showToast);
-  const activeEncounter = useCampaignStore((s) => s.campaign?.encounters ?? []);
+  const activeEncounter = useCampaignStore((s) => s.encounters);
 
   useEffect(() => {
     setUserPresets(loadUserPresets());

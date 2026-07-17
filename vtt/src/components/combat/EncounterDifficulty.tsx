@@ -60,7 +60,7 @@ interface EnemyEntry {
 }
 
 export function EncounterDifficulty() {
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const characters = useCampaignStore((s) => s.characters);
   const [enemies, setEnemies] = useState<EnemyEntry[]>([]);
   const [enemyName, setEnemyName] = useState("");
   const [enemyCr, setEnemyCr] = useState("1");

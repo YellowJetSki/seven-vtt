@@ -42,7 +42,7 @@ const ROUTE_LABELS: Record<string, string> = {
 export function Header() {
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
-  const campaign = useCampaignStore((s) => s.campaign);
+  const campaignName = useCampaignStore((s) => s.meta?.name ?? "Arkla");
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
   const liveSession = useCombatStore((s) => s.liveSession);
   const location = useLocation();
@@ -71,7 +71,7 @@ export function Header() {
   }, []);
 
   const currentPage = ROUTE_LABELS[location.pathname] ?? "Dashboard";
-  const playerCount = campaign?.playerCharacters.length ?? 0;
+  const playerCount = useCampaignStore((s) => s.characters.length);
   const fbAvailable = isFirebaseAvailable();
   const sessionActive = liveSession.sessionStartedAt !== null;
 

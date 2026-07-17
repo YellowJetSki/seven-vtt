@@ -16,7 +16,7 @@ export function InitiativeRoller() {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const setCombatantInitiative = useCombatStore((s) => s.setCombatantInitiative);
   const showToast = useUiStore((s) => s.showToast);
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const characters = useCampaignStore((s) => s.characters);
 
   const [isOpen, setIsOpen] = useState(false);
 

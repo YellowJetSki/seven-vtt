@@ -25,7 +25,7 @@ function abilityModifier(score: number): string {
 }
 
 export function PartyCompendium() {
-  const characters = useCampaignStore((s) => s.campaign?.playerCharacters ?? []);
+  const characters = useCampaignStore((s) => s.characters);
   const [selectedCharacter, setSelectedCharacter] = useState<PlayerCharacter | null>(null);
   const [showAllAbilities, setShowAllAbilities] = useState(false);
   const openModal = useUiStore((s) => s.openModal);

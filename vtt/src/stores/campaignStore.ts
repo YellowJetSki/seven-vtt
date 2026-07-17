@@ -18,8 +18,7 @@ import { createMetaSlice } from "./campaign/metaSlice";
 import { createCharacterSlice } from "./campaign/characterSlice";
 import { createEntitySlice } from "./campaign/entitySlice";
 import { createTokenSlice } from "./campaign/tokenSlice";
-import { normalizeCharacters } from "./campaign/normalization";
-import { buildCampaignCached } from "./campaign/campaignBuilder";
+import { normalizeCharacters, buildCampaign } from "./campaign/normalization";
 import type { NormalizedCampaignState } from "./campaign/types";
 
 const initialState: Omit<NormalizedCampaignState,
@@ -46,7 +45,6 @@ const initialState: Omit<NormalizedCampaignState,
   error: null,
   forcePushCounter: 0,
   campaign: null,
-  campaignBuildHash: "",
 };
 
 export const useCampaignStore = create<NormalizedCampaignState>()(
@@ -61,7 +59,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
       // Normalization
       normalizeCharacters,
 
-      // Bulk operations
+      // Bulk operations — sets normalized state + builds campaign once
       setCampaign: (campaign) => {
         const normalizedPCs = normalizeCharacters(campaign.playerCharacters);
         const authStore = useAuthStore.getState();
@@ -70,32 +68,32 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
             normalizedPCs.map((pc) => ({ label: pc.name, characterId: pc.id })),
           );
         }
-        const oldHash = get().campaignBuildHash;
-        const result = buildCampaignCached({
-          meta: {
-            id: campaign.id,
-            name: campaign.name,
-            description: campaign.description,
-            dmName: campaign.dmName,
-            settings: campaign.settings ?? {
-              homebrewRules: [],
-              experienceSystem: "xp" as const,
-              currencyName: "Gold",
-              privateDmNotes: "",
-            },
-            createdAt: campaign.createdAt,
-            updatedAt: campaign.updatedAt,
-            stats: {
-              characterCount: normalizedPCs.length,
-              enemyCount: campaign.encounters.reduce(
-                (sum, e) => sum + e.enemies.reduce((s, ee) => s + (ee.count || 1), 0), 0,
-              ),
-              encounterCount: campaign.encounters.length,
-              mapCount: campaign.battleMaps.length,
-              journalCount: campaign.journal.length,
-              sessionCount: 0,
-            },
+        const meta = {
+          id: campaign.id,
+          name: campaign.name,
+          description: campaign.description,
+          dmName: campaign.dmName,
+          settings: campaign.settings ?? {
+            homebrewRules: [],
+            experienceSystem: "xp" as const,
+            currencyName: "Gold",
+            privateDmNotes: "",
           },
+          createdAt: campaign.createdAt,
+          updatedAt: campaign.updatedAt,
+          stats: {
+            characterCount: normalizedPCs.length,
+            enemyCount: campaign.encounters.reduce(
+              (sum, e) => sum + e.enemies.reduce((s, ee) => s + (ee.count || 1), 0), 0,
+            ),
+            encounterCount: campaign.encounters.length,
+            mapCount: campaign.battleMaps.length,
+            journalCount: campaign.journal.length,
+            sessionCount: 0,
+          },
+        };
+        const builtCampaign = buildCampaign({
+          meta,
           characters: normalizedPCs,
           encounters: campaign.encounters,
           battleMaps: campaign.battleMaps.map((bm) => ({ ...bm, fogOfWar: bm.fogOfWar ?? [] })),
@@ -103,33 +101,10 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
             campaign.battleMaps.map((bm) => [bm.id, bm.tokens ?? []]),
           ),
           journal: campaign.journal,
-        }, oldHash);
+        });
 
         set({
-          meta: result.campaign ? {
-            id: campaign.id,
-            name: campaign.name,
-            description: campaign.description,
-            dmName: campaign.dmName,
-            settings: campaign.settings ?? {
-              homebrewRules: [],
-              experienceSystem: "xp" as const,
-              currencyName: "Gold",
-              privateDmNotes: "",
-            },
-            createdAt: campaign.createdAt,
-            updatedAt: campaign.updatedAt,
-            stats: {
-              characterCount: normalizedPCs.length,
-              enemyCount: campaign.encounters.reduce(
-                (sum, e) => sum + e.enemies.reduce((s, ee) => s + (ee.count || 1), 0), 0,
-              ),
-              encounterCount: campaign.encounters.length,
-              mapCount: campaign.battleMaps.length,
-              journalCount: campaign.journal.length,
-              sessionCount: 0,
-            },
-          } : get().meta,
+          meta,
           characters: normalizedPCs,
           enemies: [],
           encounters: campaign.encounters,
@@ -139,7 +114,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
           ),
           journal: campaign.journal,
           forcePushCounter: Date.now(),
-          ...(result.campaign ? { campaign: result.campaign, campaignBuildHash: result.hash } : {}),
+          campaign: builtCampaign,
         });
       },
 

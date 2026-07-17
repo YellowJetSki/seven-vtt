@@ -113,7 +113,8 @@ function generateEncounter(
 }
 
 export function RandomEncounterGenerator({ onAddToCombat }: { onAddToCombat?: (enemies: { enemyId: string; count: number }[]) => void }) {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const meta = useCampaignStore((s) => s.meta);
+  const campaign = meta ? { id: meta.id, name: meta.name } : null;
   const showToast = useUiStore((s) => s.showToast);
 
   const [terrain, setTerrain] = useState("forest");

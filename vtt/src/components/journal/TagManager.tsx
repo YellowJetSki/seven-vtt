@@ -26,7 +26,7 @@ const TAG_COLORS = [
 ];
 
 export function TagManager({ selectedTags, onToggleTag, onClearTags }: TagManagerProps) {
-  const journal = useCampaignStore((s) => s.campaign?.journal ?? []);
+  const journal = useCampaignStore((s) => s.journal);
   const showToast = useUiStore((s) => s.showToast);
   const [showAddTag, setShowAddTag] = useState(false);
   const [newTag, setNewTag] = useState("");
