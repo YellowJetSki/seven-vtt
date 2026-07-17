@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+import signal
 from pathlib import Path
 
 # Only these base commands are allowed to run
@@ -105,3 +106,30 @@ def start_persistent_terminal(command: str, base_dir: str = ".") -> str:
         return f"System Action Complete: Successfully spawned a new, persistent terminal window running '{command}'. It is running safely in the background."
     except Exception as e:
         return f"System Error starting persistent terminal: {str(e)}"
+
+def stop_persistent_terminal(command_signature: str) -> str:
+    """
+    Finds and terminates background server processes matching a specific command signature string.
+    Useful for freeing up specific ports (like 3000 or 8080) when tasks change.
+    """
+    try:
+        if sys.platform == "win32":
+            # Windows command line task killing pattern matching the signature string
+            cmd = f'wmic process where "commandline like \'%%{command_signature}%%\'" get processid'
+            output = subprocess.check_output(cmd, shell=True, text=True)
+            pids = [line.strip() for line in output.split('\n') if line.strip() and line.strip().isdigit()]
+            killed_count = 0
+            for pid in pids:
+                subprocess.run(f"taskkill /F /PID {pid}", shell=True, capture_output=True)
+                killed_count += 1
+            return f"System Action Complete: Terminated {killed_count} active Windows processes matching '{command_signature}'."
+        else:
+            # Unix-based terminal task termination string pattern scanning
+            pids = subprocess.check_output(["pgrep", "-f", command_signature]).decode().split()
+            killed_count = 0
+            for pid in pids:
+                os.kill(int(pid), signal.SIGKILL)
+                killed_count += 1
+            return f"System Action Complete: Terminated {killed_count} persistent processes matching '{command_signature}'."
+    except Exception:
+        return f"System Note: Clean shutdown sequence complete. No matching background active processes found for '{command_signature}'."

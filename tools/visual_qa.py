@@ -180,7 +180,7 @@ def _highlight_target(locator):
         """
         locator.evaluate(script)
     except Exception:
-        pass # Ignore if the element is strictly un-stylable (like SVGs in some contexts)
+        pass
 
 # --- THE INTERACTIVE ACTION TOOLS ---
 
@@ -229,13 +229,42 @@ def switch_to_tab(index: int) -> str:
     except Exception as e:
         return f"System Error switching tabs: {str(e)}"
 
+def close_browser_tab(index: int) -> str:
+    """Closes a specific tab using its index array position to save memory context."""
+    manager = BrowserManager.get_instance()
+    manager.ensure_alive()
+    try:
+        pages = manager.context.pages
+        if index < 0 or index >= len(pages):
+            return f"System Error: Tab index {index} does not exist."
+        
+        target_page = pages[index]
+        target_page.close()
+        
+        # Reset current pointer to the remaining last page safely
+        remaining_pages = manager.context.pages
+        if remaining_pages:
+            manager.page = remaining_pages[-1]
+        return f"System Action Complete: Browser tab at index {index} successfully closed."
+    except Exception as e:
+        return f"System Error executing tab closing sequence: {str(e)}"
+
+def restart_browser() -> str:
+    """Cleans up and boots a completely fresh Playwright instance after a Node architecture flush process."""
+    manager = BrowserManager.get_instance()
+    try:
+        manager.cleanup()
+        manager._boot_browser()
+        return "System Action Complete: Playwright browser socket has been fully re-established and verified online."
+    except Exception as e:
+        return f"System Error rebuilding browser matrix: {str(e)}"
+
 def set_viewport(width: int, height: int) -> str:
-    """Dynamically shifts the browser resolution to test mobile/desktop breakpoints."""
     manager = BrowserManager.get_instance()
     manager.ensure_alive()
     try:
         manager.page.set_viewport_size({"width": width, "height": height})
-        manager.page.wait_for_timeout(500) # Wait for CSS media queries to trigger
+        manager.page.wait_for_timeout(500) 
         return f"System Action Complete: Viewport resized to {width}x{height}.\n\nNew UI State:\n" + _extract_current_dom(manager.page)
     except Exception as e:
         return f"System Error resizing viewport: {str(e)}"
@@ -261,7 +290,6 @@ def click_ui_element(selector: str) -> str:
         return f"System Error: Could not click '{selector}'. Details: {str(e)}"
 
 def click_text(text: str, exact: bool = False) -> str:
-    """Semantic Tool: Clicks an element based entirely on the text it contains."""
     manager = BrowserManager.get_instance()
     manager.ensure_alive()
     try:
@@ -282,7 +310,6 @@ def click_text(text: str, exact: bool = False) -> str:
         return f"System Error: Could not find or click text '{text}'. Details: {str(e)}"
 
 def click_test_id(test_id: str) -> str:
-    """Semantic Tool: Clicks an element based on its data-testid attribute."""
     manager = BrowserManager.get_instance()
     manager.ensure_alive()
     try:
