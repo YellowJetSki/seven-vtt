@@ -86,7 +86,7 @@ export function useFirebaseSync(): void {
   const encounterRound = useCombatStore((s) => s.activeEncounter?.round ?? 0);
   const encounterIndex = useCombatStore((s) => s.activeEncounter?.currentCombatantIndex ?? 0);
   const combatantsLen = useCombatStore((s) => s.activeEncounter?.combatants.length ?? 0);
-  const combatLogLen = useCombatStore((s) => s.combatLog.length);
+  const combatLogLen = useCombatStore((s) => s.combatLog?.length ?? 0);
 
   const homebrewItemsLen = useHomebrewStore((s) => s.items.length);
   const homebrewFeatsLen = useHomebrewStore((s) => s.feats.length);

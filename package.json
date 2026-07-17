@@ -7,5 +7,8 @@
     "dev": "cd vtt && npm run dev",
     "lint": "cd vtt && npm run lint",
     "deploy": "cd vtt && npx vercel --prod"
+  },
+  "dependencies": {
+    "source-map": "^0.7.6"
   }
 }

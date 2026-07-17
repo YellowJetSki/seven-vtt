@@ -35,6 +35,16 @@ export function getSyncPlayerHp(): ((combatants: Combatant[]) => void) | null {
 export const useCombatStore = create<CombatStoreState>()(
   persist(
     (...a) => ({
+      activeEncounter: null,
+      combatLog: [],
+      liveSession: {
+        activeEncounterId: null,
+        phase: "exploration",
+        sessionStartedAt: null,
+        lastShortRestAt: null,
+        lastLongRestAt: null,
+        conditions: { weather: "clear", lighting: "bright", terrain: "normal" },
+      },
       ...createCombatEncounterSlice(...a),
       ...createCombatantSlice(...a),
       ...createCombatFlowSlice(...a),
@@ -43,6 +53,10 @@ export const useCombatStore = create<CombatStoreState>()(
     }),
     {
       name: "str-vtt-combat",
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<CombatStoreState>),
+      }),
       partialize: (state) => ({
         activeEncounter: state.activeEncounter,
         combatLog: state.combatLog,
