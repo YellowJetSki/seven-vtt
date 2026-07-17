@@ -475,3 +475,39 @@ All React hooks in a component must be called in the **same order on every rende
 - Conditional return blocks can contain regular functions but NOT hooks.
 
 ---
+
+## Sprint 6 (2026-07-17): Builder Tab Error Fix (Updated: 2026-07-17 16:33)
+## Sprint 6: Builder Tab "Cannot read properties of undefined" Fix
+
+### Root Cause
+`RandomEncounterGenerator.tsx` created a malformed `campaign` object:
+```ts
+const campaign = meta ? { id: meta.id, name: meta.name } : null;
+```
+But then accessed `campaign?.playerCharacters.map(...)` — since `playerCharacters` was not included in the object, this evaluated to `undefined.map()`.
+
+### Fix
+Replaced with direct store selector:
+```ts
+const characters = useCampaignStore((s) => s.characters);
+const partyLevels = characters.length > 0 ? characters.map((pc) => pc.level) : [5];
+```
+
+### Pages Verified (Sprint 6)
+| Page | Status | Notes |
+|------|--------|-------|
+| Dashboard | ✅ | Stats, activity feed |
+| Player Cards | ✅ | 4 PCs, CRUD buttons |
+| Homebrew | ✅ | Items/Feats/Spells tabs |
+| Encounters (Initiative) | ✅ | Create, Start, combat flow |
+| Encounters (Session) | ✅ | Live session view |
+| Encounters (Quick Ref) | ✅ | DC Reference, scratch pad |
+| Encounters (Builder) | ✅ | Encounter builder, Random Generator |
+| Battle Maps | ✅ | Empty state |
+| Journal | ✅ | Tags, filters, empty state |
+| Settings | ✅ | Campaign info, DM notes |
+| Player Login | ✅ | Player sign-in flow |
+| Theatric Page | ✅ | Empty state |
+| **Total console errors** | **0** | |
+
+---
