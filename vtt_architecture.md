@@ -657,3 +657,21 @@ All 3 features from Cycle 5 verified in the production dist build:
 
 ### Ready for Step 7: Firebase sync audit
 ---
+
+## Sprint 9, Cycle 7 — Firebase Audit Results (Updated: 2026-07-17 17:20)
+## Sprint 9, Cycle 7 — Firebase Sync Audit Complete
+
+### Changes Made
+1. **firestore.rules**: Fixed security rules to use recursive wildcard `{document=**}` for `campaigns` and `homebrew` collections. This allows reads/writes to ALL subcollections (characters, enemies, encounters, maps, maps/{id}/tokens, journal, sessions, sessions/{sid}/combatants, combatLog, homebrew/items, homebrew/spells, homebrew/feats).
+
+2. **useFirebaseMonitor.ts**: Fixed health check to use `campaigns/arkla` document instead of non-existent `_health/ping`. This ensures `firebaseConnected` flag correctly reflects connection state.
+
+3. **.env.production**: Added Firebase Auth credentials (`VITE_FIREBASE_AUTH_EMAIL`, `VITE_FIREBASE_AUTH_PASSWORD`, `VITE_DM_USERNAME`, `VITE_DM_PASSWORD`) so production builds can authenticate with Firebase.
+
+### Known Gaps (deferred)
+- Session combatants not individually synced to player dashboard
+- Map tokens bundled with MapDoc (no individual push/listener)
+- Enemies/Encounters only pushed via full sync on mount
+
+### Build: 0 TS errors, deploys cleanly
+---
