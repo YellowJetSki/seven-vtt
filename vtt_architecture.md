@@ -511,3 +511,34 @@ const partyLevels = characters.length > 0 ? characters.map((pc) => pc.level) : [
 | **Total console errors** | **0** | |
 
 ---
+
+## Sprint 7 (2026-07-17): Full App Regression Test (Updated: 2026-07-17 16:36)
+## Sprint 7 (2026-07-17): Full App Regression Test
+
+### Results: ALL 12 PAGES — 0 console errors
+
+| Page | User Role | Status | Notes |
+|------|-----------|--------|-------|
+| **Login** | Public | ✅ | DM + Player role selection |
+| **Dashboard** | DM | ✅ | Stats, session status, conditions, quick actions, activity feed |
+| **Player Cards** | DM | ✅ | 4 PCs grid with Strider, Kehrfuffle, Wendy, Azael — CRUD buttons |
+| **Homebrew** | DM | ✅ | Items/Feats/Spells tabs, empty states, New Item modal |
+| **Encounters - Initiative** | DM | ✅ | Quick-Start: 8 combatants (4 PCs + 4 Bandits), Start combat, turn tracking, End combat |
+| **Encounters - Session** | DM | ✅ | Live session view, empty state |
+| **Encounters - Quick Ref** | DM | ✅ | DC Reference with collapsible sections |
+| **Encounters - Builder** | DM | ✅ | Encounter builder, Random Encounter Generator + Ambient Sound |
+| **Battle Maps** | DM | ✅ | Empty state, Create Map button |
+| **Journal** | DM | ✅ | Tags, filters (All/Session/Note/Lore/Quest/Handout), sort options |
+| **Settings** | DM | ✅ | Campaign info, Game Rules, Private DM Notes, Export/Import, Danger Zone |
+| **Player Login** | Player | ✅ | Sign-in form with character name |
+| **Theatric Page** | Public | ✅ | Empty state |
+
+### Bugs Found: 0 new bugs in this cycle
+All previously fixed bugs remain resolved:
+- ✅ Builder tab (RandomEncounterGenerator) — fixed in Sprint 6
+- ✅ Combat error 310 (createEncounterWithCombatants) — fixed in Sprint 5
+- ✅ InitiativeTracker hook mismatch — fixed in Sprint 5
+
+**Build**: 0 TypeScript errors, deploys cleanly to production
+
+---
