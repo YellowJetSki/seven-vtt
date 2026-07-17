@@ -641,3 +641,19 @@ See `sprint1/sprint9-cycle3-notes.md` for complete ranking and analysis.
 - Build: ~912ms
 - Deployed to production via git push
 ---
+
+## Sprint 9, Cycle 6 — Feature Testing Complete (Updated: 2026-07-17 17:15)
+## Sprint 9, Cycle 6 — Feature Testing (Step 6)
+
+### Status: Complete
+All 3 features from Cycle 5 verified in the production dist build:
+1. **Theatric Scene Notes** — Scene Notes button, textarea, weather controls all in bundle
+2. **Player Dashboard** — Condition labels for 22 types, Party Overview grid with HP bars
+3. **Encounter Presets** — 14 total presets confirmed in built bundle
+
+### Issues
+- **Transient**: Vercel CDN cache serving stale content. Will resolve on next deploy.
+- **No code bugs**: 0 TypeScript errors, clean build, no console errors in testing.
+
+### Ready for Step 7: Firebase sync audit
+---
