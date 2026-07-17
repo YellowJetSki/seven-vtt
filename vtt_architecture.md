@@ -607,3 +607,15 @@ All previously fixed bugs remain resolved:
 - Remove dead code `normalizedSync.start()` SyncManager
 - Player login cross-browser verification
 ---
+
+## Sprint 9, Cycle 3 — Feature Ideation (Updated: 2026-07-17 17:04)
+## Sprint 9, Cycle 3 — Feature Ideation Complete
+
+### Top 3 Priority Features Identified
+1. **Theatric Scene Notes** — Collapsible DM notes panel in TheatricSidebar for scene descriptions and encounter notes
+2. **Player Live Session View** — Real-time session phase/announcement/conditions bar on Player Dashboard
+3. **Encounter Builder Presets** — 6 pre-built D&D encounter templates (Ambush, Boss Chamber, Goblin Camp, etc.)
+
+### Full Candidate List (8 features)
+See `sprint1/sprint9-cycle3-notes.md` for complete ranking and analysis.
+---
