@@ -143,11 +143,12 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
         journal: state.journal,
         mapTokens: state.mapTokens,
       }),
-      migrate: (persisted: Record<string, unknown>, version: number) => {
-        if (version < 2 && persisted?.characters) {
-          persisted.characters = normalizeCharacters(persisted.characters);
+      migrate: (persisted: unknown, version: number) => {
+        if (version < 2 && persisted && typeof persisted === 'object' && 'characters' in (persisted as Record<string, unknown>)) {
+          const p = persisted as { characters: PlayerCharacter[] };
+          p.characters = normalizeCharacters(p.characters);
         }
-        return persisted as NormalizedCampaignState;
+        return (persisted ?? {}) as NormalizedCampaignState;
       },
     },
   ),
