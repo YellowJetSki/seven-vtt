@@ -130,6 +130,32 @@ export function PlayerDashboard() {
     );
   }
 
+  const conditions = liveSession.conditions;
+
+  const conditionLabels: Record<string, { icon: string; label: string }> = {
+    clear: { icon: "☀️", label: "Clear" },
+    cloudy: { icon: "☁️", label: "Cloudy" },
+    rainy: { icon: "🌧️", label: "Rainy" },
+    stormy: { icon: "⛈️", label: "Stormy" },
+    foggy: { icon: "🌫️", label: "Foggy" },
+    windy: { icon: "💨", label: "Windy" },
+    scorching: { icon: "🔥", label: "Scorching" },
+    snowy: { icon: "❄️", label: "Snowy" },
+    misty: { icon: "🌁", label: "Misty" },
+    bright: { icon: "☀️", label: "Bright" },
+    dim: { icon: "🌙", label: "Dim" },
+    darkness: { icon: "🌑", label: "Darkness" },
+    magical_darkness: { icon: "🔮", label: "Magical Darkness" },
+    normal: { icon: "➖", label: "Normal" },
+    difficult: { icon: "🌿", label: "Difficult" },
+    dense: { icon: "🌳", label: "Dense" },
+    slippery: { icon: "🧊", label: "Slippery" },
+    lava: { icon: "🌋", label: "Lava" },
+    poisoned: { icon: "☠️", label: "Poisoned" },
+    magical: { icon: "✨", label: "Magical" },
+    water: { icon: "🌊", label: "Water" },
+  };
+
   const currentCombatant = activeEncounter?.combatants[activeEncounter.currentCombatantIndex ?? 0];
 
   return (
@@ -154,6 +180,24 @@ export function PlayerDashboard() {
               {liveSession.currentScene && `📍 ${liveSession.currentScene}`}
             </span>
           </div>
+
+          {/* Conditions row — weather, lighting, terrain */}
+          {conditions && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-surface-700/50 pt-3">
+              <span className="flex items-center gap-1 rounded-full bg-surface-800/50 px-2 py-0.5 text-[10px] text-surface-400">
+                {conditionLabels[conditions.weather]?.icon ?? "🌤️"}
+                {conditionLabels[conditions.weather]?.label ?? conditions.weather}
+              </span>
+              <span className="flex items-center gap-1 rounded-full bg-surface-800/50 px-2 py-0.5 text-[10px] text-surface-400">
+                {conditionLabels[conditions.lighting]?.icon ?? "💡"}
+                {conditionLabels[conditions.lighting]?.label ?? conditions.lighting}
+              </span>
+              <span className="flex items-center gap-1 rounded-full bg-surface-800/50 px-2 py-0.5 text-[10px] text-surface-400">
+                {conditionLabels[conditions.terrain]?.icon ?? "🌍"}
+                {conditionLabels[conditions.terrain]?.label ?? conditions.terrain}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -221,6 +265,46 @@ export function PlayerDashboard() {
                       </span>
                     )}
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Party Overview ──────────────────────────────── */}
+      {characters.length > 0 && (
+        <div className="rounded-xl border border-surface-700 bg-surface-850 p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-surface-400">
+            ⚔ Party Overview ({characters.length} members)
+          </h3>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {characters.map((pc) => {
+              const isYou = pc.id === character?.id;
+              const hpPercent = pc.hitPoints.max > 0
+                ? Math.round((pc.hitPoints.current / pc.hitPoints.max) * 100)
+                : 100;
+              const hpColor = hpPercent > 50 ? "bg-rogue-500" : hpPercent > 20 ? "bg-warrior-500" : "bg-warrior-600";
+              return (
+                <div key={pc.id} className={`rounded-lg border p-3 ${
+                  isYou ? "border-accent-500/40 bg-accent-500/5" : "border-surface-700/50 bg-surface-800/50"
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className={`text-xs font-medium truncate ${isYou ? "text-accent-300" : "text-surface-200"}`}>
+                      {pc.name}
+                      {isYou && <span className="ml-1 text-[9px] text-accent-500">(you)</span>}
+                    </p>
+                    <span className="text-[10px] text-surface-500">
+                      Lv.{pc.level} {pc.class?.split(" ")[0] ?? ""}
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-700 overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${hpColor}`}
+                      style={{ width: `${hpPercent}%` }} />
+                  </div>
+                  <p className="mt-1 text-[10px] text-surface-400">
+                    HP {pc.hitPoints.current}/{pc.hitPoints.max}
+                  </p>
                 </div>
               );
             })}

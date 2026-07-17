@@ -1,6 +1,13 @@
 /* ── Theatric Sidebar Component ────────────────────────────────
  * Sleek, minimal control panel for the theatric view.
  * Auto-hides after a few seconds of inactivity for full immersion.
+ *
+ * FEATURES:
+ *  • Auto-hide UI with hover-to-reveal
+ *  • Current map/token info
+ *  • Weather controls (clear/rain/snow/fog/dust)
+ *  • Scene notes — collapsible DM notes panel
+ *  • Fullscreen & grid toggles
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect, useCallback } from "react";
@@ -8,12 +15,17 @@ import type { BattleMap } from "@/types";
 
 import type { WeatherEffect } from "./WeatherOverlay";
 
+/* ── Scene Notes localStorage Key ────────────────────────────── */
+const SCENE_NOTES_KEY = "vtt-theatric-scene-notes";
+
 interface TheatricSidebarProps {
   map: BattleMap | null;
   tokenId: string;
   fullscreen: boolean;
   showGrid: boolean;
   weather: WeatherEffect;
+  sceneNotes: string;
+  onSceneNotesChange: (notes: string) => void;
   onToggleFullscreen: () => void;
   onToggleGrid: () => void;
   onWeatherChange: (weather: WeatherEffect) => void;
@@ -29,9 +41,10 @@ const WEATHER_OPTIONS: { value: WeatherEffect; label: string; icon: string }[] =
   { value: "dust", label: "Dust", icon: "💨" },
 ];
 
-export function TheatricSidebar({ map, tokenId, fullscreen, showGrid, weather, onToggleFullscreen, onToggleGrid, onWeatherChange }: TheatricSidebarProps) {
+export function TheatricSidebar({ map, tokenId, fullscreen, showGrid, weather, sceneNotes, onSceneNotesChange, onToggleFullscreen, onToggleGrid, onWeatherChange }: TheatricSidebarProps) {
   const [visible, setVisible] = useState(true);
   const [hovering, setHovering] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const resetAutohide = useCallback(() => {
@@ -136,6 +149,43 @@ export function TheatricSidebar({ map, tokenId, fullscreen, showGrid, weather, o
             {map.notes}
           </p>
         )}
+
+        {/* ── Scene Notes Toggle ────────────────────────────────── */}
+        <div className="mb-4">
+          <button
+            onClick={() => setNotesOpen((o) => !o)}
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[10px] text-surface-400 hover:text-surface-200 hover:bg-surface-800/50 transition-all"
+          >
+            <span>{notesOpen ? "▼" : "▶"}</span>
+            <span>📝 Scene Notes</span>
+            <span className="ml-auto text-[9px] text-surface-600">
+              {sceneNotes.length > 0 ? `${sceneNotes.length} chars` : "empty"}
+            </span>
+          </button>
+          {notesOpen && (
+            <div className="mt-1 animate-slide-up">
+              <textarea
+                value={sceneNotes}
+                onChange={(e) => onSceneNotesChange(e.target.value)}
+                placeholder={"Type your scene notes here...\nWhat happens when the party enters?\nKey NPC dialogue?\nHidden clues?"}
+                className="w-full rounded-lg border border-surface-700/50 bg-surface-800/70 p-2 text-[11px] text-surface-200 placeholder:text-surface-600 focus:border-accent-500/30 focus:outline-none resize-none transition-all"
+                rows={5}
+                spellCheck={false}
+              />
+              <div className="mt-1 flex items-center justify-between">
+                <p className="text-[9px] text-surface-600">
+                  Notes persist across sessions
+                </p>
+                <button
+                  onClick={() => { onSceneNotesChange(""); }}
+                  className="text-[9px] text-warrior-500 hover:text-warrior-400 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Weather Controls */}
         <div className="mb-4">

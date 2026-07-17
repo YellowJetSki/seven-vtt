@@ -118,6 +118,70 @@ const BUILT_IN_PRESETS: EncounterPreset[] = [
       { enemyId: "dire_wolf", count: 2 },
     ],
   },
+  /* ── New Presets ───────────────────────────────────────── */
+  {
+    name: "Swamp Ambush",
+    difficulty: "medium",
+    environment: "swamp",
+    description: "Lizardfolk and a giant crocodile ambush from murky waters.",
+    enemies: [
+      { enemyId: "lizardfolk", count: 4 },
+      { enemyId: "giant_crocodile", count: 1 },
+    ],
+  },
+  {
+    name: "City Watch Patrol",
+    difficulty: "easy",
+    environment: "urban",
+    description: "A heavily-armored city watch squad with a captain.",
+    enemies: [
+      { enemyId: "guard", count: 4 },
+      { enemyId: "veteran", count: 1 },
+    ],
+  },
+  {
+    name: "Underdark Encounter",
+    difficulty: "hard",
+    environment: "cavern",
+    description: "Drow raiders with a drider in the deep tunnels.",
+    enemies: [
+      { enemyId: "drow", count: 3 },
+      { enemyId: "drow_mage", count: 1 },
+      { enemyId: "drider", count: 1 },
+    ],
+  },
+  {
+    name: "Arctic Trek",
+    difficulty: "medium",
+    environment: "arctic",
+    description: "Yetis and winter wolves ambush the party in a blizzard.",
+    enemies: [
+      { enemyId: "yetis", count: 2 },
+      { enemyId: "winter_wolf", count: 3 },
+    ],
+  },
+  {
+    name: "Desert Scourge",
+    difficulty: "hard",
+    environment: "desert",
+    description: "A young blue dragon with its half-dragon servants.",
+    enemies: [
+      { enemyId: "blue_dragon_wyrmling", count: 1 },
+      { enemyId: "half_dragon", count: 2 },
+      { enemyId: "scout", count: 3 },
+    ],
+  },
+  {
+    name: "Spectral Tide",
+    difficulty: "deadly",
+    environment: "coast",
+    description: "Ghosts and ghouls rise from a shipwreck graveyard.",
+    enemies: [
+      { enemyId: "ghost", count: 3 },
+      { enemyId: "ghoul", count: 4 },
+      { enemyId: "wraith", count: 1 },
+    ],
+  },
 ];
 
 function loadUserPresets(): EncounterPreset[] {

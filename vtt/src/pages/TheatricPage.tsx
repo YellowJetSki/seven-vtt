@@ -6,6 +6,7 @@
  *   - Fullscreen toggle
  *   - Real-time Firebase sync (if available)
  *   - LocalStorage fallback for offline use
+ *   - Scene notes saved to localStorage
  *
  * USAGE: localStorage key "vtt-theatric-payload" expects:
  *   { mapId: string, tokenId: string, map?: BattleMap }
@@ -24,12 +25,26 @@ import type { WeatherEffect } from "@/components/theatric/WeatherOverlay";
 import type { BattleMap } from "@/types";
 
 const THEATRIC_STORAGE_KEY = "vtt-theatric-payload";
+const SCENE_NOTES_KEY = "vtt-theatric-scene-notes";
 const FALLBACK_POLL_INTERVAL = 2000;
 
 interface TheatricPayload {
   mapId: string;
   tokenId: string;
   map?: BattleMap;
+}
+
+/* ── Scene Notes Helpers ──────────────────────────────────────── */
+function loadSceneNotes(): string {
+  try { return localStorage.getItem(SCENE_NOTES_KEY) ?? ""; }
+  catch { return ""; }
+}
+
+function saveSceneNotes(notes: string): void {
+  try {
+    if (notes) localStorage.setItem(SCENE_NOTES_KEY, notes);
+    else localStorage.removeItem(SCENE_NOTES_KEY);
+  } catch { /* quota exceeded — silently ignore */ }
 }
 
 export function TheatricPage() {
@@ -39,10 +54,14 @@ export function TheatricPage() {
   const [fullscreen, setFullscreen] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [weather, setWeather] = useState<WeatherEffect>("clear");
+  const [sceneNotes, setSceneNotes] = useState<string>(loadSceneNotes);
   const [firebaseReady, setFirebaseReady] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const firebaseUnsubRef = useRef<(() => void) | null>(null);
+
+  // Persist scene notes to localStorage on every change
+  useEffect(() => { saveSceneNotes(sceneNotes); }, [sceneNotes]);
 
   // Detect if Firebase is available
   useEffect(() => {
@@ -258,6 +277,8 @@ export function TheatricPage() {
         fullscreen={fullscreen}
         showGrid={showGrid}
         weather={weather}
+        sceneNotes={sceneNotes}
+        onSceneNotesChange={setSceneNotes}
         onToggleFullscreen={toggleFullscreen}
         onToggleGrid={() => setShowGrid(!showGrid)}
         onWeatherChange={setWeather}
