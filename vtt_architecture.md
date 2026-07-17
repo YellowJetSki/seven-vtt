@@ -675,3 +675,33 @@ All 3 features from Cycle 5 verified in the production dist build:
 
 ### Build: 0 TS errors, deploys cleanly
 ---
+
+## Sprint 9, Cycle 8 — Notes Consolidation (Updated: 2026-07-17 17:22)
+## Sprint 9, Cycle 8 — Notes Consolidation Complete
+
+### Summary
+Finalized all sprint documentation for the 8-cycle Sprint 9 execution:
+
+1. **Created missing notes**: `sprint9-cycle4-notes.md` (E2E testing & fixes) and `sprint9-cycle5-notes.md` (Feature implementation)
+2. **Created master index**: `sprint1/README.md` with cycle overview table, fix history, known gaps, key file reference, and env vars reference
+3. **Fixed iteration numbering**: Corrected cycle 3 (was "5 of 10") and cycle 6 (title said "Cycle 5")
+4. **Final sprint1 folder structure**: 
+   - `README.md` — Master index
+   - `sprint9-cycle1-notes.md` through `sprint9-cycle8-notes.md` — All 8 cycles
+
+### File Organization
+```
+sprint1/
+├── README.md                     ← Master index (cycle overview, fix history, quick ref)
+├── sprint9-cycle1-notes.md       ← E2E regression test + Weather overlay + Animated logo
+├── sprint9-cycle2-notes.md       ← Firebase sync audit + Bug fixes
+├── sprint9-cycle3-notes.md       ← Feature identification & implementation
+├── sprint9-cycle4-notes.md       ← E2E testing & bug fixes from Cycle 3 features
+├── sprint9-cycle5-notes.md       ← Feature implementation (Theatric notes, conditions, presets)
+├── sprint9-cycle6-notes.md       ← Verification of features in production
+├── sprint9-cycle7-notes.md       ← Firebase sync audit (security rules, health monitor)
+└── (cycle 8-10 will be added)    ← Future cycles
+```
+
+### Build: 0 TS errors, deploys cleanly
+---
