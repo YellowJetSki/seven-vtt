@@ -19,18 +19,19 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "@/pages/LoginPage";
 import { DmDashboard } from "@/pages/DmDashboard";
 import { PlayerCards } from "@/pages/PlayerCards";
-import { HomebrewPanel } from "@/pages/HomebrewPanel";
-import { DmJournal } from "@/pages/DmJournal";
-import { CampaignSettings } from "@/pages/CampaignSettings";
-import { PlayerDashboard } from "@/pages/PlayerDashboard";
-import { TheatricPage } from "@/pages/TheatricPage";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
 
-// Lazy-loaded pages
+// Lazy-loaded pages (larger pages deferred for faster initial load)
 const Encounters = lazy(() => import("@/pages/Encounters").then(m => ({ default: m.Encounters })));
 const BattleMaps = lazy(() => import("@/pages/BattleMaps").then(m => ({ default: m.BattleMaps })));
+const DmJournal = lazy(() => import("@/pages/DmJournal").then(m => ({ default: m.DmJournal })));
+const HomebrewPanel = lazy(() => import("@/pages/HomebrewPanel").then(m => ({ default: m.HomebrewPanel })));
+const CampaignSettings = lazy(() => import("@/pages/CampaignSettings").then(m => ({ default: m.CampaignSettings })));
+const PlayerDashboard = lazy(() => import("@/pages/PlayerDashboard").then(m => ({ default: m.PlayerDashboard })));
+const TheatricPage = lazy(() => import("@/pages/TheatricPage").then(m => ({ default: m.TheatricPage })));
+const LoginPage = lazy(() => import("@/pages/LoginPage").then(m => ({ default: m.LoginPage })));
 
 function SuspenseFallback() {
   return (
@@ -54,10 +55,10 @@ export default function App() {
   return (
     <Routes>
       {/* Public: Login (no shell) */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<Suspense fallback={<SuspenseFallback />}><LoginPage /></Suspense>} />
 
       {/* Public: Theatric View — no auth, no sidebar, just fullscreen map */}
-      <Route path="/theatric" element={<TheatricPage />} />
+      <Route path="/theatric" element={<Suspense fallback={<SuspenseFallback />}><TheatricPage /></Suspense>} />
 
       {/* Authenticated DM routes (with sidebar shell) */}
       <Route
@@ -71,23 +72,15 @@ export default function App() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DmDashboard />} />
         <Route path="player-cards" element={<PlayerCards />} />
-        <Route path="homebrew" element={<HomebrewPanel />} />
-        <Route path="encounters" element={
-          <Suspense fallback={<SuspenseFallback />}>
-            <Encounters />
-          </Suspense>
-        } />
-        <Route path="maps" element={
-          <Suspense fallback={<SuspenseFallback />}>
-            <BattleMaps />
-          </Suspense>
-        } />
-        <Route path="journal" element={<DmJournal />} />
-        <Route path="settings" element={<CampaignSettings />} />
+        <Route path="homebrew" element={<Suspense fallback={<SuspenseFallback />}><HomebrewPanel /></Suspense>} />
+        <Route path="encounters" element={<Suspense fallback={<SuspenseFallback />}><Encounters /></Suspense>} />
+        <Route path="maps" element={<Suspense fallback={<SuspenseFallback />}><BattleMaps /></Suspense>} />
+        <Route path="journal" element={<Suspense fallback={<SuspenseFallback />}><DmJournal /></Suspense>} />
+        <Route path="settings" element={<Suspense fallback={<SuspenseFallback />}><CampaignSettings /></Suspense>} />
       </Route>
 
       {/* Player-facing route (anonymous auth) */}
-      <Route path="/player" element={<PlayerDashboard />} />
+      <Route path="/player" element={<Suspense fallback={<SuspenseFallback />}><PlayerDashboard /></Suspense>} />
 
       {/* Default: redirect to login */}
       <Route path="*" element={<Navigate to="/login" replace />} />

@@ -35,7 +35,13 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
   const [pendingDashMove, setPendingDashMove] = useState<{ tokenId: string; x: number; y: number } | null>(null);
 
   const selectedToken = useMemo(() => map.tokens.find((t) => t.id === selectedTokenId) ?? null, [map.tokens, selectedTokenId]);
-  const tokenSpeed = selectedToken?.speed ?? 30;
+  const normalRange = Math.floor((selectedToken?.speed ?? 30) / 5);
+  const dashRange = Math.floor(((selectedToken?.speed ?? 30) * 2) / 5);
+
+  const performMove = useCallback((tokenId: string, targetX: number, targetY: number) => {
+    onUpdate({ tokens: map.tokens.map((t) => t.id === tokenId ? { ...t, x: targetX, y: targetY } : t) });
+    setShowMovement(false); setDashMode(false);
+  }, [map.tokens, onUpdate]);
 
   const handleTokenClick = useCallback((tokenId: string) => {
     setSelectedTokenId((prev) => (prev === tokenId ? null : tokenId));
@@ -64,19 +70,11 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
       return;
     }
     performMove(tokenId, targetX, targetY);
-  }, [map.tokens, dashMode]);
-
-  const performMove = useCallback((tokenId: string, targetX: number, targetY: number) => {
-    onUpdate({ tokens: map.tokens.map((t) => t.id === tokenId ? { ...t, x: targetX, y: targetY } : t) });
-    setShowMovement(false); setDashMode(false);
-  }, [map.tokens, onUpdate]);
+  }, [map.tokens, dashMode, normalRange, performMove]);
 
   const handleUpdateToken = useCallback((tokenId: string, updates: Partial<MapToken>) => {
     onUpdate({ tokens: map.tokens.map((t) => t.id === tokenId ? { ...t, ...updates } : t) });
   }, [map.tokens, onUpdate]);
-
-  const normalRange = Math.floor(tokenSpeed / 5);
-  const dashRange = Math.floor((tokenSpeed * 2) / 5);
 
   return (
     <div className="space-y-3">
