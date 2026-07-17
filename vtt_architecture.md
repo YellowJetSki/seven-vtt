@@ -265,3 +265,46 @@ Badge, Button, CommandPalette, ConfirmDialog, EmptyState, ErrorBoundary, ExportA
 - Chunks: 543KB JS (141KB gzipped), 89KB CSS (14KB gzipped)
 - Ready for Sprint 3 (Testing)
 ---
+
+## Sprint 2-4 Refactoring Summary (Updated: 2026-07-17 08:02)
+## Sprint 2-4 Results
+
+### Major Files Refactored (slimmed below 150-200 lines)
+| File | Before | After | Reduction |
+|------|--------|-------|-----------|
+| ItemForm.tsx | 766 | 149 | -617 |
+| useFirebaseSync.ts | 668 | 178 | -490 |
+| campaignStore.ts | 633 | 145 | -488 |
+| combatStore.ts | 651 | 61 | -590 |
+| firebase-service.ts | 600 | DELETED | -600 |
+| InitiativeTracker.tsx | 590 | 147 | -443 |
+| CampaignWizard.tsx | 563 | 193 | -370 |
+| PlayerCards.tsx | 555 | * | fixed hooks |
+| BattleMaps.tsx | 514 | 149 | -365 |
+| normalized-firebase-service.ts | 736 | 149 | -587 |
+
+### New Files Created (37 total)
+- 6 ItemForm sub-components (Constants, ImageUpload, Weapon, Armor, Potion, Scroll)
+- 5 CampaignWizard sub-components (Choice, Details, Species, ClassesCurrency, Review)
+- 5 combatStore slices (encounter, combatant, combatFlow, combatLog, liveSession)
+- 4 campaignStore slices (meta, character, entity, token) + normalization
+- 4 InitiativeTracker sub-components (EmptyState, CombatantList, Actions, ImportModal)
+- 2 BattleMaps sub-components (AddTokenForm, MapForm)
+- 3 library modules (firestore-helpers, sync-queue, arklaPcBuilder)
+- type fixes in index.ts
+
+### Modules: 148 → 178
+### Build: 919ms → 729ms
+
+### Remaining Candidates for Sprint 5
+- PlayerCharacterSheet.tsx (709) — next priority
+- MapEditor.tsx (457)
+- EncounterBuilder.tsx (367)
+- LiveSessionView.tsx (400)
+- DmDashboard.tsx (400)
+- SpotifyPlayer.tsx (391)
+- GlobalCompendium.tsx (386)
+- ImagePicker.tsx (403)
+- firestore.ts (399)
+- Encounters.tsx (335)
+---
