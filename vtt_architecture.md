@@ -590,3 +590,20 @@ All previously fixed bugs remain resolved:
 
 ### Build Status: 208 modules, 0 TS errors
 ---
+
+## Sprint 9, Cycle 2 — Firebase Sync Audit Fixes (Updated: 2026-07-17 17:03)
+### Firebase Sync Fixes
+
+1. **Dynamic Campaign ID**: `CAMPAIGN_ID = "arkla"` replaced with `getCampaignId()` / `getQueueCampaignId()` in 3 files. Reads `store.meta.id` at call time, falls back to "arkla". Files: `useFirebaseSync.ts`, `usePlayerFirebaseSync.ts`, `sync-queue.ts`.
+
+2. **Derived campaign purge**: Listener callbacks in `useFirebaseSync.ts` no longer call `store.setCampaign()` (which triggers `buildCampaign()`). Replaced with direct `setState({ field: merged })` calls for characters, battleMaps, journal.
+
+3. **Player sync enhanced**: `usePlayerFirebaseSync.ts` now subscribes to combat log, homebrew items, spells, feats in addition to sessions + campaign meta.
+
+4. **Weather overlay stabilization**: `RAIN_STREAK_LINES` extracted to module-level constant to prevent inline `Math.random()` hydration mismatches.
+
+### Pending Items
+- Debounce-per-domain timer isolation
+- Remove dead code `normalizedSync.start()` SyncManager
+- Player login cross-browser verification
+---
