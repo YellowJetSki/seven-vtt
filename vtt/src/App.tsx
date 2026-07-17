@@ -21,6 +21,7 @@ import { DmDashboard } from "@/pages/DmDashboard";
 import { PlayerCards } from "@/pages/PlayerCards";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useFirebaseMonitor } from "@/hooks/useFirebaseMonitor";
 
 // Lazy-loaded pages (larger pages deferred for faster initial load)
@@ -72,11 +73,11 @@ export default function App() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DmDashboard />} />
         <Route path="player-cards" element={<PlayerCards />} />
-        <Route path="homebrew" element={<Suspense fallback={<SuspenseFallback />}><HomebrewPanel /></Suspense>} />
-        <Route path="encounters" element={<Suspense fallback={<SuspenseFallback />}><Encounters /></Suspense>} />
-        <Route path="maps" element={<Suspense fallback={<SuspenseFallback />}><BattleMaps /></Suspense>} />
-        <Route path="journal" element={<Suspense fallback={<SuspenseFallback />}><DmJournal /></Suspense>} />
-        <Route path="settings" element={<Suspense fallback={<SuspenseFallback />}><CampaignSettings /></Suspense>} />
+        <Route path="homebrew" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><HomebrewPanel /></ErrorBoundary></Suspense>} />
+        <Route path="encounters" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><Encounters /></ErrorBoundary></Suspense>} />
+        <Route path="maps" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><BattleMaps /></ErrorBoundary></Suspense>} />
+        <Route path="journal" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><DmJournal /></ErrorBoundary></Suspense>} />
+        <Route path="settings" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><CampaignSettings /></ErrorBoundary></Suspense>} />
       </Route>
 
       {/* Player-facing route (anonymous auth) */}
