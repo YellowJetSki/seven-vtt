@@ -1,12 +1,13 @@
 /* ── Campaign Token Slice ──────────────────────────────────────
  * Map token CRUD operations.
+ * Uses cached campaign builder to prevent infinite re-render loops.
  * ─────────────────────────────────────────────────────────────── */
 
 import type { StateCreator } from "zustand";
 import type { NormalizedCampaignState } from "./types";
 import type { MapToken } from "@/types";
 import type { MapTokenDoc } from "@/types/firestore";
-import { buildCampaign } from "./normalization";
+import { buildCampaignCached } from "./campaignBuilder";
 
 export const createTokenSlice: StateCreator<
   NormalizedCampaignState,
@@ -27,7 +28,8 @@ export const createTokenSlice: StateCreator<
         mapTokens: { ...state.mapTokens, [mapId]: [...tokens, token] },
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   updateToken: (mapId, tokenId, updates) =>
@@ -40,7 +42,8 @@ export const createTokenSlice: StateCreator<
         mapTokens: { ...state.mapTokens, [mapId]: tokens },
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   removeToken: (mapId, tokenId) =>
@@ -51,6 +54,7 @@ export const createTokenSlice: StateCreator<
         mapTokens: { ...state.mapTokens, [mapId]: tokens },
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 });

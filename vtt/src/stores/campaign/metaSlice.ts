@@ -6,7 +6,7 @@ import type { StateCreator } from "zustand";
 import type { NormalizedCampaignState } from "./types";
 import type { CampaignMeta } from "@/types/firestore";
 import type { CampaignSettings } from "@/types";
-import { buildCampaign } from "./normalization";
+import { buildCampaignCached } from "./campaignBuilder";
 
 export const createMetaSlice: StateCreator<
   NormalizedCampaignState,
@@ -17,7 +17,8 @@ export const createMetaSlice: StateCreator<
   setMeta: (meta) =>
     set((state) => {
       const newState = { ...state, meta, forcePushCounter: state.forcePushCounter + 1 };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   setLoading: (isLoading) => set({ isLoading }),
@@ -35,6 +36,7 @@ export const createMetaSlice: StateCreator<
         },
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 });

@@ -1,12 +1,13 @@
 /* ── Campaign Entity Slice ─────────────────────────────────────
  * CRUD for enemies, encounters, battle maps, and journal entries.
+ * Uses cached campaign builder to prevent infinite re-render loops.
  * ─────────────────────────────────────────────────────────────── */
 
 import type { StateCreator } from "zustand";
 import type { NormalizedCampaignState } from "./types";
 import type { Encounter, BattleMap, JournalEntry } from "@/types";
 import type { EnemyDoc } from "@/types/firestore";
-import { buildCampaign } from "./normalization";
+import { buildCampaignCached } from "./campaignBuilder";
 
 export const createEntitySlice: StateCreator<
   NormalizedCampaignState,
@@ -19,7 +20,7 @@ export const createEntitySlice: StateCreator<
     | "addJournalEntry" | "updateJournalEntry" | "removeJournalEntry"
   >
 > = (set) => ({
-  // ── Enemies ──
+  // ── Enemies (no campaign rebuild needed — enemies not in campaign object) ──
   addEnemy: (enemy) =>
     set((state) => ({
       enemies: [...state.enemies, enemy],
@@ -52,7 +53,8 @@ export const createEntitySlice: StateCreator<
           stats: { ...state.meta.stats, encounterCount: state.encounters.length + 1 },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   updateEncounter: (id, updates) =>
@@ -62,7 +64,8 @@ export const createEntitySlice: StateCreator<
         encounters: state.encounters.map((e) => (e.id === id ? { ...e, ...updates } : e)),
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   removeEncounter: (id) =>
@@ -78,7 +81,8 @@ export const createEntitySlice: StateCreator<
           stats: { ...state.meta.stats, encounterCount: Math.max(0, state.encounters.length - 1) },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   // ── Battle Maps ──
@@ -96,7 +100,8 @@ export const createEntitySlice: StateCreator<
           stats: { ...state.meta.stats, mapCount: state.battleMaps.length + 1 },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   updateBattleMap: (id, updates) =>
@@ -106,7 +111,8 @@ export const createEntitySlice: StateCreator<
         battleMaps: state.battleMaps.map((m) => (m.id === id ? { ...m, ...updates } : m)),
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   removeBattleMap: (id) =>
@@ -124,7 +130,8 @@ export const createEntitySlice: StateCreator<
           stats: { ...state.meta.stats, mapCount: Math.max(0, state.battleMaps.length - 1) },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   // ── Journal ──
@@ -141,7 +148,8 @@ export const createEntitySlice: StateCreator<
           stats: { ...state.meta.stats, journalCount: state.journal.length + 1 },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   updateJournalEntry: (id, updates) =>
@@ -151,7 +159,8 @@ export const createEntitySlice: StateCreator<
         journal: state.journal.map((j) => (j.id === id ? { ...j, ...updates } : j)),
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   removeJournalEntry: (id) =>
@@ -167,6 +176,7 @@ export const createEntitySlice: StateCreator<
           stats: { ...state.meta.stats, journalCount: Math.max(0, state.journal.length - 1) },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 });

@@ -17,8 +17,10 @@ export interface NormalizedCampaignState {
   error: string | null;
   forcePushCounter: number;
 
-  // Computed — recomputed on every state change
+  // Derived — cached via buildCampaign hash guard
   campaign: Campaign | null;
+  /** Hash of the last data used to build campaign (for change detection) */
+  campaignBuildHash: string;
 
   // ── Meta ──
   setMeta: (meta: CampaignMeta) => void;

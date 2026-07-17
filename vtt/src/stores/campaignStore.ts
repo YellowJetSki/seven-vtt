@@ -18,7 +18,8 @@ import { createMetaSlice } from "./campaign/metaSlice";
 import { createCharacterSlice } from "./campaign/characterSlice";
 import { createEntitySlice } from "./campaign/entitySlice";
 import { createTokenSlice } from "./campaign/tokenSlice";
-import { normalizeCharacters, buildCampaign } from "./campaign/normalization";
+import { normalizeCharacters } from "./campaign/normalization";
+import { buildCampaignCached } from "./campaign/campaignBuilder";
 import type { NormalizedCampaignState } from "./campaign/types";
 
 const initialState: Omit<NormalizedCampaignState,
@@ -45,6 +46,7 @@ const initialState: Omit<NormalizedCampaignState,
   error: null,
   forcePushCounter: 0,
   campaign: null,
+  campaignBuildHash: "",
 };
 
 export const useCampaignStore = create<NormalizedCampaignState>()(
@@ -113,14 +115,17 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
           mapTokens: newState.mapTokens,
           journal: newState.journal,
           forcePushCounter: newState.forcePushCounter,
-          campaign: buildCampaign({
-            meta: newState.meta,
-            characters: newState.characters,
-            encounters: newState.encounters,
-            battleMaps: newState.battleMaps,
-            mapTokens: newState.mapTokens,
-            journal: newState.journal,
-          }),
+          campaign: (() => {
+            const result = buildCampaignCached({
+              meta: newState.meta,
+              characters: newState.characters,
+              encounters: newState.encounters,
+              battleMaps: newState.battleMaps,
+              mapTokens: newState.mapTokens,
+              journal: newState.journal,
+            }, state.campaignBuildHash);
+            return result.campaign;
+          })(),
         });
       },
 

@@ -6,6 +6,7 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useDerivedCampaign } from "@/stores/campaign/useDerivedCampaign";
 import { useCombatStore } from "@/stores/combatStore";
 import { useHomebrewStore } from "@/stores/homebrewStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -22,7 +23,7 @@ import { SummaryItem } from "@/components/dashboard/SummaryItem";
 import { SessionStatusBar } from "@/components/dashboard/SessionStatusBar";
 
 export function DmDashboard() {
-  const campaign = useCampaignStore((s) => s.campaign);
+  const campaign = useDerivedCampaign();
   const setCampaign = useCampaignStore((s) => s.setCampaign);
   const isLoading = useCampaignStore((s) => s.isLoading);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);

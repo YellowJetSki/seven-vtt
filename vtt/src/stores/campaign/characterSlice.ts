@@ -5,7 +5,7 @@
 import type { StateCreator } from "zustand";
 import type { NormalizedCampaignState } from "./types";
 import type { PlayerCharacter } from "@/types";
-import { buildCampaign } from "./normalization";
+import { buildCampaignCached } from "./campaignBuilder";
 
 export const createCharacterSlice: StateCreator<
   NormalizedCampaignState,
@@ -26,7 +26,8 @@ export const createCharacterSlice: StateCreator<
           stats: { ...state.meta.stats, characterCount: state.characters.length + 1 },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   updateCharacter: (id, updates) =>
@@ -36,7 +37,8 @@ export const createCharacterSlice: StateCreator<
         characters: state.characters.map((c) => (c.id === id ? { ...c, ...updates } : c)),
         forcePushCounter: state.forcePushCounter + 1,
       };
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 
   updatePlayerCharacter: (id, updates) => get().updateCharacter(id, updates),
@@ -54,6 +56,7 @@ export const createCharacterSlice: StateCreator<
           stats: { ...state.meta.stats, characterCount: Math.max(0, state.characters.length - 1) },
         };
       }
-      return { ...newState, campaign: buildCampaign(newState) };
+      const { campaign, hash } = buildCampaignCached(newState, state.campaignBuildHash);
+      return campaign ? { ...newState, campaign, campaignBuildHash: hash } : newState;
     }),
 });

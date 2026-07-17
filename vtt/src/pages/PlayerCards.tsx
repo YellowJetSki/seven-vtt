@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useDerivedCampaign } from "@/stores/campaign/useDerivedCampaign";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -24,7 +25,7 @@ type SortKey = "name" | "level" | "class" | "race";
 
 export function PlayerCards() {
   const characters = useCampaignStore((s) => s.characters);
-  const campaign = useCampaignStore((s) => s.campaign);
+  const campaign = useDerivedCampaign();
   const addCharacter = useCampaignStore((s) => s.addCharacter);
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const removeCharacter = useCampaignStore((s) => s.removeCharacter);
