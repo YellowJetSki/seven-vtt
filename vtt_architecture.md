@@ -619,3 +619,25 @@ All previously fixed bugs remain resolved:
 ### Full Candidate List (8 features)
 See `sprint1/sprint9-cycle3-notes.md` for complete ranking and analysis.
 ---
+
+## Sprint 9, Cycle 3 — Feature Implementation Complete (Updated: 2026-07-17 17:09)
+## Sprint 9, Cycle 3 — Feature Implementation
+
+### Features Implemented (Step 5)
+1. **Theatric Scene Notes Panel** — Collapsible DM notes textarea in TheatricSidebar, persisted to localStorage. Accessed via "📝 Scene Notes" toggle button in sidebar.
+
+2. **Player Live Session Conditions** — Added weather/lighting/terrain display in Player Dashboard session bar. Added Party Overview card showing all party members with HP bars and status.
+
+3. **6 New Encounter Presets** — Swamp Ambush, City Watch Patrol, Underdark Encounter, Arctic Trek, Desert Scourge, Spectral Tide. Total now 14 built-in presets.
+
+### Files Modified
+- `vtt/src/components/theatric/TheatricSidebar.tsx` — Scene notes panel
+- `vtt/src/pages/TheatricPage.tsx` — Notes state management + persistence
+- `vtt/src/pages/PlayerDashboard.tsx` — Conditions display + party overview
+- `vtt/src/components/combat/EncounterPresets.tsx` — 6 new presets
+
+### Build Status
+- TypeScript: 0 errors
+- Build: ~912ms
+- Deployed to production via git push
+---
