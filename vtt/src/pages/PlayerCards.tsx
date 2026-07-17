@@ -3,7 +3,7 @@
  * views, search, sort, import/export, detail modals.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";

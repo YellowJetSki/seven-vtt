@@ -71,8 +71,8 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<DmDashboard />} />
-        <Route path="player-cards" element={<PlayerCards />} />
+        <Route path="dashboard" element={<ErrorBoundary><DmDashboard /></ErrorBoundary>} />
+        <Route path="player-cards" element={<ErrorBoundary><PlayerCards /></ErrorBoundary>} />
         <Route path="homebrew" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><HomebrewPanel /></ErrorBoundary></Suspense>} />
         <Route path="encounters" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><Encounters /></ErrorBoundary></Suspense>} />
         <Route path="maps" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><BattleMaps /></ErrorBoundary></Suspense>} />
@@ -81,7 +81,7 @@ export default function App() {
       </Route>
 
       {/* Player-facing route (anonymous auth) */}
-      <Route path="/player" element={<Suspense fallback={<SuspenseFallback />}><PlayerDashboard /></Suspense>} />
+      <Route path="/player" element={<Suspense fallback={<SuspenseFallback />}><ErrorBoundary><PlayerDashboard /></ErrorBoundary></Suspense>} />
 
       {/* Default: redirect to login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
