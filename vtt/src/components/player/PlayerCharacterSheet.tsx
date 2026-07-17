@@ -37,8 +37,7 @@ export function PlayerCharacterSheet({ character }: Props) {
   const [showCurrencyEditor, setShowCurrencyEditor] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
 
-  const characterResources: { id: string; name: string; current: number; max: number; recharge: string }[] =
-    (character as any).resources ?? [];
+  const characterResources = character.resources ?? [];
 
   const hpPercent = useMemo(() => {
     if (character.hitPoints.max <= 0) return 0;
@@ -49,17 +48,17 @@ export function PlayerCharacterSheet({ character }: Props) {
     const healAmt = Math.floor(character.hitPoints.max * 0.25);
     const newHp = Math.min(character.hitPoints.max, character.hitPoints.current + healAmt);
     updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current: newHp }, updatedAt: Date.now() });
-    const updatedResources = (characterResources).map((r: any) =>
+    const updatedResources = characterResources.map((r) =>
       r.recharge === "short" ? { ...r, current: r.max } : r
     );
-    if (updatedResources.length > 0) updateCharacter(character.id, { resources: updatedResources, updatedAt: Date.now() } as any);
+    if (updatedResources.length > 0) updateCharacter(character.id, { resources: updatedResources, updatedAt: Date.now() });
     showToast({ message: `Short rest! Healed ${healAmt} HP. Short-rest resources restored.`, type: "success" });
   }, [character, characterResources, updateCharacter, showToast]);
 
   const handleLongRest = useCallback(() => {
     updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current: character.hitPoints.max, temporary: 0 }, updatedAt: Date.now() });
-    const updatedResources = characterResources.map((r: any) => ({ ...r, current: r.max }));
-    if (updatedResources.length > 0) updateCharacter(character.id, { resources: updatedResources, updatedAt: Date.now() } as any);
+    const updatedResources = characterResources.map((r) => ({ ...r, current: r.max }));
+    if (updatedResources.length > 0) updateCharacter(character.id, { resources: updatedResources, updatedAt: Date.now() });
     showToast({ message: `Long rest! Fully healed. All resources restored.`, type: "success" });
   }, [character, characterResources, updateCharacter, showToast]);
 
@@ -183,7 +182,7 @@ export function PlayerCharacterSheet({ character }: Props) {
       {/* Modals */}
       {showHpEditor && <CharacterHpEditor character={character} onSave={(current, temp) => { updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current, temporary: temp }, updatedAt: Date.now() }); setShowHpEditor(false); showToast({ message: `HP updated`, type: "success" }); }} onClose={() => setShowHpEditor(false)} />}
       {showXpEditor && <CharacterXpEditor currentXp={character.experiencePoints ?? 0} onSave={(xp) => { updateCharacter(character.id, { experiencePoints: xp, updatedAt: Date.now() }); setShowXpEditor(false); showToast({ message: `XP set to ${xp}`, type: "success" }); }} onClose={() => setShowXpEditor(false)} />}
-      {showResourceEditor && <ResourceEditor resources={characterResources} onSave={(resources) => { updateCharacter(character.id, { resources, updatedAt: Date.now() } as any); setShowResourceEditor(false); showToast({ message: `Resources updated`, type: "success" }); }} onClose={() => setShowResourceEditor(false)} />}
+      {showResourceEditor && <ResourceEditor resources={characterResources} onSave={(resources) => { updateCharacter(character.id, { resources, updatedAt: Date.now() }); setShowResourceEditor(false); showToast({ message: `Resources updated`, type: "success" }); }} onClose={() => setShowResourceEditor(false)} />}
       {showInventoryEditor && <InventoryEditor equipment={character.equipment.map(e => ({ item: e.item, quantity: e.quantity }))} onSave={(equipment) => { updateCharacter(character.id, { equipment, updatedAt: Date.now() }); setShowInventoryEditor(false); showToast({ message: `Inventory updated (${equipment.length} items)`, type: "success" }); }} onClose={() => setShowInventoryEditor(false)} />}
       {showCurrencyEditor && <CurrencyEditor currency={{ platinum: character.currency?.platinum ?? 0, gold: character.currency?.gold ?? 0, electrum: character.currency?.electrum ?? 0, silver: character.currency?.silver ?? 0, copper: character.currency?.copper ?? 0 }} onSave={(currency) => { updateCharacter(character.id, { currency, updatedAt: Date.now() }); setShowCurrencyEditor(false); showToast({ message: "Currency updated", type: "success" }); }} onClose={() => setShowCurrencyEditor(false)} />}
       {showLevelUp && (

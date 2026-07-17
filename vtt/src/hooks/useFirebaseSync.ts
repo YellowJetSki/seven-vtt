@@ -94,8 +94,8 @@ export function useFirebaseSync(): void {
 
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const debouncedPush = useCallback((domain: string, fn: () => Promise<boolean>, delay: number, entityId?: string) => {
-    enqueuePush(domain as any, entityId);
+  const debouncedPush = useCallback((domain: "campaign" | "session" | "homebrew" | "character" | "enemy" | "encounter" | "map" | "token" | "journal" | "item" | "spell" | "feat" | "combatant" | "combatlog", fn: () => Promise<boolean>, delay: number, entityId?: string) => {
+    enqueuePush(domain, entityId);
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
     pushTimerRef.current = setTimeout(async () => {
       try { await fn(); } catch { /* retried by sync-queue */ }

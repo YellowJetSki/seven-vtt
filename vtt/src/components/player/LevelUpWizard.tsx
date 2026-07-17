@@ -119,7 +119,7 @@ export function LevelUpWizard({ character, onClose }: LevelUpWizardProps) {
       updatedAt: Date.now(),
     };
 
-    updateCharacter(character.id, updatedCharacter as any);
+    updateCharacter(character.id, updatedCharacter);
     setCompleted(true);
     showToast({
       message: `${character.name} leveled up to level ${newTotalLevel}!`,

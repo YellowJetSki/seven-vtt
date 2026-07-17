@@ -39,7 +39,7 @@ export function EncounterBuilder({ existingEncounter, onSave, onCancel }: Props)
   const { totalXp, adjustedXp, multiplier } = useMemo(() => calculateXp(slots), [slots]);
   const difficulty = useMemo(() => estimateDifficulty(adjustedXp, partyLevels), [adjustedXp, partyLevels]);
 
-  const addEnemy = (template: any) => {
+  const addEnemy = (template: { id: string; name: string; cr: number; ac: number; hp: number; type: string; subType?: string }) => {
     setSlots((prev) => {
       const existing = prev.find((s) => s.enemyId === template.id);
       return existing

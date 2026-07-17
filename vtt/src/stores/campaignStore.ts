@@ -143,7 +143,7 @@ export const useCampaignStore = create<NormalizedCampaignState>()(
         journal: state.journal,
         mapTokens: state.mapTokens,
       }),
-      migrate: (persisted: any, version: number) => {
+      migrate: (persisted: Record<string, unknown>, version: number) => {
         if (version < 2 && persisted?.characters) {
           persisted.characters = normalizeCharacters(persisted.characters);
         }

@@ -104,7 +104,7 @@ export function SpellcastingSheet({ character }: { character: PlayerCharacter })
 
   // Build spell list from character's known/prepared spells + homebrew
   const knownSpells: SpellItem[] = useMemo(() => {
-    const charSpells: SpellItem[] = (character as any).spells?.known?.map((s: any) => ({
+    const charSpells: SpellItem[] = (character.spellcasting?.spells ?? []).map((s) => ({
       name: typeof s === "string" ? s : s.name,
       level: s.level ?? 0,
       school: s.school ?? "Unknown",

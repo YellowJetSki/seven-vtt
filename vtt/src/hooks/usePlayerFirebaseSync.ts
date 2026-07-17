@@ -26,11 +26,11 @@ export function usePlayerFirebaseSync(): void {
       if (sessions.length === 0) return;
       const latest = sessions[0]; // ordered by updatedAt desc
       const store = useCombatStore.getState();
-      if (latest.phase) store.setSessionPhase(latest.phase as any);
+      if (latest.phase) store.setSessionPhase(latest.phase as "exploration" | "combat" | "rest" | "downtime");
       if (latest.currentScene) store.setCurrentScene(latest.currentScene);
       if (latest.currentMapUrl) store.setCurrentMapUrl(latest.currentMapUrl);
       if (latest.dmAnnouncement) store.setDmAnnouncement(latest.dmAnnouncement);
-      if (latest.conditions) store.setConditions(latest.conditions as any);
+      if (latest.conditions) store.setConditions(latest.conditions);
     });
 
     const unsubMeta = normalizedCampaign.listenMeta(CAMPAIGN_ID, (meta) => {
@@ -42,11 +42,11 @@ export function usePlayerFirebaseSync(): void {
       if (sessions.length > 0) {
         const ls = sessions[0];
         const store = useCombatStore.getState();
-        if (ls.phase) store.setSessionPhase(ls.phase as any);
+        if (ls.phase) store.setSessionPhase(ls.phase as "exploration" | "combat" | "rest" | "downtime");
         if (ls.currentScene) store.setCurrentScene(ls.currentScene);
         if (ls.currentMapUrl) store.setCurrentMapUrl(ls.currentMapUrl);
         if (ls.dmAnnouncement) store.setDmAnnouncement(ls.dmAnnouncement);
-        if (ls.conditions) store.setConditions(ls.conditions as any);
+        if (ls.conditions) store.setConditions(ls.conditions);
       }
     });
 

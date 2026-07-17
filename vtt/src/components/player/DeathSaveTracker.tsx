@@ -25,7 +25,7 @@ export function DeathSaveTracker({ character }: { character: PlayerCharacter }) 
   const isDown = hp.current <= 0;
 
   const [saves, setSaves] = useState<DeathSaveState>(() => {
-    const stored = (character as any).deathSaves;
+    const stored = character.deathSaves;
     return stored ?? { successes: 0, failures: 0, stabilized: false, isDead: false };
   });
 
@@ -44,7 +44,7 @@ export function DeathSaveTracker({ character }: { character: PlayerCharacter }) 
         }
       }
       // Persist to campaign store
-      updateCharacter(character.id, { deathSaves: next } as any);
+      updateCharacter(character.id, { deathSaves: next });
       return next;
     });
   }, [character.id, updateCharacter]);
@@ -52,14 +52,14 @@ export function DeathSaveTracker({ character }: { character: PlayerCharacter }) 
   const resetSaves = useCallback(() => {
     const reset: DeathSaveState = { successes: 0, failures: 0, stabilized: false, isDead: false };
     setSaves(reset);
-    updateCharacter(character.id, { deathSaves: reset } as any);
+    updateCharacter(character.id, { deathSaves: reset });
   }, [character.id, updateCharacter]);
 
   const healToStable = useCallback(() => {
     // Bring to 1 HP (unconscious -> stable + awake)
     const currentHp = character.hitPoints.current;
     if (currentHp <= 0) {
-      updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current: 1 } } as any);
+      updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current: 1 } });
     }
     resetSaves();
   }, [character, updateCharacter, resetSaves]);

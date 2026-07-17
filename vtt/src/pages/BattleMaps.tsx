@@ -49,7 +49,7 @@ export function BattleMaps() {
   }, [maps, searchQuery]);
 
   /* ── Handlers ── */
-  const handleCreateMap = (data: any) => {
+  const handleCreateMap = (data: { name: string; imageUrl?: string; gridWidth: number; gridHeight: number; gridSize: number }) => {
     const map: BattleMap = {
       id: uid("map"), name: data.name, imageUrl: data.imageUrl || undefined,
       gridWidth: data.gridWidth, gridHeight: data.gridHeight, gridSize: data.gridSize,
@@ -60,7 +60,7 @@ export function BattleMaps() {
     showToast({ message: `Map "${map.name}" created!`, type: "success" });
   };
 
-  const handleUpdateMap = (data: any) => {
+  const handleUpdateMap = (data: { name: string; imageUrl?: string; gridWidth: number; gridHeight: number; gridSize: number }) => {
     if (!editingMap) return;
     updateBattleMap(editingMap.id, {
       name: data.name, imageUrl: data.imageUrl || undefined,

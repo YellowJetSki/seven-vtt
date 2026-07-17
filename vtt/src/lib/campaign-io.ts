@@ -3,7 +3,7 @@
  * full backup bundles with homebrew data integrated.
  * ─────────────────────────────────────────────────────────────── */
 
-import type { Campaign } from "@/types";
+import type { Campaign, HomebrewItem, HomebrewFeat, HomebrewSpell } from "@/types";
 
 /* ── Export Bundle Format ───────────────────────────────────── */
 
@@ -11,11 +11,13 @@ export interface FullExportBundle {
   exportedAt: number;
   appVersion: string;
   campaign: Campaign;
-  homebrew: {
-    items: any[];
-    feats: any[];
-    spells: any[];
-  };
+  homebrew: HomebrewBundle;
+}
+
+export interface HomebrewBundle {
+  items: HomebrewItem[];
+  feats: HomebrewFeat[];
+  spells: HomebrewSpell[];
 }
 
 /**
@@ -75,14 +77,14 @@ export async function importCampaignFromFile(file: File): Promise<Campaign> {
  * Tries to extract homebrew data from a full export bundle.
  * Returns null if no homebrew data is present.
  */
-export function extractHomebrewFromBundle(data: unknown): { items: any[]; feats: any[]; spells: any[] } | null {
+export function extractHomebrewFromBundle(data: unknown): HomebrewBundle | null {
   if (!data || typeof data !== "object") return null;
   const bundle = data as Record<string, unknown>;
   if (!bundle.homebrew || typeof bundle.homebrew !== "object") return null;
   const hb = bundle.homebrew as Record<string, unknown>;
   return {
-    items: Array.isArray(hb.items) ? hb.items : [],
-    feats: Array.isArray(hb.feats) ? hb.feats : [],
-    spells: Array.isArray(hb.spells) ? hb.spells : [],
+    items: Array.isArray(hb.items) ? hb.items as HomebrewItem[] : [],
+    feats: Array.isArray(hb.feats) ? hb.feats as HomebrewFeat[] : [],
+    spells: Array.isArray(hb.spells) ? hb.spells as HomebrewSpell[] : [],
   };
 }

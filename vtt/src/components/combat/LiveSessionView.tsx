@@ -60,7 +60,7 @@ export function LiveSessionView() {
   const handleLoadPreset = useCallback((preset: ScenePreset) => {
     setSceneInput(preset.scene);
     setMapUrlInput(preset.mapUrl);
-    setSessionPhase(preset.phase as any);
+    setSessionPhase(preset.phase as "exploration" | "combat" | "rest" | "downtime");
     showToast({ message: `Loaded "${preset.name}".`, type: "info" });
   }, [setSessionPhase, showToast]);
 

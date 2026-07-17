@@ -162,8 +162,8 @@ export function CampaignWizard({ onClose, onImport }: CampaignWizardProps) {
     const campaign = createDemoCampaign();
     campaign.name = trimmed;
     campaign.description = desc.trim() || campaign.description;
-    (campaign as any).settings = { ...campaign.settings, ...buildSettings() };
-    setCampaign(campaign);
+    const finalCampaign = { ...campaign, settings: { ...campaign.settings, ...buildSettings() } };
+    setCampaign(finalCampaign);
     showToast({ message: `Campaign "${trimmed}" created!`, type: "success" });
     onClose();
   }, [name, desc, buildSettings, setCampaign, showToast, onClose]);
@@ -189,7 +189,7 @@ export function CampaignWizard({ onClose, onImport }: CampaignWizardProps) {
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
-        setCampaign(campaign as any);
+        setCampaign(campaign);
         showToast({ message: `"${name.trim()}" created from Arkla template!`, type: "success" });
         onClose();
       } catch {

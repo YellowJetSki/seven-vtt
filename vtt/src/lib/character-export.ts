@@ -36,7 +36,7 @@ export function importCharacterFromFile(): Promise<PlayerCharacter> {
         const text = await file.text();
         const data = JSON.parse(text) as PlayerCharacter;
         if (!data.name || !data.class) {
-          if ((data as any).abilityScores) reject(new Error("Old format detected — use the export from this app"));
+          if ("abilityScores" in data) reject(new Error("Old format detected — use the export from this app"));
           reject(new Error("Invalid character file: missing name/class."));
           return;
         }
@@ -48,7 +48,8 @@ export function importCharacterFromFile(): Promise<PlayerCharacter> {
         for (const a of abilities) { if (!data[a]) data[a] = 10; }
         // Ensure flat currency (backward compat)
         if (!data.currency) {
-          data.currency = { copper: (data as any).copper ?? 0, silver: (data as any).silver ?? 0, electrum: (data as any).electrum ?? 0, gold: (data as any).gold ?? 0, platinum: (data as any).platinum ?? 0 };
+          const old = data as Record<string, unknown>;
+          data.currency = { copper: (old.copper as number) ?? 0, silver: (old.silver as number) ?? 0, electrum: (old.electrum as number) ?? 0, gold: (old.gold as number) ?? 0, platinum: (old.platinum as number) ?? 0 };
         }
         resolve(data);
       } catch (err) {
@@ -60,12 +61,21 @@ export function importCharacterFromFile(): Promise<PlayerCharacter> {
 }
 
 export function formatCurrency(char: PlayerCharacter, type: "cp" | "sp" | "ep" | "gp" | "pp"): number {
-  const c = char.currency ?? (char as any);
+  const old = char as Record<string, unknown>;
+  if (!char.currency) {
+    switch (type) {
+      case "cp": return (old.copper as number) ?? 0;
+      case "sp": return (old.silver as number) ?? 0;
+      case "ep": return (old.electrum as number) ?? 0;
+      case "gp": return (old.gold as number) ?? 0;
+      case "pp": return (old.platinum as number) ?? 0;
+    }
+  }
   switch (type) {
-    case "cp": return c.copper ?? 0;
-    case "sp": return c.silver ?? 0;
-    case "ep": return c.electrum ?? 0;
-    case "gp": return c.gold ?? (char as any).gold ?? 0;
-    case "pp": return c.platinum ?? 0;
+    case "cp": return char.currency.copper;
+    case "sp": return char.currency.silver;
+    case "ep": return char.currency.electrum;
+    case "gp": return char.currency.gold;
+    case "pp": return char.currency.platinum;
   }
 }

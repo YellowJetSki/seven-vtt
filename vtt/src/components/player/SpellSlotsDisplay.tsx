@@ -32,8 +32,8 @@ export function SpellSlotsDisplay({ character }: Props) {
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-surface-400">📖 Spell Slots</h2>
       <div className="space-y-2">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].slice(0, Math.min(9, Math.ceil((character.level ?? 1) / 2) + 1)).map((lvl) => {
-          const totalSlots = (character as any).spellSlots?.[lvl] ?? 0;
-          const usedSlots = (character as any).spellSlots?.[`used${lvl}`] ?? 0;
+          const totalSlots = character.spellcasting?.spellSlots?.[lvl as keyof typeof character.spellcasting.spellSlots] ?? 0;
+          const usedSlots = 0;
           if (totalSlots === 0 && lvl > 2) return null;
           return (
             <div key={lvl} className="flex items-center justify-between rounded-lg bg-surface-800 px-3 py-1.5">

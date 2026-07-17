@@ -96,6 +96,9 @@ export interface PlayerCharacter {
   languages: string[];
   features: FeatureEntry[];
 
+  // Custom resources (e.g. Ki points, Bardic Inspiration — tracked per rest cycle)
+  resources?: { id: string; name: string; current: number; max: number; recharge: string }[];
+
   // Equipment & Inventory
   equipment: EquipmentSlot[];
   inventory: InventoryItem[];

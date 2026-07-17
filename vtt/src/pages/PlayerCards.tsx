@@ -68,8 +68,8 @@ export function PlayerCards() {
       const data = await importCharacterFromFile();
       addCharacter(data);
       useUiStore.getState().showToast({ message: `Imported "${data.name}"!`, type: "success" });
-    } catch (err: any) {
-      useUiStore.getState().showToast({ message: err.message, type: "error" });
+    } catch (err) {
+      useUiStore.getState().showToast({ message: err instanceof Error ? err.message : "Import failed", type: "error" });
     }
   };
 
@@ -163,13 +163,13 @@ export function PlayerCards() {
       {showInventoryId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInventoryId(null)}>
           <div className="w-full max-w-lg rounded-xl border border-surface-700 bg-surface-850 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <PlayerInventory character={characters.find((c: any) => c.id === showInventoryId)!} onClose={() => setShowInventoryId(null)} />
+            <PlayerInventory character={characters.find((c) => c.id === showInventoryId)!} onClose={() => setShowInventoryId(null)} />
           </div>
         </div>
       )}
 
       {deleteConfirmId && (
-        <DeleteConfirmModal characterName={characters.find((c: any) => c.id === deleteConfirmId)?.name ?? ""}
+        <DeleteConfirmModal characterName={characters.find((c) => c.id === deleteConfirmId)?.name ?? ""}
           onConfirm={() => { removeCharacter(deleteConfirmId); setDeleteConfirmId(null); useUiStore.getState().showToast({ message: "Character removed.", type: "success" }); }}
           onCancel={() => setDeleteConfirmId(null)} />
       )}

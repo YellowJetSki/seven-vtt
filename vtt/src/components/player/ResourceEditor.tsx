@@ -22,7 +22,7 @@ export function ResourceEditor({ resources: initial, onSave, onClose }: Props) {
     setResources(prev => [...prev, { id: `res_${Date.now()}`, name: "", current: 0, max: 0, recharge: "long" }]);
   }, []);
 
-  const updateResource = useCallback((index: number, field: string, value: any) => {
+  const updateResource = useCallback((index: number, field: string, value: string | number) => {
     setResources(prev => prev.map((r, i) => i === index ? { ...r, [field]: value } : r));
   }, []);
 

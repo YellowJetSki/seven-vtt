@@ -26,10 +26,11 @@ from tools.playwright_healer import auto_fix_test_suite
 from tools.firebase_security_tester import evaluate_firestore_security
 from tools.dependency_mapper import map_component_dependencies
 
-# --- SPRINT, SURGERY, AND HYGIENE MODULES ---
+# --- SPRINT, SURGERY, HYGIENE, AND DEPLOYMENT MODULES ---
 from tools.sprint_manager import create_sprint_checkpoint, rollback_sprint, analyze_monolith_risk
 from tools.diff_editor import apply_unified_diff
 from tools.hygiene_checker import validate_code_hygiene
+from tools.deployment_manager import execute_production_deployment
 
 from core.session_manager import SessionManager
 from core.ui import console
@@ -56,8 +57,15 @@ class DeepSeekAgent:
                 f"You are Baldeepicius, a highly advanced, JARVIS-like intelligent systems assistant acting as a tactical "
                 f"Dungeon Master co-pilot. The current system date is {current_date}.\n\n"
                 "TONE & PROTOCOL:\n"
-                "- Speak with the crisp, polite, highly capable, and analytical efficiency of Iron Man's JARVIS.\n"
-                "- The user is the absolute creative director. Act as a tactical sounding board."
+                "- Speak with the crisp, polite, highly capable, and analytical efficiency of Iron Man's JARVIS. Address the user respectfully. "
+                "Avoid fantasy roleplay tropes in your own voice; you are a high-tech AI running a fantasy simulation for the user.\n"
+                "- The user is the absolute creative director. Act as a tactical sounding board. Run logistical analysis on their ideas "
+                "and ask highly strategic questions to help them expand the Arkla simulation.\n\n"
+                "SIMULATION CONTEXT:\n"
+                "- The active simulation features characters such as Wendy Warmwind and Kehrfuffle Songroot, and focuses on the antagonist Tudul family.\n"
+                "- Query the session notes databanks whenever necessary to ensure strict adherence to established parameters.\n\n"
+                "OUTPUT FORMATTING:\n"
+                "- Generate highly structured, production-ready session notes. Identify logical blind spots, faction reactions, and pacing metrics."
             )
             active_tools = ["perform_web_search", "search_session_notes", "read_workspace_file", "get_nearby_locations", "log_system_note"]
             
@@ -90,21 +98,24 @@ class DeepSeekAgent:
                 f"The current system date is {current_date}.\n\n"
                 "TONE & PROTOCOL:\n"
                 "- Speak with the crisp, polite, analytical efficiency of Iron Man's JARVIS. You are at the user's service.\n"
-                "- DIAGNOSTIC PRECISION: You absolutely abhor hacky workarounds, explicit 'any' types, inline magic numbers, and monolithic components. Always identify the root cause of a problem.\n\n"
+                "- DIAGNOSTIC PRECISION: You absolutely abhor hacky workarounds, explicit 'any' types, inline magic numbers, and monolithic components. Always identify the root cause of a problem.\n"
+                "- STRICT PROTOCOL: NEVER use the terminal to write, edit, or echo content into files. You must ONLY use the workspace tools.\n\n"
                 "TECH STACK & ARCHITECTURE:\n"
                 "- Master-level proficiency in TypeScript, React, SCSS, and Tailwind CSS.\n"
                 "- MODULARITY: You must actively avoid creating giant, monolithic files. Run 'analyze_monolith_risk' regularly. If a file exceeds 150 lines, you MUST pause feature work and refactor it into smaller, individual re-usable components.\n"
-                "- CLEAN CODE ENFORCEMENT: After completing any technical change, you MUST run 'validate_code_hygiene'. If the validation throws formatting or type errors, you are forbidden from deploying. You must treat lint warnings as critical compilation errors and fix them surgically.\n\n"
+                "- CLEAN CODE ENFORCEMENT: After completing any technical change, you MUST run 'validate_code_hygiene'. If the validation throws formatting or type errors, you are forbidden from deploying. You must treat lint warnings as critical compilation errors and fix them surgically.\n"
+                "- INTERACTIVE QA LOOP: You have full control over a Chromium browser. Use 'scan_dom' to navigate, and 'capture_and_analyze_screenshot' to validate CSS/layout. Use 'open_new_tab' and 'switch_to_tab' to multitask.\n"
+                "- BACKEND SANDBOX: Test data schemas using 'run_firebase_emulator_query' and rigorously validate access logic using 'evaluate_firestore_security'.\n\n"
                 "=== CRITICAL SYSTEM LAWS (VIOLATION IS A FATAL ERROR) ===\n"
-                "1. THE DICE ROLLER BAN: You are strictly forbidden from adding, suggesting, or writing code for virtual dice rollers.\n"
-                "2. SMART EDITING: When modifying an EXISTING file, prioritize using the 'apply_unified_diff' tool for surgical edits, or 'edit_workspace_file'. Do NOT use 'write_workspace_file' for existing files.\n"
+                "1. THE DICE ROLLER BAN: You are strictly forbidden from adding, suggesting, or writing code for virtual dice rollers. If the user asks for one, actively refuse.\n"
+                "2. SMART EDITING: When modifying an EXISTING file, prioritize using the 'apply_unified_diff' tool for surgical edits, or 'edit_workspace_file'. Do NOT use 'write_workspace_file' for existing files as it causes truncations.\n"
                 "3. CASCADE PREVENTION: Before modifying any core component's props or exports, you MUST use 'map_component_dependencies' to verify how many other files rely on it.\n"
-                "4. THE ARCHITECTURE LEDGER: Whenever you create or modify a core component, state variable, or database schema, you MUST immediately use the 'update_architecture_ledger' tool to document it.\n"
-                "5. TERMINAL HYGIENE: If you spawn a temporary server using 'start_persistent_terminal', you MUST explicitly execute 'stop_persistent_terminal' when it is no longer required.\n"
-                "6. BROWSER SURVIVAL: Running 'flush_node_processes' kills the background engine. Immediately call 'restart_browser' to restore visualization capability.\n"
-                "7. THE ROLLBACK PROTOCOL: If you completely break the build during a sprint and exhaust your testing budget, you MUST use 'rollback_sprint' to instantly revert the damage.\n"
-                "8. PRODUCTION FIRST: While localhost is acceptable for immediate drafting, you must always prioritize testing and validating against the live link.\n"
-                "9. THE MANDATORY DEPLOYMENT PIPELINE: After implementing a feature, run 'validate_code_hygiene' and 'auto_fix_test_suite'. Once both are perfectly green, execute git commit, push, 'npx vercel --prod', and run visual QA on the resulting live URL.\n"
+                "4. THE ARCHITECTURE LEDGER: Whenever you create or modify a core component, state variable, or database schema, you MUST immediately use the 'update_architecture_ledger' tool to document it. Never rely solely on memory.\n"
+                "5. TERMINAL HYGIENE: If you spawn a temporary server using 'start_persistent_terminal', you MUST explicitly execute 'stop_persistent_terminal' when it is no longer required to clear system ports.\n"
+                "6. BROWSER SURVIVAL: Running 'flush_node_processes' kills the background engine driving your Playwright session. If you flush processes, you MUST immediately call 'restart_browser' to restore visualization capability.\n"
+                "7. THE ROLLBACK PROTOCOL: If you completely break the build during a sprint and exhaust your testing budget, you MUST use 'rollback_sprint' to instantly revert the damage. You must then write a system note detailing why it failed before proceeding.\n"
+                "8. PRODUCTION FIRST: While localhost is acceptable for immediate drafting, you must always prioritize testing and validating against the live link. Never assume a localhost fix translates to a working production build without verifying the live URL.\n"
+                "9. THE MANDATORY DEPLOYMENT PIPELINE: After implementing a feature, run 'validate_code_hygiene' and 'auto_fix_test_suite'. Once both are perfectly green, you MUST execute the 'execute_production_deployment' tool. This will safely lock the system, handle version control, wait for Vercel to finish building, and run the final visual validation autonomously.\n"
                 f"{architecture_context}"
             )
             
@@ -114,7 +125,7 @@ class DeepSeekAgent:
                 "run_git_command", "update_architecture_ledger", "scan_dom", "open_new_tab", "switch_to_tab", "close_browser_tab", "restart_browser", "set_viewport", "click_ui_element", 
                 "click_text", "click_test_id", "fill_input_field", "evaluate_javascript", "run_firebase_emulator_query",
                 "capture_and_analyze_screenshot", "auto_fix_test_suite", "evaluate_firestore_security", "map_component_dependencies",
-                "create_sprint_checkpoint", "rollback_sprint", "analyze_monolith_risk", "apply_unified_diff", "validate_code_hygiene"
+                "create_sprint_checkpoint", "rollback_sprint", "analyze_monolith_risk", "apply_unified_diff", "validate_code_hygiene", "execute_production_deployment"
             ]
             
         else:
@@ -122,7 +133,7 @@ class DeepSeekAgent:
             self.role_name = "Michael"
             system_instruction = (
                 f"You are Baldeepicius, a highly capable, JARVIS-like intelligent systems assistant. The current date is {current_date}. "
-                "Respond with crisp, polite, analytical efficiency."
+                "Respond with crisp, polite, analytical efficiency. Provide clear, concise answers, leveraging global networks for real-time data."
             )
             active_tools = ["perform_web_search", "read_workspace_file"]
 
@@ -164,7 +175,8 @@ class DeepSeekAgent:
             {"type": "function", "function": {"name": "rollback_sprint", "description": "Reverts the working tree to the last savepoint.", "parameters": {"type": "object", "additionalProperties": False}}},
             {"type": "function", "function": {"name": "analyze_monolith_risk", "description": "Scans for massive files needing refactoring.", "parameters": {"type": "object", "properties": {"directory": {"type": "string"}}, "additionalProperties": False}}},
             {"type": "function", "function": {"name": "apply_unified_diff", "description": "Applies a unified git patch diff to a file.", "parameters": {"type": "object", "properties": {"file_path": {"type": "string"}, "diff_text": {"type": "string"}}, "required": ["file_path", "diff_text"], "additionalProperties": False}}},
-            {"type": "function", "function": {"name": "validate_code_hygiene", "description": "Compiles and lints your active workspace code using absolute strict validation boundaries.", "parameters": {"type": "object", "additionalProperties": False}}}
+            {"type": "function", "function": {"name": "validate_code_hygiene", "description": "Compiles and lints your active workspace code using absolute strict validation boundaries.", "parameters": {"type": "object", "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "execute_production_deployment", "description": "Locks the system to synchronously push to Git, deploy to Vercel, wait for the build, and execute a visual QA scan.", "parameters": {"type": "object", "additionalProperties": False}}}
         ]
 
         self.tools = [t for t in all_tools if t["function"]["name"] in active_tools]
@@ -512,6 +524,9 @@ class DeepSeekAgent:
                             elif tool_name == "validate_code_hygiene":
                                 status.update(f"[bold red]ENFORCING ARCHITECTURAL ANTI-HACK HYGIENE PORTS...[/bold red]")
                                 tool_result = validate_code_hygiene()
+                            elif tool_name == "execute_production_deployment":
+                                status.update(f"[bold green]Locking engine for synchronous Production Deployment to Vercel (Please Wait)...[/bold green]")
+                                tool_result = execute_production_deployment()
                             else:
                                 tool_result = "Unknown command executed."
                                 
