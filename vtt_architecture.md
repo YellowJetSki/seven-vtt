@@ -403,3 +403,39 @@ These can be addressed in future iterations.
 - TypeScript errors: 0
 
 ---
+
+## Sprint 4 (2026-07-17): ReferenceError Fix (Updated: 2026-07-17 16:12)
+## Sprint 4: ReferenceError `campaign is not defined` Fix
+
+### Root Cause
+During Sprint 3, the `campaign` variable from Zustand's derived state was replaced with individual normalized selectors (`meta`, `characters`, etc.). However, two components still referenced the old `campaign` variable name:
+
+1. **Header.tsx** — `{campaign?.name ?? "Arkla"}` was still in JSX (line 95). The variable was renamed to `campaignName` but the JSX reference wasn't updated.
+
+2. **Sidebar.tsx** — `{campaign?.name}` and `{campaign && ...}` were in the brand section JSX (lines 82-85). The `campaign` variable was never defined in Sidebar; it was previously accessed via `useCampaignStore((s) => s.campaign)` which was removed in Sprint 3.
+
+### Fix Applied
+- **Header.tsx**: Changed `{campaign?.name ?? "Arkla"}` to `{campaignName}`
+- **Sidebar.tsx**: Replaced all `campaign` references with individual normalized selectors: `meta?.name` for campaign name, `meta?.settings?.experienceSystem` for XP system, and `characters.length` for PC count.
+
+### Test Results (ALL PAGES: 0 errors)
+| Page | Status |
+|------|--------|
+| `/login` | ✅ Zero errors |
+| `/campaign/dashboard` | ✅ Zero errors |
+| `/campaign/player-cards` | ✅ Zero errors — 4 PCs loaded from Arkla |
+| `/campaign/homebrew` | ✅ Zero errors |
+| `/campaign/encounters` | ✅ Zero errors |
+| `/campaign/maps` | ✅ Zero errors |
+| `/campaign/journal` | ✅ Zero errors |
+| `/campaign/settings` | ✅ Zero errors |
+| `/player` | ✅ Zero errors (character not assigned yet — expected) |
+| `/theatric` | ✅ Zero errors |
+
+### Build Metrics
+- Modules: 207
+- Build time: ~650ms
+- Bundle: 440KB JS, 89KB CSS
+- TypeScript: 0 errors
+
+---
