@@ -40,7 +40,7 @@ export function applyTick(
 /** Advance hazard durations by one round, returning expired hazard IDs */
 export function expireHazards(
   hazards: HazardZone[],
-  currentRound: number,
+  _currentRound: number,
 ): { updated: HazardZone[]; expiredIds: string[] } {
   const expiredIds: string[] = [];
   const updated = hazards.map((h) => {

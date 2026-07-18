@@ -4,7 +4,7 @@
  * rotating direction arrows, and an arcane-styled control bar.
  * ─────────────────────────────────────────────────────────────── */
 
-import type { AoETemplate, AoE_Direction } from "@/types/aoe-templates";
+import type { AoETemplate } from "@/types/aoe-templates";
 import { Button } from "@/components/ui/Button";
 
 interface Props {

@@ -28,12 +28,16 @@ test.describe("STᚱ VTT — Smoke Tests", () => {
 
   test("Login with valid DM credentials redirects to dashboard", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
+    // Wait for Zustand rehydration to complete
+    await page.locator("text=Dungeon Master").waitFor({ timeout: 5000 });
     await page.locator("text=Dungeon Master").click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
     await page.locator('input[placeholder*="username"]').fill("MikeJello");
     await page.locator('input[placeholder*="password"]').fill("Jello1");
-    await page.locator('button[type="submit"]').first().click();
-    await expect(page).toHaveURL(/\/campaign\/dashboard/, { timeout: 15000 });
+    // Click submit — may trigger Firebase Auth attempt which times out, but app auth succeeds
+    await page.locator('button[type="submit"]').click();
+    // Wait for navigation to dashboard (Firebase may delay or fail silently)
+    await page.waitForURL(/\/campaign\/dashboard/, { timeout: 25000 });
   });
 
   test("Theatric page loads without auth", async ({ page }) => {

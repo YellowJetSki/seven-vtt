@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { FullscreenImageModal } from "@/components/ui/FullscreenImageModal";
-import { formatCurrency } from "@/lib/character-export";
 
 const ABILITY_ORDER: Ability[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
 const ABILITY_SHORT: Record<Ability, string> = {

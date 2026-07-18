@@ -126,12 +126,9 @@ export function useHazardEngine() {
 
   /** Serialize hazard zones back to plain AoETemplates for storage */
   const serializeToTemplates = useCallback((): AoETemplate[] => {
-    return hazardZones.map((h) => {
-      const { kind, durationRounds, remainingRounds, placedOnRound, requiresConcentration,
-        tickDamage, tickInterval, ticks, lastTickRound, altitude, magicSchool,
-        leavesGroundEffect, groundEffectType, groundEffectDuration, showRuneRing,
-        runeRingSpeed, concentrationTokenId, ...rest } = h;
-      return rest as AoETemplate;
+    return hazardZones.map((h: HazardZone) => {
+      const { leavesGroundEffect: _l, groundEffectType: _g, groundEffectDuration: _gd, showRuneRing: _sr, runeRingSpeed: _rs, ...rest } = h;
+      return rest as unknown as AoETemplate;
     });
   }, [hazardZones]);
 

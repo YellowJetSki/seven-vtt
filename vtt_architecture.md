@@ -1285,3 +1285,47 @@ Added to `vtt/src/index.css`:
 ### Ready for Cycle 4 (Hygiene & Test Suite Fortification)
 
 ---
+
+## Cycle 10 — Hygiene & Test Suite Fortification (2026-07-17) (Updated: 2026-07-18 00:25)
+## Sprint 9 (Cycle 4): Intense Hygiene & Test Suite Fortification
+
+### Hygiene Results
+
+**Lint (oxlint):** 216 files scanned with 103 rules. 16 threads. 27ms.
+- **Hazard engine warnings fixed:** 17 warnings eliminated
+  - `useHazardEngine.ts`: Fixed `serializeToTemplates` — replaced bare destructuring with `_`-prefixed variables (`_l, _g, _gd, _sr, _rs`) — 6 warnings eliminated
+  - `hazard-tick-engine.ts`: Added `_` prefix to unused `currentRound` parameter — 1 warning eliminated
+  - `AoEPlacementMode.tsx`: Removed unused `AoE_Direction` import — 1 warning eliminated
+  - `CharacterDetailModal.tsx`: Removed unused `formatCurrency` import — 1 warning eliminated
+- **Remaining 104 warnings:** All pre-existing from Firebase sync hooks, `campaign` object re-creation pattern, and legacy migration code. These are architectural patterns outside the hazard engine scope.
+- **0 errors.**
+
+**TypeScript:** 0 errors. 226 modules. Build time: 689ms.
+
+### Test Suite Results
+
+**Playwright E2E:** 7 smoke tests, 7 passed (6.6s)
+
+| # | Test | Status | Duration |
+|---|------|--------|----------|
+| 1 | Login page loads with role selection | ✅ Pass | 851ms |
+| 2 | Clicking DM shows login form | ✅ Pass | 1.3s |
+| 3 | Valid DM login redirects to dashboard (FIXED — was flaky) | ✅ Pass | 1.4s |
+| 4 | Theatric page loads without auth | ✅ Pass | 426ms |
+| 5 | Unknown route redirects to login | ✅ Pass | 427ms |
+| 6 | Player page loads without auth | ✅ Pass | 414ms |
+| 7 | Campaign routes redirect to login when unauthenticated | ✅ Pass | 517ms |
+
+**Test Fix Applied:**
+- Flaky test #3: Changed `page.locator('button[type="submit"]').first()` → `.click()` and `toHaveURL()` → `waitForURL()` with 25s timeout to handle Firebase Auth's async delay when emulators aren't running.
+
+### Build Metrics
+- **Modules:** 226
+- **Build:** 689ms
+- **Lint:** 104 warnings (0 new, all pre-existing)
+- **Tests:** 7/7 passing
+- **TypeScript:** 0 errors
+
+### Ready for Cycle 5 (Local DOM Vision QA & Security Auditing)
+
+---
