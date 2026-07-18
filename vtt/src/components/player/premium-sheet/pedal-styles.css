@@ -1,0 +1,118 @@
+/* ══════════════════════════════════════════════════════════════
+   STᚱ VTT × Pedal-Sheet Design System
+   Chunky physical UI with thick borders, hard shadows, 
+   press-animated buttons, and uppercase tracking-widest labels.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Physical Card ──────────────────────────────────────── */
+.pedal-card {
+  border: 3px solid var(--color-surface-950, #0f1016);
+  border-radius: 1rem;
+  box-shadow: 4px 4px 0px rgba(15, 16, 22, 0.8);
+  transition: all 0.15s ease;
+}
+
+.pedal-card:hover {
+  box-shadow: 6px 6px 0px rgba(15, 16, 22, 0.8);
+  transform: translateY(-1px);
+}
+
+/* ── Physical Button ────────────────────────────────────── */
+.pedal-btn {
+  border: 2px solid var(--color-surface-950, #0f1016);
+  border-radius: 0.5rem;
+  box-shadow: 3px 3px 0px rgba(15, 16, 22, 0.8);
+  transition: all 0.1s ease;
+  cursor: pointer;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10px;
+}
+
+.pedal-btn:active {
+  transform: translateY(3px);
+  box-shadow: 1px 1px 0px rgba(15, 16, 22, 0.8);
+}
+
+.pedal-btn:disabled {
+  opacity: 0.4;
+  transform: none;
+  box-shadow: 3px 3px 0px rgba(15, 16, 22, 0.8);
+}
+
+/* ── Press Row ──────────────────────────────────────────── */
+.pedal-press {
+  transition: all 0.1s ease;
+}
+
+.pedal-press:active {
+  transform: translateY(2px);
+}
+
+/* ── HP Bar ─────────────────────────────────────────────── */
+.pedal-hp-bar {
+  border: 2px solid var(--color-surface-950, #0f1016);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--color-surface-950, #0f1016);
+}
+
+.pedal-hp-fill {
+  height: 100%;
+  transition: width 0.4s ease-out;
+  border-radius: 0.5rem;
+}
+
+/* ── Uppercase Label ────────────────────────────────────── */
+.pedal-label {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10px;
+  color: var(--color-surface-500, #65697d);
+}
+
+/* ── Glass Card Variant ─────────────────────────────────── */
+.pedal-glass {
+  backdrop-filter: blur(6px);
+  background: rgba(30, 31, 43, 0.8);
+  border: 3px solid var(--color-surface-950, #0f1016);
+  border-radius: 1rem;
+  box-shadow: 4px 4px 0px rgba(15, 16, 22, 0.8);
+}
+
+/* ── Stat Block ─────────────────────────────────────────── */
+.pedal-stat-block {
+  background: var(--color-surface-950, #0f1016);
+  border: 2px solid var(--color-surface-900, #181920);
+  border-radius: 0.75rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* ── Text Drop Shadow ───────────────────────────────────── */
+.pedal-text-shadow {
+  text-shadow: 2px 2px 0px rgba(15, 16, 22, 1);
+}
+
+/* ── Color Themes ───────────────────────────────────────── */
+.pedal-theme-indigo { --pedal-accent: #818cf8; --pedal-bg: #6366f1; }
+.pedal-theme-emerald { --pedal-accent: #34d399; --pedal-bg: #059669; }
+.pedal-theme-rose { --pedal-accent: #fb7185; --pedal-bg: #e11d48; }
+.pedal-theme-amber { --pedal-accent: #fbbf24; --pedal-bg: #d97706; }
+.pedal-theme-sky { --pedal-accent: #38bdf8; --pedal-bg: #0284c7; }
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+.pedal-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.pedal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pedal-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-surface-700, #353847);
+  border-radius: 2px;
+}
+.pedal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-500, #65697d);
+}

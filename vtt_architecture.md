@@ -2007,3 +2007,40 @@ All created under `vtt/src/components/player/card/` (all <150 lines):
 - 241 modules, 0 TS errors
 - Production deployed to arkla.vercel.app
 ---
+
+## Sprint — Cycle 1: Pedal-Sheet Player Card Upgrade (Updated: 2026-07-18 14:47)
+## Sprint — Cycle 1: Pedal-Sheet Player Card Upgrade (2026-07-18)
+
+### Design Inspiration
+Upgraded the Player Card by adopting design patterns from the pedal-sheet app:
+- **Chunky physical UI**: `border-[3px] border-surface-950` + `shadow-[4px_4px_0px_rgba(15,16,22,0.8)]`
+- **Press-animated buttons**: `active:translate-y-[2px] active:shadow-none`
+- **Uppercase tracking-widest labels**: All headings `font-black uppercase tracking-widest text-[10px]`
+- **Per-class color themes**: Each class gets a color (Barbarian=rose, Wizard=indigo, Druid=emerald, etc.)
+- **HP bar with inline +/- buttons**: Quick HP manipulation with `±1` and `±5` buttons
+
+### New Files Created (7)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `premium-sheet/pedal-styles.css` | ~100 | CSS utility classes: .pedal-card, .pedal-btn, .pedal-hp-bar, .pedal-label |
+| `premium-sheet/character-theme.ts` | ~80 | CharacterTheme system with 5 color themes + class-to-theme mapper |
+| `premium-sheet/HpBarPedal.tsx` | ~95 | HP bar with inline +/- buttons, color-coded fill, temp HP overlay |
+| `premium-sheet/PrimaryStatsPedal.tsx` | ~65 | AC/Init/PB/Speed/Level/HD/PP/PI/PIns stat boxes |
+| `premium-sheet/AbilityGridPedal.tsx` | ~90 | 6-column ability score grid with mod + save inline |
+| `premium-sheet/ConditionsPedal.tsx` | ~90 | Condition badges with hover tooltips showing mechanics |
+| `premium-sheet/XpBarPedal.tsx` | ~80 | XP progress bar with level progression |
+| `premium-sheet/WeaponsPedal.tsx` | ~120 | Weapon attack cards with ATK bonus, damage dice, type icons |
+| `premium-sheet/SpellcastingPedal.tsx` | ~90 | Spell DC/ATK display + per-level slot gauges |
+| `premium-sheet/PlayerCharacterSheetPedal.tsx` | ~110 | Orchestrator composing all sub-components |
+
+### Files Modified
+- `pages/PlayerDashboard.tsx` — Changed import from `PlayerCharacterSheetPremium` to `PlayerCharacterSheetPedal`
+- `components/player/premium-sheet/index.tsx` — Unchanged (still exported for legacy use)
+
+### Build Metrics
+- Modules: 250 (+10 from new files)
+- Build time: 1.11s
+- PlayerDashboard chunk: 54.51KB → 35.91KB (34% smaller — modular extraction)
+- TypeScript: 0 errors
+
+---
