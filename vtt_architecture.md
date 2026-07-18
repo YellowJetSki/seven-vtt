@@ -687,3 +687,51 @@ AppShell
 - JS: 486.53 KB (138.32 KB gzipped)
 
 ---
+
+## Cycle 3 — The Theatric Monitor Display (Complete) (Updated: 2026-07-18 19:46)
+## Cycle 3 (2026-07-18): The Theatric Monitor Display
+
+### Dual-Screen Architecture
+Built a complete dual-screen cinematic display system for player-facing monitors/TVs.
+
+### New Files (4 created, 1 modified)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `stores/theatricStore.ts` | 72 | Zustand store for theatric state: activeMapId, camera (x/y/zoom/rotation), showFog, showLabels, isConnected, lastSyncAt |
+| `components/theatric/TheatricDisplay.tsx` | 178 | Pure canvas renderer: NO grid, NO HUD, NO UI. Cinematic rendering with tokens, HP bars, labels, vignette overlay, 21:9 letterbox bars, animation loop for dynamic lighting |
+| `components/dashboard/LaunchTheatricButton.tsx` | 60 | Button component on DM dashboard. Sets active map + opens `/theatric?map=<id>` in new tab |
+| `pages/TheatricPage.tsx` | 160 | Full rewrite. Full-screen `fixed inset-0 bg-[#0a0b12]`, auto-hiding minimal overlay, fullscreen toggle, connection indicator, loading/waiting states |
+| `components/dashboard/QuickActions.tsx` | Modified | Added vertical divider + `LaunchTheatricButton` at end of action bar |
+
+### Theatric Display Features
+- **Cinematic canvas**: Dark background (`#0a0b12`), no grid lines, no UI chrome
+- **Token rendering**: Circular tokens with inner radial gradient glow, shadow, HP bar, label
+- **Vignette overlay**: Radial gradient darkening at edges (cinematic effect)
+- **Letterbox bars**: 6% height top/bottom black bars (21:9 cinematic feel)
+- **Auto-hide overlay**: Minimal header with map name, connection status, fullscreen toggle — hides after 3s of inactivity
+- **ResizeObserver**: Auto-resizes canvas to container dimensions
+- **Animation loop**: requestAnimationFrame for dynamic lighting (future use)
+
+### Data Flow
+```
+DM Dashboard (master):
+  QuickActions → LaunchTheatricButton
+    → setActiveMap(mapId) → store update
+    → window.open("/theatric?map=<id>")
+
+Theatric Tab (slave):
+  Reads searchParams "map" → setActiveMap
+  Reads campaignStore (battleMaps, mapTokens) → renders canvas
+  Auto-syncs via Zustand persist (localStorage) for multi-tab sync
+  Future: Firestore onSnapshot for real-time cross-device sync
+```
+
+### Build Metrics
+- TypeScript: 0 errors
+- Modules: 105 (↑ from 102)
+- Build: 2.81s
+- CSS: 73.43 KB (12.38 KB gzipped)
+- JS: 492.17 KB (140.51 KB gzipped)
+
+---
