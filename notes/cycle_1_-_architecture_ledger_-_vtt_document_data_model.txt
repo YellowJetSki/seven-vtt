@@ -1,0 +1,244 @@
+# Subject: CYCLE 1 - Architecture Ledger - VTT Document Data Model
+System Log Initialized: 2026-07-18 11:47:44
+
+# CYCLE 1 DELIVERABLE: FOUNDRY-LEVEL DOCUMENT SCHEMA & STATE
+## Arkla VTT — Architecture Ledger
+*Date: July 07, 2026 | System: STᚱ VTT | Campaign: Arkla*
+
+---
+
+## 1. FIRESTORE COLLECTION ARCHITECTURE
+
+### Collection Hierarchy
+```
+campaigns/
+  {campaignId}/                    ← CampaignMeta (single doc)
+    characters/{charId}            ← CharacterDoc
+    enemies/{enemyId}              ← EnemyDoc
+    encounters/{encounterId}       ← EncounterDoc
+    maps/{mapId}                   ← MapDoc
+    maps/{mapId}/tokens/{tokenId}  ← MapTokenDoc
+    journal/{entryId}              ← JournalEntryDoc
+    sessions/{sessionId}           ← SessionDoc
+    sessions/{sessionId}/combatants/{cId} ← SessionCombatantDoc
+    combatLog/{logId}              ← CombatLogEntryDoc
+
+homebrew/
+  {campaignId}/
+    items/{itemId}                 ← HomebrewItemDoc
+    spells/{spellId}               ← HomebrewSpellDoc
+    feats/{featId}                 ← HomebrewFeatDoc
+```
+
+### Path Constants (firestore.ts → Paths object)
+All paths use `as const` template literal helpers ensuring type-safe Firestore references.
+
+---
+
+## 2. DOCUMENT DATA MODEL — COMPLETE INTERFACES
+
+### 2.1 CampaignMeta (Root Document)
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Campaign identifier ("arkla") |
+| name | string | Campaign name |
+| description | string | Campaign description/blurb |
+| dmName | string | Dungeon Master's display name |
+| settings | CampaignMetaSettings | Rules, XP system, currency |
+| stats | CampaignStats | Computed dashboard counts |
+| createdAt | number | Unix timestamp |
+| updatedAt | number | Unix timestamp |
+
+### 2.2 CharacterDoc (Full D&D 5e Character)
+Complete character sheet including:
+- Identity: id, name, playerName, race, class(es), level, XP, background, alignment
+- Ability Scores: STR/DEX/CON/INT/WIS/CHA (8-20 range)
+- Saving Throws: per-ability { proficient, bonus }
+- Skills: 18 skills with "none"|"proficient"|"expertise"
+- Combat: HP {current, max, temporary}, AC, initiative, speed (walk/fly/swim/climb/burrow), hitDice, proficiencyBonus, conditions, deathSaves
+- Traits & Proficiencies: traits[], proficiencies[], languages[], features[]
+- Equipment: equipment[] (slotted), inventory[] (carried), currency
+- Biography: appearance, backstory, allies, notes, personality, ideals, bonds, flaws
+- Meta: imageUrl, isHomebrew, timestamps
+
+### 2.3 EnemyDoc (Monster/NPC Stat Block)
+Standard 5e creature block with:
+- Identity: id, name, type (Aberration through Custom), size
+- Combat: AC, HP, speed, abilities (6 scores)
+- Defenses: savingThrows, skills, damage V/R/I, conditionImmunities
+- Features: senses, languages, CR, traits, actions, reactions, specialAbilities, legendaryActions
+
+### 2.4 EncounterDoc (Grouped Combat Setup)
+- Identity: id, name, description, environment, difficulty
+- References: enemyGroups[]{ enemyId, count, label? }
+- State: isActive, timestamps
+
+### 2.5 MapDoc (Battle Map)
+- Identity: id, name, imageUrl, imageFit
+- Grid: gridWidth, gridHeight, gridSize, gridColor
+- Notes, timestamps
+- *Fog of war and tokens stored at subcollection and runtime state levels*
+
+### 2.6 MapTokenDoc (Positional Entity on Map)
+- Identity: id, type (player|enemy|npc|custom), label
+- Position: x, y (pixel/grid coordinates)
+- Visual: color, size, visible, icon, imageUrl
+- Combat: hp{current, max}, speed
+- Timestamps
+
+### 2.7 JournalEntryDoc (Campaign Notes)
+- Identity: id, title, content, tags[]
+- Type: "session"|"lore"|"quest"|"note"|"handout"
+- Optional: sessionNumber
+- Timestamps
+
+### 2.8 SessionDoc (Live Session State)
+- Identity: id, name
+- Phase: "exploration"|"combat"|"rest"|"downtime"
+- State: startedAt, endedAt, currentScene, currentMapUrl, dmAnnouncement
+- Conditions: { weather, lighting, terrain }
+- FK: activeEncounterId
+
+### 2.9 SessionCombatantDoc (Live Combatant)
+- Identity: id, name, type (player|enemy|ally)
+- Combat: initiative, AC, HP{current, max, temporary}
+- Status: statusEffects[]{id, effect}, isDead, isConcentrating
+- Notes, imageUrl, timestamps
+
+### 2.10 CombatLogEntryDoc (Action Log)
+- Identity: id, timestamp
+- Type: "damage"|"heal"|"temp_hp"|"status"|"death"|"revive"|"note"|"round_start"
+- Participants: actorId, actorName, targetId?, targetName?
+- Value: number (HP delta)
+- Description: string
+
+### 2.11 HomebrewItemDoc (Custom Items)
+- Identity: id, name, category, rarity
+- Attunement: requiresAttunement, attunementDetails
+- Charges: charges, chargesMax, chargesRecharge
+- Physical: weight, value
+- Flags: isCursed, curseDetails
+- Type-specific: weaponData?, armorData?, potionData?, scrollData?
+- Meta: tags, source, isHomebrew, timestamps
+
+### 2.12 HomebrewSpellDoc (Custom Spells)
+- Identity: id, name, level, school
+- Casting: castingTime, ritual, components[], materialComponent
+- Duration: concentration, duration, range, area
+- Classes: classes[]
+- Content: description, atHigherLevels
+- Meta: isHomebrew, source, tags, timestamps
+
+### 2.13 HomebrewFeatDoc (Custom Feats)
+- Identity: id, name, description, flavorText
+- Prerequisites: { type, description, ability?, minimumValue? }[]
+- Benefits: benefits[]
+- Flags: repeatable
+- Meta: tags, source, isHomebrew, timestamps
+
+---
+
+## 3. REAL-TIME SYNCHRONIZATION ARCHITECTURE
+
+### 3.1 Listener Pattern
+- **Firestore `onSnapshot`** listeners attached at DM login
+- Each subcollection has a dedicated listener via `createDomainStub` factory
+- Listeners merge incoming data with Zustand store state using ID-based deduplication
+- Listeners auto-cleanup on component unmount / auth logout
+
+### 3.2 Push Pattern (Debounced + Queued)
+- **Domain-specific debounce**: campaign (2s), combat (1.5s), homebrew (2s), characters (2s)
+- **Persistent sync queue** (`localStorage` via `sync-queue.ts`): survives page refresh
+- **Max 5 retries** per queued item with exponential backoff
+- **Rate limiting**: 500ms minimum between Firestore writes
+- **Queue flushed** on Firebase reconnection
+
+### 3.3 HP Sync Pipeline
+- `registerHpSyncCallback()` in `useFirebaseSync.ts`
+- Any HP/heal/damage/status change on DM side pushes to `SessionCombatantDoc`
+- Players receive live updates via their own `onSnapshot` listener
+- Visual feedback: `animate-hp-damage` / `animate-hp-heal` CSS classes
+
+### 3.4 Security Model
+- **Auth**: Firebase Auth Email/Password (DM) + Anonymous (Player)
+- **DM**: `{ role: "dm" }` custom claim → Firestore write access
+- **Player**: Authenticated but read-only per security rules
+- **App-level**: Hardcoded MikeJello/Jello1 credential check before Firebase Auth
+
+### 3.5 Offline Resilience
+- Zustand persist (key: `vtt-campaign-store`, v2) for client state survival
+- Sync queue in localStorage survives page refresh
+- Firebase offline persistence (configured at Firestore init)
+- Components use `isFirebaseAvailable()` to gracefully degrade
+
+---
+
+## 4. STATE MANAGEMENT LAYER
+
+### 4.1 Zustand Stores
+| Store | Key | Persistence | Purpose |
+|-------|-----|-------------|---------|
+| campaignStore | vtt-campaign-store | Yes (v2) | Campaign data, characters, maps, journal |
+| authStore | str-vtt-auth | Yes (partial) | Auth state, role, username |
+| combatStore | — | No | Active combat, initiative, live session |
+| homebrewStore | — | No | Custom items, spells, feats |
+| uiStore | — | No | Toasts, modals, scratchpad |
+
+### 4.2 Slice Pattern
+`campaignStore` uses Zustand slice pattern:
+- `metaSlice` — CampaignMeta operations
+- `characterSlice` — PC CRUD
+- `entitySlice` — Enemies, encounters, maps, journal CRUD
+- `tokenSlice` — Map token CRUD
+- `normalization.ts` — Legacy data migration
+
+---
+
+## 5. TECH STACK
+
+| Layer | Technology |
+|-------|-----------|
+| Runtime | React 19, TypeScript 6.0 |
+| Build | Vite 8, oxlint (linter) |
+| Styling | Tailwind CSS v4, custom design tokens |
+| State | Zustand 5 + persist middleware |
+| Backend | Firebase v11 (Firestore, Auth, Storage) |
+| Testing | Playwright 1.61 |
+| Auth | Firebase Auth (Email/Password + Anonymous) |
+| Architecture | Mobile-first responsive, glassmorphism UI |
+
+---
+
+## 6. ARKLA CAMPAIGN SEED DATA (Hardcoded Canons)
+
+### 6.1 Party Characters (Level 1)
+1. Wendy Warmwind — Monk
+2. Kehrfuffle Songroot — Bard
+3. Toern Treetap — Artificer (brothers: Tulip[deceased], Tomper[deceased], Tulin[missing])
+4. Edmund "Strider" Tudul — Ranger (brother Haven implicated in sister Ruth's death)
+
+### 6.2 Canon NPCs
+Shass, Armand, Captain Pavel, Tizzle, Lord Pooty, Dreaded Pirate Jewl, Arteme, Byron Tudul, Haven Tudor, Ruth Tudor, Doctor Tonn
+
+### 6.3 Canon Factions
+Consulate Crusade, Tudul Family, Jewl Pirates, Crown Guard, Doctor Tonn's Experiments
+
+### 6.4 Canon Items
+Driftcloak of the Saltwind, Jewl's Discarded Dagger, Echo Spool, Sundrop Shard, Rusted Artificer's Journal, Vial of Tonn's Essence
+
+---
+
+## 7. VALIDATION SUMMARY
+
+| Check | Status |
+|-------|--------|
+| All Firestore schemas defined | ✅ PASS |
+| All TypeScript interfaces complete | ✅ PASS |
+| Real-time listener architecture documented | ✅ PASS |
+| Debounced push with queue documented | ✅ PASS |
+| HP sync pipeline documented | ✅ PASS |
+| Auth security model documented | ✅ PASS |
+| Arkla canon data mapped to schema | ✅ PASS |
+| No TypeScript errors in schema layer | ✅ PASS |
+| All imports resolve | ✅ PASS |
+
