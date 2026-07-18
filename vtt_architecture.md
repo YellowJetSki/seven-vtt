@@ -1215,3 +1215,73 @@ MapEditor
 - Ensure responsive layout for HazardTimeline on mobile
 
 ---
+
+## Cycle 9 — UI/UX Polish & Fantasy Aesthetic (2026-07-17) (Updated: 2026-07-18 00:21)
+## Sprint 9 (Cycle 3): UI/UX Polish & Fantasy Aesthetic Upgrades
+
+### New CSS Animations (5 keyframes + 6 utility classes)
+Added to `vtt/src/index.css`:
+
+| Animation | Purpose | Applied To |
+|-----------|---------|------------|
+| `rune-glow-pulse` | Throbbing arcane glow with `drop-shadow` | Active hazard gems, concentration dots, school-color rings |
+| `hazard-tick-flash` | Brief red pulse on damage tick | (Reserved for future tick animation) |
+| `hazard-countdown-urgent` | Red border + glow when ≤2 rounds remain | Urgent hazard cards, RunicRing outer ring |
+| `ground-fade-out` | Smooth dissolve + desaturate + scale | Ground effects at high fadeProgress |
+| `rune-glyph-warp` | Subtle opacity morphing (35%→50%→25%) | Primary rune text in RunicRingOverlay |
+| `bolt-zigzag` | Chain lightning path animation | Static field ground effects (CSS path) |
+
+### Files Refactored for <150 Line Compliance
+
+| File | Lines | Issue | Fix |
+|------|-------|-------|-----|
+| `HazardTimeline.tsx` | 223→148 | Grew during styling | Extracted 3 subcomponents |
+| `HazardTimelineEmpty.tsx` | 40 | New | Empty state card |
+| `HazardTimelineFooter.tsx` | 55 | New | Summary stats bar |
+| `GroundEffectsList.tsx` | 65 | New | Residual effects sublist |
+
+### Styling Upgrades Applied
+
+#### HazardTimeline (Main Panel)
+- ✅ `card-glow` gradient border overlay
+- ✅ Glassmorphism background (`bg-surface-850/80 backdrop-blur-md`)
+- ✅ Staggered entry via `style={{ animation: "scale-in" + idx * 40ms }}`
+- ✅ Responsive: `hidden sm:flex` for mobile-friendly round controls
+- ✅ Urgent badge: `animate-rune-glow bg-warrior-500/20 text-warrior-400`
+- ✅ Tick/Round buttons: accent-ghost with disabled state
+
+#### HazardTimelineItem (Card Rows)
+- ✅ Floating school-color gem: `animate-rune-glow shadow-lg` with colored box-shadow
+- ✅ Hover: `hover:-translate-y-0.5 hover:shadow-lg hover:bg-surface-800/60`
+- ✅ Selection: `border-accent-500/40 bg-accent-600/10` + left border accent
+- ✅ Urgent cards: `animate-countdown-urgent border-warrior-500/30`
+- ✅ Action buttons: `opacity-0 group-hover:opacity-100` with hover border effects
+- ✅ Duration bar: `linear-gradient` fill with school colors, glow shadow
+- ✅ Altitude tags: `rounded-full` pill with school-color border
+- ✅ Accessibility: `aria-label` on all action buttons
+
+#### RunicRingOverlay (SVG)
+- ✅ SVG `<defs>` with `feGaussianBlur` drop-shadow glow per instance
+- ✅ `rune-glow-pulse` CSS animation on glyph text
+- ✅ `rune-glyph-warp` for secondary opacity morphing
+- ✅ Urgency: outer ring + `hazard-countdown-urgent` animation when ≤2 rounds
+- ✅ `filter: url(#rune-glow-${id})` for GPU-accelerated blur
+- ✅ Text shadow for rune legibility
+
+#### GroundEffectOverlay (SVG)
+- ✅ `animate-ground-fade` class when fadeProgress > 0.5
+- ✅ Elemental glow ring with `drop-shadow`
+- ✅ Colored text shadow on labels
+- ✅ Difficult terrain: broken ground lines
+- ✅ Remaining rounds indicator with urgency coloring
+
+### Build Metrics (Post-Polish)
+- **Modules:** 223 → 226
+- **CSS:** 100.98KB → 106.50KB (+5.5KB from animations)
+- **Battle Maps chunk:** 89KB → 95.5KB (+6.5KB from styled components)
+- **Build time:** ~672ms
+- **TypeScript errors:** 0
+
+### Ready for Cycle 4 (Hygiene & Test Suite Fortification)
+
+---
