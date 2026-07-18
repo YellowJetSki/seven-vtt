@@ -1124,3 +1124,42 @@ AoETemplate → MapEditor local state (useState) → map.aoeTemplates (Zustand)
 - Tab closed
 
 ---
+
+## Hazard Zone Engine (AOE v2) (Updated: 2026-07-18 00:13)
+## Cycle 7 (2026-07-17): Persistent Hazard Zone Engine — Architecture Design
+
+### Feature: Dynamic Battle Effects System (AOE v2)
+Extends the existing AoETemplate overlay system with persistent, stateful hazard zones that track duration, damage-over-time ticks, altitude layers, elemental ground effects, and arcane rune ring animations.
+
+### New Type File
+- `vtt/src/types/hazard-zones.ts` (134 lines) — All new interfaces:
+  - `HazardZone` extends `AoETemplate` with: durationRounds, remainingRounds, placedOnRound, requiresConcentration, tickDamage, tickInterval, ticks[], altitude (ground/waist/aerial), magicSchool, leavesGroundEffect, groundEffectType, showRuneRing, runeRingSpeed, concentrationTokenId
+  - `GroundEffect` — Residual effects (scorch, ice_patch, gas_cloud, static_field, radiant_pool, shadow_pool, magnetic_field, arcane_residue) with fade animation progress
+  - `HazardTick` — Per-round tick tracking with targetTokenId, damage, savingThrow
+  - `HazardState` — Lightweight snapshot for timeline display
+  - Helper functions: `templateToHazard()`, `damageTypeToGroundEffect()`, `RUNE_GLYPHS` per magic school
+
+### Upcoming Cycles (to be implemented)
+- **Cycle 2**: Core components — HazardTimeline (sidebar), RunicRingOverlay (SVG animation), GroundEffectOverlay, HazardTickEngine (round tracking logic)
+- **Cycle 3**: Fantasy UI polish — glowing rune rings, elemental ground effect particles, animated pulse rings
+- **Cycle 4**: Hygiene + Playwright tests
+- **Cycle 5**: Visual QA + Firestore security audit
+- **Cycle 6**: Production deployment
+
+### Data Flow
+```
+CampaignStore → map.aoeTemplates (Zustand persist) ←→ HazardZone[]
+   ↓
+HazardTimeline component reads all HazardZone[] + current round
+   ↓
+On round advance → tickEngine processes ticks → updates HazardZone.ticks[], .lastTickRound
+   ↓
+On expiration → template removed → GroundEffect spawned (if leavesGroundEffect)
+   ↓
+GroundEffect.fadeProgress advances each round → removed when fully faded
+```
+
+### Zero Firestore Exposure
+Hazard zones stored as `AoETemplate[]` on BattleMap, persisted only to localStorage. No new Firestore collections. Security rules already catch-all deny everything outside `/campaigns/{id}/**` and `/homebrew/{id}/**`.
+
+---
