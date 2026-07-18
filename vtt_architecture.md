@@ -949,3 +949,43 @@ addAoETemplate(mapId, template) / removeAoETemplate(mapId, templateId) / updateA
 ```
 
 ---
+
+## Sprint — Cycle 2: AOE Template Feature Implementation (Updated: 2026-07-18 00:01)
+## Sprint — Cycle 2: AOE Template Implementation Complete
+
+### Files Created (5 new + 3 modified)
+**New files:**
+1. `vtt/src/types/aoe-templates.ts` — Core types: AoETemplate, AoE_Shape, AoE_Direction, AoEPreset, AOE_PRESETS (12 presets)
+2. `vtt/src/types/aoe-shapes.ts` — `getAoEShapePath()` SVG path geometry generator (extracted to keep <150 lines)
+3. `vtt/src/components/maps/AoETemplateOverlay.tsx` — SVG overlay rendering templates on canvas with shape fill, outline, labels, animation support
+4. `vtt/src/components/maps/AoEPresetPanel.tsx` — Sidebar panel: preset search grid, direction selector, placed template list with visibility/animation/duplicate/delete controls
+5. `vtt/src/components/maps/AoEPlacementMode.tsx` — Interactive placement mode with ghost preview, crosshair, rotate/place/cancel controls
+
+**Modified files:**
+6. `vtt/src/types/index.ts` — Added `aoeTemplates?: AoETemplate[]` to BattleMap interface + re-exports
+7. `vtt/src/components/maps/MapEditor.tsx` — Integrated AOE panel, placement mode state, handlers (add/remove/update/placeAtCell)
+8. `vtt/src/components/maps/MapEditorToolbar.tsx` — Added AOE toggle button (✦ AOE)
+9. `vtt/src/components/maps/MapCanvas.tsx` — Added onCanvasMove, onCanvasClickWithGrid mouse-tracking props
+
+### Architecture
+- `MapEditor` orchestrates: AOE state (showAoePanel, placementMode, placementDirection)
+- `AoEPresetPanel` handles: preset search, template creation (via `onAddTemplate`), placed template management
+- `AoEPlacementMode` handles: ghost preview over SVG, crosshair at hover cell, direction rotation
+- `AoETemplateOverlay` renders: SVG fill shapes + outlines + labels for all active templates
+
+### Data Flow
+```
+DM clicks "✦ AOE" → AoEPresetPanel opens
+DM clicks preset → handleAddAoETemplate → template added to map.aoeTemplates
+→ placementMode activates → AoEPlacementMode shows ghost preview
+DM moves mouse → onCanvasMove → updates hoverX/hoverY
+DM clicks grid → onCanvasClickWithGrid → handlePlaceAtCell → template positioned
+AoETemplateOverlay renders all templates (respects visibleToPlayers flag)
+```
+
+### Module Count
+- Before: 211 modules
+- After: 215 modules (aoe-templates.ts, aoe-shapes.ts, AoETemplateOverlay, AoEPresetPanel, AoEPlacementMode)
+- Build: 0 TS errors, 664ms
+
+---

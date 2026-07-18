@@ -1,17 +1,26 @@
 /* ── MapEditor ─────────────────────────────────────────────────
  * Core battle map grid tool with token placement, movement,
- * fog of war, HP tracking, and theatric view integration.
- * Orchestrates MapCanvas, MapEditorToolbar, TokenInspector.
+ * fog of war, HP tracking, AOE templates, and theatric view.
+ * Orchestrates MapCanvas, MapEditorToolbar, TokenInspector,
+ * AoEPresetPanel, and AoEPlacementMode.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useCallback, useMemo } from "react";
-import type { BattleMap, MapToken } from "@/types";
+import type { BattleMap, MapToken, AoETemplate, AoE_Direction } from "@/types";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { FogOfWarControls } from "@/components/maps/FogOfWarLayer";
+import { AoEPresetPanel } from "./AoEPresetPanel";
+import { AoEPlacementMode } from "./AoEPlacementMode";
+import { AoETemplateOverlay } from "./AoETemplateOverlay";
 import { MapEditorToolbar } from "./MapEditorToolbar";
 import { MapCanvas } from "./MapCanvas";
 import { TokenInspector } from "./TokenInspector";
+
+const ROTATION_ORDER: AoE_Direction[] = [
+  "east", "southeast", "south", "southwest",
+  "west", "northwest", "north", "northeast",
+];
 
 interface Props {
   map: BattleMap;
@@ -26,6 +35,11 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [showFogControls, setShowFogControls] = useState(false);
   const [showFog, setShowFog] = useState(true);
+  const [showAoePanel, setShowAoePanel] = useState(false);
+  const [placementMode, setPlacementMode] = useState<{
+    template: AoETemplate; hoverX: number; hoverY: number;
+  } | null>(null);
+  const [placementDirection, setPlacementDirection] = useState<AoE_Direction>("east");
   const [gmView, setGmView] = useState(true);
   const [showMovement, setShowMovement] = useState(false);
   const [dashMode, setDashMode] = useState(false);
@@ -34,10 +48,43 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
   const [showGrid, setShowGrid] = useState(true);
   const [pendingDashMove, setPendingDashMove] = useState<{ tokenId: string; x: number; y: number } | null>(null);
 
-  const selectedToken = useMemo(() => map.tokens.find((t) => t.id === selectedTokenId) ?? null, [map.tokens, selectedTokenId]);
+  const selectedToken = useMemo(
+    () => map.tokens.find((t) => t.id === selectedTokenId) ?? null,
+    [map.tokens, selectedTokenId],
+  );
   const normalRange = Math.floor((selectedToken?.speed ?? 30) / 5);
   const dashRange = Math.floor(((selectedToken?.speed ?? 30) * 2) / 5);
+  const templates = useMemo(() => map.aoeTemplates ?? [], [map.aoeTemplates]);
 
+  /* ── AOE Template Handlers ── */
+  const handleAddAoETemplate = useCallback((template: AoETemplate) => {
+    const current = map.aoeTemplates ?? [];
+    onUpdate({ aoeTemplates: [...current, template] });
+    setPlacementMode({ template, hoverX: template.gridX, hoverY: template.gridY });
+    showToast({ message: `${template.label} template added. Click map to position.`, type: "info" });
+  }, [map.aoeTemplates, onUpdate, showToast]);
+
+  const handleRemoveAoETemplate = useCallback((id: string) => {
+    const current = map.aoeTemplates ?? [];
+    onUpdate({ aoeTemplates: current.filter((t) => t.id !== id) });
+  }, [map.aoeTemplates, onUpdate]);
+
+  const handleUpdateAoETemplate = useCallback((id: string, updates: Partial<AoETemplate>) => {
+    const current = map.aoeTemplates ?? [];
+    onUpdate({ aoeTemplates: current.map((t) => t.id === id ? { ...t, ...updates } : t) });
+  }, [map.aoeTemplates, onUpdate]);
+
+  const handlePlaceAtCell = useCallback((x: number, y: number) => {
+    if (!placementMode) return;
+    const needsDir = placementMode.template.shape !== "circle"
+      && placementMode.template.shape !== "sphere"
+      && placementMode.template.shape !== "cube";
+    const dir = needsDir ? placementDirection : placementMode.template.direction;
+    handleUpdateAoETemplate(placementMode.template.id, { gridX: x, gridY: y, direction: dir });
+    setPlacementMode(null);
+  }, [placementMode, placementDirection, handleUpdateAoETemplate]);
+
+  /* ── Token Handlers ── */
   const performMove = useCallback((tokenId: string, targetX: number, targetY: number) => {
     onUpdate({ tokens: map.tokens.map((t) => t.id === tokenId ? { ...t, x: targetX, y: targetY } : t) });
     setShowMovement(false); setDashMode(false);
@@ -76,39 +123,98 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
     onUpdate({ tokens: map.tokens.map((t) => t.id === tokenId ? { ...t, ...updates } : t) });
   }, [map.tokens, onUpdate]);
 
+  const handleCanvasMove = useCallback((gridX: number, gridY: number) => {
+    if (placementMode) setPlacementMode((p) => p ? { ...p, hoverX: gridX, hoverY: gridY } : null);
+  }, [placementMode]);
+
+  const handleCanvasClickGrid = useCallback((gridX: number, gridY: number) => {
+    if (placementMode) handlePlaceAtCell(gridX, gridY);
+  }, [placementMode, handlePlaceAtCell]);
+
   return (
     <div className="space-y-3">
       <MapEditorToolbar
         gmView={gmView} showFog={showFog} showFogControls={showFogControls}
-        drawingEnabled={drawingEnabled} showGrid={showGrid} hasSelectedToken={!!selectedToken}
+        drawingEnabled={drawingEnabled} showGrid={showGrid}
+        showAoePanel={showAoePanel} hasSelectedToken={!!selectedToken}
         onToggleGmView={() => setGmView(!gmView)}
         onToggleFog={() => setShowFog(!showFog)}
         onToggleFogControls={() => setShowFogControls((o) => !o)}
+        onToggleAoePanel={() => setShowAoePanel((o) => !o)}
         onAddToken={() => openModal("add-token")}
         onToggleDrawing={() => setDrawingEnabled(!drawingEnabled)}
         onToggleGrid={() => setShowGrid(!showGrid)}
         onOpenTheatric={onOpenTheatric} selectedToken={selectedToken}
       />
 
-      <MapCanvas
-        map={map} gmView={gmView} showFog={showFog} showGrid={showGrid}
-        gridOpacity={gridOpacity} selectedTokenId={selectedTokenId}
-        showMovement={showMovement} dashMode={dashMode} drawingEnabled={drawingEnabled}
-        onTokenClick={handleTokenClick} onCanvasClick={handleCanvasClick}
-        onDragToCell={handleDragToCell}
-        onMoveToken={(id, dx, dy) => {
-          const t = map.tokens.find(tk => tk.id === id);
-          if (!t) return;
-          performMove(id, t.x + dx, t.y + dy);
-        }}
-        onUpdateToken={handleUpdateToken}
-        onTokensUpdate={(tokens) => onUpdate({ tokens })}
-        onDrawingsChange={(drawings) => onUpdate({ drawings })}
-      />
+      <div className="relative">
+        <MapCanvas
+          map={map} gmView={gmView} showFog={showFog} showGrid={showGrid}
+          gridOpacity={gridOpacity} selectedTokenId={selectedTokenId}
+          showMovement={showMovement} dashMode={dashMode} drawingEnabled={drawingEnabled}
+          onTokenClick={handleTokenClick} onCanvasClick={handleCanvasClick}
+          onDragToCell={handleDragToCell}
+          onMoveToken={(id, dx, dy) => {
+            const t = map.tokens.find((tk) => tk.id === id);
+            if (!t) return;
+            performMove(id, t.x + dx, t.y + dy);
+          }}
+          onCanvasMove={handleCanvasMove}
+          onCanvasClickWithGrid={handleCanvasClickGrid}
+          onUpdateToken={handleUpdateToken}
+          onTokensUpdate={(tokens) => onUpdate({ tokens })}
+          onDrawingsChange={(drawings) => onUpdate({ drawings })}
+          onAoETemplatesChange={(aoeTemplates) => onUpdate({ aoeTemplates })}
+        />
+
+        {/* AOE Template Overlay */}
+        {templates.length > 0 && !placementMode && (
+          <div className="absolute inset-0 z-[6] pointer-events-none">
+            <AoETemplateOverlay
+              templates={templates}
+              gridWidth={map.gridWidth}
+              gridHeight={map.gridHeight}
+              isGmView={gmView}
+            />
+          </div>
+        )}
+
+        {/* AOE Placement Mode */}
+        {placementMode && (
+          <AoEPlacementMode
+            pendingTemplate={placementMode.template}
+            hoverGridX={placementMode.hoverX}
+            hoverGridY={placementMode.hoverY}
+            gridWidth={map.gridWidth}
+            gridHeight={map.gridHeight}
+            onPlaceAtCell={handlePlaceAtCell}
+            onCancel={() => {
+              handleRemoveAoETemplate(placementMode.template.id);
+              setPlacementMode(null);
+            }}
+            onRotateDirection={() =>
+              setPlacementDirection(
+                (d) => ROTATION_ORDER[(ROTATION_ORDER.indexOf(d) + 1) % ROTATION_ORDER.length],
+              )
+            }
+          />
+        )}
+      </div>
 
       {showFogControls && (
         <div className="rounded-xl border border-surface-700 bg-surface-850 p-4 animate-slide-up">
           <FogOfWarControls map={map} onUpdate={onUpdate} isGmView={gmView} />
+        </div>
+      )}
+
+      {showAoePanel && (
+        <div className="rounded-xl border border-surface-700 bg-surface-850 p-4 animate-slide-up">
+          <AoEPresetPanel
+            templates={templates}
+            onAddTemplate={handleAddAoETemplate}
+            onRemoveTemplate={handleRemoveAoETemplate}
+            onUpdateTemplate={handleUpdateAoETemplate}
+          />
         </div>
       )}
 

@@ -1,5 +1,6 @@
 /* ── MapEditorToolbar ──────────────────────────────────────────
- * Toolbar for the map editor: view toggle, fog, drawing, grid.
+ * Toolbar for the map editor: view toggle, fog, AOE templates,
+ * drawing, grid, and theatric view.
  * ─────────────────────────────────────────────────────────────── */
 
 import type { MapToken } from "@/types";
@@ -12,9 +13,11 @@ interface Props {
   drawingEnabled: boolean;
   showGrid: boolean;
   hasSelectedToken: boolean;
+  showAoePanel: boolean;
   onToggleGmView: () => void;
   onToggleFog: () => void;
   onToggleFogControls: () => void;
+  onToggleAoePanel: () => void;
   onAddToken: () => void;
   onToggleDrawing: () => void;
   onToggleGrid: () => void;
@@ -24,7 +27,9 @@ interface Props {
 
 export function MapEditorToolbar({
   gmView, showFog, showFogControls, drawingEnabled, showGrid,
-  onToggleGmView, onToggleFog, onToggleFogControls, onAddToken, onToggleDrawing, onToggleGrid,
+  showAoePanel, hasSelectedToken,
+  onToggleGmView, onToggleFog, onToggleFogControls, onToggleAoePanel,
+  onAddToken, onToggleDrawing, onToggleGrid,
   onOpenTheatric, selectedToken,
 }: Props) {
   return (
@@ -40,6 +45,9 @@ export function MapEditorToolbar({
         </button>
         <Button size="xs" variant="ghost" onClick={onToggleFogControls}>
           {showFogControls ? "Hide Zones" : "Reveal Zones"}
+        </Button>
+        <Button size="xs" variant={showAoePanel ? "default" : "ghost"} onClick={onToggleAoePanel}>
+          ✦ AOE
         </Button>
         <Button size="xs" onClick={onAddToken}>+ Token</Button>
         <Button size="xs" variant={drawingEnabled ? "default" : "ghost"} onClick={onToggleDrawing}>

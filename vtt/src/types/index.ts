@@ -340,6 +340,8 @@ export interface BattleMap {
   drawings?: MapDrawingStroke[];
   // Grid opacity for theatric view
   gridOpacity?: number;
+  // Area-of-effect spell/ability template overlays
+  aoeTemplates?: AoETemplate[];
   createdAt: number;
   updatedAt: number;
 }
@@ -483,3 +485,7 @@ export interface SessionConditions {
 
 /* ── Homebrew re-exports ─────────────────────────────────────── */
 export type { HomebrewItem, HomebrewFeat, HomebrewSpell, ItemCategory, ItemRarity, SpellSchool } from "./homebrew";
+
+/* ── AOE Template re-exports ─────────────────────────────────── */
+export type { AoETemplate, AoE_Shape, AoE_Direction, AoE_OriginAnchor, AoEPreset } from "./aoe-templates";
+export { AOE_PRESETS, getAoEShapePath } from "./aoe-templates";

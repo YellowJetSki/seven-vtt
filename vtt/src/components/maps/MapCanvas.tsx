@@ -1,10 +1,11 @@
 /* ── MapCanvas ─────────────────────────────────────────────────
  * The core grid canvas showing map image, grid lines, fog of war,
  * movement range, drawings, tokens, and drop target.
+ * Supports mouse-tracking for AOE template placement.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useRef, type RefObject } from "react";
-import type { BattleMap, MapToken, MapDrawingStroke } from "@/types";
+import { useRef, type RefObject, useCallback } from "react";
+import type { BattleMap, MapToken, MapDrawingStroke, AoETemplate } from "@/types";
 import { FogOfWarLayer } from "@/components/maps/FogOfWarLayer";
 import { MovementRangeOverlay } from "@/components/maps/MovementRangeOverlay";
 import { StatusMarkerOverlay } from "@/components/maps/StatusMarkerOverlay";
@@ -27,6 +28,9 @@ interface Props {
   onUpdateToken: (tokenId: string, updates: Partial<MapToken>) => void;
   onTokensUpdate: (tokens: MapToken[]) => void;
   onDrawingsChange: (drawings: MapDrawingStroke[]) => void;
+  onAoETemplatesChange?: (templates: AoETemplate[]) => void;
+  onCanvasMove?: (gridX: number, gridY: number) => void;
+  onCanvasClickWithGrid?: (gridX: number, gridY: number) => void;
   containerRef?: RefObject<HTMLDivElement | null>;
 }
 
@@ -34,7 +38,8 @@ export function MapCanvas({
   map, gmView, showFog, showGrid, gridOpacity, selectedTokenId,
   showMovement, dashMode, drawingEnabled,
   onTokenClick, onCanvasClick, onDragToCell,
-  onUpdateToken, onTokensUpdate, onDrawingsChange,
+  onMoveToken, onUpdateToken, onTokensUpdate, onDrawingsChange,
+  onAoETemplatesChange, onCanvasMove, onCanvasClickWithGrid,
   containerRef: externalRef,
 }: Props) {
   const internalRef = useRef<HTMLDivElement>(null);
@@ -45,11 +50,40 @@ export function MapCanvas({
   const selectedToken = map.tokens.find((t) => t.id === selectedTokenId) ?? null;
   const tokenSpeed = selectedToken?.speed ?? 30;
 
+  /** Convert a mouse event to grid coordinates */
+  const mouseToGrid = useCallback((clientX: number, clientY: number) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return { gridX: -1, gridY: -1 };
+    return {
+      gridX: Math.floor(((clientX - rect.left) / rect.width) * map.gridWidth),
+      gridY: Math.floor(((clientY - rect.top) / rect.height) * map.gridHeight),
+    };
+  }, [map.gridWidth, map.gridHeight]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (onCanvasMove) {
+      const { gridX, gridY } = mouseToGrid(e.clientX, e.clientY);
+      onCanvasMove(gridX, gridY);
+    }
+  }, [onCanvasMove, mouseToGrid]);
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    if (onCanvasClickWithGrid) {
+      const { gridX, gridY } = mouseToGrid(e.clientX, e.clientY);
+      if (gridX >= 0 && gridX < map.gridWidth && gridY >= 0 && gridY < map.gridHeight) {
+        onCanvasClickWithGrid(gridX, gridY);
+        return;
+      }
+    }
+    onCanvasClick();
+  }, [onCanvasClickWithGrid, onCanvasClick, mouseToGrid, map.gridWidth, map.gridHeight]);
+
   return (
     <div ref={containerRef}
       className="relative w-full overflow-hidden rounded-xl border border-surface-700 bg-surface-900"
       style={{ aspectRatio: `${map.gridWidth}/${map.gridHeight}` }}
-      onClick={onCanvasClick}
+      onClick={handleClick}
+      onMouseMove={handleMouseMove}
       onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
       onDrop={(e) => {
         e.preventDefault();
