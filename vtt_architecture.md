@@ -1163,3 +1163,55 @@ GroundEffect.fadeProgress advances each round → removed when fully faded
 Hazard zones stored as `AoETemplate[]` on BattleMap, persisted only to localStorage. No new Firestore collections. Security rules already catch-all deny everything outside `/campaigns/{id}/**` and `/homebrew/{id}/**`.
 
 ---
+
+## Cycle 8 — Modular Component Engineering (2026-07-17) (Updated: 2026-07-18 00:18)
+## Sprint 8 (Cycle 2): Hazard Zone Engine — Component Implementation
+
+### New Files Created (8 files, all < 150 lines)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `src/types/hazard-zones.ts` | 134 | All type definitions (HazardZone, GroundEffect, HazardTick, MagicSchool, AltitudeLayer) |
+| `src/lib/hazard-tick-engine.ts` | 148 | Pure tick/expire/fade logic, processRoundAdvance() |
+| `src/lib/render-ground-effect.tsx` | 160 | 8 SVG shape renderers for ground effect types |
+| `src/hooks/useHazardEngine.ts` | ~148 | Zustand-style custom hook for hazard lifecycle |
+| `src/components/maps/RunicRingOverlay.tsx` | ~140 | SVG animated rune ring with Elder Futhark glyphs |
+| `src/components/maps/GroundEffectOverlay.tsx` | ~80 | Renders residual ground effects on map canvas |
+| `src/components/maps/HazardTimelineItem.tsx` | ~145 | Single hazard row with round countdown + controls |
+| `src/components/maps/HazardTimeline.tsx` | ~154 | Sidebar panel with sorted hazard list, tick/round controls |
+
+### Modified Files
+- `src/types/index.ts` — Added re-exports for all HazardZone types
+- `src/index.css` — Added `@keyframes aoe-runic-rotate-reverse` animation
+- `src/components/maps/MapEditor.tsx` — Integrated useHazardEngine, HazardTimeline, GroundEffectOverlay, RunicRingOverlay
+
+### Build Metrics
+- **Modules:** 215 → 223 (+8)
+- **Build time:** 690ms
+- **Battle Maps bundle:** 69KB → 89KB (+20KB from hazard engine)
+- **Total JS:** 455KB (124KB gzipped)
+- **TypeScript:** 0 errors
+- **All existing imports preserved** (MapEditor props unchanged)
+
+### Integration Architecture
+```
+MapEditor
+├── useHazardEngine (local state)
+├── AoEPresetPanel → onAddTemplate → registerHazardFromTemplate
+├── HazardTimeline (sidebar)
+│   ├── ⏳ Round indicator + Tick/Round buttons
+│   ├── HazardTimelineItem[] (sorted by remaining rounds)
+│   └── Ground effects list (residual effects)
+├── AoETemplateOverlay (existing, unchanged)
+├── GroundEffectOverlay (z-index 7, on top of templates)
+├── RunicRingOverlay (z-index 4, behind templates)
+└── AoEPlacementMode (existing, unchanged)
+```
+
+### Ready for Cycle 3 (UI/UX Polish & Fantasy Aesthetic)
+- Add Tailwind animations to HazardTimeline items (pulse, glow borders)
+- Add gas-drift CSS animation for poison cloud ground effects
+- Style the rune ring with drop-shadow glow
+- Ensure responsive layout for HazardTimeline on mobile
+
+---
