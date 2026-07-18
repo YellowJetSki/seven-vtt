@@ -15,9 +15,10 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "npm run dev --prefix vtt",
+    command: "npx vite --port 5173",
     url: "http://localhost:5173",
     reuseExistingServer: true,
     timeout: 30000,
+    cwd: "vtt",
   },
 });

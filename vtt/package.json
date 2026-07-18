@@ -9,7 +9,7 @@
     "prebuild": "node scripts/generate-image-manifest.js",
     "build": "tsc --noEmit && vite build",
     "lint": "oxlint",
-    "test": "node node_modules/@playwright/test/cli.js test",
+    "test": "node node_modules/@playwright/test/cli.js test --config playwright.config.ts",
     "test:ui": "node node_modules/@playwright/test/cli.js test --ui",
     "preview": "vite preview"
   },

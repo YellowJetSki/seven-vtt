@@ -75,24 +75,33 @@ export function EncounterPresets({ onApplyPreset }: EncounterPresetsProps) {
 
   return (
     <div className="relative">
-      <Button size="xs" variant="secondary" onClick={() => setIsOpen((o) => !o)}>
+      <Button
+        size="xs"
+        variant="secondary"
+        onClick={() => setIsOpen((o) => !o)}
+        className="ring-1 ring-surface-700/50"
+      >
         📋 Presets
       </Button>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-xl border border-surface-700 bg-surface-850 shadow-xl max-h-96">
-            <div className="flex items-center justify-between border-b border-surface-700 px-3 py-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-surface-400">
-                Encounter Presets
-              </p>
+          <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-2xl border border-surface-700/60 bg-surface-900/90 backdrop-blur-xl shadow-2xl shadow-accent-500/5 max-h-96 overflow-hidden">
+            {/* ── Header ── */}
+            <div className="flex items-center justify-between border-b border-surface-700/50 px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🗂️</span>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-surface-400">
+                  Encounter Presets
+                </p>
+              </div>
               {activeEncounter && (
                 <button
                   onClick={() => setShowSaveForm((f) => !f)}
-                  className="text-[10px] text-accent-400 hover:text-accent-300 transition-colors"
+                  className="text-[10px] font-medium text-accent-400 hover:text-accent-300 transition-colors px-2 py-1 rounded-md hover:bg-accent-500/10"
                 >
-                  {showSaveForm ? "Cancel" : "+ Save Current"}
+                  {showSaveForm ? "− Cancel" : "+ Save"}
                 </button>
               )}
             </div>
@@ -106,32 +115,35 @@ export function EncounterPresets({ onApplyPreset }: EncounterPresetsProps) {
               />
             )}
 
-            <div className="overflow-y-auto max-h-72 p-1.5 space-y-1">
-              <p className="px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-surface-500">
-                Built-in
-              </p>
+            <div className="overflow-y-auto max-h-72 p-2 space-y-1">
+              {/* ── Built-in Section ── */}
+              <div className="flex items-center gap-2 px-2 py-1.5">
+                <div className="h-px flex-1 bg-gradient-to-r from-surface-700/0 via-surface-700 to-surface-700/0" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-surface-500">
+                  📜 Built-in
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-surface-700/0 via-surface-700 to-surface-700/0" />
+              </div>
               {BUILT_IN_PRESETS.map((preset) => (
                 <EncounterPresetCard key={preset.name} preset={preset} onApply={handleApplyPreset} />
               ))}
 
               {userPresets.length > 0 && (
                 <>
-                  <div className="border-t border-surface-700 my-1" />
-                  <p className="px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-surface-500">
-                    Custom
-                  </p>
+                  <div className="flex items-center gap-2 px-2 py-1.5 pt-3">
+                    <div className="h-px flex-1 bg-gradient-to-r from-surface-700/0 via-surface-700 to-surface-700/0" />
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-surface-500">
+                      ⚔️ Custom
+                    </span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-surface-700/0 via-surface-700 to-surface-700/0" />
+                  </div>
                   {userPresets.map((preset) => (
-                    <div key={preset.name} className="group flex items-center rounded-lg hover:bg-surface-800 transition-colors">
-                      <div className="flex flex-1 min-w-0">
-                        <EncounterPresetCard preset={preset} onApply={handleApplyPreset} />
-                      </div>
-                      <button
-                        onClick={() => handleDeletePreset(preset.name)}
-                        className="mr-2 text-surface-500 hover:text-warrior-400 opacity-0 group-hover:opacity-100 transition-all text-[10px] shrink-0"
-                      >
-                        ✕
-                      </button>
-                    </div>
+                    <EncounterPresetCard
+                      key={preset.name}
+                      preset={preset}
+                      onApply={handleApplyPreset}
+                      onDelete={handleDeletePreset}
+                    />
                   ))}
                 </>
               )}

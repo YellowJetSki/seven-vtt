@@ -1812,3 +1812,58 @@ Split into:
 - **Build:** 233 modules, 761ms, 0 errors
 
 ---
+
+## Sprint — Character Card Premium Redesign (Updated: 2026-07-18 08:29)
+## Character Card Premium Redesign (2026-07-18)
+
+### Motivation
+The existing PC cards lacked the information density and premium feel of top VTTs (Foundry, Roll20, D&D Beyond). Key gaps: no passive scores, no weapon attacks, no spell slots, no resources, no XP progress, no hit dice, no conditions display on card, no death saves, no movement breakdown.
+
+### New Architecture: 10 Modular Card Sub-Components
+
+All created under `vtt/src/components/player/card/` (all <150 lines):
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `CharacterCombatBlock.tsx` | 120 | AC, Init, PB, Speed grid + HP bar with temp HP + hit dice + death saves + speed types + passive Perception/Investigation/Insight + conditions |
+| `CharacterAbilityBlock.tsx` | 55 | 6-column ability score grid with mods and save proficiency dots |
+| `CharacterSkillSummary.tsx` | 107 | Saving throws with prof badges + top 6 skill profs with expertise stars |
+| `CharacterWeaponSummary.tsx` | 131 | Weapon attacks with inferred attack bonus, damage dice, damage type icons |
+| `CharacterSpellSummary.tsx` | 71 | Spellcasting ability/DC/attack bonus + spell slot usage bars per level |
+| `CharacterResourcesSummary.tsx` | 55 | Class resources (Ki, Rage, etc.) with current/max/recharge indicators |
+| `CharacterEquipmentSummary.tsx` | 118 | Equipped items list + armor display + inventory count + weight + currency footer |
+| `CharacterXpProgress.tsx` | 60 | XP progress bar with D&D 5e thresholds, XP to next level |
+| `CharacterCard.tsx` (main) | 140 | Composes all 8 sub-components in a scrollable card with hover action overlay |
+
+### Files Modified
+- `vtt/src/components/player/CharacterCard.tsx` — Now re-exports from card/ subdirectory
+- `vtt/src/components/player/CharacterDetailModal.tsx` — Added 5th tab (Inventory), integrated Weapon/Spell/Resources/XP sub-components, added passive scores to header
+- `vtt/src/components/player/PlayerInventory.tsx` — Complete rewrite: tabbed (Equipment/Inventory/Currency), categorized sorting, slot type selector, weight tracking, GP equivalent total
+
+### What Premium Cards Now Display
+1. ✅ Combat stats: AC, Initiative mod, Proficiency Bonus, Speed
+2. ✅ HP bar with color coding (green/orange/red/gray) + temp HP indicator
+3. ✅ Hit dice display
+4. ✅ Death saves (success/failure dots)
+5. ✅ Movement modes: walk, fly, swim, climb, burrow, hover
+6. ✅ Passive Perception, Investigation, Insight
+7. ✅ Active conditions with color badges
+8. ✅ All 6 ability scores with modifiers and save proficiency dots
+9. ✅ All 6 saving throws with proficiency indicators and total bonus
+10. ✅ Proficient skills (up to 6) with expertise star indicators
+11. ✅ Weapon attacks: name, attack bonus, damage dice, damage type icons
+12. ✅ Spellcasting: ability, save DC, spell attack bonus
+13. ✅ Spell slot gauges per level (1-9)
+14. ✅ Class resources: Ki, Rage, Bardic Inspiration, etc.
+15. ✅ Equipment: equipped items list, inventory count, total weight
+16. ✅ Currency: GP/PP/SP/EP/CP with totals
+17. ✅ XP progress bar with D&D 5e milestone thresholds
+18. ✅ Full action overlay (Inventory, Edit, Export, Delete) on hover
+19. ✅ Fullscreen portrait modal
+
+### Build
+- Modules: 242
+- Build: 867ms
+- TypeScript: 0 errors
+
+---

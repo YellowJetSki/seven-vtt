@@ -95,18 +95,27 @@ export function LootGenerator() {
 
   if (!meta) {
     return (
-      <div className="rounded-xl border border-surface-700 bg-surface-850 p-5 text-center">
-        <p className="text-sm text-surface-500">Load a campaign to use the loot generator.</p>
+      <div className="rounded-xl border border-surface-700/50 bg-surface-850/80 backdrop-blur-sm p-6 text-center">
+        <span className="text-3xl text-surface-600">🗝️</span>
+        <p className="mt-2 text-xs text-surface-500">Load a campaign to use the loot generator.</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-surface-700 bg-surface-850">
-      <div className="border-b border-surface-700 px-4 py-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-surface-400">Loot Generator</h3>
+    <div className="rounded-2xl border border-surface-700/50 bg-surface-850/80 backdrop-blur-sm shadow-lg shadow-accent-500/5">
+      {/* ── Header ── */}
+      <div className="flex items-center gap-2 border-b border-surface-700/50 px-4 py-3">
+        <span className="text-sm">🗝️</span>
+        <h3 className="text-xs font-bold uppercase tracking-widest text-surface-400">Loot Generator</h3>
+        {lootEntries.length > 0 && (
+          <span className="ml-auto rounded-full bg-gold-500/10 px-2 py-0.5 text-[9px] font-semibold text-gold-400">
+            {lootEntries.length} items
+          </span>
+        )}
       </div>
-      <div className="p-4 space-y-4">
+
+      <div className="p-4 space-y-3">
         <LootGeneratorControls
           coinAmount={coinAmount}
           onCoinAmountChange={setCoinAmount}
@@ -120,11 +129,14 @@ export function LootGenerator() {
 
         {lootEntries.length === 0 ? (
           <div className="py-8 text-center">
-            <span className="text-3xl text-surface-600">◇</span>
-            <p className="mt-2 text-xs text-surface-500">Generate loot to assign to party members.</p>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-800/80 ring-1 ring-surface-700/40">
+              <span className="text-2xl">🪙</span>
+            </div>
+            <p className="text-xs text-surface-500">Forge gold, discover art, or unearth magic items.</p>
+            <p className="text-[10px] text-surface-600 mt-1">Assign loot to party members below.</p>
           </div>
         ) : (
-          <div className="max-h-60 space-y-1 overflow-y-auto">
+          <div className="max-h-60 space-y-1.5 overflow-y-auto pr-1">
             {lootEntries.map((entry) => (
               <LootEntryRow
                 key={entry.id}

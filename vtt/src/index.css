@@ -378,6 +378,50 @@ div[class*="rounded-xl"][class*="border-surface-700"][class*="bg-surface-850"] {
   animation: slide-in-right 0.3s ease-out;
 }
 
+/* ── Loot & Treasure Animations ────────────────────────────── */
+@keyframes loot-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(226, 183, 20, 0.1); }
+  50% { box-shadow: 0 0 16px rgba(226, 183, 20, 0.25); }
+}
+.animate-loot-glow {
+  animation: loot-glow 3s ease-in-out infinite;
+}
+
+/* ── Ambient Sound Pulse ───────────────────────────────────── */
+@keyframes sound-wave {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+.animate-sound-wave {
+  animation: sound-wave 0.8s ease-in-out infinite alternate;
+}
+
+/* ── Difficulty Calculator Bar Pulse ────────────────────────── */
+@keyframes threshold-bar {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Preset Card Slide-In ───────────────────────────────────── */
+@keyframes card-slide-in {
+  from { transform: translateY(8px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.animate-card-slide-in {
+  animation: card-slide-in 0.25s ease-out;
+}
+
+/* ── Ambient Slider Custom Styling ──────────────────────────── */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-surface-700), var(--color-surface-600));
+}
+input[type="range"]:focus::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, var(--color-surface-700), var(--color-accent-600));
+}
+
 /* ── Staggered Entry Animations ─────────────────────────────── */
 .stagger-1 { animation-delay: 0ms; }
 .stagger-2 { animation-delay: 60ms; }

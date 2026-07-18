@@ -1,8 +1,7 @@
-/* ── CharacterDetailModal ──────────────────────────────────────
+/* ── CharacterDetailModal (v2 — Premium) ────────────────────────
  * Full character sheet modal with tabbed navigation (Combat, Abilities,
- * Features, Bio), fullscreen portrait viewer, and ALL player-accessible
- * stats: ability scores, saves, skills, speed, proficiencies, features,
- * traits, equipment, currency, spellcasting, death saves, etc.
+ * Features, Inventory, Bio). Integrates the new premium card sub-
+ * components for spellcasting, weapons, equipment, and XP progress.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState } from "react";
@@ -12,6 +11,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { FullscreenImageModal } from "@/components/ui/FullscreenImageModal";
+import { CharacterWeaponSummary } from "./card/CharacterWeaponSummary";
+import { CharacterSpellSummary } from "./card/CharacterSpellSummary";
+import { CharacterResourcesSummary } from "./card/CharacterResourcesSummary";
+import { CharacterEquipmentSummary } from "./card/CharacterEquipmentSummary";
+import { CharacterXpProgress } from "./card/CharacterXpProgress";
 
 const ABILITY_ORDER: Ability[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
 const ABILITY_SHORT: Record<Ability, string> = {
@@ -23,31 +27,32 @@ const ABILITY_LONG: Record<Ability, string> = {
   intelligence: "Intelligence", wisdom: "Wisdom", charisma: "Charisma",
 };
 const PORTRAIT_BASE_PATH = "/images/portraits";
+const SKILL_ENTRIES: { key: string; label: string; ability: Ability }[] = [
+  { key: "acrobatics", label: "Acrobatics", ability: "dexterity" },
+  { key: "animalHandling", label: "Animal Handling", ability: "wisdom" },
+  { key: "arcana", label: "Arcana", ability: "intelligence" },
+  { key: "athletics", label: "Athletics", ability: "strength" },
+  { key: "deception", label: "Deception", ability: "charisma" },
+  { key: "history", label: "History", ability: "intelligence" },
+  { key: "insight", label: "Insight", ability: "wisdom" },
+  { key: "intimidation", label: "Intimidation", ability: "charisma" },
+  { key: "investigation", label: "Investigation", ability: "intelligence" },
+  { key: "medicine", label: "Medicine", ability: "wisdom" },
+  { key: "nature", label: "Nature", ability: "intelligence" },
+  { key: "perception", label: "Perception", ability: "wisdom" },
+  { key: "performance", label: "Performance", ability: "charisma" },
+  { key: "persuasion", label: "Persuasion", ability: "charisma" },
+  { key: "religion", label: "Religion", ability: "intelligence" },
+  { key: "sleightOfHand", label: "Sleight of Hand", ability: "dexterity" },
+  { key: "stealth", label: "Stealth", ability: "dexterity" },
+  { key: "survival", label: "Survival", ability: "wisdom" },
+];
 
-/** Resolve portrait URL with legacy path correction */
 function resolvePortraitUrl(url: string | undefined): string | undefined {
   if (!url) return undefined;
   if (url.startsWith("/images/")) return url;
   if (url.startsWith("/")) return `${PORTRAIT_BASE_PATH}${url}`;
   return url;
-}
-
-const SKILL_ABILITIES: Record<string, Ability> = {
-  acrobatics: "dexterity", animalHandling: "wisdom", arcana: "intelligence",
-  athletics: "strength", deception: "charisma", history: "intelligence",
-  insight: "wisdom", intimidation: "charisma", investigation: "intelligence",
-  medicine: "wisdom", nature: "intelligence", perception: "wisdom",
-  performance: "charisma", persuasion: "charisma", religion: "intelligence",
-  sleightOfHand: "dexterity", stealth: "dexterity", survival: "wisdom",
-};
-
-type DetailTab = "combat" | "abilities" | "features" | "bio";
-
-interface Props {
-  character: PlayerCharacter;
-  onClose: () => void;
-  onEdit: () => void;
-  onOpenInventory: () => void;
 }
 
 function getAbilityMod(score: number): number {
@@ -58,27 +63,31 @@ function fmtMod(mod: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
 
-function fmtSkillName(key: string): string {
-  return key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+function getPassiveScore(score: number | undefined, skillProf: string | undefined, profBonus: number): number {
+  const base = getAbilityMod(score ?? 10);
+  const bonus = skillProf === "proficient" ? profBonus : skillProf === "expertise" ? profBonus * 2 : 0;
+  return 10 + base + bonus;
+}
+
+type DetailTab = "combat" | "abilities" | "features" | "inventory" | "bio";
+
+interface Props {
+  character: PlayerCharacter;
+  onClose: () => void;
+  onEdit: () => void;
+  onOpenInventory: () => void;
 }
 
 function TabBtn({ active, label, icon, onClick }: { active: boolean; label: string; icon: string; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
+    <button onClick={onClick}
       className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-        active
-          ? "bg-accent-600/20 text-accent-300 shadow-sm ring-1 ring-accent-500/30"
-          : "text-surface-400 hover:text-surface-200 hover:bg-surface-800"
-      }`}
-    >
-      <span className="text-sm">{icon}</span>
-      {label}
+        active ? "bg-accent-600/20 text-accent-300 shadow-sm ring-1 ring-accent-500/30" : "text-surface-400 hover:text-surface-200 hover:bg-surface-800"
+      }`}>
+      <span className="text-sm">{icon}</span> {label}
     </button>
   );
 }
-
-/* ── Info Card wrapper ──────────────────────────────────────── */
 
 function InfoCard({ label, value, children }: { label: string; value?: string; children?: React.ReactNode }) {
   return (
@@ -90,9 +99,7 @@ function InfoCard({ label, value, children }: { label: string; value?: string; c
   );
 }
 
-/* ── Header stat pill ───────────────────────────────────────── */
-
-function HeaderStat({ label, value, accent, small }: { label: string; value: string; accent: string; small?: boolean }) {
+function HeaderStat({ label, value, accent }: { label: string; value: string; accent: string }) {
   const colors: Record<string, string> = {
     rogue: "bg-rogue-500/10 text-rogue-400 border-rogue-500/20",
     mage: "bg-mage-500/10 text-mage-400 border-mage-500/20",
@@ -104,7 +111,7 @@ function HeaderStat({ label, value, accent, small }: { label: string; value: str
   return (
     <div className={`rounded-lg border px-2.5 py-2 text-center ${colors[accent] || colors.surface}`}>
       <p className="text-[9px] font-semibold uppercase tracking-wider opacity-70">{label}</p>
-      <p className={`font-bold truncate ${small ? "text-[10px]" : "text-sm"}`} title={value}>{value}</p>
+      <p className="font-bold truncate text-sm" title={value}>{value}</p>
     </div>
   );
 }
@@ -116,67 +123,44 @@ function getHpBarColor(pct: number): string {
   return "bg-rogue-500";
 }
 
-/* ──────────────────────────────────────────────────────────────
- * MAIN COMPONENT
- * ────────────────────────────────────────────────────────────── */
-
 export function CharacterDetailModal({ character, onClose, onEdit, onOpenInventory }: Props) {
   const [activeTab, setActiveTab] = useState<DetailTab>("combat");
   const [showFullscreen, setShowFullscreen] = useState(false);
-
-  /* ── Derived data ── */
 
   const portraitUrl = resolvePortraitUrl(character.imageUrl);
   const fallbackEmoji = character.race.includes("Gnome") ? "🧙" : character.race.includes("Elf") ? "🧝" : "⚔";
   const initDisplay = character.initiative !== undefined && character.initiative !== null && character.initiative !== "--" && character.initiative !== ""
     ? `+${character.initiative}` : "—";
+  const hpPercent = character.hitPoints.max > 0 ? Math.max(0, (character.hitPoints.current / character.hitPoints.max) * 100) : 0;
 
   const speedParts: string[] = [];
-  if (character.speed?.walk) speedParts.push(`${character.speed.walk}ft walk`);
-  if (character.speed?.fly) speedParts.push(`${character.speed.fly}ft fly`);
-  if (character.speed?.swim) speedParts.push(`${character.speed.swim}ft swim`);
-  if (character.speed?.climb) speedParts.push(`${character.speed.climb}ft climb`);
-  if (character.speed?.burrow) speedParts.push(`${character.speed.burrow}ft burrow`);
-  if (character.speed?.canHover) speedParts.push("(hover)");
+  if (character.speed?.walk) speedParts.push(`${character.speed.walk}ft`);
+  if (character.speed?.fly) speedParts.push(`🪽${character.speed.fly}ft`);
+  if (character.speed?.swim) speedParts.push(`🌊${character.speed.swim}ft`);
+  if (character.speed?.climb) speedParts.push(`🧗${character.speed.climb}ft`);
+  if (character.speed?.burrow) speedParts.push(`⛰${character.speed.burrow}ft`);
   const speedDisplay = speedParts.join(", ");
 
-  const hpPercent = character.hitPoints.max > 0
-    ? Math.max(0, (character.hitPoints.current / character.hitPoints.max) * 100)
-    : 0;
-
-  const totalItems = (character.equipment ?? []).length + (character.inventory ?? []).length;
-
-  /* ── Render ── */
+  const passivePerception = getPassiveScore(character.wisdom, character.skills?.perception, character.proficiencyBonus);
+  const passiveInvestigation = getPassiveScore(character.intelligence, character.skills?.investigation, character.proficiencyBonus);
+  const passiveInsight = getPassiveScore(character.wisdom, character.skills?.insight, character.proficiencyBonus);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
-      <div
-        className="relative w-full max-w-3xl max-h-[85vh] rounded-xl border border-surface-700 bg-surface-850 shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative w-full max-w-3xl max-h-[85vh] rounded-xl border border-surface-700 bg-surface-850 shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}>
         {/* ════════ HEADER ════════ */}
         <div className="shrink-0 border-b border-surface-700/80 bg-surface-900/50 p-4">
           <div className="flex items-start gap-4">
-            {/* Portrait (click to fullscreen) */}
-            <div
-              className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-2 ring-surface-600 cursor-pointer hover:ring-accent-500/50 transition-all group"
-              onClick={() => portraitUrl && setShowFullscreen(true)}
-            >
-              <ImageWithFallback
-                src={portraitUrl}
-                alt={`${character.name} portrait`}
-                fallback={fallbackEmoji}
-                className="h-full w-full"
-                fit="cover"
-              />
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-2 ring-surface-600 cursor-pointer hover:ring-accent-500/50 transition-all group"
+              onClick={() => portraitUrl && setShowFullscreen(true)}>
+              <ImageWithFallback src={portraitUrl} alt={`${character.name} portrait`} fallback={fallbackEmoji} className="h-full w-full" fit="cover" />
               {portraitUrl && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-all">
                   <span className="text-white/0 group-hover:text-white/80 text-lg transition-all">🔍</span>
                 </div>
               )}
             </div>
-
-            {/* Identity */}
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between">
                 <div>
@@ -204,31 +188,32 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
               )}
             </div>
           </div>
-
-          {/* Quick Stats Row */}
           <div className="mt-3 grid grid-cols-5 gap-2">
             <HeaderStat label="HP" value={`${character.hitPoints.current}/${character.hitPoints.max}`} accent={hpPercent > 50 ? "rogue" : hpPercent > 25 ? "divine" : "warrior"} />
             <HeaderStat label="AC" value={String(character.armorClass)} accent="mage" />
             <HeaderStat label="Init" value={initDisplay} accent="rogue" />
             <HeaderStat label="PB" value={`+${character.proficiencyBonus}`} accent="accent" />
-            <HeaderStat label="Speed" value={speedDisplay} accent="surface" small />
+            <HeaderStat label="Speed" value={speedDisplay} accent="surface" />
           </div>
-
-          {/* HP Bar */}
           <div className="mt-2 h-2 rounded-full bg-surface-700/80 overflow-hidden">
-            <div className={`h-full rounded-full transition-all duration-500 ${getHpBarColor(hpPercent)}`}
-              style={{ width: `${hpPercent}%` }} />
+            <div className={`h-full rounded-full transition-all duration-500 ${getHpBarColor(hpPercent)}`} style={{ width: `${hpPercent}%` }} />
           </div>
           {character.hitPoints.temporary > 0 && (
             <p className="mt-1 text-[10px] text-mage-400">+{character.hitPoints.temporary} temporary HP</p>
           )}
+          <div className="mt-1 flex gap-3 text-[10px] text-surface-500">
+            <span>👁Passive Perception <span className="text-surface-300 font-mono">{passivePerception}</span></span>
+            <span>🔍Investigation <span className="text-surface-300 font-mono">{passiveInvestigation}</span></span>
+            <span>🧠Insight <span className="text-surface-300 font-mono">{passiveInsight}</span></span>
+          </div>
         </div>
 
         {/* ════════ TABS ════════ */}
-        <div className="shrink-0 flex gap-1.5 border-b border-surface-700/60 bg-surface-900/30 px-4 py-2.5">
+        <div className="shrink-0 flex gap-1.5 border-b border-surface-700/60 bg-surface-900/30 px-4 py-2.5 overflow-x-auto">
           <TabBtn active={activeTab === "combat"} label="Combat" icon="⚔" onClick={() => setActiveTab("combat")} />
           <TabBtn active={activeTab === "abilities"} label="Abilities" icon="💪" onClick={() => setActiveTab("abilities")} />
           <TabBtn active={activeTab === "features"} label="Features" icon="✨" onClick={() => setActiveTab("features")} />
+          <TabBtn active={activeTab === "inventory"} label="Inventory" icon="🎒" onClick={() => setActiveTab("inventory")} />
           <TabBtn active={activeTab === "bio"} label="Bio" icon="📜" onClick={() => setActiveTab("bio")} />
         </div>
 
@@ -238,15 +223,13 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
           {/* ─── TAB: COMBAT ─── */}
           {activeTab === "combat" && (
             <>
-              {/* HP, AC, Initiative, Speed, Hit Dice */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <InfoCard label="Hit Points" value={`${character.hitPoints.current} / ${character.hitPoints.max}`} />
                 <InfoCard label="Armor Class" value={String(character.armorClass)} />
-                <InfoCard label="Initiative" value={`+${character.initiative}`} />
+                <InfoCard label="Initiative" value={initDisplay} />
                 <InfoCard label="Hit Dice" value={character.hitDice || "—"} />
               </div>
 
-              {/* Death Saves */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-surface-700 bg-surface-800/80 p-3">
                   <p className="text-[10px] font-medium text-surface-500 uppercase tracking-wider">Death Save Successes</p>
@@ -266,7 +249,6 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 </div>
               </div>
 
-              {/* Speed Detail */}
               <InfoCard label="Speed">
                 <div className="flex flex-wrap gap-2 mt-1">
                   {character.speed?.walk !== undefined && <SpeedTag label="Walk" value={`${character.speed.walk}ft`} />}
@@ -278,7 +260,6 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 </div>
               </InfoCard>
 
-              {/* Saving Throws */}
               <InfoCard label="Saving Throws">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mt-1">
                   {ABILITY_ORDER.map((ability) => {
@@ -298,52 +279,26 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 </div>
               </InfoCard>
 
-              {/* Conditions */}
               {(character.conditions ?? []).length > 0 && (
                 <InfoCard label="Active Conditions">
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {(character.conditions ?? []).map((c, i) => (
-                      <Badge key={i} variant="warning" size="xs">{c}</Badge>
-                    ))}
-                  </div>
+                  <div className="flex flex-wrap gap-1 mt-1">{(character.conditions ?? []).map((c, i) => <Badge key={i} variant="warning" size="xs">{c}</Badge>)}</div>
                 </InfoCard>
               )}
 
-              {/* Equipment Summary */}
-              <InfoCard label={`Equipment (${totalItems} items)`}>
-                {totalItems === 0 ? (
-                  <p className="text-xs text-surface-500 mt-1">No equipment recorded.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {(character.equipment ?? []).slice(0, 12).map((item, i) => (
-                      <Badge key={`eq-${i}`} size="xs" variant="neutral">
-                        {item.item}{item.quantity > 1 ? ` ×${item.quantity}` : ""}
-                      </Badge>
-                    ))}
-                    {(character.equipment ?? []).length > 12 && (
-                      <Badge size="xs" variant="neutral">+{(character.equipment ?? []).length - 12} more</Badge>
-                    )}
-                  </div>
-                )}
-              </InfoCard>
+              {/* Weapon attacks */}
+              <CharacterWeaponSummary character={character} />
 
-              {/* Currency */}
-              <InfoCard label="Currency">
-                <div className="flex flex-wrap gap-3 mt-1 text-xs">
-                  <CurrencyBadge label="PP" value={character.currency?.platinum ?? 0} color="text-cyan-300" />
-                  <CurrencyBadge label="GP" value={character.currency?.gold ?? 0} color="text-yellow-400" />
-                  <CurrencyBadge label="EP" value={character.currency?.electrum ?? 0} color="text-surface-300" />
-                  <CurrencyBadge label="SP" value={character.currency?.silver ?? 0} color="text-surface-400" />
-                  <CurrencyBadge label="CP" value={character.currency?.copper ?? 0} color="text-orange-400" />
-                </div>
-              </InfoCard>
+              {/* Spellcasting */}
+              <CharacterSpellSummary character={character} />
+
+              {/* Resources */}
+              <CharacterResourcesSummary character={character} />
             </>
           )}
 
           {/* ─── TAB: ABILITIES ─── */}
           {activeTab === "abilities" && (
             <>
-              {/* Ability Scores */}
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                 {ABILITY_ORDER.map((ability) => {
                   const score = character[ability] ?? 10;
@@ -359,30 +314,24 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 })}
               </div>
 
-              {/* Skills */}
               <InfoCard label="Skills">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-1">
-                  {(Object.entries(SKILL_ABILITIES) as [string, Ability][]).map(([skill, ability]) => {
-                    const proficiency = (character.skills as any)?.[skill] ?? "none";
+                  {SKILL_ENTRIES.map(({ key, label, ability }) => {
+                    const prof = (character.skills as Record<string, string>)?.[key] ?? "none";
                     const score = character[ability] ?? 10;
                     const baseMod = getAbilityMod(score);
-                    const isProf = proficiency === "proficient";
-                    const isExpert = proficiency === "expertise";
+                    const isProf = prof === "proficient";
+                    const isExpert = prof === "expertise";
                     const totalMod = baseMod + (isProf ? character.proficiencyBonus : 0) + (isExpert ? character.proficiencyBonus * 2 : 0);
                     const dotColor = isExpert ? "bg-accent-400" : isProf ? "bg-rogue-400" : "bg-surface-600";
                     return (
-                      <div key={skill} className={`flex items-center justify-between rounded px-2.5 py-1.5 text-xs ${
-                        isProf || isExpert ? "bg-surface-800/80" : "bg-surface-800/40"
-                      }`}>
+                      <div key={key} className={`flex items-center justify-between rounded px-2.5 py-1.5 text-xs ${isProf || isExpert ? "bg-surface-800/80" : "bg-surface-800/40"}`}>
                         <div className="flex items-center gap-2 min-w-0">
                           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dotColor}`} />
-                          <span className={`truncate ${isProf || isExpert ? "text-surface-200" : "text-surface-500"}`}>
-                            {fmtSkillName(skill)}
-                          </span>
+                          <span className={`truncate ${isProf || isExpert ? "text-surface-200" : "text-surface-500"}`}>{label}</span>
                         </div>
                         <span className={`font-bold shrink-0 ml-2 ${isProf || isExpert ? "text-surface-200" : "text-surface-500"}`}>
-                          {fmtMod(totalMod)}
-                          {isExpert && <span className="text-accent-400 text-[9px] ml-0.5">★</span>}
+                          {fmtMod(totalMod)}{isExpert && <span className="text-accent-400 text-[9px] ml-0.5">★</span>}
                         </span>
                       </div>
                     );
@@ -390,7 +339,6 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 </div>
               </InfoCard>
 
-              {/* Proficiencies */}
               {(character.proficiencies ?? []).length > 0 && (
                 <InfoCard label="Proficiencies">
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -403,14 +351,9 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 </InfoCard>
               )}
 
-              {/* Languages */}
               {(character.languages ?? []).length > 0 && (
                 <InfoCard label="Languages">
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {(character.languages ?? []).map((lang, i) => (
-                      <Badge key={i} size="xs" variant="accent">{lang}</Badge>
-                    ))}
-                  </div>
+                  <div className="flex flex-wrap gap-1 mt-1">{(character.languages ?? []).map((l, i) => <Badge key={i} size="xs" variant="accent">{l}</Badge>)}</div>
                 </InfoCard>
               )}
             </>
@@ -419,54 +362,47 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
           {/* ─── TAB: FEATURES ─── */}
           {activeTab === "features" && (
             <>
-              {/* Features & Traits */}
               {(character.features ?? []).length > 0 && (
                 <InfoCard label={`Features & Traits (${character.features.length})`}>
                   <div className="space-y-2 mt-1">
-                    {(character.features ?? []).map((feat, i) => {
-                      const name = typeof feat === "string" ? feat : feat.name;
-                      const desc = typeof feat === "string" ? "" : feat.description;
-                      const source = typeof feat === "string" ? "" : feat.source;
-                      return (
-                        <div key={i} className="rounded-lg border border-surface-700/50 bg-surface-800/60 p-2.5">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-semibold text-surface-200">{name}</p>
-                            {source && <span className="shrink-0 text-[9px] text-surface-500">{source}</span>}
-                          </div>
-                          {desc && <p className="mt-1 text-[11px] text-surface-400 leading-relaxed">{desc}</p>}
+                    {(character.features ?? []).map((feat, i) => (
+                      <div key={i} className="rounded-lg border border-surface-700/50 bg-surface-800/60 p-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-semibold text-surface-200">{feat.name}</p>
+                          {feat.source && <span className="shrink-0 text-[9px] text-surface-500">{feat.source}</span>}
                         </div>
-                      );
-                    })}
-                  </div>
-                </InfoCard>
-              )}
-
-              {/* Traits (personality) */}
-              {(character.traits ?? []).length > 0 && (
-                <InfoCard label="Traits">
-                  <div className="space-y-1.5 mt-1">
-                    {(character.traits ?? []).map((trait, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-surface-300">
-                        <span className="mt-0.5 text-surface-500">•</span>
-                        <span>{typeof trait === "string" ? trait : trait.name}</span>
+                        {feat.description && <p className="mt-1 text-[11px] text-surface-400 leading-relaxed">{feat.description}</p>}
+                        {feat.uses && (
+                          <p className="mt-1 text-[9px] text-surface-500">Uses: {feat.uses.current}/{feat.uses.max} ({feat.uses.recharge})</p>
+                        )}
                       </div>
                     ))}
                   </div>
                 </InfoCard>
               )}
 
-              {/* Spellcasting */}
+              {(character.traits ?? []).length > 0 && (
+                <InfoCard label="Traits">
+                  <div className="space-y-1.5 mt-1">{(character.traits ?? []).map((trait, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs text-surface-300">
+                      <span className="mt-0.5 text-surface-500">•</span>
+                      <span>{typeof trait === "string" ? trait : trait.name}</span>
+                    </div>
+                  ))}</div>
+                </InfoCard>
+              )}
+
               {character.spellcasting && (
                 <InfoCard label="Spellcasting">
                   <div className="space-y-2 mt-1">
-                    <div className="flex gap-3 text-xs">
+                    <div className="flex gap-3 text-xs flex-wrap">
                       <span className="text-surface-400">Ability: <span className="text-surface-200 font-medium">{ABILITY_LONG[character.spellcasting.spellcastingAbility]}</span></span>
                       <span className="text-surface-400">Save DC: <span className="text-surface-200 font-medium">{character.spellcasting.spellSaveDC}</span></span>
-                      <span className="text-surface-400">Attack Bonus: <span className="text-surface-200 font-medium">+{character.spellcasting.spellAttackBonus}</span></span>
+                      <span className="text-surface-400">Attack: <span className="text-surface-200 font-medium">+{character.spellcasting.spellAttackBonus}</span></span>
                     </div>
                     {character.spellcasting.spellSlots && (
                       <div className="flex flex-wrap gap-1.5">
-                        {([1,2,3,4,5,6,7,8,9] as const).map((lvl) => {
+                        {([1, 2, 3, 4, 5, 6, 7, 8, 9] as const).map((lvl) => {
                           const slots = (character.spellcasting!.spellSlots as any)?.[`level${lvl}`];
                           if (!slots || slots.max === 0) return null;
                           const used = slots.used || 0;
@@ -483,58 +419,44 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
                 </InfoCard>
               )}
 
-              {/* Resources (Ki, Bardic Inspiration, etc.) */}
-              {(character.resources ?? []).length > 0 && (
-                <InfoCard label="Resources">
-                  <div className="space-y-1.5 mt-1">
-                    {(character.resources ?? []).map((r, i) => (
-                      <div key={i} className="flex items-center justify-between text-xs">
-                        <span className="text-surface-300">{r.name}</span>
-                        <span className="text-surface-200 font-medium">{r.current}/{r.max} <span className="text-surface-500 text-[9px]">({r.recharge})</span></span>
-                      </div>
-                    ))}
-                  </div>
-                </InfoCard>
-              )}
+              <CharacterResourcesSummary character={character} />
+            </>
+          )}
+
+          {/* ─── TAB: INVENTORY ─── */}
+          {activeTab === "inventory" && (
+            <>
+              <CharacterEquipmentSummary character={character} />
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <CurrencyTileDetail label="PP" value={character.currency?.platinum ?? 0} color="text-cyan-300" />
+                <CurrencyTileDetail label="GP" value={character.currency?.gold ?? 0} color="text-yellow-400" />
+                <CurrencyTileDetail label="EP" value={character.currency?.electrum ?? 0} color="text-surface-400" />
+                <CurrencyTileDetail label="SP" value={character.currency?.silver ?? 0} color="text-surface-500" />
+                <CurrencyTileDetail label="CP" value={character.currency?.copper ?? 0} color="text-orange-400" />
+              </div>
+
+              <CharacterXpProgress character={character} />
             </>
           )}
 
           {/* ─── TAB: BIO ─── */}
           {activeTab === "bio" && (
             <>
-              {/* Personality */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {character.personalityTraits && <InfoCard label="Personality Traits" value={character.personalityTraits} />}
                 {character.ideals && <InfoCard label="Ideals" value={character.ideals} />}
                 {character.bonds && <InfoCard label="Bonds" value={character.bonds} />}
                 {character.flaws && <InfoCard label="Flaws" value={character.flaws} />}
               </div>
-
-              {/* Appearance */}
-              {character.appearance && (
-                <InfoCard label="Appearance" value={character.appearance} />
-              )}
-
-              {/* Backstory */}
+              {character.appearance && <InfoCard label="Appearance" value={character.appearance} />}
               {character.backstory && (
-                <InfoCard label="Backstory">
-                  <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-surface-300">{character.backstory}</p>
-                </InfoCard>
+                <InfoCard label="Backstory"><p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-surface-300">{character.backstory}</p></InfoCard>
               )}
-
-              {/* Allies & Organizations */}
-              {character.allies && (
-                <InfoCard label="Allies & Organizations" value={character.allies} />
-              )}
-
-              {/* DM Notes */}
+              {character.allies && <InfoCard label="Allies & Organizations" value={character.allies} />}
               {character.characterNotes && (
-                <InfoCard label="DM Notes">
-                  <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-surface-400 italic">{character.characterNotes}</p>
-                </InfoCard>
+                <InfoCard label="DM Notes"><p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-surface-400 italic">{character.characterNotes}</p></InfoCard>
               )}
-
-              {/* XP & Inspiration */}
               <div className="grid grid-cols-2 gap-3">
                 <InfoCard label="Experience Points" value={`${character.experiencePoints ?? 0} XP`} />
                 <InfoCard label="Inspiration" value={character.inspiration ? "✨ Yes" : "—"} />
@@ -551,34 +473,24 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
         </div>
       </div>
 
-      {/* ── Fullscreen Portrait ── */}
       {showFullscreen && portraitUrl && (
-        <FullscreenImageModal
-          src={portraitUrl}
-          alt={`${character.name} portrait`}
-          onClose={() => setShowFullscreen(false)}
-        />
+        <FullscreenImageModal src={portraitUrl} alt={`${character.name} portrait`} onClose={() => setShowFullscreen(false)} />
       )}
     </div>
   );
 }
 
-/* ── Helper components ──────────────────────────────────────── */
+/* ── Helpers ────────────────────────────────────────────────── */
 
 function SpeedTag({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="rounded-full bg-surface-800 px-2.5 py-0.5 text-[10px] font-medium text-surface-300 ring-1 ring-surface-700">
-      {label} {value}
-    </span>
-  );
+  return <span className="rounded-full bg-surface-800 px-2.5 py-0.5 text-[10px] font-medium text-surface-300 ring-1 ring-surface-700">{label} {value}</span>;
 }
 
-function CurrencyBadge({ label, value, color }: { label: string; value: number; color: string }) {
+function CurrencyTileDetail({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <span className="flex items-center gap-1">
-      <span className={color}>●</span>
-      <span className="text-surface-300">{value}</span>
-      <span className="text-surface-500">{label}</span>
-    </span>
+    <div className="rounded-lg border border-surface-700 bg-surface-800/80 p-2.5 text-center">
+      <p className={`text-sm font-bold ${color}`}>{value.toLocaleString()}</p>
+      <p className="text-[9px] text-surface-500">{label}</p>
+    </div>
   );
 }

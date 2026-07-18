@@ -74,17 +74,30 @@ export function AmbientSoundMixer() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-surface-700 bg-surface-850 overflow-hidden">
+    <div className="rounded-2xl border border-surface-700/50 bg-surface-850/80 backdrop-blur-sm overflow-hidden shadow-lg shadow-accent-500/5">
+      {/* ── Collapsible Header ── */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between px-3 py-2 text-sm text-surface-300 hover:text-surface-100 transition-colors"
+        className="group flex w-full items-center justify-between px-4 py-3 transition-all hover:bg-surface-800/50"
       >
-        <span>🎵 Ambient Sound</span>
-        <span className="text-surface-500 text-xs">{expanded ? "▲" : "▼"}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">🎵</span>
+          <span className="text-xs font-semibold text-surface-300 group-hover:text-surface-100 transition-colors">Ambient Sound</span>
+          {channels.some((c) => c.active) && (
+            <span className="flex items-center gap-1 rounded-full bg-accent-500/10 px-2 py-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-400 animate-pulse" />
+              <span className="text-[9px] font-medium text-accent-400">Live</span>
+            </span>
+          )}
+        </div>
+        <span className={`text-surface-500 text-xs transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}>
+          ▼
+        </span>
       </button>
 
+      {/* ── Expanded Controls ── */}
       {expanded && (
-        <div className="px-3 pb-3 space-y-3">
+        <div className="border-t border-surface-700/40 px-4 pb-4 pt-3 space-y-3">
           {channels.map((ch) => (
             <AmbientSoundChannel
               key={ch.id}
@@ -97,9 +110,9 @@ export function AmbientSoundMixer() {
             />
           ))}
 
-          <div className="flex gap-2 pt-1">
-            <Button size="xs" variant="ghost" onClick={stopAll} className="flex-1">
-              ⏹ Stop All
+          <div className="flex gap-2 pt-2">
+            <Button size="xs" variant="ghost" onClick={stopAll} className="flex-1 rounded-lg border border-surface-700/30 bg-surface-800/40 hover:bg-warrior-500/10 hover:text-warrior-400 hover:border-warrior-500/20 transition-all">
+              ⏹ Silence All
             </Button>
           </div>
         </div>
