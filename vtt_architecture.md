@@ -1,5 +1,5 @@
 # STᚱ VTT Architecture
-**Version:** 5.0.0 — Cycle 5 Complete
+**Version:** 6.0.0 — Cycle 6 Complete
 **Date:** 2026-07-18
 
 ## Overview
@@ -138,5 +138,76 @@ Loaded via `main.tsx` alongside `index.css`.
 - **CSS:** 59.43KB (10.26KB gzipped) — +230 lines premium.css
 - **JS:** 262.50KB (82.35KB gzipped)
 - **Monolith risk:** 0 files
+
+---
+
+## Cycle 6 — Global Compendium & Drag-and-Drop (Complete) (Updated: 2026-07-18 15:40)
+## Cycle 6 (2026-07-18): Global Compendium & Drag-and-Drop Complete
+
+## Cycle 6 — Global Compendium & Drag-and-Drop (Complete) (Updated: 2026-07-18)
+
+### Architecture
+- **Compendium Store**: Zustand persist (`str-vtt-compendium`) with items/spells/feats arrays, SRD seed data, searchQuery, activeTab, categoryFilter, schoolFilter, showSRD toggle, draggedItem state, CRUD actions
+- **SRD Seed Data**: 10 items, 8 spells, 5 feats (core D&D 5e SRD)
+- **GlobalCompendium**: Tabbed panel with search, category/school filters, SRD toggle, drag source
+- **CompendiumDrawer**: Slide-in right panel (w-96, glass-arcane, z-50) with toggle button in Header
+- **CompendiumDropTarget**: Wrapper with drag-over visual feedback, parses transfer JSON, typed callback
+
+### Drag-and-Drop Data Flow
+```
+CompendiumCard (dragStart) → dataTransfer JSON {type, id} → dropEffect:copy
+CompendiumDropTarget (dragOver) → ring highlight + overlay text
+CompendiumDropTarget (drop) → parse JSON → callback(characterId, entryId) → store mutation
+```
+
+### New Files (6 files, 0 TS errors)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `stores/compendiumStore.ts` | 232 | Zustand persist store (`str-vtt-compendium`): items, spells, feats with SRD seed data, search/filter state, drag state, CRUD actions |
+| `components/ui/GlobalCompendium.tsx` | 107 | Main compendium panel: tabbed (Items/Spells/Feats), search, category/school filters, SRD toggle, compact mode, drag source, result count |
+| `components/ui/CompendiumCard.tsx` | 145 | Renderer for all 3 entry types: item card (icon + rarity + attunement), spell card (school + level + components), feat card (benefits + prereqs). Drag source with data transfer. |
+| `components/ui/CompendiumSearchBar.tsx` | 38 | Input with search icon, clear button |
+| `components/layout/CompendiumDrawer.tsx` | 66 | Slide-in right panel (w-96) with glass-arcane styling, overlay dismiss, toggle button with pulse dot |
+| `components/player/CompendiumDropTarget.tsx` | 74 | Drag-and-drop zone wrapper with visual feedback (ring highlight, "Drop to add" overlay), parses JSON transfer data, invokes typed callbacks |
+
+### SRD Seed Data (3 categories)
+- **10 Items**: Potion of Healing, Ring of Protection, Cloak of Elvenkind, Bag of Holding, Sword of Vengeance, Wand of Magic Missiles, Plate Armor, Boots of Elvenkind, Bracers of Defense, Amulet of Health
+- **8 Spells**: Magic Missile, Shield, Fireball, Cure Wounds, Bless, Haste, Invisibility, Counterspell
+- **5 Feats**: Alert, Athlete, War Caster, Tough, Sharpshooter
+
+### Filter System
+| Tab | Filter | Options |
+|-----|--------|---------|
+| Items | Category | 12 options (weapon, armor, potion, scroll, wand, ring, wondrous, tool, ammunition, food, poison, other) |
+| Items | Rarity Color | Common→silver, Uncommon→green, Rare→blue, Very Rare→purple, Legendary→gold, Artifact→red |
+| Spells | School | 8 schools (Abjuration→blue, Evocation→red, etc.) |
+| Spells | Level badge | Cantrip / Level 1-9 |
+| All | SRD toggle | Checkbox to show/hide built-in SRD data |
+
+### Drag-and-Drop Architecture
+```
+CompendiumCard (drag source)
+  → onDragStart → sets draggedItem (store) + dataTransfer (JSON: {type, id})
+  → dropEffect: "copy"
+
+CompendiumDropTarget (drop zone wrapper)
+  → onDragOver → shows ring highlight + overlay text
+  → onDrop → parses JSON, calls typed callback (onDropItem/Spell/Feat)
+  → clears draggedItem from store
+```
+
+### Integration Points
+- **Header.tsx** → `CompendiumDrawer` toggle button added to right action area
+- **Player Cards** → `CompendiumDropTarget` wraps character card (callbacks for inventory/spells/feats)
+- **Sidebar** → Existing "/campaign/homebrew" route (new compendium is separate)
+
+### Build Metrics
+- Modules: 69 → 74 (+5)
+- Build: 1.40s
+- CSS: 61.60KB (10.61KB gzipped)
+- JS: 284.61KB (87.73KB gzipped)
+- TypeScript: 0 errors
+- Monolith risk: 0 files
 
 ---
