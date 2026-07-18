@@ -69,3 +69,32 @@ vtt/
 - Build: ~850ms
 - JS Bundle: ~440KB (121KB gzipped)
 - CSS: ~91KB (14KB gzipped)
+
+## Cycle 1 — Workspace Initialization & Robust Firebase Architecture (Updated: 2026-07-18 15:18)
+## Cycle 1 (2026-07-18): Complete
+
+### What was Built
+1. **vtt/ directory** — Full standalone React + TypeScript + Vite project with dedicated package.json
+2. **Firebase Layer** — Enterprise-grade `firebase.ts` with multi-tab persistence, emulator detection, and `firestore-service.ts` with 15+ CRUD functions across 13 normalized subcollections
+3. **Zustand Stores (4)** — `authStore` (persisted, role-based), `campaignStore` (persisted, normalized), `combatStore` (persisted, full combat engine), `uiStore` (runtime only)
+4. **UI Components (5)** — Button, Modal, LoadingSpinner, ToastContainer, EmptyState
+5. **Layout** — AppShell (Sidebar + Header) with glassmorphism styling
+6. **Pages (3)** — LoginPage (role-based DM/Player selection), DmDashboard (stats + activity), TheatricPage
+7. **TypeScript Definitions** — Complete data models for all 13+ entities (430+ lines)
+8. **Security Rules** — Enterprise firestore.rules with DM/player role enforcement, recursive wildcard subcollection support, catch-all deny
+9. **Testing** — 7 Playwright smoke tests (auth flow, routing error states)
+10. **Documentation** — `vtt_architecture.md` and `vtt_state_schema.md` fully populated
+
+### Build Metrics
+- Modules: 18 source + config
+- TypeScript: 0 errors
+- Build: ~850ms
+- JS Bundle: ~440KB
+
+### Key Architectural Decisions
+- Local-first with optional Firebase sync (not required)
+- Normalized Firestore (13 subcollections, no monolithic docs)
+- Multi-tab IndexedDB persistence for offline resilience
+- Permission model: DM writes all, players write only own character fields
+- No dice rollers (physical dice only — system law)
+---
