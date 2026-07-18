@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import RoleSelection from "@/components/auth/RoleSelection";
@@ -13,9 +13,11 @@ export default function LoginPage() {
   const role = useAuthStore((s) => s.role);
   const [step, setStep] = useState<LoginStep>("role");
 
-  if (authState === "authenticated" && role === "dm") {
-    navigate("/campaign/dashboard", { replace: true });
-  }
+  useEffect(() => {
+    if (authState === "authenticated" && role === "dm") {
+      navigate("/campaign/dashboard", { replace: true });
+    }
+  }, [authState, role, navigate]);
 
   return (
     <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4 relative overflow-hidden">

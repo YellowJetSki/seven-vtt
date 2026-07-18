@@ -246,3 +246,23 @@ body {
 .premium-btn:active {
   transform: translateY(0px);
 }
+
+/* ── Mobile Safe Area ────────────────────────────────── */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Mobile Responsive Tweaks ────────────────────────── */
+@media (max-width: 640px) {
+  .rune-divider {
+    font-size: 0.625rem;
+  }
+
+  .glass-arcane {
+    --glass-blur: 8px;
+  }
+
+  .premium-surface {
+    padding: 0.75rem;
+  }
+}

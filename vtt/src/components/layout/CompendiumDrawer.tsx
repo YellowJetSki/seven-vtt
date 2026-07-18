@@ -25,7 +25,7 @@ export default function CompendiumDrawer() {
 
       {/* Drawer Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-96 z-50 glass-arcane border-l border-accent-500/10 shadow-2xl shadow-accent-500/5 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-96 z-50 glass-arcane border-l border-accent-500/10 shadow-2xl shadow-accent-500/5 transform transition-transform duration-300 ease-in-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
