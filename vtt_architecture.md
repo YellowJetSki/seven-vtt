@@ -1438,3 +1438,40 @@ Lazy chunks:                    20 route/component splits
 ✅ Live URL: https://deepseek-dnd-336d0ow1g-mikejalow-4186s-projects.vercel.app
 
 ---
+
+## Sprint 10 (Cycle 1) — Feature Ideation: Arkla Obelisk Network (Updated: 2026-07-18 00:33)
+## Sprint 10 Cycle 1 — Feature Ideation & Architecture Expansion
+
+### Feature: The Arkla Obelisk Network
+
+A visual campaign-spanning meta-layer that tracks the 7 legendary obelisks. Each obelisk has its own state progression, corruption meter, lore fragments, and position on the Theatric View overlay.
+
+### New Files Created
+
+1. **`vtt/src/types/obelisks.ts`** (153 lines)
+   - `ObeliskId` — 7 typed identifiers (`obelisk_veritas` through `obelisk_aetheris`)
+   - `ObeliskState` — 6-state progression: undiscovered → discovered → attuned → corrupted → cleansed → shattered
+   - `ObeliskAffinity` — 8 magical school affinities with color mapping
+   - `LoreFragment` — Per-obelisk lore entries with state gating
+   - `ObeliskConnection` — Network graph edges with type (ley_line/narrative/corruption_path/resonance)
+   - `Obelisk` — Full data shape (position, corruption, charges, scale, active state)
+   - `ObeliskNetwork` — Root state container (obelisks, connections, global stats, overlay, zoom, selection)
+   - `createDefaultNetwork()` — Complete 7-obelisk topology with 10 connections and 9 lore fragments
+   - Helpers: `nextObeliskState()`, `getVisibleFragments()`, `calculateGlobalCorruption()`, `corruptionColor()`, `affinityColor()`
+
+2. **`vtt/src/stores/obeliskStore.ts`** (149 lines)
+   - Persisted Zustand store under key `str-vtt-obelisks`
+   - 20 actions: initNetwork, setNetwork, setObeliskState, discoverObelisk, advanceObeliskState, setCorruption, adjustCorruption, setLinkedMap, revealLoreFragment, setDmNotes, setMapPosition, toggleOverlay, setZoomLevel, selectObelisk, resetNetwork, addLoreFragment, setAttunementCharges, setActive, setScale
+   - 5 selector helpers: selectObelisk, selectObelisks, selectObelisksByState, selectVisibleConnections
+
+### Build Status
+- TypeScript: 0 errors
+- Modules: 208 (+2 from this cycle)
+- Both files under 150 lines (153 and 149)
+
+### Planned for Cycle 2
+- ObeliskNetworkGraph component (SVG interactive graph with connection lines and node markers)
+- ObeliskDetailPanel component (per-obelisk inspector with state controls, lore, corruption slider)
+- ObeliskSidebar component (collapsible overlay in Theatric View)
+
+---
