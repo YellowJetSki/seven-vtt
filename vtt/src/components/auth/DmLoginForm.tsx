@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { hasValidConfig, loginFirebaseDm as firebaseLogin } from "@/lib/firebase";
 import Button from "@/components/ui/Button";
 
 interface DmLoginFormProps {
@@ -13,8 +14,9 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isFirebaseAuth, setIsFirebaseAuth] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!username.trim() || !password.trim()) {
@@ -22,11 +24,26 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
       return;
     }
     const success = login(username, password);
-    if (success) {
-      navigate("/campaign/dashboard", { replace: true });
-    } else {
-      setError("Invalid credentials. Try MikeJello / Jello1");
+    if (!success) {
+      setError("Invalid credentials.");
+      return;
     }
+
+    // Attempt Firebase Auth (non-blocking — app works fully offline without it)
+    const fbEmail = import.meta.env.VITE_FIREBASE_AUTH_EMAIL;
+    const fbPassword = import.meta.env.VITE_FIREBASE_AUTH_PASSWORD;
+    if (hasValidConfig() && fbEmail && fbPassword) {
+      setIsFirebaseAuth(true);
+      try {
+        await firebaseLogin(fbEmail, fbPassword);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "unknown error";
+        console.warn("[Firebase] DM Auth sync failed (app continues in offline mode):", message);
+      }
+      setIsFirebaseAuth(false);
+    }
+
+    navigate("/campaign/dashboard", { replace: true });
   };
 
   return (

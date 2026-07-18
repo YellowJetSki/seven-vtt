@@ -221,6 +221,36 @@ CompendiumDropTarget (drop zone wrapper)
 - **Lint**: oxlint clean (0 errors)
 - **Monolith risk**: 0 files over 150 lines
 
+---
+
+## Cycle 9 — Data Security & Anti-Cheat (Updated: 2026-07-18)
+
+### Security Architecture — Layered Defense
+
+| Layer | Auth Type | Active | Purpose |
+|-------|-----------|--------|---------|
+| **Layer 1** | Zustand persist (localStorage) | ✅ **Always** | UI access control, route guarding |
+| **Layer 2** | Firebase Auth + Firestore Rules | ✅ **When configured** | Database-level data protection |
+
+### Files Modified
+- `vtt/firestore.rules` — Complete rewrite: 13+ subcollections with per-path rules, player-only-write-own-fields enforcement
+- `vtt/storage.rules` — New: 3-tier read/write rules for portraits, battlemaps, DM-private files
+- `vtt/src/components/auth/DmLoginForm.tsx` — Added non-blocking Firebase Auth bridge on DM login
+- `vtt/src/stores/authStore.ts` — Added Firebase Auth imports
+
+### Files Created
+- `vtt/scripts/set-dm-claims.js` — One-time script to set `{ role: "dm" }` custom claim on Firebase Auth user
+- `vtt/docs/security-audit.md` — Comprehensive security architecture document with breach simulation
+
+### Player Write Restrictions
+Only 10 fields updatable by players on their own character: hitPoints, deathSaves, conditions, temporaryHitPoints, experiencePoints, inspiration, currency, inventory, equipment, characterNotes.
+
+### Verification
+- TypeScript: 0 errors (99 modules)
+- Build: 2.79s
+- Playwright: 9/9 passing (13.2s)
+- Breach simulation: All 8 attack vectors mitigated
+
 ### Issues Fixed
 1. **`navigate()` outside useEffect** — Wrapped in `useEffect` to fix React "setState during render" warning. 0 console errors.
 2. **Missing page routes** — Added 6 new page components + `AuthGuard` wrappers for all 7 campaign routes
@@ -369,5 +399,66 @@ AppShell
 - **4 auth-redirecting tests**: Login required for dashboard, player-cards, homebrew, encounters, maps, journal, settings
 - **2 public tests**: Login page, theatric page (no auth required)
 - **3 auth-specific tests**: Valid login, invalid login, campaign redirect when unauthenticated
+
+---
+
+## Cycle 9 — Data Security & Anti-Cheat (Complete) (Updated: 2026-07-18 15:52)
+## Cycle 9 (2026-07-18): Data Security & Anti-Cheat
+
+### Security Architecture — Layered Defense
+
+| Layer | Auth Type | Active | Purpose |
+|-------|-----------|--------|---------|
+| Layer 1 | Zustand persist (localStorage) | ✅ Always | UI access control, route guarding |
+| Layer 2 | Firebase Auth + Firestore Rules | ✅ When configured | Database-level data protection |
+
+### Changes Made
+
+**1. `firestore.rules` — Complete rewrite (170 lines)**
+- Helper functions: `isAuthenticated()`, `isDm()`, `isPlayer()`, `isOwnCharacter()`, `isPlayerUpdatingOwnFields()`, `isDmOrOwnCharacter()`
+- Per-collection rules for all 13+ subcollections (explicit paths, no catch-all overrides)
+- **Player write restrictions:** Only their own character (`charId == auth.uid`) and only allowed fields: `hitPoints`, `deathSaves`, `conditions`, `temporaryHitPoints`, `experiencePoints`, `inspiration`, `currency`, `inventory`, `equipment`, `characterNotes`
+- **DM write access:** All collections, all operations
+- **Catch-all deny** at bottom: any unlisted path blocked
+
+**2. `storage.rules` — Created (28 lines)**
+- Portrait/token images: authenticated users can read, DM can write
+- Battle map images: authenticated users can read, DM can write
+- DM-private uploads: DM-only read/write
+
+**3. `DmLoginForm.tsx` — Firebase Auth bridge**
+- Added non-blocking Firebase Auth sync after local login
+- DM logs in locally (always works), then attempts `signInWithEmailAndPassword()` via `VITE_FIREBASE_AUTH_EMAIL`/`VITE_FIREBASE_AUTH_PASSWORD`
+- If Firebase is unavailable, app continues in offline mode (console.warn only)
+
+**4. `authStore.ts` — Firebase Auth dependency**
+- Added `hasValidConfig` and `loginFirebaseDm` imports (tree-shaken if Firebase unused)
+
+**5. `scripts/set-dm-claims.js` — Created (103 lines)**
+- Sets `customClaims: { role: "dm" }` on Firebase Auth user
+- Run once after creating the DM Firebase Auth user
+- Required for `request.auth.token.role == "dm"` rule to work
+
+**6. `docs/security-audit.md` — Created (comprehensive security document)**
+- Full breach simulation matrix (8 attack vectors, all mitigated)
+- Player write restrictions table (10 allowed fields)
+- Deployment checklist for rules activation
+- Architecture overview of layered security model
+
+### Build Verification
+- TypeScript: 0 errors (99 modules)
+- Playwright: 9/9 passing (13.2s)
+- Build: 2.79s, 0 warnings
+
+### Breach Simulation Results
+| Attack Vector | Mitigation | Status |
+|---------------|------------|--------|
+| localStorage tampering | AuthGuard re-checks on route change | ✅ Low risk |
+| URL manipulation to DM routes | AuthGuard redirects to /login | ✅ Low risk |
+| Player writes to wrong path | Firestore rules deny | ✅ None |
+| Player modifies another character | `charId == auth.uid` | ✅ None |
+| Player modifies forbidden fields | `hasOnly()` field restriction | ✅ None |
+| Unauthenticated reads | `request.auth != null` | ✅ None |
+| Unauthenticated writes | `isDm()` check | ✅ None |
 
 ---

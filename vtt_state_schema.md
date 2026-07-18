@@ -127,6 +127,45 @@ activeEncounter: {
   conditions: {weather, lighting, terrain} }
 ```
 
+## Firestore Security Rules
+
+### Access Matrix
+
+| Path | Read | Create | Update | Delete |
+|------|------|--------|--------|--------|
+| `campaigns/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/characters/{charId}` | Auth | DM | DM **or** Player-own | DM |
+| `campaigns/{id}/enemies/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/encounters/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/maps/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/maps/{id}/tokens/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/maps/{id}/{doc=**}` | Auth | DM | DM | DM |
+| `campaigns/{id}/journal/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/sessions/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/sessions/{id}/combatants/{id}` | Auth | DM | DM | DM |
+| `campaigns/{id}/sessions/{id}/{doc=**}` | Auth | DM | DM | DM |
+| `campaigns/{id}/combatLog/{id}` | Auth | DM (create) | DM | DM |
+| `campaigns/{id}/{doc=**}` (catch-all) | Auth | DM | DM | DM |
+| `homebrew/{id}/{doc=**}` | Auth | DM | DM | DM |
+| `liveSessions/{id}/{doc=**}` | Auth | DM | DM | DM |
+| `/**` (global catch-all) | Denied | Denied | Denied | Denied |
+
+### Player Write Restrictions
+Only 10 fields on own character document (`charId == auth.uid`):
+`hitPoints`, `deathSaves`, `conditions`, `temporaryHitPoints`,
+`experiencePoints`, `inspiration`, `currency`, `inventory`,
+`equipment`, `characterNotes`
+
+Enforced by `isPlayerUpdatingOwnFields()` using `hasOnly()` check.
+
+### Auth Flow
+```
+DM Login (Zustand) ──► App-level access granted (always)
+DM Login (Firebase) ──► signInWithEmailAndPassword() (non-blocking)
+                      └── custom claim { role: "dm" }
+                          └── Firestore rules allow writes
+```
+
 ## Zustand Store Keys (localStorage)
 
 | Key | Store | Content |

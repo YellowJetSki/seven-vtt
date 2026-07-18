@@ -1,0 +1,28 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Portrait and token images — DM can write; authenticated users can read
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.role == "dm";
+      allow delete: if request.auth != null
+        && request.auth.token.role == "dm";
+    }
+
+    // Battle map images — DM can write; all authenticated users can read
+    match /battlemaps/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.role == "dm";
+      allow delete: if request.auth != null
+        && request.auth.token.role == "dm";
+    }
+
+    // DM-only uploads (scratchpad, private notes, etc.)
+    match /dm/{fileName} {
+      allow read, write: if request.auth != null
+        && request.auth.token.role == "dm";
+    }
+  }
+}

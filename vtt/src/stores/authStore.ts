@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { hasValidConfig, loginFirebaseDm as firebaseLogin } from "@/lib/firebase";
 import type { AuthState, UserRole } from "@/types";
 
 const STORAGE_KEY = "str-vtt-auth";
