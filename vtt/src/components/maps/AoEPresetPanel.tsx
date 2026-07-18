@@ -2,12 +2,12 @@
  * Sidebar panel for the MapEditor that displays AOE spell
  * presets as a quick-access grid, plus a list of placed
  * templates with controls for removal and visibility.
+ * Styled with arcane glassmorphism and fantasy aesthetic.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
 import type { AoETemplate, AoE_Shape, AoE_Direction } from "@/types/aoe-templates";
 import { AOE_PRESETS } from "@/types/aoe-templates";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
 interface Props {
@@ -17,24 +17,56 @@ interface Props {
   onUpdateTemplate: (id: string, updates: Partial<AoETemplate>) => void;
 }
 
-/** Color-coded shape icon */
+/** Damage-type color mapping for element badges */
+const DAMAGE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  fire: { bg: "rgba(255,68,0,0.15)", text: "#ff6633", border: "rgba(255,68,0,0.3)" },
+  cold: { bg: "rgba(136,221,255,0.12)", text: "#88ddff", border: "rgba(136,221,255,0.25)" },
+  lightning: { bg: "rgba(255,221,0,0.12)", text: "#ffdd00", border: "rgba(255,221,0,0.25)" },
+  poison: { bg: "rgba(68,204,68,0.12)", text: "#44cc44", border: "rgba(68,204,68,0.25)" },
+  radiant: { bg: "rgba(238,238,255,0.1)", text: "#eeeeff", border: "rgba(238,238,255,0.2)" },
+  thunder: { bg: "rgba(170,136,255,0.12)", text: "#aa88ff", border: "rgba(170,136,255,0.25)" },
+};
+
+function getDamageColor(dt?: string) {
+  if (!dt) return { bg: "transparent", text: "#888", border: "transparent" };
+  return DAMAGE_COLORS[dt] ?? { bg: "rgba(255,255,255,0.05)", text: "#aaa", border: "rgba(255,255,255,0.1)" };
+}
+
+/** Shape icon with color variation */
 function ShapeIcon({ shape }: { shape: AoE_Shape }) {
   const icons: Record<AoE_Shape, string> = {
-    circle: "◎",
-    cone: "△",
-    line: "▬",
-    cube: "▣",
-    sphere: "◉",
+    circle: "◎", cone: "△", line: "▬", cube: "▣", sphere: "◉",
   };
   return <span className="text-sm">{icons[shape]}</span>;
 }
 
-/** Map shape to direction options */
-function getDirectionsForShape(shape: AoE_Shape): AoE_Direction[] {
-  if (shape === "circle" || shape === "sphere" || shape === "cube") {
-    return []; // omnidirectional — no direction needed
-  }
+/** Is this shape directional? */
+function isDirectional(shape: AoE_Shape): boolean {
+  return shape !== "circle" && shape !== "sphere" && shape !== "cube";
+}
+
+/** Get direction options for a shape */
+function getDirections(shape: AoE_Shape): AoE_Direction[] {
+  if (!isDirectional(shape)) return [];
   return ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"];
+}
+
+/** Arrow character for direction */
+function dirArrow(dir: AoE_Direction): string {
+  const arrows: Record<AoE_Direction, string> = {
+    north: "↑", south: "↓", east: "→", west: "←",
+    northeast: "↗", northwest: "↖", southeast: "↘", southwest: "↙",
+  };
+  return arrows[dir];
+}
+
+/** Damage type icon */
+function damageIcon(dt?: string): string {
+  const icons: Record<string, string> = {
+    fire: "🔥", cold: "❄️", lightning: "⚡", poison: "☠️",
+    radiant: "✨", thunder: "💥",
+  };
+  return dt ? (icons[dt] ?? "🎯") : "🎯";
 }
 
 export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onUpdateTemplate }: Props) {
@@ -42,7 +74,6 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const [previewDirection, setPreviewDirection] = useState<AoE_Direction>("east");
 
-  /** Filter presets by search term */
   const filteredPresets = useMemo(
     () => AOE_PRESETS.filter((p) =>
       p.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,21 +83,18 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
     [searchTerm],
   );
 
-  /** Place a template from a preset at the origin (0,0) — DM repositions by clicking the map */
   const handleSelectPreset = (presetId: string) => {
     const preset = AOE_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
 
-    const direction = getDirectionsForShape(preset.shape).length > 0
-      ? previewDirection
-      : ("east" as AoE_Direction);
+    const direction = isDirectional(preset.shape) ? previewDirection : ("east" as AoE_Direction);
 
     const template: AoETemplate = {
       id: `aoe_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       label: preset.label,
       shape: preset.shape,
       size: preset.size,
-      gridX: 3, // Default position — DM drags to correct spot
+      gridX: 3,
       gridY: 3,
       direction,
       color: preset.color,
@@ -83,28 +111,26 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
     setSelectedPresetId(presetId);
   };
 
-  /** Duplicate an existing template */
   const handleDuplicate = (tpl: AoETemplate) => {
-    const duplicate: AoETemplate = {
+    onAddTemplate({
       ...tpl,
       id: `aoe_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       label: `${tpl.label} (copy)`,
       gridX: tpl.gridX + 2,
       gridY: tpl.gridY + 2,
       createdAt: Date.now(),
-    };
-    onAddTemplate(duplicate);
+    });
   };
 
   const placedCount = templates.length;
 
   return (
-    <div className="rounded-xl border border-surface-700 bg-surface-850 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-surface-700 px-3 py-2">
+    <div className="aoe-preset-panel rounded-xl border border-surface-700/60 bg-surface-850/80 backdrop-blur-md overflow-hidden shadow-lg">
+      {/* Header with arcane styling */}
+      <div className="flex items-center justify-between border-b border-surface-700/50 px-3.5 py-2.5 bg-gradient-to-r from-accent-900/10 to-transparent">
         <div className="flex items-center gap-2">
-          <span className="text-sm">✦</span>
-          <span className="text-xs font-semibold text-surface-200">Spell Templates</span>
+          <span className="text-sm" style={{ filter: "drop-shadow(0 0 6px rgba(139,48,255,0.4))" }}>✦</span>
+          <span className="text-xs font-semibold text-surface-200 tracking-wide">Spell Templates</span>
         </div>
         {placedCount > 0 && (
           <Badge variant="accent" size="sm">{placedCount}</Badge>
@@ -112,39 +138,40 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 border-b border-surface-700">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search presets..."
-          className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-xs text-surface-100 placeholder:text-surface-500 focus:border-accent-500 focus:outline-none"
-        />
+      <div className="px-3.5 py-2.5 border-b border-surface-700/40">
+        <div className="relative">
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-surface-500 text-[10px]">🔍</span>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search presets..."
+            className="w-full rounded-lg border border-surface-700/50 bg-surface-800/60 pl-7 pr-2.5 py-1.5 text-xs text-surface-100 placeholder:text-surface-500/70 focus:border-accent-500/50 focus:outline-none focus:bg-surface-800/80 transition-all"
+          />
+        </div>
       </div>
 
-      {/* Direction selector (shown when a directional template is selected) */}
+      {/* Direction selector */}
       {selectedPresetId && (() => {
         const preset = AOE_PRESETS.find((p) => p.id === selectedPresetId);
-        if (!preset) return null;
-        const dirs = getDirectionsForShape(preset.shape);
-        if (dirs.length === 0) return null;
+        if (!preset || !isDirectional(preset.shape)) return null;
+        const dirs = getDirections(preset.shape);
 
         return (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-surface-700 bg-surface-800/50">
-            <span className="text-[9px] text-surface-500 shrink-0">Dir:</span>
+          <div className="flex items-center gap-1.5 px-3.5 py-2 border-b border-surface-700/30 bg-surface-800/40">
+            <span className="text-[9px] text-surface-500 uppercase tracking-wider shrink-0">Aim</span>
             <div className="flex flex-wrap gap-1">
               {dirs.map((dir) => (
                 <button
                   key={dir}
                   onClick={() => setPreviewDirection(dir)}
-                  className={`rounded px-1.5 py-0.5 text-[9px] font-medium transition-colors ${
+                  className={`rounded px-1.5 py-0.5 text-[9px] font-mono font-bold transition-all ${
                     previewDirection === dir
-                      ? "bg-accent-600 text-white"
-                      : "bg-surface-800 text-surface-400 hover:bg-surface-700"
+                      ? "bg-accent-600 text-white shadow-sm"
+                      : "bg-surface-800/60 text-surface-400 hover:bg-surface-700 hover:text-surface-300"
                   }`}
                 >
-                  {dir === "north" ? "↑" : dir === "south" ? "↓" : dir === "east" ? "→" : dir === "west" ? "←" :
-                   dir === "northeast" ? "↗" : dir === "northwest" ? "↖" : dir === "southeast" ? "↘" : "↙"}
+                  {dirArrow(dir)}
                 </button>
               ))}
             </div>
@@ -153,45 +180,68 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
       })()}
 
       {/* Preset grid */}
-      <div className="max-h-80 overflow-y-auto p-2 space-y-1">
+      <div className="max-h-72 overflow-y-auto p-2.5 space-y-1.5 scroll-smooth">
         {filteredPresets.length === 0 ? (
-          <p className="py-4 text-center text-[10px] text-surface-500">No presets match &ldquo;{searchTerm}&rdquo;</p>
+          <div className="py-6 text-center">
+            <p className="text-[10px] text-surface-500/80">No presets match &ldquo;{searchTerm}&rdquo;</p>
+          </div>
         ) : (
           filteredPresets.map((preset) => {
             const isSelected = selectedPresetId === preset.id;
             const isPlaced = templates.some((t) => t.label === preset.label);
+            const dc = getDamageColor(preset.damageType);
+
             return (
               <button
                 key={preset.id}
                 onClick={() => handleSelectPreset(preset.id)}
-                className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-all ${
+                className={`aoe-preset-card w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-all ${
                   isSelected
-                    ? "bg-accent-600/15 border border-accent-500/30"
-                    : "bg-surface-800/50 border border-transparent hover:bg-surface-800 hover:border-surface-600"
+                    ? "bg-accent-600/10 border-accent-500/30 shadow-sm"
+                    : "bg-surface-800/40 border-transparent hover:bg-surface-800/60"
                 }`}
+                style={{
+                  borderWidth: 1,
+                  borderColor: isSelected ? "rgba(139,48,255,0.3)" : "transparent",
+                }}
               >
+                {/* Shape icon container with element color */}
                 <div
-                  className="flex h-8 w-8 items-center justify-center rounded-md shrink-0"
-                  style={{ backgroundColor: `${preset.color}20` }}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0"
+                  style={{ backgroundColor: dc.bg || `${preset.color}15` }}
                 >
                   <ShapeIcon shape={preset.shape} />
                 </div>
+
+                {/* Info */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium text-surface-200 truncate">{preset.label}</span>
-                    {isPlaced && <span className="text-[8px] text-accent-400 shrink-0">✓</span>}
+                    <span className="text-xs font-semibold text-surface-200 truncate">{preset.label}</span>
+                    {isPlaced && (
+                      <span className="text-[8px] text-accent-400 shrink-0">✓</span>
+                    )}
                   </div>
-                  <p className="text-[9px] text-surface-500 truncate">{preset.description}</p>
+                  <p className="text-[9px] text-surface-500 mt-0.5 truncate leading-relaxed">{preset.description}</p>
                 </div>
-                <div className="flex flex-col items-end gap-0.5 shrink-0">
+
+                {/* Badge: size + damage */}
+                <div className="flex flex-col items-end gap-1 shrink-0">
                   <span
-                    className="text-[8px] font-mono font-medium rounded px-1"
-                    style={{ backgroundColor: `${preset.color}20`, color: preset.color }}
+                    className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded"
+                    style={{
+                      backgroundColor: `${preset.color}20`,
+                      color: preset.color,
+                    }}
                   >
                     {preset.size}ft
                   </span>
                   {preset.damageDice && (
-                    <span className="text-[8px] text-surface-500">{preset.damageDice}</span>
+                    <span
+                      className="text-[8px] font-mono px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: dc.bg, color: dc.text, border: `1px solid ${dc.border}` }}
+                    >
+                      {damageIcon(preset.damageType)} {preset.damageDice}
+                    </span>
                   )}
                 </div>
               </button>
@@ -200,53 +250,53 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
         )}
       </div>
 
-      {/* Placed templates list */}
+      {/* Placed templates */}
       {templates.length > 0 && (
-        <div className="border-t border-surface-700">
-          <div className="px-3 py-1.5 bg-surface-800/30">
-            <span className="text-[9px] font-medium text-surface-500 uppercase tracking-wider">
-              Placed Templates ({placedCount})
+        <div className="border-t border-surface-700/40">
+          <div className="px-3.5 py-1.5 bg-surface-800/40">
+            <span className="text-[9px] font-semibold text-surface-500 uppercase tracking-widest">
+              Placed ({placedCount})
             </span>
           </div>
           <div className="max-h-60 overflow-y-auto p-2 space-y-1">
             {templates.map((tpl) => (
               <div
                 key={tpl.id}
-                className="flex items-center gap-2 rounded-lg bg-surface-800/50 px-2.5 py-2 border border-transparent hover:border-surface-600 transition-all group"
+                className="group flex items-center gap-2.5 rounded-lg bg-surface-800/30 px-3 py-2 border border-transparent hover:border-surface-600/50 hover:bg-surface-800/50 transition-all"
               >
+                {/* Color dot */}
                 <div
-                  className="flex h-6 w-6 items-center justify-center rounded shrink-0"
-                  style={{ backgroundColor: `${tpl.color ?? "#aa66ff"}20` }}
-                >
-                  <span className="text-[10px]"><ShapeIcon shape={tpl.shape} /></span>
-                </div>
+                  className="h-2 w-2 rounded-full shrink-0 ring-1 ring-white/10"
+                  style={{ backgroundColor: tpl.color ?? "#aa66ff" }}
+                />
+
+                {/* Info */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-medium text-surface-200 truncate">{tpl.label}</span>
-                    <span className="text-[8px] text-surface-500">({tpl.gridX},{tpl.gridY})</span>
-                  </div>
                   <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-surface-200 truncate">{tpl.label}</span>
+                    <span className="text-[8px] text-surface-500 font-mono">({tpl.gridX},{tpl.gridY})</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[8px] text-surface-500">{tpl.size}ft {tpl.shape}</span>
                     {tpl.damageDice && (
                       <span className="text-[8px] text-surface-500">{tpl.damageDice}</span>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  {/* Visibility toggle */}
+
+                {/* Actions */}
+                <div className="flex items-center gap-0.5 opacity-30 group-hover:opacity-100 transition-all shrink-0">
                   <button
                     onClick={() => onUpdateTemplate(tpl.id, { visibleToPlayers: !tpl.visibleToPlayers })}
                     className={`rounded p-1 text-[10px] transition-colors ${
                       tpl.visibleToPlayers
                         ? "text-accent-400 hover:text-accent-300"
-                        : "text-surface-500 hover:text-surface-400"
+                        : "text-surface-500 hover:text-surface-300"
                     }`}
                     title={tpl.visibleToPlayers ? "Visible to players" : "DM-only"}
                   >
                     {tpl.visibleToPlayers ? "👁" : "🙈"}
                   </button>
-
-                  {/* Animation toggle */}
                   <button
                     onClick={() => {
                       const animOrder: AoETemplate["animation"][] = ["none", "pulse", "shimmer", "burn"];
@@ -254,22 +304,18 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
                       const next = animOrder[(idx + 1) % animOrder.length];
                       onUpdateTemplate(tpl.id, { animation: next });
                     }}
-                    className="rounded p-1 text-[10px] text-surface-500 hover:text-surface-400 transition-colors"
+                    className="rounded p-1 text-[10px] text-surface-500 hover:text-surface-300 transition-colors"
                     title={`Animation: ${tpl.animation ?? "none"}`}
                   >
                     {tpl.animation === "none" ? "◌" : tpl.animation === "pulse" ? "◉" : tpl.animation === "shimmer" ? "✨" : "🔥"}
                   </button>
-
-                  {/* Duplicate */}
                   <button
                     onClick={() => handleDuplicate(tpl)}
-                    className="rounded p-1 text-[10px] text-surface-500 hover:text-surface-400 transition-colors"
+                    className="rounded p-1 text-[10px] text-surface-500 hover:text-surface-300 transition-colors"
                     title="Duplicate"
                   >
                     📋
                   </button>
-
-                  {/* Delete */}
                   <button
                     onClick={() => onRemoveTemplate(tpl.id)}
                     className="rounded p-1 text-[10px] text-warrior-400 hover:text-warrior-300 transition-colors"
@@ -284,11 +330,13 @@ export function AoEPresetPanel({ templates, onAddTemplate, onRemoveTemplate, onU
         </div>
       )}
 
-      {/* Empty state */}
       {templates.length === 0 && (
-        <div className="px-3 py-6 text-center">
-          <p className="text-[10px] text-surface-500">Click a preset above to place a spell template on the map.</p>
-          <p className="mt-1 text-[8px] text-surface-600">Drag templates by clicking the map after placement.</p>
+        <div className="px-3.5 py-6 text-center">
+          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-surface-800/60 border border-surface-700/30">
+            <span className="text-sm opacity-50">✦</span>
+          </div>
+          <p className="text-[10px] text-surface-500/70">Click a preset to place a spell template.</p>
+          <p className="mt-0.5 text-[8px] text-surface-600/50">Position it on the map after placing.</p>
         </div>
       )}
     </div>
