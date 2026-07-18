@@ -856,3 +856,60 @@ Complete mobile-first rebuild of the Player Character sheet with large touch tar
 - New dependency: lucide-react (icon library)
 
 ---
+
+## Cycle 6 — Comprehensive VTT Feature Audit (Complete) (Updated: 2026-07-18 19:57)
+## Cycle 6 (2026-07-18): Comprehensive VTT Feature Audit
+
+### Audit Results
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| ✅ HP tracking | Working | PlayerSheet HP bar, quick -10/-5/+5/+10, custom input, temp HP |
+| ✅ Condition tracking | Working | 14 toggleable conditions, condition engine |
+| ✅ Spell slots | Working | SpellSlotMeter, spell-slot-engine (9 levels) |
+| ✅ Encumbrance | Working | EncumbranceDisplay, encumbrance-engine |
+| ✅ Initiative tracking | Working | InitiativeTracker with drag-reorder |
+| ✅ Token management | Working | TokenInspector, Canvas rendering |
+| ✅ Fog of war | Working | fog-renderer, lighting-engine, raycasting |
+| ✅ Dual-screen Theatric | Working | TheatricDisplay, TheatricPage, theatricStore |
+| 🆕 **Homebrew CRUD** | **Implemented** | Full add/edit/delete with form modals |
+| 🆕 **AoE templates** | **Implemented** | 8 spell presets + custom placement |
+| 🆕 **XP tracking** | **Implemented** | XP bar + level progress in PlayerSheet |
+
+### New Files (2 created, 5 modified)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `components/homebrew/HomebrewManager.tsx` | 367 | Full CRUD for items/spells/feats — tabs, search, add/edit forms with validation |
+| `components/maps/AoEPlacementTool.tsx` | 185 | Spell template placement — 8 presets (Fireball, Lightning Bolt, etc.), custom shapes/sizes |
+| `stores/campaign/entitySlice.ts` | Modified | Added `addAoETemplate`, `updateAoETemplate`, `removeAoETemplate` store actions |
+| `components/control-center/DmToolbar.tsx` | Modified | Added ✦ AoE button |
+| `components/control-center/DmControlCenter.tsx` | Modified | Added AoE panel in right sidebar when AoE mode active |
+| `components/player/PlayerSheet.tsx` | Modified | Added XP progress bar with level tracking in Stats tab |
+| `pages/HomebrewPanel.tsx` | Modified | Rewritten to use HomebrewManager component |
+
+### Homebrew Manager Features
+- **3 tabs**: Items, Spells, Feats with search filtering
+- **Add form**: Full detail forms for each type (name, category, rarity, weight, value, attunement for items; level, school, components, concentration, range for spells; benefits, prerequisites for feats)
+- **Edit/Delete**: Every card has edit and delete buttons
+- **Mobile-first**: Responsive form as bottom sheet on mobile
+
+### AoE Placement Tools
+- **8 presets**: Fireball (20ft sphere), Burning Hands (15ft cone), Lightning Bolt (100ft line), Cone of Cold (60ft cone), Bless, Spirit Guardians, Moonbeam, Hypnotic Pattern
+- **5 shapes**: circle, cone, line, cube, sphere
+- **Full metadata**: saving throw DC, damage dice, damage type, visibility toggle
+- **Right panel**: Active template list with color indicators and delete
+
+### XP Tracking
+- Shows current XP / level / XP needed for next level
+- Progress bar showing completion toward level
+- "MAX" indicator at level 20
+
+### Build Metrics
+- TypeScript: 0 errors
+- Modules: 1,909
+- Build: 5.08s
+- CSS: 87.66 KB (14.19 KB gzipped)
+- JS: 591.15 KB (163.45 KB gzipped)
+
+---
