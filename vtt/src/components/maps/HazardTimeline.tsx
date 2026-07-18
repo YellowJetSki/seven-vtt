@@ -1,12 +1,16 @@
 /* ── Hazard Timeline Panel ─────────────────────────────────────
  * Sidebar panel for MapEditor that lists all active HazardZones
  * with round countdowns, tick tracking, and quick controls.
- * Powered by HazardTimelineItem for each row.
+ * Fantasy-styled with school-color gradients, glassmorphism,
+ * staggered entry animations, and responsive layout.
  * ─────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from "react";
 import type { HazardZone, GroundEffect } from "@/types/hazard-zones";
 import { HazardTimelineItem } from "./HazardTimelineItem";
+import { HazardTimelineEmpty } from "./HazardTimelineEmpty";
+import { HazardTimelineFooter } from "./HazardTimelineFooter";
+import { GroundEffectsList } from "./GroundEffectsList";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 
@@ -37,117 +41,90 @@ export function HazardTimeline({
   const totalHazards = hazards.length;
   const totalGroundEffects = groundEffects.length;
   const hasActiveTicks = hazards.some((h) => h.tickDamage && (h.remainingRounds ?? 0) > 0);
+  const urgentCount = hazards.filter((h) => h.remainingRounds !== null && h.remainingRounds <= 2).length;
+  const concentrationCount = hazards.filter((h) => h.requiresConcentration).length;
 
   if (totalHazards === 0 && totalGroundEffects === 0) {
-    return (
-      <div className="rounded-xl border border-surface-700/60 bg-surface-850/80 backdrop-blur-md overflow-hidden shadow-lg">
-        <div className="flex items-center justify-between border-b border-surface-700/50 px-3.5 py-2.5 bg-gradient-to-r from-accent-900/10 to-transparent">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">⏳</span>
-            <span className="text-xs font-semibold text-surface-200 tracking-wide">Hazard Timeline</span>
-          </div>
-        </div>
-        <div className="px-3.5 py-6 text-center">
-          <div className="mx-auto mb-2 h-10 w-10 flex items-center justify-center rounded-full bg-surface-800/60 border border-surface-700/30">
-            <span className="text-sm opacity-50">⏳</span>
-          </div>
-          <p className="text-[10px] text-surface-500/70">No active hazards.</p>
-          <p className="mt-0.5 text-[8px] text-surface-600/50">Place spell templates to see them here.</p>
-        </div>
-      </div>
-    );
+    return <HazardTimelineEmpty />;
   }
 
   return (
-    <div className="rounded-xl border border-surface-700/60 bg-surface-850/80 backdrop-blur-md overflow-hidden shadow-lg">
+    <div className="rounded-xl border border-surface-700/60 bg-surface-850/80 backdrop-blur-md overflow-hidden shadow-lg card-glow">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-surface-700/50 px-3.5 py-2.5 bg-gradient-to-r from-accent-900/10 to-transparent">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">⏳</span>
-          <span className="text-xs font-semibold text-surface-200 tracking-wide">Hazards</span>
-          {totalHazards > 0 && <Badge variant="accent" size="sm">{totalHazards}</Badge>}
-          {totalGroundEffects > 0 && <Badge variant="ghost" size="sm">{totalGroundEffects} residue</Badge>}
+      <div className="flex items-center justify-between border-b border-surface-700/50 px-4 py-2.5 bg-gradient-to-r from-accent-900/10 to-transparent">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm shrink-0">⏳</span>
+          <span className="text-xs font-semibold text-surface-200 tracking-wide truncate">Hazards</span>
+          {totalHazards > 0 && <Badge variant="accent" size="sm" className="shrink-0">{totalHazards}</Badge>}
+          {urgentCount > 0 && (
+            <Badge size="sm"
+              className="shrink-0 bg-warrior-500/20 text-warrior-400 border border-warrior-500/30 animate-rune-glow"
+            >
+              {urgentCount}
+            </Badge>
+          )}
         </div>
-        <div className="flex items-center gap-1">
-          <Button size="xs" variant="ghost" onClick={() => setCompact(!compact)} title="Toggle compact">
-            {compact ? "⊞" : "⊟"}
-          </Button>
-        </div>
+        <Button size="xs" variant="ghost" onClick={() => setCompact(!compact)} title="Toggle compact view">
+          {compact ? "⊞" : "⊟"}
+        </Button>
       </div>
 
-      {/* Round indicator + controls */}
-      <div className="flex items-center justify-between px-3.5 py-2 border-b border-surface-700/30 bg-surface-800/40">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-surface-500 uppercase tracking-wider">Round</span>
-          <span className="text-sm font-bold font-mono text-accent-300">{currentRound}</span>
+      {/* Round indicator */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-700/30 bg-surface-800/40">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-surface-500 uppercase tracking-wider font-medium">Round</span>
+            <span className="text-base font-bold font-mono text-accent-300 tabular-nums">{currentRound}</span>
+          </div>
+          {totalHazards > 0 && (
+            <div className="hidden sm:flex items-center gap-1.5 text-[8px] text-surface-600">
+              <span>·</span>
+              <span>{concentrationCount} conc.</span>
+              <span>·</span>
+              <span>{totalGroundEffects} residue</span>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={onProcessTicks}
+        <div className="flex items-center gap-1.5">
+          <Button size="xs" variant="ghost" onClick={onProcessTicks}
             disabled={!hasActiveTicks}
-            title="Process damage ticks"
+            className={hasActiveTicks ? "text-accent-400 hover:text-accent-300" : ""}
           >
-            ⚡ Tick
+            <span className="mr-0.5">⚡</span> Tick
           </Button>
-          <Button size="xs" onClick={onAdvanceRound} title="Advance to next round">
-            ▶ Round
+          <Button size="xs" onClick={onAdvanceRound}
+            className="bg-accent-600/20 hover:bg-accent-600/40 text-accent-300 border border-accent-500/20"
+          >
+            <span className="mr-0.5">▶</span> Round
           </Button>
         </div>
       </div>
 
       {/* Hazard list */}
       {!compact && (
-        <div className="max-h-80 overflow-y-auto p-2 space-y-1.5 scroll-smooth">
-          {sortedHazards.map((hazard) => (
-            <HazardTimelineItem
-              key={hazard.id}
-              hazard={hazard}
-              currentRound={currentRound}
-              onExpire={onExpireHazard}
-              onExtend={onExtendHazard}
-              onToggleVisibility={onToggleHazardVisibility}
-              onSelect={setSelectedHazardId}
-              isSelected={selectedHazardId === hazard.id}
-            />
+        <div className="max-h-80 overflow-y-auto overscroll-contain p-2 space-y-1.5 scroll-smooth" role="list">
+          {sortedHazards.map((hazard, idx) => (
+            <div key={hazard.id}
+              style={{ animation: `scale-in 0.2s ease-out ${idx * 40}ms both` }}
+            >
+              <HazardTimelineItem
+                hazard={hazard} currentRound={currentRound}
+                onExpire={onExpireHazard} onExtend={onExtendHazard}
+                onToggleVisibility={onToggleHazardVisibility}
+                onSelect={setSelectedHazardId}
+                isSelected={selectedHazardId === hazard.id}
+              />
+            </div>
           ))}
         </div>
       )}
 
-      {/* Ground effects list */}
-      {groundEffects.length > 0 && !compact && (
-        <div className="border-t border-surface-700/40">
-          <div className="px-3.5 py-1.5 bg-surface-800/40">
-            <span className="text-[9px] font-semibold text-surface-500 uppercase tracking-widest">
-              Residual Effects ({groundEffects.length})
-            </span>
-          </div>
-          <div className="max-h-32 overflow-y-auto p-2 space-y-0.5">
-            {groundEffects.map((ge) => (
-              <div key={ge.id} className="flex items-center gap-2 rounded px-2 py-1 bg-surface-800/20">
-                <div
-                  className="h-1.5 w-1.5 rounded-full shrink-0"
-                  style={{ backgroundColor: ge.color }}
-                />
-                <span className="text-[9px] text-surface-400 truncate flex-1">{ge.label}</span>
-                <span className="text-[8px] font-mono text-surface-500">
-                  {ge.remainingRounds !== null ? `${ge.remainingRounds}r` : "∞"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Ground effects */}
+      {!compact && <GroundEffectsList effects={groundEffects} />}
 
-      {/* Summary footer */}
+      {/* Footer summary */}
       {!compact && totalHazards > 0 && (
-        <div className="border-t border-surface-700/40 px-3.5 py-1.5 bg-surface-800/30">
-          <div className="flex justify-between text-[8px] text-surface-600">
-            <span>Concentration: {hazards.filter((h) => h.requiresConcentration).length}</span>
-            <span>Altitude: GND {hazards.filter((h) => h.altitude === "ground").length}</span>
-          </div>
-        </div>
+        <HazardTimelineFooter hazards={hazards} concentrationCount={concentrationCount} urgentCount={urgentCount} />
       )}
     </div>
   );
