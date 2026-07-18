@@ -1656,3 +1656,50 @@ A visual campaign-spanning meta-layer that tracks the 7 legendary obelisks. Each
 ### Dev Server: Stopped ✅ (ports cleared)
 
 ---
+
+## Sprint 10 (Cycle 6) — The Mandatory Deployment Gatekeeper (Updated: 2026-07-18 00:47)
+## Sprint 10 Cycle 6 — The Mandatory Deployment Gatekeeper
+
+### Deployment Pipeline — EXECUTED SUCCESSFULLY
+
+#### Pre-Deployment Verification
+| Check | Status | Detail |
+|-------|--------|--------|
+| TypeScript | ✅ 0 errors | `npx -p typescript tsc --noEmit` |
+| Playwright Tests | ✅ 7/7 passing (6.5s) | Smoke tests: login, auth, routing, theatric |
+| Dev Server | ✅ Stopped | Ports cleared |
+
+#### Production Deployment
+- **Tool:** `execute_production_deployment`
+- **Git commit:** `80453fc — chore: Auto-Savepoint for Sprint 18`
+- **Vercel Build:** Complete
+- **Live URL:** https://vtt-seven.vercel.app
+
+#### Production Visual QA
+| Page | Status | Verified Elements |
+|------|--------|-------------------|
+| `/login` | ✅ | STᚱ VTT branding, fantasy glassmorphism card, role selection (DM + Player) |
+| Root mount | ✅ | `#root` renders with children, no hydration errors |
+
+#### Final Metrics
+| Metric | Value |
+|--------|-------|
+| Modules | ~208 |
+| TypeScript errors | 0 |
+| Playwright tests | 7/7 passing |
+| Build time | ~650ms |
+| JS Bundle | ~441KB (121KB gzipped) |
+| CSS Bundle | ~91KB (14KB gzipped) |
+| Deployment | Vercel (production) |
+| Console errors | 0 (production) |
+
+### Sprint 10 Complete — Final Structural Changes
+The obelisk network feature is fully deployed comprising:
+- **8 new React components** (ObeliskDetailPanel, ObeliskDetailStateSection, ObeliskDetailCorruption, ObeliskDetailLore, ObeliskDiscoveryBurst, graph-connection-paths, graph-helpers, LoreFragmentCard)
+- **1 new type module** (`types/obelisks.ts` with Obelisk, LoreFragment, ObeliskConnection, ObeliskNetwork interfaces)
+- **1 new store** integrated into campaignStore
+- **Animation system** in index.css (obelisk-pulse, ley-line, corruption sheen, discovery burst, rune glow)
+- **CSS utility classes** (obelisk-pulse, obelisk-ley-line, obelisk-corruption-sheen, obelisk-rune-glow, obelisk-discovery-burst, obelisk-map-marker-ping)
+- **Firestore rules** already covered by recursive wildcard `{document=**}`
+
+---
