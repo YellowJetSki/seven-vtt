@@ -1,70 +1,45 @@
 /* ── Death Save Tracker ─────────────────────────────────────────
  * Tracks death saving throws for downed player characters.
  * 3 successes = stabilized, 3 failures = dead.
- * Appears as a widget when a PC reaches 0 HP.
+ * Only rendered from PlayerCharacterSheet when HP ≤ 0.
  * ──────────────────────────────────────────────────────────────── */
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/Button";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { useCombatStore } from "@/stores/combatStore";
 import type { PlayerCharacter } from "@/types";
-
-interface DeathSaveState {
-  successes: number;
-  failures: number;
-  stabilized: boolean;
-  isDead: boolean;
-}
 
 export function DeathSaveTracker({ character }: { character: PlayerCharacter }) {
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
-  const activeEncounter = useCombatStore((s) => s.activeEncounter);
 
-  // Compute death save state from character data
-  const hp = character.hitPoints;
-  const isDown = hp.current <= 0;
-
-  const [saves, setSaves] = useState<DeathSaveState>(() => {
-    const stored = character.deathSaves;
-    return stored ?? { successes: 0, failures: 0, stabilized: false, isDead: false };
-  });
+  // Derive state directly from character data each render
+  const saves = character.deathSaves ?? { successes: 0, failures: 0, stabilized: false, isDead: false };
 
   const recordSave = useCallback((type: "success" | "failure") => {
-    setSaves((prev) => {
-      const next = { ...prev };
-      if (type === "success") {
-        next.successes = Math.min(3, prev.successes + 1);
-        if (next.successes >= 3) {
-          next.stabilized = true;
-        }
-      } else {
-        next.failures = Math.min(3, prev.failures + 1);
-        if (next.failures >= 3) {
-          next.isDead = true;
-        }
-      }
-      // Persist to campaign store
-      updateCharacter(character.id, { deathSaves: next });
-      return next;
-    });
+    // Read fresh from store to avoid stale closure
+    const char = (useCampaignStore.getState()).characters.find(c => c.id === character.id);
+    const prev = char?.deathSaves ?? { successes: 0, failures: 0, stabilized: false, isDead: false };
+    const next = { ...prev };
+    if (type === "success") {
+      next.successes = Math.min(3, prev.successes + 1);
+      if (next.successes >= 3) next.stabilized = true;
+    } else {
+      next.failures = Math.min(3, prev.failures + 1);
+      if (next.failures >= 3) next.isDead = true;
+    }
+    updateCharacter(character.id, { deathSaves: next });
   }, [character.id, updateCharacter]);
 
   const resetSaves = useCallback(() => {
-    const reset: DeathSaveState = { successes: 0, failures: 0, stabilized: false, isDead: false };
-    setSaves(reset);
+    const reset = { successes: 0, failures: 0, stabilized: false, isDead: false };
     updateCharacter(character.id, { deathSaves: reset });
   }, [character.id, updateCharacter]);
 
   const healToStable = useCallback(() => {
-    // Bring to 1 HP (unconscious -> stable + awake)
-    const currentHp = character.hitPoints.current;
-    if (currentHp <= 0) {
+    if (character.hitPoints.current <= 0) {
       updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current: 1 } });
     }
     resetSaves();
   }, [character, updateCharacter, resetSaves]);
-
-  if (!isDown && !saves.isDead) return null;
 
   return (
     <div className="rounded-xl border border-warrior-500/40 bg-warrior-500/10 p-4">

@@ -159,8 +159,8 @@ export function PlayerCharacterSheet({ character }: Props) {
         <p className="mt-2 text-center text-[9px] text-surface-500">50 Leptons = 1 Quadrans | 5 Quadrans = 1 Assarion</p>
       </section>
 
-      {/* Death Saves & Spellcasting */}
-      <DeathSaveTracker character={character} />
+      {/* Death Saves — only when downed (HP ≤ 0) */}
+      {character.hitPoints.current <= 0 && <DeathSaveTracker character={character} />}
       <SpellcastingSheet character={character} />
 
       {/* Backstory */}

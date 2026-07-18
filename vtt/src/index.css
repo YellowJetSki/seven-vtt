@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── STᚱ VTT Design Tokens (Sprint 10) ────────────────────── */
+/* ── STᚱ VTT Design Tokens ─────────────────────────────────── */
 @theme {
   --font-sans: "Inter", "SF Pro", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;

@@ -842,3 +842,60 @@ usePlayerFirebaseSync merge → PlayerDashboard re-render
 - `fd705ef` — pushed to main
 
 ---
+
+## Production Live Link (Updated: 2026-07-17 23:50)
+## Production Live Link
+- **Correct URL:** https://arkla.vercel.app
+- **Project (Vercel):** `deepseek-dnd-cli` → deployed via `npx vercel --prod`
+- **Build Hash (current):** `index-DCgCVpfu.js` (210 modules, 0 TS errors)
+- **Stale URL:** https://vtt-seven.vercel.app (different Vercel project `vtt`, not actively used)
+
+## Deployment Process
+- Local `.vercel/project.json` links to `deepseek-dnd-cli` project
+- `git push` to main does NOT trigger auto-deploy (Vercel integration may be disconnected)
+- **Manual deploy command:** `npx vercel --prod` from project root
+- This uploads source, builds on Vercel, and aliases to https://arkla.vercel.app
+
+## Sprint 10 Production Test Results (2026-07-17)
+All 3 bugs verified as FIXED on live production build:
+
+1. **Portrait URL Resolution** ✅ — `images/portraits/strider.png` loads correctly in card and modal. `<img>` shows `opacity-100` (loaded state), alt text present.
+2. **Initiative Formatting** ✅ — Character cards show `—` instead of `NaN` when initiative not set. Quick-Start encounter shows `0` for all combatants (no NaN crash).
+3. **Character Detail Modal** ✅ — Modal opens with correct portrait source, no broken images, close button present.
+
+### Full Regression: All pages pass
+- Login → Campaign Wizard (Arkla template) → Dashboard (4 PCs) → Player Cards (portraits load) → Encounters (Quick-Start works) → All 0 console errors
+---
+
+## Sprint 10 — Death Save Visibility Fix (Updated: 2026-07-17 23:54)
+## Sprint 10 — Death Save Visibility Fix (2026-07-17)
+
+### Change
+Death saves now only show when a PC drops to 0 HP or below.
+
+### Root Cause
+`DeathSaveTracker` was **unconditionally rendered** in `PlayerCharacterSheet.tsx` (line 163). It had an internal guard (`if (!isDown && !saves.isDead) return null`) but used `useState` with an initializer that captured `character.deathSaves` once on mount. This meant:
+- The component was always in the React tree (wasteful renders)
+- State could become stale if character data changed externally
+- Internal `useState` with closure-captured props caused stale-update bugs
+
+### Fix
+1. **PlayerCharacterSheet.tsx**: Changed from unconditional `<DeathSaveTracker character={character} />` to:
+   ```tsx
+   {character.hitPoints.current <= 0 && <DeathSaveTracker character={character} />}
+   ```
+   Component is only mounted when HP ≤ 0.
+
+2. **DeathSaveTracker.tsx**: 
+   - Removed `useState` — derives state directly from `character.deathSaves` each render
+   - Removed internal `return null` guard (no longer needed since parent controls visibility)
+   - `recordSave` now reads fresh state from `useCampaignStore.getState()` to avoid stale closures
+   - Removed unused `useCombatStore` import
+   - Reduced from ~120 lines → ~90 lines
+
+### Verification (production)
+- [x] All PCs at full HP (20/20, 19/19, etc.) — Death Save tracker is NOT rendered
+- [x] Character detail modal — No death save UI visible
+- [x] Build: 0 TS errors, 817ms build time
+- [x] Deployed to https://arkla.vercel.app
+---
