@@ -131,6 +131,7 @@ class DeepSeekAgent:
                 "8. THE ROLLBACK PROTOCOL: If you completely break the build during a sprint and exhaust your testing budget, you MUST use 'rollback_sprint' to instantly revert the damage. You must then write a system note detailing why it failed before proceeding.\n"
                 "9. PRODUCTION FIRST: While localhost is acceptable for immediate drafting, you must always prioritize testing and validating against the live link. Never assume a localhost fix translates to a working production build without verifying the live URL.\n"
                 "10. THE MANDATORY DEPLOYMENT PIPELINE: After completing the Dev and QA phases, you MUST execute the 'execute_production_deployment' tool. This safely locks the system, handles version control, waits for Vercel, and runs the final visual validation autonomously.\n"
+                "11. PRECISION UI TARGETING: When executing Visual QA, you MUST prioritize robust locators. You should actively add and use 'data-testid' attributes via 'click_test_id'. If using 'click_ui_element', target explicit interactive tags (e.g., 'button.submit-btn', 'a.nav-link'). NEVER use 'click_text' for generic phrases like \"sign in\" or \"submit\" as it frequently misclicks non-interactive text elements (like headers or paragraphs).\n"
                 f"{architecture_context}"
             )
             

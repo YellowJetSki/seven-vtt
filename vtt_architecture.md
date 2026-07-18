@@ -1867,3 +1867,75 @@ All created under `vtt/src/components/player/card/` (all <150 lines):
 - TypeScript: 0 errors
 
 ---
+
+## Sprint 12 — Premium VTT Overhaul (Complete) (Updated: 2026-07-18 08:57)
+## Sprint 12 — Complete Premium VTT Overhaul
+
+### What was Accomplished
+
+1. **Canvas-based Battle Map Engine** (`vtt/src/lib/canvas/MapCanvasEngine.ts`)
+   - Pure HTML5 Canvas renderer replacing the old DOM+SVG system
+   - Renders: map background, grid lines (major/minor), tokens with HP bars, fog of war, movement range, AOE templates, drawings
+   - Pan/zoom with mouse wheel and drag
+   - Hit-testing for token selection and grid coordinate conversion
+   - HP bar with color-coded health (green/orange/red)
+   - Token image rendering with circular clip
+   - Status marker dots
+   - Selection ring animation
+
+2. **CanvasMapView React Wrapper** (`vtt/src/components/maps/CanvasMapView.tsx`)
+   - Bridges React props to imperative Canvas engine
+   - Handles mouse/touch interactions (click, drag, wheel)
+   - Exposes imperative API via forwardRef
+   - Zoom controls overlay (glassmorphic buttons)
+   - Responsive sizing with aspect ratio
+
+3. **Premium Character Card** (`vtt/src/components/player/card/CharacterCardPremium.tsx`)
+   - Foundry-level information density
+   - Portrait with level badge overlay
+   - Combat roundel (AC, Init, PB, Speed)
+   - HP bar with gradient coloring and temp HP
+   - Full ability score grid with save proficiency dots
+   - Saving throws + top 6 skills with proficiency indicators
+   - Passive Perception/Investigation/Insight
+   - Weapon attacks (top 2)
+   - Spellcasting summary (ability, DC, attack, slot gauges)
+   - Class resources with recharge badges
+   - Equipment quick-glance + GP total
+   - XP progress bar with D&D 5e thresholds
+   - Conditions and death saves
+   - Hover action overlay
+   - Compact mode for player dashboard
+
+4. **Premium Design System** (`vtt/src/styles/premium.css`)
+   - 15+ new CSS keyframe animations (arcane-glow, shimmer-sweep, float-drift, etc.)
+   - Utility classes: .premium-card, .premium-stat, .premium-btn, .premium-modal
+   - Arcane glow effects with drop-shadow
+   - Glassmorphic card with inner border glow
+   - Premium scrollbar with gradient thumb
+   - Rune divider, particle effects, scan-line CRT overlay
+   - Animated gradient text
+   - Cell highlight/movement range styles
+
+5. **Refactored CharacterDetailModal** into modular components:
+   - `CharacterDetailTabBar.tsx` — Tab navigation
+   - `CharacterDetailCombatTab.tsx` — Combat stats, saves, weapons, spells
+   - `CharacterDetailAbilitiesTab.tsx` — Ability scores, skills, proficiencies
+
+6. **Component Refactoring (new):**
+   - `LoginAmbientBackground.tsx` — Animated login background
+
+7. **Bug Fixes:**
+   - Added missing `getAbilityMod()` and `formatInitiative()` exports to types/index.ts
+   - Firebase auth: Added fail-fast when config invalid, 5-second timeout to prevent hanging
+   - Added `hasValidConfig()` check in `loginFirebaseDm()`
+
+### Build Metrics
+- **Modules:** 239 (up from 208)
+- **Build time:** ~794ms
+- **JS Bundle:** ~483KB (130KB gzipped)
+- **CSS Bundle:** ~131KB (19KB gzipped)
+- **TypeScript errors:** 0
+- **Production:** Deployed to https://arkla.vercel.app
+
+---
