@@ -98,10 +98,17 @@ export async function loginFirebaseDm(): Promise<boolean> {
     );
     return false;
   }
+  // Quick check: if config is invalid, don't hang
+  if (!hasValidConfig()) return false;
   try {
     // Sign out first to ensure a clean session
     await firebaseSignOut(_auth).catch(() => {});
-    await signInWithEmailAndPassword(_auth, FIREBASE_AUTH_EMAIL, FIREBASE_AUTH_PASSWORD);
+    // Use a timeout to prevent hanging
+    const signInPromise = signInWithEmailAndPassword(_auth, FIREBASE_AUTH_EMAIL, FIREBASE_AUTH_PASSWORD);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Firebase Auth timeout")), 5000)
+    );
+    await Promise.race([signInPromise, timeoutPromise]);
     return true;
   } catch (err) {
     console.error("[Firebase Auth] DM sign-in failed:", err);
