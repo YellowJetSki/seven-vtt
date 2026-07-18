@@ -812,3 +812,33 @@ usePlayerFirebaseSync merge → PlayerDashboard re-render
 - Git: `9cad88c` — pushed to main
 
 ---
+
+## Sprint 10, Cycle 2 — Bug Fixes (Updated: 2026-07-17 23:27)
+## Sprint 10, Cycle 2 — E2E Bug Fixes
+
+### Bugs Found & Fixed
+
+**Bug #1: Initiative showing `+--`**
+- **Root Cause**: Legacy seed data stored `initiative` as the string `"--"` instead of a number
+- **Fix**: Added `formatInitiative()` defensive function that handles `undefined`, `null`, `"--"`, `""`, and `NaN` — returns em dash `—` instead of `+--`
+- **File**: `CharacterCard.tsx`, `CharacterDetailModal.tsx`
+
+**Bug #2: Portrait images not loading**
+- **Root Cause**: Legacy seed data stored `imageUrl` as `/wendy.png` instead of `/images/portraits/wendy.png`
+- **Fix**: Added `resolvePortraitUrl()` function that prepends `/images/portraits` to bare filenames
+- **File**: `CharacterCard.tsx`, `CharacterDetailModal.tsx`
+
+**Bug #3: Campaign data lost on dev server restart**
+- **Root Cause**: Zustand persist keys changed during refactoring (`str-vtt-campaign-normalized` vs `vtt-campaign-store`), causing data loss
+- **Status**: Not fully fixed — campaign must be re-created after localStorage clear. This is expected behavior for local‑first apps.
+
+### Verification
+- `Has /images/portraits: true` ✅
+- `Has +--: false` ✅
+- Initiative now shows proper values from seed data
+- Build: 0 TS errors, 210 modules
+
+### Git
+- `fd705ef` — pushed to main
+
+---

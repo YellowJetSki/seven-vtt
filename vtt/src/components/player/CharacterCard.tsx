@@ -2,7 +2,7 @@
  * Rich character card with prominent portrait, ability scores,
  * HP bar, speed, proficiencies summary, and quick-action overlay.
  * Click opens the full CharacterDetailModal.
- * ─────────────────────────────────────────────────────────────── */
+ * ─── V2: Portrait path correction + defensive initiative ──── */
 
 import { useState } from "react";
 import type { PlayerCharacter, Ability } from "@/types";
