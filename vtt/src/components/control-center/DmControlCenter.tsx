@@ -26,7 +26,8 @@ import MapSidebar from "./MapSidebar";
 import TokenInspector from "./TokenInspector";
 import InitiativeTracker from "./InitiativeTracker";
 import EncounterPanel from "./EncounterPanel";
-import type { BattleMap, MapToken, LightSource } from "@/types";
+import AoEPlacementTool from "@/components/maps/AoEPlacementTool";
+import type { BattleMap, MapToken, LightSource, AoETemplate } from "@/types";
 
 export default function DmControlCenter() {
   const battleMaps = useCampaignStore((s) => s.battleMaps);
@@ -140,6 +141,11 @@ export default function DmControlCenter() {
     // Could highlight the corresponding map token
   }, []);
 
+  const handleAoEPlace = useCallback((template: AoETemplate) => {
+    if (!activeMap) return;
+    useCampaignStore.getState().addAoETemplate(activeMap.id, template);
+  }, [activeMap]);
+
   const handleCloseInspector = useCallback(() => {
     setSelectedTokenId(null);
     setSelectedToken(null);
@@ -247,6 +253,13 @@ export default function DmControlCenter() {
             onSelectCombatant={handleSelectCombatant}
             selectedCombatantId={selectedCombatantId}
           />
+        </div>
+      )}
+
+      {!selectedToken && placementMode === "aoe" && activeMap && (
+        <div className="w-72 shrink-0 border-l border-surface-700/20 bg-surface-900/50 flex flex-col p-3 overflow-y-auto">
+          <h3 className="text-xs font-bold text-gradient-arcane mb-3">Spell Templates</h3>
+          <AoEPlacementTool mapId={activeMap.id} onPlace={handleAoEPlace} />
         </div>
       )}
 

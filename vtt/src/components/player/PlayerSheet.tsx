@@ -642,6 +642,34 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
               {c.inspiration ? "✦ Inspiration (Active)" : "✦ No Inspiration"}
             </button>
 
+            {/* Experience Points & Level */}
+            <div className="rounded-xl bg-surface-800/30 border border-surface-700/20 p-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] uppercase tracking-widest font-black text-surface-400">
+                  Experience Points
+                </span>
+                <span className="text-xs font-mono font-bold text-surface-200 tabular-nums">
+                  {c.experiencePoints.toLocaleString()} XP
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-surface-500">
+                  Level {c.level} · Next level: {(c.level * 1000).toLocaleString()} XP needed
+                </span>
+                <span className="text-[10px] text-surface-500">
+                  {c.level < 20 ? "▲ " + ((c.level * 1000) - c.experiencePoints).toLocaleString() + " to go" : "✦ MAX"}
+                </span>
+              </div>
+              <div className="h-1.5 bg-surface-700/60 rounded-full overflow-hidden mt-2">
+                <div
+                  className="h-full bg-accent-500 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${c.level < 20 ? Math.min(100, (c.experiencePoints / (c.level * 1000)) * 100) : 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+
             {renderAbilities()}
 
             {/* Saving Throws */}

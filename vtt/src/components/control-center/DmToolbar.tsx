@@ -129,6 +129,14 @@ export default function DmToolbar({
           💡 Light
         </button>
 
+        <button
+          onClick={() => onSetPlacementMode(isActive("aoe") ? "none" : "aoe")}
+          className={toolBtnClass("aoe")}
+          title="Place spell area-of-effect template"
+        >
+          ✦ AoE
+        </button>
+
         <div className="h-5 w-px bg-surface-600/20 mx-0.5" />
 
         {/* Recenter */}

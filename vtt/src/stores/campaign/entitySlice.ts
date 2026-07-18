@@ -1,4 +1,4 @@
-import type { EnemyDoc, Encounter, BattleMap, MapToken, JournalEntry } from "@/types";
+import type { EnemyDoc, Encounter, BattleMap, MapToken, JournalEntry, AoETemplate } from "@/types";
 
 export interface CampaignEntityState {
   enemies: EnemyDoc[];
@@ -15,6 +15,9 @@ export interface CampaignEntityActions {
   setBattleMaps: (maps: BattleMap[]) => void;
   addBattleMap: (map: BattleMap) => void;
   removeBattleMap: (mapId: string) => void;
+  addAoETemplate: (mapId: string, template: AoETemplate) => void;
+  updateAoETemplate: (mapId: string, templateId: string, updates: Partial<AoETemplate>) => void;
+  removeAoETemplate: (mapId: string, templateId: string) => void;
   setMapTokens: (mapId: string, tokens: MapToken[]) => void;
   addMapToken: (mapId: string, token: MapToken) => void;
   updateMapToken: (mapId: string, tokenId: string, updates: Partial<MapToken>) => void;
@@ -44,6 +47,38 @@ export function createEntitySlice(set: SetPartial, get?: GetState): CampaignEnti
 
     setEnemies: (enemies) => set({ enemies }),
     setEncounters: (encounters) => set({ encounters }),
+
+    addAoETemplate: (mapId, template) => {
+      set({
+        battleMaps: g().battleMaps.map((m) =>
+          m.id === mapId
+            ? { ...m, aoeTemplates: [...(m.aoeTemplates || []), template] }
+            : m
+        ),
+      });
+    },
+
+    updateAoETemplate: (mapId, templateId, updates) => {
+      set({
+        battleMaps: g().battleMaps.map((m) =>
+          m.id === mapId
+            ? { ...m, aoeTemplates: (m.aoeTemplates || []).map((t) => (t.id === templateId ? { ...t, ...updates } : t)) }
+            : m
+        ),
+      });
+    },
+
+    removeAoETemplate: (mapId, templateId) => {
+      set({
+        battleMaps: g().battleMaps.map((m) =>
+          m.id === mapId
+            ? { ...m, aoeTemplates: (m.aoeTemplates || []).filter((t) => t.id !== templateId) }
+            : m
+        ),
+      });
+    },
+
+
 
     addEncounter: (encounter) =>
       set({ encounters: [...g().encounters, encounter] }),
