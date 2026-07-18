@@ -288,6 +288,7 @@ class DeepSeekAgent:
             
             base_prompt = cleaned_input
             final_content = ""
+            total_sprint_content = ""
             usage_data = None
             
             for run_idx in range(1, target_runs + 1):
@@ -309,11 +310,14 @@ class DeepSeekAgent:
                 for chunk in response_generator:
                     if chunk["type"] == "done":
                         final_content = chunk["content"]
+                        total_sprint_content += final_content + f"\n\n**--- END OF SPRINT {run_idx} ---**\n\n"
                         usage_data = chunk["usage"]
+                    elif chunk["type"] == "chunk":
+                        yield {"type": "chunk", "content": total_sprint_content + chunk["content"]}
                     else:
                         yield chunk
             
-            yield {"type": "done", "usage": usage_data, "content": final_content}
+            yield {"type": "done", "usage": usage_data, "content": total_sprint_content}
             return
 
         self.messages.append({"role": "user", "content": user_input})
