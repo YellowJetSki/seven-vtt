@@ -735,3 +735,71 @@ Theatric Tab (slave):
 - JS: 492.17 KB (140.51 KB gzipped)
 
 ---
+
+## Cycle 4 — DM Behind-the-Scenes Control Center (Complete) (Updated: 2026-07-18 19:50)
+## Cycle 4 (2026-07-18): DM Behind-the-Scenes Control Center
+
+### Architecture
+Built a complete DM control center for battle map management with secret initiative tracking, token manipulation, and health/condition management. All changes instantly reflect on the Theatric Display via shared Zustand stores.
+
+### New Files (6 created, 1 modified)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `components/control-center/DmControlCenter.tsx` | 186 | Master orchestrator: left sidebar (MapSidebar) → center canvas + DmToolbar → right panel (TokenInspector/InitiativeTracker/EncounterPanel). Manages active map, selected token, toolbar modes |
+| `components/control-center/DmToolbar.tsx` | 118 | DM toolbar with grid toggle, fog of war, DM vision override, PC/Enemy token placement, light placement, recenter. Integrated LaunchTheatricButton |
+| `components/control-center/TokenInspector.tsx` | 227 | Right-side token editor: label, position (x/y grid), HP (current/max + quick damage buttons: -1/-5/-10/+1/+5/+10), visibility toggle, 12-color preset picker, HP bar visualization |
+| `components/control-center/InitiativeTracker.tsx` | 195 | Initiative order panel with drag-and-drop reordering, inline HP input (-dmg / +heal), status effect quick-add, death toggle (💀), per-combatant status dots, turn indicator |
+| `components/control-center/MapSidebar.tsx` | 101 | Map list sidebar with active highlight, token count, miniature thumbnail, delete button |
+| `components/control-center/EncounterPanel.tsx` | 142 | Encounter loader: select saved encounter → populate map with enemy tokens, auto-create combat encounter in combatStore |
+| `pages/BattleMaps.tsx` | 54 | Rewritten: shows DM Control Center when maps exist, else shows EmptyState |
+
+### DM Control Center Layout
+```
+┌─────────────┬────────────────────────────────────────┬──────────────┐
+│ Map Sidebar │  DmToolbar (grid/fog/DM vision/tools) │              │
+│ (w-56)      │                                        │ TokenInspector│
+│             │  Canvas (CanvasMapView)                 │ or           │
+│ Map list    │                                        │ InitiativeTracker
+│ Active hl   │  Floating buttons: Encounters / Init    │ or           │
+│             │                                        │ EncounterPanel│
+└─────────────┴────────────────────────────────────────┴──────────────┘
+```
+
+### DM Secret Management Features
+| Feature | Location | Implementation |
+|---------|----------|----------------|
+| Initiative order | Right panel | Drag-reorder, round counter, turn indicator |
+| HP tracking | Inspector + Tracker | Quick damage buttons (-1/-5/-10/+1/+5/+10), inline input |
+| Status conditions | Tracker | Quick-add "+effect" input, click-to-remove badges |
+| Token position | Inspector | X/Y grid coordinate editing |
+| Token visibility | Inspector | Toggle switch (visible to players / DM-only) |
+| Token color | Inspector | 12-color preset picker |
+| Token deletion | Inspector | Delete button with confirmation |
+| PC/Enemy creation | Toolbar | Auto-place at center of active map |
+| Encounter population | Right panel | Select encounter → auto-place tokens + create combat |
+| Fog of war | Toolbar | Toggle visibility |
+| DM vision override | Toolbar | Toggle DM-only full vision |
+| Grid toggle | Toolbar | Show/hide grid |
+
+### Data Flow
+```
+DM Control Center
+  ├── MapSidebar.setActiveMap → DmControlCenter.setActiveMapId
+  │     → updates activeMap, activeTokens → CanvasMapView re-renders
+  ├── TokenInspector.save → updateMapToken(mapId, tokenId, updates)
+  │     → campaignStore updates → canvas + TheatricDisplay re-render
+  ├── InitiativeTracker.damageCombatant → combatStore
+  │     → campaignStore token HP sync (future)
+  └── EncounterPanel.populateMap → addMapToken + createEncounter + addCombatant
+        → canvas re-renders with tokens + initiative tracker populated
+```
+
+### Build Metrics
+- TypeScript: 0 errors
+- Modules: 145 (↑ from 105)
+- Build: 3.10s
+- CSS: 82.72 KB (13.48 KB gzipped)
+- JS: 534.24 KB (151.41 KB gzipped)
+
+---
