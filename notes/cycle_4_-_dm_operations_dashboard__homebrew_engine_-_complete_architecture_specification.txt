@@ -1,0 +1,314 @@
+# Subject: CYCLE 4 - DM Operations Dashboard & Homebrew Engine - Complete Architecture Specification
+System Log Initialized: 2026-07-18 11:53:13
+
+# CYCLE 4 — COMPLETE ARCHITECTURE SPECIFICATION
+
+## 1. EXTENDED HOMEBREW TYPES
+### Append to `vtt/src/types/homebrew.ts` (after line 155)
+
+```typescript
+/* ══════════════════════════════════════════════════════════════
+   CYCLE 4 — SPECIES, CLASS, SUBCLASS & CURRENCY TYPES
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Homebrew Species ───────────────────────────────────────── */
+
+export interface HomebrewSpecies {
+  id: string;
+  name: string;                     // e.g. "Aarakocra", "Dragonborn"
+  description: string;              // Full racial description
+  flavorText?: string;              // RP fluff
+  abilityScoreBonuses: {            // e.g. { strength: 2, charisma: 1 }
+    strength?: number;
+    dexterity?: number;
+    constitution?: number;
+    intelligence?: number;
+    wisdom?: number;
+    charisma?: number;
+  };
+  size: "tiny" | "small" | "medium" | "large";
+  speed: number;                    // base walking speed in feet
+  speedTypes?: {                    // alternative movement types
+    fly?: number;
+    swim?: number;
+    climb?: number;
+    burrow?: number;
+  };
+  darkvision?: number;              // feet, if applicable
+  racialTraits: {
+    name: string;
+    description: string;
+    mechanical: string;             // exact game effect
+  }[];
+  languages: string[];              // e.g. ["Common", "Draconic"]
+  age?: string;                     // narrative description
+  alignment?: string;               // typical alignment tendencies
+  tags: string[];
+  source: string;                   // e.g. "Player's Handbook", "Homebrew"
+  isHomebrew: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/* ── Homebrew Class ─────────────────────────────────────────── */
+
+export interface HomebrewClass {
+  id: string;
+  name: string;                     // e.g. "Blood Hunter"
+  description: string;
+  flavorText?: string;
+  hitDice: string;                  // e.g. "d10"
+  primaryAbility: string;           // e.g. "Strength", "Dexterity"
+  savingThrows: string[];           // e.g. ["Strength", "Constitution"]
+  armorProficiencies: string[];
+  weaponProficiencies: string[];
+  toolProficiencies: string[];
+  skillChoices: number;             // how many skills to choose
+  availableSkills: string[];        // list of eligible skills
+  spellcastingAbility?: string;     // e.g. "Intelligence" — null if non-spellcaster
+  subclassLabel: string;            // e.g. "Martial Archetype", "College"
+  classFeatures: {
+    level: number;
+    name: string;
+    description: string;
+    mechanical: string;
+  }[];
+  multiclassRequirements?: {
+    ability: string;
+    minimum: number;
+  };
+  source: string;
+  isHomebrew: boolean;
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+/* ── Homebrew Subclass ──────────────────────────────────────── */
+
+export interface HomebrewSubclass {
+  id: string;
+  name: string;                     // e.g. "Path of the Giant"
+  className: string;                // parent class e.g. "Barbarian"
+  description: string;
+  flavorText?: string;
+  spellcastingAbility?: string;     // if subclass grants spellcasting
+  subclassFeatures: {
+    level: number;
+    name: string;
+    description: string;
+    mechanical: string;
+  }[];
+  bonusSpells?: {                   // if subclass grants extra known spells
+    level: number;
+    spellName: string;
+  }[];
+  source: string;
+  isHomebrew: boolean;
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+/* ── Homebrew Currency ──────────────────────────────────────── */
+
+export interface HomebrewCurrency {
+  id: string;
+  name: string;                     // e.g. "Platinum Piece", "Gold Piece"
+  pluralName: string;               // e.g. "Platinum Pieces"
+  abbreviation: string;             // e.g. "PP", "GP"
+  symbol: string;                   // e.g. "₽", "Ⓖ" — emoji or unicode
+  conversionToGold: number;         // 1 unit = X gold (e.g. 10 for PP, 0.01 for CP)
+  color: string;                    // Tailwind color class for display
+  description?: string;
+  sortOrder: number;                // for display ordering
+  source: string;
+  isHomebrew: boolean;
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+/* ── Extended Library ───────────────────────────────────────── */
+// Extend the existing HomebrewLibrary interface
+export interface HomebrewLibraryExtended {
+  species: HomebrewSpecies[];
+  classes: HomebrewClass[];
+  subclasses: HomebrewSubclass[];
+  currencies: HomebrewCurrency[];
+}
+```
+
+## 2. UPDATED HOMEBREW STORE
+### Modifications to `vtt/src/stores/homebrewStore.ts`
+
+Add to the HomebrewState interface:
+```typescript
+  // ── Species ──
+  species: HomebrewSpecies[];
+  addSpecies: (species: HomebrewSpecies) => void;
+  updateSpecies: (id: string, updates: Partial<HomebrewSpecies>) => void;
+  removeSpecies: (id: string) => void;
+  setSpecies: (species: HomebrewSpecies[]) => void;
+
+  // ── Classes ──
+  classes: HomebrewClass[];
+  addClass: (cls: HomebrewClass) => void;
+  updateClass: (id: string, updates: Partial<HomebrewClass>) => void;
+  removeClass: (id: string) => void;
+  setClasses: (classes: HomebrewClass[]) => void;
+
+  // ── Subclasses ──
+  subclasses: HomebrewSubclass[];
+  addSubclass: (subclass: HomebrewSubclass) => void;
+  updateSubclass: (id: string, updates: Partial<HomebrewSubclass>) => void;
+  removeSubclass: (id: string) => void;
+  setSubclasses: (subclasses: HomebrewSubclass[]) => void;
+
+  // ── Currencies ──
+  currencies: HomebrewCurrency[];
+  addCurrency: (currency: HomebrewCurrency) => void;
+  updateCurrency: (id: string, updates: Partial<HomebrewCurrency>) => void;
+  removeCurrency: (id: string) => void;
+  setCurrencies: (currencies: HomebrewCurrency[]) => void;
+```
+
+Add initial state values:
+```typescript
+  species: [],
+  classes: [],
+  subclasses: [],
+  currencies: [],
+```
+
+Add CRUD implementations following the same pattern as items/feats/spells.
+
+## 3. DEBOUNCED AUTO-SAVING DM NOTES EDITOR
+### New component at `vtt/src/components/journal/DmNotesEditor.tsx`
+
+```
+Props:
+  - noteId: string
+  - initialContent: string
+  - onSave: (content: string) => void
+  - placeholder?: string
+
+Behavior:
+  - Renders a textarea with premium glassmorphism styling
+  - On input: stores to local state immediately (snappy UX)
+  - Debounce 800ms: triggers onSave callback
+  - Visual indicator: "Saving..." → "Saved" → "Changes saved"
+  - Auto-saves on blur (immediate, no debounce wait)
+  - Persists to localStorage as fallback if Firebase is offline
+  - Re-inflates from Firebase on mount (via noteId)
+
+State machine:
+  idle → typing → saving → saved → idle
+  Error state: "Failed to save" with retry button
+
+Integration:
+  - DmDashboard renders DmNotesEditor as a full-width card
+  - DM Journal page uses it for individual entry editing
+```
+
+## 4. HOMEBREW CREATOR FORMS
+### SpeciesForm
+- Name, Description, Flavor Text
+- Ability Score Bonuses (6 number inputs with + indicator)
+- Size selector (tiny/small/medium/large)
+- Speed (base walking + optional fly/swim/climb/burrow)
+- Darkvision range
+- Racial Traits (dynamic array: name, description, mechanical)
+- Languages (multi-select or comma-separated)
+- Age, Alignment text fields
+- Source, Tags
+
+### ClassForm  
+- Name, Description, Flavor Text
+- Hit Dice selector (d6/d8/d10/d12)
+- Primary Ability text
+- Saving Throws checkboxes (6)
+- Armor/Weapon/Tool Proficiencies (text arrays)
+- Skill Choices (number + multi-select from 18 skills)
+- Spellcasting Ability selector (optional)
+- Subclass Label text
+- Class Features (dynamic array: level, name, description, mechanical)
+- Multiclass Requirements (optional ability + minimum)
+
+### SubclassForm
+- Name, Description, Flavor Text
+- Parent Class selector (populated from HomebrewClass list + SRD defaults)
+- Spellcasting Ability (optional)
+- Subclass Features (dynamic array: level, name, description, mechanical)
+- Bonus Spells (optional dynamic array: level, spell name lookup)
+
+### CurrencyForm
+- Name, Plural Name, Abbreviation, Symbol
+- Conversion to Gold (number)
+- Color selector (tailwind class palette)
+- Description, Sort Order
+- Source, Tags
+
+## 5. HOMEBREW PANEL UPDATES
+### Tab system extended to 7 tabs:
+["items", "feats", "spells", "species", "classes", "subclasses", "currencies"]
+
+Each tab follows the same pattern:
+- Stats counter card
+- Search filtering
+- Grid of cards with Edit/Delete
+- Modal form for Create/Edit
+- Import/Export extended to include all 7 types
+
+## 6. FIREBASE INTEGRATION
+### Extend `normalized-firebase-service.ts`:
+- `normalizedHomebrewSpecies` — listenAll, fetchAll, upsert, remove
+- `normalizedHomebrewClasses` — listenAll, fetchAll, upsert, remove  
+- `normalizedHomebrewSubclasses` — listenAll, fetchAll, upsert, remove
+- `normalizedHomebrewCurrencies` — listenAll, fetchAll, upsert, remove
+
+### Extend `usePlayerFirebaseSync.ts`:
+```typescript
+const unsubSpecies = normalizedHomebrewSpecies.listenAll(cid, (species) => {
+  useHomebrewStore.getState().setSpecies(species);
+});
+const unsubClasses = normalizedHomebrewClasses.listenAll(cid, (classes) => {
+  useHomebrewStore.getState().setClasses(classes);
+});
+const unsubSubclasses = normalizedHomebrewSubclasses.listenAll(cid, (subclasses) => {
+  useHomebrewStore.getState().setSubclasses(subclasses);
+});
+const unsubCurrencies = normalizedHomebrewCurrencies.listenAll(cid, (currencies) => {
+  useHomebrewStore.getState().setCurrencies(currencies);
+});
+```
+
+## 7. DM DASHBOARD — PLAYER CARD GRID
+Already complete in `PlayerCards.tsx`. Features verified:
+- ✅ Grid view with responsive columns (1→2→3→4)
+- ✅ Search by name/class/race/player
+- ✅ Sort by name/level/class/race
+- ✅ Character detail modal with full stats
+- ✅ Inventory editor modal
+- ✅ Import/Export individual + bulk
+- ✅ CRUD operations with toast confirmations
+- ✅ Party stats bar (avg level, classes, races)
+
+No changes needed.
+
+## 8. DM DASHBOARD — NOTES COMPONENT INTEGRATION
+The DmDashboard should render the DmNotesEditor in a dedicated card:
+```tsx
+<section className="rounded-xl border border-surface-700 bg-surface-850 p-4">
+  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-surface-400">
+    📝 DM Notes
+  </h3>
+  <DmNotesEditor
+    noteId="dashboard-quick-notes"
+    initialContent={campaign?.dmNotes ?? ""}
+    onSave={(content) => updateCampaign({ dmNotes: content })}
+    placeholder="Session notes, encounter ideas, loot to remember..."
+  />
+</section>
+```
+

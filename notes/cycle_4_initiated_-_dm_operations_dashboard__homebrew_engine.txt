@@ -1,0 +1,30 @@
+# Subject: CYCLE 4 INITIATED - DM Operations Dashboard & Homebrew Engine
+System Log Initialized: 2026-07-18 11:51:46
+
+# CYCLE 4 — DM OPERATIONS DASHBOARD & HOMEBREW ENGINE
+
+## Audit of Existing Code
+
+### ✅ Already Complete
+- `DmDashboard.tsx` — Full command center with stats, session controls, encounter quick-view
+- `PlayerCards.tsx` — Grid view of all player cards with search, sort, CRUD, detail modals, import/export
+- `HomebrewPanel.tsx` — Tabbed UI (Items, Feats, Spells) with search, forms, cards, image viewer
+- `ItemForm.tsx` / `FeatForm.tsx` / `SpellForm.tsx` — Full CRUD forms for items, feats, spells
+- `homebrewStore.ts` — Zustand store with persist for items/feats/spells
+
+### ❌ Missing — Must Build
+1. **Debounced Auto-Saving DM Notes Component** (`DmNotesEditor.tsx`)
+2. **Homebrew Species** — Types, store CRUD, form, card
+3. **Homebrew Classes** — Types, store CRUD, form, card
+4. **Homebrew Subclasses** — Types, store CRUD, form, card
+5. **Homebrew Currencies** — Types, store CRUD, form, card
+6. **Push homebrew to Firebase** — Extend normalized-firebase-service
+
+## Build Order
+1. Extend `types/homebrew.ts` with Species, Class, Subclass, Currency types
+2. Extend `homebrewStore.ts` with CRUD for all new types
+3. Build `DmNotesEditor.tsx` — debounced auto-saving
+4. Build SpeciesForm / ClassForm / SubclassForm / CurrencyForm
+5. Wire into HomebrewPanel tabs
+6. Wire Firebase sync for new types
+
