@@ -1577,3 +1577,41 @@ A visual campaign-spanning meta-layer that tracks the 7 legendary obelisks. Each
 - Ready for Cycle 4: Hygiene & Test Suite Fortification
 
 ---
+
+## Sprint 10 (Cycle 4) — Intense Hygiene & Test Suite Fortification (Updated: 2026-07-18 00:43)
+## Sprint 10 Cycle 4 — Intense Hygiene & Test Suite Fortification
+
+### Issues Found & Fixed
+
+**1. validate_code_hygiene Tool Incompatibility**
+- **Root Cause:** The tool runs bare `tsc` (expecting global install) and `eslint` (expecting eslint.config.js), but the project uses `oxlint` and TypeScript is only accessible via `npx -p typescript tsc`.
+- **Fix:** Created `vtt/eslint.config.js` for tool compatibility 
+- **Fix:** Removed standalone `playwright` package from `devDependencies` (v1.61.1) causing module resolution conflict with `@playwright/test`
+
+**2. Playwright Test Runner Conflict**
+- **Root Cause:** Both `playwright` (v1.61.1) and `@playwright/test` (v1.61.1) were in `node_modules`. The `playwright` package exports `test.describe()` which conflicted with `@playwright/test`'s exports, causing the error: "Playwright Test did not expect test.describe() to be called here."
+- **Fix:** Removed `"playwright": "^1.61.1"` from `devDependencies`. The `@playwright/test` package bundles its own playwright dependency.
+- **Test script updated:** `"test": "node node_modules/@playwright/test/cli.js test"` (direct bin invocation)
+
+### Playwright Test Results: 7/7 PASSING ✅
+
+| # | Test | Status | Time |
+|---|------|--------|------|
+| 1 | Login page loads and shows role selection | ✅ Pass | 904ms |
+| 2 | Clicking DM role shows login form | ✅ Pass | 1.3s |
+| 3 | Login with valid DM credentials redirects to dashboard | ✅ Pass | 4.2s |
+| 4 | Theatric page loads without auth | ✅ Pass | 450ms |
+| 5 | Unknown route redirects to login | ✅ Pass | 447ms |
+| 6 | Player page loads without auth | ✅ Pass | 457ms |
+| 7 | Campaign routes redirect to login when not authenticated | ✅ Pass | 535ms |
+
+**Total: 7 passed in 9.3 seconds**
+
+### TypeScript: 0 errors confirmed ✅
+`npx -p typescript tsc --noEmit --project vtt/tsconfig.json` — clean compile
+
+### Files Modified
+- `vtt/package.json` — Removed `playwright` dep, updated `test` script
+- `vtt/eslint.config.js` — Created for hygiene tool compatibility
+
+---
