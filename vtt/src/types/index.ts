@@ -8,3 +8,4 @@ export * from "./combat";
 export * from "./homebrew";
 export * from "./journal";
 export * from "./ui";
+export * from "./lighting";
