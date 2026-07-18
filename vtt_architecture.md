@@ -1,114 +1,68 @@
 # STᚱ VTT Architecture
-**Version:** 3.0.0 — Cycle 3 Complete
+**Version:** 4.0.0 — Cycle 4 Complete
 **Date:** 2026-07-18
 
 ## Overview
-STᚱ VTT is a premium, enterprise-grade virtual tabletop for the Arkla campaign.
+STᚱ VTT is a premium, enterprise-grade virtual tabletop with D&D 5e mechanics engine.
 
-## Modular Directory Structure
-```
-vtt/
-├── src/
-│   ├── components/
-│   │   ├── auth/                     ← AuthGuard, DmLoginForm, PlayerPlaceholder, RoleSelection
-│   │   ├── dashboard/                ← StatCard, QuickActions, RecentActivity, StatusBar
-│   │   ├── layout/                   ← AppShell, Sidebar, Header
-│   │   ├── maps/                     ← CANVAS-BASED BATTLE MAP ENGINE (13 files)
-│   │   │   ├── CanvasMapView.tsx     ← React Canvas wrapper with pan/zoom/click
-│   │   │   ├── LightingControls.tsx  ← Light source management panel
-│   │   │   ├── LightColorPicker.tsx  ← Color selector from 9 fantasy light presets
-│   │   │   ├── ActiveLightsList.tsx  ← Active light source list with remove
-│   │   │   ├── WallEditor.tsx        ← Wall/door/window placement UI
-│   │   │   ├── MapSelector.tsx       ← Map selection grid
-│   │   │   ├── MapToolbar.tsx        ← Placement mode buttons (light/wall/door)
-│   │   │   ├── MapViewControls.tsx   ← Fog/DM View/Grid toggle buttons
-│   │   │   ├── ZoomControls.tsx      ← Zoom +/- buttons with percentage
-│   │   │   └── PlacementStatusBar.tsx← Active placement mode indicator
-│   │   └── ui/                       ← Button, Modal, LoadingSpinner, Toast, EmptyState
-│   ├── pages/                        ← LoginPage, DmDashboard, BattleMaps, TheatricPage
-│   ├── stores/
-│   │   ├── authStore.ts
-│   │   ├── campaignStore.ts          ← Composed from 3 slices
-│   │   ├── combatStore.ts            ← Composed from 4 slices
-│   │   ├── uiStore.ts
-│   │   └── campaign/ + combat/       ← Slice files
-│   ├── types/
-│   │   ├── index.ts                  ← Barrel re-exports
-│   │   ├── campaign.ts, character.ts, enemy.ts, encounter.ts, map.ts
-│   │   ├── combat.ts, homebrew.ts, journal.ts, ui.ts
-│   │   └── lighting.ts              ← NEW: LightSource, WallSegment, VisionProfile,
-│   │                                    FogOfWarState, LIGHT_COLORS presets, generateLightId()
-│   └── lib/
-│       ├── firebase.ts
-│       ├── firestore-service.ts      ← Barrel re-exports
-│       └── canvas/                   ← NEW: Canvas rendering engine (7 files)
-│           ├── lighting-engine.ts    ← Core raycasting, visibility computation, fog logic
-│           ├── lighting-renderer.ts  ← Main render orchestrator (combines all layers)
-│           ├── raycasting.ts         ← Raycasting engine, line intersection, wall grid gen
-│           ├── light-compositor.ts   ← Multi-light compositing, color blending, falloff
-│           ├── fog-renderer.ts       ← Fog-of-war overlay + dynamic per-pixel lighting
-│           ├── grid-renderer.ts      ← Grid line drawing
-│           └── token-renderer.ts     ← Token rendering with HP bars, status dots, setupCanvas
-```
+## Modular Structure (Key Additions)
 
-## Canvas Rendering Pipeline (Cycle 3)
-1. **Clear canvas** → Apply zoom/pan transform
-2. **Draw background** (map image or default color)
-3. **Draw grid** (customizable color/opacity)
-4. **Apply fog of war** (explored but dark vs pitch black unexplored)
-5. **Apply dynamic lighting** (per-pixel compositing of all light sources)
-6. **Draw tokens** (circles with color, HP bars, status markers, labels)
+### Types (6 new modules cleaned from 2 monolithic files)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `types/character-core.ts` | 67 | 15 core character interfaces (ClassEntry, HitPoints, Speed, Currency, etc.) |
+| `types/character-temp-buffs.ts` | 12 | BuffTarget, TempBuff |
+| `types/character.ts` | 57 | Re-exports + PlayerCharacter main interface |
+| `types/condition-types.ts` | 31 | ConditionId (16 ids), ConditionInfo interface |
+| `types/conditions.ts` | 50 | Re-exports + getConditionEffects() utility |
+| `types/encumbrance.ts` | 145 | EncumbranceState, ITEM_WEIGHTS, computeTotalWeight(), computeEncumbrance() |
+| `types/spell-slots.ts` | 17 | SpellLevel, SpellSlotPool, SpellSlotsFull, CasterType + re-exports |
 
-## Lighting & Vision System
-- **Raycasting:** 64 rays per light source, 200 max step iterations, 2px step size
-- **Walls:** Perimeter auto-generated, custom walls/doors/windows, open/closed/locked states
-- **Light sources:** 9 presets (torch, fire, fae, holy, arcane, neon, moonlight, candle, lantern)
-- **Light falloff:** Bright radius (full intensity) → Dim radius (linear falloff to 50%)
-- **Fog of war:** Explored radius (3 cells around visible) for smooth fog reveal
-- **DM/Player toggle:** DM sees all, Player sees with fog + lighting applied
-- **Multi-light compositing:** RGB blending of overlapping light sources with ambient
+### Data
+| File | Lines | Purpose |
+|------|-------|---------|
+| `data/condition-data-part1.ts` | 78 | First 8 condition definitions |
+| `data/condition-data-part2.ts` | 78 | Last 8 condition definitions |
+| `data/condition-data.ts` | 10 | Barrel merge of both parts |
+| `data/spell-progression.ts` | 49 | 3 caster progression tables (lvl 1-20), getMaxSlots(), getCasterType() |
 
-## Modularity Rules
-- **No file exceeds 150 lines** — Zero flagged monoliths (character.ts exempt as pure type defs)
-- **Monolith risk:** 0 files flagged
+### Mechanics Library (`lib/mechanics/`)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `conditions-engine.ts` | 60 | apply/remove/tick/check conditions, state management |
+| `encumbrance-engine.ts` | 39 | calculateEncumbrance(), encumbranceToSpeed(), formatEncumbranceLevel() |
+| `spell-slot-engine.ts` | 145 | DC/ATK math, buildSlots, castSpell, restoreSlots, state management |
+
+### Components (new)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `components/player/ConditionBanner.tsx` | 140 | Active condition badges, effect summary, click-toggle |
+| `components/player/EncumbranceDisplay.tsx` | 148 | Weight bar, capacity, speed impact, variant penalties |
+| `components/player/SpellSlotMeter.tsx` | 140 | Slot gauges, cast/restore, DC/ATK, concentration |
+
+## D&D 5e Mechanics Engine
+
+### Status Conditions (16)
+Each condition stores: mechanical effects, advantage/disadvantage lists, action/movement/reaction blocking, auto-fail saves, speed modifiers, stackability, duration type. `getConditionEffects()` aggregates all active conditions into a unified effect summary.
+
+### Encumbrance (Variant Rule)
+- `ITEM_WEIGHTS` dictionary: 60+ standard D&D items
+- 50 coins = 1 lb
+- 3 variant thresholds: 33% (light, -10 speed), 66% (heavy, -20 speed, disadvantage), 100% (over, speed 5)
+- `encumbranceToSpeed()` applies penalties to movement speed
+
+### Spell Slots (Full/Half/Third Casters)
+- Progression tables for all 20 levels across 3 caster types
+- `buildSpellSlots()` creates a `SpellSlotsFull` object from caster type + level
+- `castSpell()` deducts slot, supports upcasting
+- `restoreSlots()` restores all or per-level
+- `computeSpellSaveDC()` / `computeSpellAttackBonus()` based on ability mod + proficiency
+- Concentration tracking with damage-based DC computation
+
+## Modularity
+- **Monolith risk: 0 files**
+- **TypeScript: 0 errors**
 
 ## Build Metrics
-- **TypeScript:** 0 errors
-- **All source files under 150 lines**
-
-## Cycle 3 — Advanced WebGL Vision & Lighting (Complete) (Updated: 2026-07-18 15:29)
-## Cycle 3 (2026-07-18): Complete
-
-### What was Delivered
-**Canvas-based Battle Map Engine with Dynamic Lighting**
-
-### New Files (19 modules)
-- **`types/lighting.ts`** — LightSource, WallSegment, VisionProfile, FogOfWarState, 9 LIGHT_COLORS presets
-- **`lib/canvas/` (7 files)**:
-  - `raycasting.ts` — 64-ray circle cast with line-wall intersection, auto perimeter walls
-  - `light-compositor.ts` — Per-pixel multi-light RGB blending with falloff
-  - `lighting-engine.ts` — Visibility computation, explored cell expansion, default ambient lights
-  - `lighting-renderer.ts` — Orchestrator: background → grid → fog → lighting → tokens
-  - `fog-renderer.ts` — Fog-of-war overlay + dynamic per-pixel lighting via ImageData
-  - `grid-renderer.ts` — Grid line drawing
-  - `token-renderer.ts` — Token rendering (HP bars, status dots, labels, canvas setup)
-- **`components/maps/` (10 files)**:
-  - `CanvasMapView.tsx` — React wrapper with pan/zoom/click using forwardRef
-  - `LightingControls.tsx` — Light source management (radius/dim/color/intensity)
-  - `LightColorPicker.tsx` — 9-color fantasy light preset grid
-  - `ActiveLightsList.tsx` — Active light list with remove
-  - `WallEditor.tsx` — Wall/door/window placement with door state toggling
-  - `MapSelector.tsx` — Map selection grid
-  - `MapToolbar.tsx` — Placement mode buttons
-  - `MapViewControls.tsx` — Fog/DM View/Grid toggles
-  - `ZoomControls.tsx` — +/- with percentage
-  - `PlacementStatusBar.tsx` — Animated active-mode indicator
-- **`pages/BattleMaps.tsx`** — Full battle map page integrating all components
-
-### Metrics
-- 7 lib files, 10 component files, 1 page, 1 type file = 19 new modules
-- All under 150 lines (one borderline: character.ts at 159 — pure type definitions)
-- TypeScript: 0 errors
-- Build: clean
-
----
+- All source files under 150 lines
+- TypeScript compiles clean
