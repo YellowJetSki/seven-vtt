@@ -1,0 +1,213 @@
+# Subject: CYCLE 10 - DEPLOYMENT CHANGELOG & FINAL SUMMARY
+System Log Initialized: 2026-07-18 12:11:37
+
+# ══════════════════════════════════════════════════════════════
+#  STᚱ VTT — IMMERSIVE VTT INITIATIVE
+#  FINAL CHANGELOG · CYCLE 10 DEPLOYMENT
+# ══════════════════════════════════════════════════════════════
+
+## Deployment Instructions
+
+### 1. Push to Vercel
+```bash
+cd /vtt
+# Ensure .env.production has VITE_USE_EMULATORS=false (already done)
+npx vercel --prod
+```
+
+### 2. Set Vercel Environment Variables
+In the Vercel Dashboard (Project → Settings → Environment Variables):
+```
+VITE_USE_EMULATORS=false
+VITE_FIREBASE_API_KEY=AIzaSyBoJZ_7Jvmp4MdmbT3rNVRotT0rHG58Mx0
+VITE_FIREBASE_AUTH_DOMAIN=str-vtt.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=str-vtt
+VITE_FIREBASE_STORAGE_BUCKET=str-vtt.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=1019021741951
+VITE_FIREBASE_APP_ID=1:1019021741951:web:1d3f20dfbcd132de38144a
+VITE_FIREBASE_AUTH_EMAIL=mikejalow@gmail.com
+VITE_FIREBASE_AUTH_PASSWORD=Jello1
+VITE_DM_USERNAME=MikeJello
+VITE_DM_PASSWORD=Jello1
+```
+
+### 3. Build
+```bash
+npm run build
+# Output: /vtt/dist/
+```
+
+---
+
+## ══════════════════════════════════════════════════════════════
+##  MASTER CHANGELOG — All 10 Cycles
+## ══════════════════════════════════════════════════════════════
+
+### CYCLE 1: Foundry-Level Document Schema & State Design
+**Files Created:**
+- `src/types/index.ts` — Full PlayerCharacter, Enemy, Item, Spell, BattleMap types
+- `src/types/firestore.ts` — Normalized Firestore collection paths + all document schemas
+- `src/stores/campaignStore.ts` — Zustand store for campaign state
+- `src/stores/combatStore.ts` — Combat/initiative state management
+- `src/stores/homebrewStore.ts` — Homebrew items/spells/feats
+- `src/lib/normalized-firebase-service.ts` — Factory-pattern CRUD for Firestore
+
+**Key Design Decisions:**
+- Subcollection design: `campaigns/{id}/characters/{id}` (not monolithic docs)
+- Constants-based path system (not enums) for template-literal compatibility
+- Reactive updates via onSnapshot in useFirebaseSync hooks
+
+### CYCLE 2: Custom Authentication & Mobile Shell
+**Files Created:**
+- `src/stores/authStore.ts` — Zustand persist with role-based auth
+- `src/lib/firebase.ts` — Firebase init with emulator/production detection
+- `src/lib/env.ts` — Lazy env var access with missing-key reporting
+- `src/pages/LoginPage.tsx` — Dual-mode DM/Player login
+- `src/components/layout/AppShell.tsx` — Shell with sidebar, header, outlet
+- `src/components/layout/Sidebar.tsx` — Collapsible glassmorphic sidebar
+- `src/components/auth/AuthGuard.tsx` — Route protection
+- Tailwind CSS design system tokens defined
+
+**Credentials:**
+- DM: MikeJello / Jello1
+- Player: Type character's first name (case-insensitive)
+
+### CYCLE 3: Beginner-Friendly Mobile Player Sheet
+**Files Created:**
+- `src/pages/PlayerDashboard.tsx` — Player view with real-time sync
+- `src/components/player/PlayerCharacterSheetPremium.tsx` — Full premium sheet
+- `src/components/player/premium-sheet/` — Modular sub-components:
+  - PortraitSection, PrimaryStatsRow, HpBarSection, XpProgressSection
+  - AbilityScoreGrid, SavingThrowsSection, SkillsSection
+  - WeaponsSection, SpellcastingSection, ResourcesSection
+  - InventorySection, CurrencySection, FeaturesSection
+  - RestAndLevelSection, DeathSaveTrackerSection
+  - BackstorySection, SpeedBreakdown, ConditionsSection
+- `src/hooks/usePlayerFirebaseSync.ts` — Real-time listener hook
+- 3 fluid tabs: Stats, Combat, Inventory
+
+### CYCLE 4: DM Operations Dashboard & Homebrew Engine
+**Files Created:**
+- `src/pages/DmDashboard.tsx` — Command center with stat cards
+- `src/pages/PlayerCards.tsx` — Grid view of all player characters
+- `src/pages/HomebrewPanel.tsx` — Forms for Species, Class, Spell, Item
+- `src/pages/DmJournal.tsx` — Debounced auto-saving notes
+- `src/pages/CampaignSettings.tsx` — Campaign configuration
+- `src/pages/Encounters.tsx` — Encounter manager
+- `src/components/dashboard/` — StatCard, QuickActionButton, SummaryItem, etc.
+- `src/components/campaign/CampaignWizard.tsx` — New campaign setup wizard
+
+### CYCLE 5: Canvas-First VTT Battlemap Foundation
+**Files Created:**
+- `src/lib/canvas/MapCanvasEngine.ts` — Pure HTML5 Canvas renderer
+- `src/components/maps/CanvasMapView.tsx` — React wrapper with touch/mouse
+- `src/components/maps/MapEditor.tsx` — Orchestrator component
+- `src/components/maps/MapEditorToolbar.tsx` — Tool controls
+- `src/components/maps/MapForm.tsx` — Map CRUD form
+- `src/components/maps/TokenInspector.tsx` — Selected token editing
+- `src/components/maps/AddTokenForm.tsx` — Token creation form
+- `src/pages/BattleMaps.tsx` — Full map management page
+- Map image upload/select from public folder
+- Draggable tokens broadcasting X/Y to Firebase
+
+**Canvas Features:**
+- Grid rendering with configurable opacity
+- Background image blitting with pan/zoom
+- Token circles with images, labels, HP bars
+- Selection ring with accent purple (#a35aff)
+- Grid coordinate snapping
+
+### CYCLE 6: Advanced VTT Graphics & Environment
+**Files Created:**
+- `src/components/maps/FogOfWarLayer.tsx` — Fog paint/reveal controls
+- `src/components/maps/AoEPresetPanel.tsx` — Spell AOE template selector
+- `src/components/maps/AoEPlacementMode.tsx` — Interactive AOE placement
+- `src/components/maps/AoETemplateOverlay.tsx` — Canvas-rendered AOE shapes
+- `src/components/maps/HazardTimeline.tsx` — Turn-based hazard tracking
+- `src/components/maps/GroundEffectOverlay.tsx` — Environmental ground effects
+- `src/components/maps/RunicRingOverlay.tsx` — Magical circle animations
+- `src/types/aoe-templates.ts` — AOE shape definitions (cone, sphere, line, cube, cylinder)
+- `src/types/aoe-shapes.ts` — Path geometry generators for each shape
+- `src/types/hazard-zones.ts` — Magic schools, altitude layers, hazard types
+- `src/hooks/useHazardEngine.ts` — Hazard lifecycle management
+- `src/styles/premium.css` — Complete premium design system
+
+**Canvas Features Added:**
+- Fog of War (DM paint/reveal)
+- AOE templates (cones, spheres, lines, cubes, cylinders with rotation)
+- Weather/environment overlay system
+- Hazard zones with turn-based tracking
+
+### CYCLE 7: Combat Engine & Asset Sharing
+**Files Created:**
+- `src/components/combat/InitiativeTrackerHUD.tsx` — Floating HUD over battlemap
+- `src/components/combat/EncounterPrepPanel.tsx` — Pre-combat setup
+- `src/components/combat/CombatActivePanel.tsx` — Active combat display
+- `src/components/combat/CombatLogPanel.tsx` — Turn-by-turn log
+- `src/components/combat/ConditionsWidget.tsx` — Status condition manager
+- `src/components/combat/CombatantRow.tsx` — Individual combatant display
+- `src/components/combat/InitiativeEditor.tsx` — Roll/override initiative UI
+- `src/components/asset/AssetSharePanel.tsx` — DM image push system
+- `src/components/asset/PlayerSideAssetViewer.tsx` — Player-side viewer
+
+**Features:**
+- Turn-based initiative tracker wired to character sheets
+- DM pushes images to player screens
+- "Deposit to [Player Name]'s Inventory" button for permanent keeping
+- Synchronized HP/XP/status updates
+
+### CYCLE 8: Deep Programmatic QA & Surgical Patching
+**Validation Performed:**
+- TypeScript strict mode (noUnusedLocals, noUnusedParameters, noUncheckedIndexedAccess)
+- Firestore emulator stability confirmed
+- All files under 150-line modular limit
+- Auth flow verification (DM + Player)
+- Firebase graceful offline degradation
+
+### CYCLE 9: Visual QA, UI Targeting & Aesthetic Polish
+**Deliverables:**
+- 40+ data-testid attributes mapped across 15 components
+- 5 Playwright spec files (29 test cases)
+- Visual regression screenshots specified (7 viewports/routes)
+- Premium CSS audit — glassmorphism, arcane glow, drop shadows verified
+- Purity Protocol compliance — no occult/demonic elements
+
+### CYCLE 10: Production Deployment [CURRENT]
+**Status:** Ready for Vercel deployment.
+
+**vercel.json:** Configured with SPA rewrites, Vite framework
+**.env.production:** VITE_USE_EMULATORS=false
+**Build Command:** npm run build (tsc --noEmit + vite build)
+
+---
+
+## ══════════════════════════════════════════════════════════════
+##  SYSTEM LAW COMPLIANCE VERIFICATION
+## ══════════════════════════════════════════════════════════════
+
+| Law | Status | Evidence |
+|-----|--------|----------|
+| 1. NO DICE ROLLERS | ✅ PASS | No dice roller functions. Combat uses manual HP entry and initiative overrides. |
+| 2. PURITY PROTOCOL | ✅ PASS | No occult/demonic/undead. Magic: arcane, divine, mage, rune. High fantasy heroism. |
+| 3. CANVAS MANDATE | ✅ PASS | MapCanvasEngine uses pure HTML5 Canvas. React DOM only for HUD/sidebar. |
+
+---
+
+## ══════════════════════════════════════════════════════════════
+##  DEPLOYMENT SUMMARY
+## ══════════════════════════════════════════════════════════════
+
+**Application:** STᚱ VTT (Starry Virtual Tabletop)
+**Framework:** React 19 + Vite 8 + Tailwind CSS 4
+**Runtime:** TypeScript 6.0 (strict mode)
+**State:** Zustand 5 with persist middleware
+**Backend:** Firebase Firestore (normalized subcollections)
+**Auth:** Firebase Auth (Email/Password for DM, Anonymous for Players)
+**Canvas:** Pure HTML5 Canvas (no dependencies)
+**Styling:** Premium glassmorphism + arcane glow animations
+**Testing:** Playwright 1.61 (29 tests across 5 specs)
+**Deployment:** Vercel (SPA with history rewrites)
+
+**To deploy:** Run `npx vercel --prod` from `/vtt` directory.
+**Live URL:** https://str-vtt.vercel.app (once deployed)
+

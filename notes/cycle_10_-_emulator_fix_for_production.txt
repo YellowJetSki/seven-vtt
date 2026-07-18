@@ -1,0 +1,14 @@
+# Subject: CYCLE 10 - EMULATOR FIX FOR PRODUCTION
+System Log Initialized: 2026-07-18 12:10:26
+
+Issue: .env has VITE_USE_EMULATORS=true
+This is fine for dev but will cause connection errors in production since emulators are not running.
+
+Fix options:
+1. Set VITE_USE_EMULATORS=false in Vercel environment variables
+2. Or modify firebase.ts to be smarter about detecting production
+
+The code already has a graceful fallback: if the emulator connection fails, it continues. But we should explicitly set VITE_USE_EMULATORS=false in the Vercel project dashboard for clean behavior.
+
+For the build process, the env file is baked into the client at build time by Vite. So we need to ensure production build uses emulators=false.
+
