@@ -899,3 +899,53 @@ Death saves now only show when a PC drops to 0 HP or below.
 - [x] Build: 0 TS errors, 817ms build time
 - [x] Deployed to https://arkla.vercel.app
 ---
+
+## Sprint — Cycle 1: Spell AOE Template Feature Architecture (Updated: 2026-07-17 23:57)
+## Sprint — Cycle 1: Spell AOE Template Feature Architecture
+
+### Feature: Interactive Spell Area-of-Effect Templates for Battle Map
+
+**Rationale:** The MapEditor supports tokens, fog of war, and drawings, but lacks the ability for DMs to quickly place spell/ability templates (fireball radius, cone of cold, lightning bolt line) as visual overlays. This is a core DM encounter tool missing from the VTT.
+
+### Type Definitions (vtt/src/types/aoe-templates.ts)
+- `AoE_Shape` — "circle" | "cone" | "line" | "cube" | "sphere"
+- `AoE_Direction` — 8 cardinal/intercardinal orientations
+- `AoE_OriginAnchor` — "center" | "corner" | "edge"
+- `AoETemplate` — Core interface: id, label, shape, size (ft), gridX/gridY, direction, color, opacity, savingThrowDC, savingThrowAbility, damageDice, damageType, visibleToPlayers, animation, notes
+- `AoEPreset` — Pre-built presets for quick-access buttons
+- `AOE_PRESETS` — 12 built-in presets (Fireball, Lightning Bolt, Cone of Cold, Burning Hands, Thunderwave, Moonbeam, Spirit Guardians, Hypnotic Pattern, Shatter, Dragon Breath, Cloudkill)
+- `getAoEShapePath()` — SVG path generator for each shape/direction
+
+### Integration Points
+1. **BattleMap type** — Add `aoeTemplates: AoETemplate[]` field to store templates with the map
+2. **MapEditor** — Add AOE toolbar button + sidebar panel for placing/managing templates
+3. **MapCanvas** — Render SVG overlays for active AOE templates
+4. **FogOfWarLayer** — Respect `visibleToPlayers` flag when rendering AOE in player view
+5. **New Components:**
+   - `AoETemplateOverlay.tsx` — SVG rendering layer on the map
+   - `AoETemplatePanel.tsx` — Sidebar for presets + placed templates
+   - `AoETemplatePresets.tsx` — Preset quick-button grid
+
+### Data Flow
+```
+DM clicks preset → opens placement mode → clicks grid cell →
+createTemplate({ preset, gridX, gridY, direction }) →
+BattleMap.aoeTemplates.push → Zustand → MapCanvas re-renders SVG
+```
+
+### Non-Goals (not dice rollers — System Law #1 compliant)
+- No random generation or dice rolls
+- Pure visual templates for DM adjudication
+- Saving throw values are metadata only (DM reference)
+
+### New State Shape
+BattleMap gets a new field:
+```ts
+aoeTemplates?: AoETemplate[];
+```
+And a new Zustand slice action:
+```ts
+addAoETemplate(mapId, template) / removeAoETemplate(mapId, templateId) / updateAoETemplate(mapId, templateId, updates)
+```
+
+---
