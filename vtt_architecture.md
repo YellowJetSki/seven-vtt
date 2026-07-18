@@ -1978,3 +1978,32 @@ All created under `vtt/src/components/player/card/` (all <150 lines):
 - TypeScript: 0 errors
 - Tests: 7/7 passing
 ---
+
+## Component (Updated: 2026-07-18 09:24)
+## Sprint 13.2: Premium Combat-at-a-Glance Player Sheet
+
+### Changes
+- **premium-sheet/index.tsx** — Complete rewrite with D&D 5e combat math engine:
+  - `WEAPON_DB` — 22-entry weapon database with dice, damage type, properties
+  - `computeAttacks()` — Parses equipment names against weapon DB, computes attack bonus, damage bonus, properties, finesse/ranged detection. Returns WeaponAttack[] with full combat info.
+  - `getSpellAbility()` — Determines spellcasting ability from class (Wizard=INT, Cleric/Druid=WIS, etc.)
+  - All 19 sections now export and are fully typed
+  
+- **Additional combat sections**:
+  - `AbilityScoreGrid` now shows save bonuses inline with proficiency dots
+  - `SavingThrowsSection` now shows full ability name + PROF badge
+  - `SkillsSection` now shows expertise stars
+  - `WeaponsSection` shows ATK bonus, damage dice, damage type icon, ability mod, versatile, properties badges
+  - `SpellcastingSection` shows computed DC/ATK, spell slot gauges per level, known/prepared spells list
+  - `ResourcesSection` shows features with uses
+  - `ConditionsSection` shows 16 condition icons with hover descriptions
+  - `DeathSaveTrackerSection` shows 3-success/3-failure dots
+  - `RestAndLevelSection` shows time descriptions
+  - `BackstorySection` shows appearance, backstory, allies, session notes
+
+### Build
+- PlayerDashboard chunk: 54.51KB (up from 39.44KB)
+- CSS: 138.86KB (up from 134.65KB)
+- 241 modules, 0 TS errors
+- Production deployed to arkla.vercel.app
+---
