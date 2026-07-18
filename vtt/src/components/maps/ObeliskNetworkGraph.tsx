@@ -74,17 +74,37 @@ export function ObeliskNetworkGraph({
   const handleMouseUp = useCallback(() => setIsPanning(false), []);
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border border-surface-700/50 bg-surface-900 ${className}`}>
+    <div
+      className={`relative overflow-hidden rounded-xl border border-surface-700/50 bg-surface-900/95 card-glow ${className}`}
+      style={{
+        backgroundImage: `
+          radial-gradient(ellipse at 20% 30%, rgba(139, 48, 255, 0.03) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 70%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0)
+        `,
+        backgroundSize: '100% 100%, 100% 100%, 20px 20px',
+      }}
+    >
+      {/* Subtle grid pattern background */}
+      <svg className="absolute inset-0 h-full w-full pointer-events-none opacity-5" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}>
+        <defs>
+          <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(139, 48, 255, 0.15)" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+      </svg>
+
       <svg
         ref={svgRef}
         viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}
-        className="h-full w-full cursor-grab active:cursor-grabbing"
+        className="relative h-full w-full cursor-grab active:cursor-grabbing"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <ObeliskGraphDefs obelisks={obelisks} />
+        <ObeliskGraphDefs obelisks={obelisks} isPulsing={selectedId !== null} />
 
         {/* Transform group for zoom/pan */}
         <g

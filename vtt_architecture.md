@@ -1506,3 +1506,74 @@ A visual campaign-spanning meta-layer that tracks the 7 legendary obelisks. Each
 ### Ready for Cycle 3: UI/UX Polish & Fantasy Aesthetic
 
 ---
+
+## Sprint 10 (Cycle 3) — UI/UX Polish & Fantasy Aesthetic Upgrades (Updated: 2026-07-18 00:40)
+## Sprint 10 Cycle 3 — UI/UX Polish & Fantasy Aesthetic Upgrades
+
+### CSS Animations Added (vtt/src/index.css)
+| Animation | Purpose |
+|-----------|---------|
+| `obelisk-pulse` | Affinity-filtered pulsing glow using CSS var `--obelisk-color` |
+| `obelisk-ley-line-flow` | Stroke-dashoffset animation for ley-line energy flow |
+| `obelisk-corruption-sheen` | Horizontal gradient sheen sliding across corrupted elements |
+| `obelisk-discovery-burst` | Expanding ring burst when obelisk transitions to discovered state |
+| `obelisk-rune-glow` | Text-shadow pulsing for runic glyphs on cleansed obelisks |
+| `obelisk-map-marker-ping` | Ping animation for active obelisk map markers |
+| `ley-line-dash-march` | Dashed line marching animation for selected connections |
+
+### Component Enhancements
+
+**ObeliskGraphNode.tsx**
+- Added `obelisk-pulse` CSS animation with `--obelisk-color` CSS variable for dynamic affinity coloring
+- Discovery burst ring animation when obelisk.state === "discovered"
+- Corruption sheen animation for corrupted state nodes
+- Rune glow on cleansed obelisks
+- Dual selection rings (primary dashed + secondary offset) for selected nodes
+- Grayscale filter on undiscovered nodes
+- `drop-shadow` glow effects with JSX `style.filter` for corruption/selection
+- Warning icon (⚠) on corruption badge
+
+**ObeliskGraphConnections.tsx**
+- Background ambient glow line (always visible, low opacity)
+- `obelisk-ley-line` dash-march animation on selected connections
+- Secondary glow ring for selected connections
+- Label background pill with `rgba(24,25,32,0.8)` for readability
+- Affinity-tinted label text on selection
+- Hover scale transition on connection type label
+
+**ObeliskGraphDefs.tsx**
+- 4-stop radial gradients (0%, 30%, 60%, 100%) for richer glow
+- SVG filter primitives: `obelisk-selection-glow` (feGaussianBlur + feMerge), `obelisk-corruption-glow` (feComponentTransfer for pulse), `ley-line-glow`
+- Dynamic `isPulsing` prop to control filter intensity
+
+**ObeliskNetworkGraph.tsx**
+- Card container with `card-glow` class, radial gradient backgrounds
+- Subtle grid SVG pattern overlay at 5% opacity
+- `background-image` with 3 layers (2 radial gradients + dot pattern)
+
+**ObeliskMapOverlay.tsx**
+- `obelisk-map-marker-ping` animation for active obelisks
+- Glassmorphic marker body with `backdrop-filter: blur`
+- Dual-layered box-shadow (hover glow + inner glow)
+- Cleansed obelisks get golden `drop-shadow`; shattered get partial grayscale + red
+- Name label below marker fades in on hover
+- Tooltip redesign: affinity stripe on left, affinity badge, corruption meter bar with shadow glow, "Click to inspect" footer divider
+
+**ObeliskDetailStateSection.tsx**
+- `animate-slide-in-right` entry animation
+- State card with affinity accent stripe and colored border
+- Progress bar with gradient background, shimmer overlay, and box-shadow glow
+- Action buttons with `color-mix()` for dynamic hover states and scale animations
+
+### Responsive Design
+- All obelisk map markers use percentage-based positioning (% of parent)
+- SVG viewBox maintains aspect ratio across screen sizes
+- Tooltip uses `pointer-events-none` to avoid blocking clicks
+- Font sizes are relative (text-[9px], text-[10px], text-xs)
+
+### Build Status
+- TypeScript: 0 errors
+- All files maintain <150 line limit
+- Ready for Cycle 4: Hygiene & Test Suite Fortification
+
+---
