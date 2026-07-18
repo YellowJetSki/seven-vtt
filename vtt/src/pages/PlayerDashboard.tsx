@@ -20,7 +20,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { usePlayerFirebaseSync } from "@/hooks/usePlayerFirebaseSync";
-import { PlayerCharacterSheet } from "@/components/player/PlayerCharacterSheet";
+import { PlayerCharacterSheetPremium as PlayerCharacterSheet } from "@/components/player/PlayerCharacterSheetPremium";
 import { Button } from "@/components/ui/Button";
 
 export function PlayerDashboard() {

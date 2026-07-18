@@ -226,7 +226,37 @@
   opacity: 1;
 }
 
-/* ── Token & Map Effects ────────────────────────────────────── */
+/* ── Premium HP Bar ─────────────────────────────────────────── */
+.premium-hp-bar {
+  position: relative;
+  overflow: hidden;
+}
+.premium-hp-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer-sweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Premium stat row hover glow */
+.premium-stat-row .premium-stat {
+  transition: all 0.3s ease;
+}
+.premium-stat-row .premium-stat:hover {
+  border-color: rgba(139, 48, 255, 0.3);
+  box-shadow: 0 0 12px rgba(139, 48, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Premium section cards with accent gradient header */
+.premium-card section {
+  position: relative;
+}
+
+/* Token & Map Effects */
 
 /* Token hover glow (for canvas alternative) */
 .token-glow {
