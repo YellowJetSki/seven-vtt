@@ -34,7 +34,7 @@ export function SpellReferencePanel() {
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<number | null>(null);
   const [schoolFilter, setSchoolFilter] = useState<SpellSchool | null>(null);
-  const [classFilter, setClassFilter] = useState<SpellClass | null>(null);
+  const [classFilter, _setClassFilter] = useState<SpellClass | null>(null);
   const [selectedSpell, setSelectedSpell] = useState<HomebrewSpell | null>(null);
   const [showHomebrew, setShowHomebrew] = useState(false);
 

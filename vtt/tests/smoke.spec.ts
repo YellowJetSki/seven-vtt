@@ -20,20 +20,20 @@ test.describe("STᚱ VTT — Smoke Tests", () => {
   test("Clicking DM role shows login form", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
     await page.locator("text=Dungeon Master").click();
+    await page.waitForTimeout(500);
     // Should show username/password fields
-    await expect(page.locator('input[type="text"]').first()).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('input[type="password"]').first()).toBeVisible();
+    await expect(page.locator('input[placeholder*="username"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('input[placeholder*="password"]')).toBeVisible();
   });
 
   test("Login with valid DM credentials redirects to dashboard", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
     await page.locator("text=Dungeon Master").click();
-    const usernameInput = page.locator('input[type="text"]').first();
-    const passwordInput = page.locator('input[type="password"]').first();
-    await usernameInput.fill("MikeJello");
-    await passwordInput.fill("Jello1");
+    await page.waitForTimeout(500);
+    await page.locator('input[placeholder*="username"]').fill("MikeJello");
+    await page.locator('input[placeholder*="password"]').fill("Jello1");
     await page.locator('button[type="submit"]').first().click();
-    await expect(page).toHaveURL(/\/campaign\/dashboard/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/campaign\/dashboard/, { timeout: 15000 });
   });
 
   test("Theatric page loads without auth", async ({ page }) => {

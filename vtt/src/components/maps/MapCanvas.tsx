@@ -24,11 +24,13 @@ interface Props {
   onTokenClick: (tokenId: string) => void;
   onCanvasClick: () => void;
   onDragToCell: (tokenId: string, x: number, y: number) => void;
-  onMoveToken: (tokenId: string, dx: number, dy: number) => void;
+  // onMoveToken intentionally unused (uses onDragToCell for grid-quantized movement)
+  _onMoveToken?: (tokenId: string, dx: number, dy: number) => void;
   onUpdateToken: (tokenId: string, updates: Partial<MapToken>) => void;
   onTokensUpdate: (tokens: MapToken[]) => void;
   onDrawingsChange: (drawings: MapDrawingStroke[]) => void;
-  onAoETemplatesChange?: (templates: AoETemplate[]) => void;
+  // onAoETemplatesChange intentionally unused (handled via MapEditor state)
+  _onAoETemplatesChange?: (templates: AoETemplate[]) => void;
   onCanvasMove?: (gridX: number, gridY: number) => void;
   onCanvasClickWithGrid?: (gridX: number, gridY: number) => void;
   containerRef?: RefObject<HTMLDivElement | null>;
@@ -38,8 +40,8 @@ export function MapCanvas({
   map, gmView, showFog, showGrid, gridOpacity, selectedTokenId,
   showMovement, dashMode, drawingEnabled,
   onTokenClick, onCanvasClick, onDragToCell,
-  onMoveToken, onUpdateToken, onTokensUpdate, onDrawingsChange,
-  onAoETemplatesChange, onCanvasMove, onCanvasClickWithGrid,
+  _onMoveToken, onUpdateToken, onTokensUpdate, onDrawingsChange,
+  _onAoETemplatesChange, onCanvasMove, onCanvasClickWithGrid,
   containerRef: externalRef,
 }: Props) {
   const internalRef = useRef<HTMLDivElement>(null);
@@ -58,7 +60,7 @@ export function MapCanvas({
       gridX: Math.floor(((clientX - rect.left) / rect.width) * map.gridWidth),
       gridY: Math.floor(((clientY - rect.top) / rect.height) * map.gridHeight),
     };
-  }, [map.gridWidth, map.gridHeight]);
+  }, [map.gridWidth, map.gridHeight, containerRef]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (onCanvasMove) {

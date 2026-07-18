@@ -74,7 +74,8 @@ export function CharacterCard({ character, index, onOpen, onEdit, onOpenInventor
   if (character.speed?.fly) speedParts.push(`Fly ${character.speed.fly}ft`);
   if (character.speed?.swim) speedParts.push(`Swim ${character.speed.swim}ft`);
   if (character.speed?.climb) speedParts.push(`Climb ${character.speed.climb}ft`);
-  const speedDisplay = speedParts.join(" | ");
+  // speedDisplay available for future use
+  const _speedDisplay = speedParts.join(" | ");
 
   const proficientSkills = Object.entries(character.skills ?? {})
     .filter(([, v]) => v === "proficient" || v === "expertise")

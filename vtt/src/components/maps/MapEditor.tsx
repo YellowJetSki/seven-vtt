@@ -154,7 +154,7 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
           showMovement={showMovement} dashMode={dashMode} drawingEnabled={drawingEnabled}
           onTokenClick={handleTokenClick} onCanvasClick={handleCanvasClick}
           onDragToCell={handleDragToCell}
-          onMoveToken={(id, dx, dy) => {
+          _onMoveToken={(id, dx, dy) => {
             const t = map.tokens.find((tk) => tk.id === id);
             if (!t) return;
             performMove(id, t.x + dx, t.y + dy);
@@ -164,7 +164,7 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
           onUpdateToken={handleUpdateToken}
           onTokensUpdate={(tokens) => onUpdate({ tokens })}
           onDrawingsChange={(drawings) => onUpdate({ drawings })}
-          onAoETemplatesChange={(aoeTemplates) => onUpdate({ aoeTemplates })}
+          _onAoETemplatesChange={(aoeTemplates) => onUpdate({ aoeTemplates })}
         />
 
         {/* AOE Template Overlay */}

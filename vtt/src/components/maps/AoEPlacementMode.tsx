@@ -4,7 +4,6 @@
  * rotating direction arrows, and an arcane-styled control bar.
  * ─────────────────────────────────────────────────────────────── */
 
-import { useMemo } from "react";
 import type { AoETemplate, AoE_Direction } from "@/types/aoe-templates";
 import { Button } from "@/components/ui/Button";
 
@@ -18,12 +17,6 @@ interface Props {
   onCancel: () => void;
   onRotateDirection: () => void;
 }
-
-/** Direction cycle for rotation button */
-const DIRECTION_CYCLE: AoE_Direction[] = [
-  "east", "southeast", "south", "southwest",
-  "west", "northwest", "north", "northeast",
-];
 
 function isDirectional(shape: AoETemplate["shape"]): boolean {
   return shape !== "circle" && shape !== "sphere" && shape !== "cube";

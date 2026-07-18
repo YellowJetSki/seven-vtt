@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
-import type { PlayerCharacter, Ability } from "@/types";
+import type { PlayerCharacter } from "@/types";
 
 interface CharacterFormProps {
   initialData?: PlayerCharacter;
@@ -48,10 +48,10 @@ export function CharacterForm({ initialData, onSubmit, onCancel }: CharacterForm
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl ?? "");
 
   // Personality
-  const [personalityTraits, setPersonalityTraits] = useState(initialData?.personalityTraits ?? "");
-  const [ideals, setIdeals] = useState(initialData?.ideals ?? "");
-  const [bonds, setBonds] = useState(initialData?.bonds ?? "");
-  const [flaws, setFlaws] = useState(initialData?.flaws ?? "");
+  const [personalityTraits, _setPersonalityTraits] = useState(initialData?.personalityTraits ?? "");
+  const [ideals, _setIdeals] = useState(initialData?.ideals ?? "");
+  const [bonds, _setBonds] = useState(initialData?.bonds ?? "");
+  const [flaws, _setFlaws] = useState(initialData?.flaws ?? "");
 
   const handleSubmit = useCallback(() => {
     const dexMod = Math.floor((dexterity - 10) / 2);

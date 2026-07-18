@@ -42,7 +42,7 @@ function mapTraits(items: string[]): TraitEntry[] {
   }));
 }
 
-const EMPTY_TRAITS: TraitEntry[] = [];
+const _EMPTY_TRAITS: TraitEntry[] = [];
 
 /* ── Converter: legacy char → PlayerCharacter ────────────── */
 
