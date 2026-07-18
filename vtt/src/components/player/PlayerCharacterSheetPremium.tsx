@@ -26,9 +26,11 @@ import {
   RestAndLevelSection,
   DeathSaveTrackerSection,
   BackstorySection,
-  PassiveStats,
   SpeedBreakdown,
-  ConditionsSection
+  ConditionsSection,
+  computeAttacks,
+  mod,
+  pb,
 } from "./premium-sheet";
 
 interface Props {
@@ -81,21 +83,12 @@ export function PlayerCharacterSheetPremium({ character }: Props) {
   }, [character, updateCharacter, showToast]);
 
   const weaponAttacks = useMemo(() => {
-    return (character.equipment ?? [])
-      .filter((e: any) => {
-        const item = (e.item || "").toLowerCase();
-        return item.includes("sword") || item.includes("axe") || item.includes("bow") ||
-               item.includes("staff") || item.includes("dagger") || item.includes("mace") ||
-               item.includes("spear") || item.includes("hammer") || item.includes("rapier") ||
-               item.includes("scimitar") || item.includes("crossbow");
-      })
-      .map((e: any) => ({
-        name: e.item,
-        damage: e.notes?.includes("d") ? e.notes : "1d6",
-        type: "slashing",
-        attackBonus: (character.proficiencyBonus ?? 2) + Math.floor((character.strength - 10) / 2),
-        ability: "STR"
-      }));
+    return computeAttacks(
+      character.equipment || [],
+      character.strength,
+      character.dexterity,
+      pb(character.level)
+    );
   }, [character]);
 
   const conditions = character.conditions ?? [];
@@ -115,9 +108,8 @@ export function PlayerCharacterSheetPremium({ character }: Props) {
         </div>
       </div>
 
-      {/* Passive Stats + Speed + Conditions */}
-      <div className="grid grid-cols-3 gap-3">
-        <PassiveStats character={character} />
+      {/* Speed + Conditions */}
+      <div className="grid grid-cols-2 gap-3">
         <SpeedBreakdown character={character} />
         <ConditionsSection conditions={conditions} />
       </div>

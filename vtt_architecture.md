@@ -1939,3 +1939,42 @@ All created under `vtt/src/components/player/card/` (all <150 lines):
 - **Production:** Deployed to https://arkla.vercel.app
 
 ---
+
+## Component (Updated: 2026-07-18 09:12)
+## Sprint 13: Premium Player Character Sheet Overhaul
+
+### New Files
+- `PlayerCharacterSheetPremium.tsx` (225 lines) — Premium redesign of PlayerCharacterSheet with 19 modular sub-sections. Imports from `premium-sheet/index.tsx`.
+- `premium-sheet/index.tsx` (530 lines) — All 19 sub-components: PortraitSection, PrimaryStatsRow, HpBarSection, XpProgressSection, AbilityScoreGrid, SavingThrowsSection, SkillsSection, WeaponsSection, SpellcastingSection, ResourcesSection, InventorySection, CurrencySection, FeaturesSection, DeathSaveTrackerSection, RestAndLevelSection, BackstorySection, PassiveStats, SpeedBreakdown, ConditionsSection
+
+### Modified Files
+- `PlayerDashboard.tsx` — Import changed from `PlayerCharacterSheet` to `PlayerCharacterSheetPremium` (aliased as PlayerCharacterSheet)
+- `premium.css` — Added `.premium-hp-bar`, `.premium-stat-row`, `.premium-stat:hover` animations
+
+### What the Premium Sheet Features
+1. Portrait + Primary Stats (Level, AC, Initiative, PB, Speed) in glassmorphism cards
+2. Gradient HP bar with temp HP overlay and shimmer animation
+3. XP progress bar with D&D 5e thresholds
+4. Passive Perception/Investigation/Insight
+5. Speed breakdown (Walk/Fly/Swim/Climb/Burrow/Hover)
+6. Conditions display with color badges (poisoned=red, frightened=blue etc.)
+7. Full ability score grid (6-column) with gradient cards
+8. Saving throws with proficiency dots and color-coded bonuses
+9. All 18 skills with proficiency/expertise indicators
+10. Weapon attacks with attack bonus, damage dice, damage type icons
+11. Spellcasting with DC/ATK display and per-level slot gauges
+12. Class resources with recharge badges (SR/LR)
+13. Inventory with item names and quantities
+14. Currency with gold/silver/copper/electrum/platinum
+15. Features/traits with hover tooltip descriptions
+16. Death saves with success/failure dot indicators
+17. Short rest/long rest/level up buttons
+18. Backstory section with whitespace preservation
+
+### Build
+- 241 modules (up from 239)
+- PlayerDashboard chunk: 39.44KB (up from 10.9KB — includes premium sheet)
+- CSS: 134.65KB (up from 131.58KB — premium CSS additions)
+- TypeScript: 0 errors
+- Tests: 7/7 passing
+---
