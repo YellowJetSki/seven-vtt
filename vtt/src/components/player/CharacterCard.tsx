@@ -91,7 +91,7 @@ export function CharacterCard({ character, index, onOpen, onEdit, onOpenInventor
     <>
       <div
         className="group relative flex flex-col rounded-xl border border-surface-700/60 bg-surface-850/80 overflow-hidden transition-all duration-200 hover:border-accent-500/40 hover:-translate-y-1 hover:shadow-lg hover:shadow-accent-500/5 active:translate-y-0 cursor-pointer animate-slide-up"
-        style={{ animationDelay: `${Math.min(index * 60, 420)}ms` }}
+        style={{ animationDelay: `${Math.min((index || 0) * 60, 420)}ms` }}
         onClick={onOpen}
       >
         {/* ── Colored accent bar ── */}
