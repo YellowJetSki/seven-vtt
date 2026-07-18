@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/ui/Button";
+import LaunchTheatricButton from "./LaunchTheatricButton";
 
 const actions = [
   { path: "/campaign/player-cards", label: "👥 Player Cards" },
@@ -26,6 +27,8 @@ export default function QuickActions() {
           {action.label}
         </Button>
       ))}
+      <div className="h-5 w-px bg-surface-700/30 mx-1" />
+      <LaunchTheatricButton />
     </div>
   );
 }
