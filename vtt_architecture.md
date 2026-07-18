@@ -1329,3 +1329,68 @@ Added to `vtt/src/index.css`:
 ### Ready for Cycle 5 (Local DOM Vision QA & Security Auditing)
 
 ---
+
+## Cycle 11 — Local DOM Vision QA & Security Auditing (2026-07-17) (Updated: 2026-07-18 00:28)
+## Sprint 9 (Cycle 5): Local DOM Vision QA & Security Auditing
+
+### Dev Server
+- **Spawned:** `npm --prefix vtt run dev` on `localhost:5173`
+- **Stopped:** Cleanly via `stop_persistent_terminal`
+
+### Visual QA — DOM Inspection Results
+
+**Page: Login (`/login`)**
+- Role selection: DM (👑) and Player (⚔) buttons render
+- DM form: "← Back" nav, username/password fields, "Sign In" submit button
+- Background: `bg-surface-950` with `blur-3xl` glow spheres (accent and mage colors)
+- Container: `border-surface-700/50 bg-surface-900/80 backdrop-blur-xl` glass card
+- **All animations present**: `animate-pulse-glow`, `animate-pulse-soft`, transitions
+
+**Page: DM Dashboard (`/campaign/dashboard`)**
+- Sidebar: 7 nav items with accent-highlight active state
+- Status badges: "Physical Dice" (mage), "Online" (rogue), "Sync" (divine pulse), "DM" (warrior pulse)
+- Welcome screen for new campaigns with "New Campaign" and "Import Campaign" buttons
+- Toast notifications: Cloud sync active (rogue), Info (mage) — stacked right-bottom
+
+**Page: Battle Maps (`/campaign/maps`)**
+- Empty state: Map icon, "No battle maps yet", "Create Map" button
+- "New Battle Map" modal: Name, Image URL/Upload/Library tabs, Grid settings
+- Sidebar active indicator: Battle Maps highlighted with accent glowing left border
+
+**Page: Theatric (`/theatric`)**
+- Animated glow effects: `animate-pulse-glow` on app icon with `shadow-[0_0_40px_rgba(139,48,255,0.15)]`
+- Dual glow layers: accent-500 and mage-500 blur spheres
+- Error state renders correctly: "No battle map data found"
+
+### No console errors in DM flow
+- ✅ Auth guard allows DM through Firebase emulator login
+- ✅ Zod/Toast notifications render correctly
+- ✅ Lazy-loaded routes: Battle Maps loads on demand
+
+### Security Audit — Firestore Rules Verification
+
+**Rules file:** `vtt/firestore.rules` — Reviewed and validated:
+
+| Path | Read | Write | Status |
+|------|------|-------|--------|
+| `campaigns/{cid}/{document=**}` | `auth != null` | `auth.token.role == "dm"` | ✅ Correct |
+| `homebrew/{cid}/{document=**}` | `auth != null` | `auth.token.role == "dm"` | ✅ Correct |
+| `{document=**}` (default) | `false` | `false` | ✅ Correct |
+
+**Hazard Zone Security Analysis:**
+- AoE templates and HazardZones are **local-only** — stored in Zustand `campaignStore` with `localStorage` persistence
+- **No Firestore path exists** for AoE/hazard data → not exposed to network attacks
+- Main campaign subcollections that DO sync are fully protected by the recursive wildcard rules
+- The `auth.token.role == "dm"` requirement for writes prevents:
+  - Unauthenticated write breaches
+  - Player-level escalation
+  - Anonymous user data corruption
+
+### Ports Cleared
+- Dev server (port 5173): ✅ Stopped
+- Firebase emulators (port 8080/4000): ✅ Stopped
+- All browser tabs: ✅ Closed
+
+### Ready for Cycle 6: Mandatory Deployment Gatekeeper
+
+---
