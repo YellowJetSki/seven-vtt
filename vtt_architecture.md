@@ -1,5 +1,5 @@
 # STᚱ VTT Architecture
-**Version:** 6.0.0 — Cycle 6 Complete
+**Version:** 7.0.0 — Cycle 7 Complete
 **Date:** 2026-07-18
 
 ## Overview
@@ -197,6 +197,44 @@ CompendiumDropTarget (drop zone wrapper)
   → clears draggedItem from store
 ```
 
+## Cycle 7 — Visual QA & Mobile-First Hardening (Updated: 2026-07-18)
+
+### Issues Fixed
+1. **`navigate()` outside useEffect** — Wrapped in `useEffect` to fix React "setState during render" warning. 0 console errors.
+2. **Missing page routes** — Added 6 new page components + `AuthGuard` wrappers for all 7 campaign routes
+3. **No mobile nav** — Created `MobileBottomNav` with 5 compact nav items, `safe-area-bottom` support
+4. **Compendium drawer on mobile** — Changed `w-96` to `w-full sm:w-96`
+
+### Mobile Architecture
+```
+MobileBottomNav (glass-obsidian, fixed bottom, z-50)
+├── 5 NavLinks: Dashboard (📊), PCs (👥), Fight (⚔), Map (🗺), Setup (⚙)
+├── Active state: text-accent-300
+└── safe-area-bottom (env(safe-area-inset-bottom))
+
+AppShell
+├── <div class="hidden sm:block"> → Sidebar (desktop only)
+├── <main class="pb-20 sm:pb-6"> → padded for bottom nav
+└── MobileBottomNav (sm:hidden)
+```
+
+### New Files (7)
+| File | Purpose |
+|------|---------|
+| `components/layout/MobileBottomNav.tsx` | 5-item mobile navigation bar |
+| `pages/PlayerCards.tsx` | PC management page |
+| `pages/HomebrewPanel.tsx` | Homebrew items page |
+| `pages/Encounters.tsx` | Encounter management page |
+| `pages/BattleMaps.tsx` | Battle maps page |
+| `pages/DmJournal.tsx` | Campaign journal page |
+| `pages/CampaignSettings.tsx` | Settings page |
+
+### Verification
+- **Desktop (1440x900)**: All 8 pages render correctly with sidebar, header, compendium
+- **Mobile (390x844)**: Sidebar hidden, bottom nav visible, content padded, full-width compendium
+- **Console errors**: 0 across all pages
+- **Modules**: 82, Build: 1.63s
+
 ### Integration Points
 - **Header.tsx** → `CompendiumDrawer` toggle button added to right action area
 - **Player Cards** → `CompendiumDropTarget` wraps character card (callbacks for inventory/spells/feats)
@@ -207,6 +245,66 @@ CompendiumDropTarget (drop zone wrapper)
 - Build: 1.40s
 - CSS: 61.60KB (10.61KB gzipped)
 - JS: 284.61KB (87.73KB gzipped)
+- TypeScript: 0 errors
+- Monolith risk: 0 files
+
+---
+
+## Cycle 7 — Visual QA & Mobile-First Hardening (Complete) (Updated: 2026-07-18 15:44)
+## Cycle 7 (2026-07-18): Visual QA & Mobile-First Hardening Complete
+
+### Issues Found & Fixed
+
+#### 1. `navigate()` Outside useEffect (Console Warning)
+- **File:** `LoginPage.tsx`
+- **Fix:** Wrapped the `if (authState === "authenticated" && role === "dm")` redirect in a `useEffect` with proper dependency array `[authState, role, navigate]`
+- **Result:** 0 console warnings, no more React "Cannot update a component while rendering" error
+
+#### 2. Missing Page Routes
+- **Root Cause:** Only `/login`, `/campaign/dashboard`, and `/theatric` routes existed. All other sidebar links caused "page not found" redirects.
+- **Fix:** Added 6 new page components (PlayerCards, HomebrewPanel, Encounters, BattleMaps, DmJournal, CampaignSettings) + updated `App.tsx` with all routes wrapped in `<AuthGuard requiredRole="dm">`
+- **Result:** All 7 sidebar links navigate to correct pages
+
+#### 3. No Mobile Navigation
+- **Root Cause:** Desktop-only sidebar (`w-64` fixed aside). Mobile viewport showed tiny broken layout.
+- **Fix:** Created `MobileBottomNav.tsx` with 5 compact nav items (Dashboard, PCs, Fight, Map, Setup) + `glass-obsidian` + `safe-area-bottom`. AppShell now shows `hidden sm:block` sidebar on desktop + bottom nav on mobile (`sm:hidden`).
+
+#### 4. Compendium Drawer Non-Responsive
+- **Fix:** Changed `w-96` to `w-full sm:w-96` so it's full-width on mobile, 384px on desktop.
+
+### Pages Verified (Dev Server localhost:5173)
+
+| Page | Desktop 1440x900 | Mobile 390x844 | Console Errors |
+|------|-----------------|----------------|----------------|
+| `/login` | ✅ Full glass card + orbs + rune | ✅ Responsive | 0 |
+| `/campaign/dashboard` | ✅ Sidebar + header + compendium | ✅ Bottom nav | 0 |
+| `/campaign/player-cards` | ✅ Empty state + correct active link | ✅ Bottom nav | 0 |
+| `/campaign/homebrew` | ✅ Empty state + correct active link | ✅ Bottom nav | 0 |
+| `/campaign/encounters` | ✅ Empty state + correct active link | ✅ Bottom nav + active highlight | 0 |
+| `/campaign/maps` | ✅ Empty state + correct active link | ✅ Bottom nav | 0 |
+| `/campaign/journal` | ✅ Empty state + correct active link | ✅ Bottom nav | 0 |
+| `/campaign/settings` | ✅ Settings page + correct active link | ✅ Bottom nav | 0 |
+| `/theatric` | ✅ Public page (no auth) | ✅ Responsive | 0 |
+
+### Mobile Architecture
+```
+MobileBottomNav (z-50, glass-obsidian, fixed bottom)
+├── 5 NavLinks: Dashboard, PCs, Fight, Map, Setup
+├── Active state: text-accent-300
+├── Inactive: text-surface-500
+└── safe-area-bottom (env(safe-area-inset-bottom))
+
+AppShell
+├── <div class="hidden sm:block"> → Sidebar (desktop only)
+├── <main class="pb-20 sm:pb-6"> → content padded for bottom nav
+└── MobileBottomNav → visible on mobile (sm:hidden)
+```
+
+### Build Metrics
+- Modules: 74 → 82
+- Build: 1.63s
+- JS: 290.14KB (88.48KB gzipped)
+- CSS: 62.09KB (10.74KB gzipped)
 - TypeScript: 0 errors
 - Monolith risk: 0 files
 
