@@ -2044,3 +2044,36 @@ Upgraded the Player Card by adopting design patterns from the pedal-sheet app:
 - TypeScript: 0 errors
 
 ---
+
+## Sprint — Cycle 2: Pedal-Sheet Player Card Upgrade (Continued) (Updated: 2026-07-18 14:55)
+## Sprint — Cycle 2: Expanded Pedal-Sheet Player Card (2026-07-18)
+
+### Design Patterns Adopted
+Deep-dive analysis of pedal-sheet's `DMPlayerCard.jsx`, `InventoryTab.jsx`, `CombatTab.jsx`, `CharacterHeader.jsx`:
+
+1. **DM Compact Card Layout** — Identity header with conditions indicator → 4-col vitals grid (HP with ±, AC, PP) → XP row with ±10 → expandable rundown
+2. **Resource Trackers** — Dual mode: "pool" (numeric ± buttons) and "per-use" (clickable dots). Matches DMPlayerCard's resource system.
+3. **Speed Breakdown** — Grid of movement types (Walk/Fly/Swim/Climb/Burrow)
+4. **Equipment Summary** — Tags showing equipped items with count badges
+5. **Currency Grid** — 5-column display (PP/GP/EP/SP/CP) with GP equivalent total
+6. **Death Save Dots** — Clickable 3-success / 3-failure dot indicators (shown only when ≤0 HP)
+
+### New Files Created (2)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `card/CharacterCardPedalCompact.tsx` | ~210 | DM-view compact card with expandable rundown, vitals grid, XP row, ability scores, spell slots, resources |
+| `premium-sheet/ResourcesTrackersPedal.tsx` | ~90 | Dual-mode resource trackers (pool ± vs per-use dots) |
+
+### Files Modified (1)
+| File | Changes |
+|------|---------|
+| `premium-sheet/PlayerCharacterSheetPedal.tsx` | Complete recode — added: Speed Breakdown, Equipment Summary, Currency Grid, Death Save Dots, Resources Trackers |
+
+### Build Metrics
+- Modules: 251
+- PlayerDashboard chunk: 35.91KB → 44.19KB (new sections)
+- Build time: 947ms
+- TypeScript: 0 errors
+- Deployed: https://vtt-five.vercel.app
+
+---
