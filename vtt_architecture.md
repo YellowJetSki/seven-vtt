@@ -1475,3 +1475,34 @@ A visual campaign-spanning meta-layer that tracks the 7 legendary obelisks. Each
 - ObeliskSidebar component (collapsible overlay in Theatric View)
 
 ---
+
+## Sprint 10 (Cycle 2) — Modular Component Engineering (Updated: 2026-07-18 00:37)
+## Sprint 10 Cycle 2 — Modular Component Engineering
+
+### Files Created (11 new modules, all <150 lines)
+
+1. **`obelisk-graph-helpers.ts`** — Pure utility functions: `blendColors()`, `getObeliskGlyph()`, constants (GRAPH_WIDTH, GRAPH_HEIGHT, NODE_RADIUS, NODE_RING_WIDTH)
+2. **`obelisk-graph-connection-paths.ts`** — `buildConnectionPaths()` — computes SVG connection line data from obelisk positions
+3. **`ObeliskGraphDefs.tsx`** — SVG `<defs>` with radial gradients for each obelisk's glow effect
+4. **`ObeliskGraphConnections.tsx`** — Renders ley-line paths with glow lines and type labels
+5. **`ObeliskGraphNode.tsx`** — Single SVG node with glow ring, corruption border, affinity circle, selection ring, state glyph, label, corruption badge
+6. **`ObeliskNetworkGraph.tsx`** (~120 lines) — Main SVG network graph with zoom/pan, delegates to above sub-components
+7. **`ObeliskDetailStateSection.tsx`** — State display with progress bar and action buttons (discover/advance/shatter)
+8. **`ObeliskDetailCorruption.tsx`** — Corruption slider with numeric input and rate increment
+9. **`ObeliskDetailLore.tsx`** — Lore fragments list with reveal toggles and state gating
+10. **`ObeliskDetailPanel.tsx`** (~130 lines) — Side-panel composing above sections + attunement charges, DM notes, map position
+11. **`ObeliskMapOverlay.tsx`** — Theatric View overlay with percentage-positioned markers, tooltips, corruption rings, pulsing glow
+
+### Architecture Decisions
+- **SVG-based graph** — Uses native SVG for obelisk network visualization (no heavy charting libraries)
+- **Zoom/Pan** — Built-in mouse drag panning with scale transform
+- **State-gated lore** — Fragments only show reveal button when the obelisk's state meets the minimum requirement
+- **Extreme modularity** — The graph alone is split across 5 files (defs, connections, nodes, helpers, path builder)
+
+### Build Status
+- **TypeScript**: 0 errors (npx tsc --noEmit passes cleanly)
+- **No import breakage**: map_component_dependencies reports 0 active imports (new components — expected)
+
+### Ready for Cycle 3: UI/UX Polish & Fantasy Aesthetic
+
+---
