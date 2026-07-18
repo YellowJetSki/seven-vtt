@@ -1703,3 +1703,70 @@ The obelisk network feature is fully deployed comprising:
 - **Firestore rules** already covered by recursive wildcard `{document=**}`
 
 ---
+
+## Sprint 11 Cycle 1 — Feature Ideation & Architecture Expansion (Updated: 2026-07-18 00:48)
+## Sprint 11 Cycle 1 — Dynamic Battle Effects System (Architecture Audit)
+
+### Discovery
+The workspace already contains a **fully implemented Dynamic Battle Effects System** totaling 24 files across types, hooks, lib, and components. This system was previously ideated and coded but never formally documented in the architecture ledger.
+
+### System Overview: Spell AOE Templates + Persistent Hazard Zones
+
+#### Feature Description
+Allows the DM to place spell/ability area-of-effect templates on the battle map with:
+1. **12 built-in preset templates** (Fireball, Lightning Bolt, Cone of Cold, etc.)
+2. **5 shape types** (circle, sphere, cone, line, cube) with full 8-directional support
+3. **SVG path geometry** for all shapes rendered with fantasy glow filters
+4. **Persistent hazard zones** with round countdowns, damage ticks, and expiration
+5. **8 elemental ground effects** (scorch, ice patch, gas cloud, static field, etc.)
+6. **9 magic school rune rings** with Elder Futhark glyphs and rotational animation
+7. **Concentration tracking** and visual links from hazards to caster tokens
+8. **Altitude layers** (ground/waist/aerial) for 3D spatial effects
+9. **Hazard timeline panel** with round advancement, tick processing, and urgent countdown
+
+#### File Inventory (24 files, 0 TS errors)
+
+##### Types (3 files)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `types/aoe-templates.ts` | 95 | AoETemplate, AoE_Shape, AoE_Direction, AoEPreset, 12 presets |
+| `types/aoe-shapes.ts` | 74 | getAoEShapePath() — SVG path generator for all 5 shapes × 8 directions |
+| `types/hazard-zones.ts` | 199 | HazardZone, GroundEffect, MagicSchool (9 schools), AltitudeLayer, RUNE_GLYPHS, SCHOOL_COLORS, templateToHazard(), damageTypeToGroundEffect() |
+
+##### Library (2 files)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `lib/hazard-tick-engine.ts` | 148 | Pure functions: shouldTick, applyTick, expireHazards, spawnGroundEffect, fadeGroundEffects, processRoundAdvance |
+| `lib/render-ground-effect.tsx` | 149 | SVG renderers for 8 ground effect types (scorch, ice_patch, gas_cloud, static_field, radiant_pool, shadow_pool, magnetic_field, arcane_residue) |
+
+##### Hook (1 file)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `hooks/useHazardEngine.ts` | ~130 | Lifecycle management: registerHazardFromTemplate, advanceRound, processTicks, expireHazard, extendHazard, toggleVisibility, serializeToTemplates |
+
+##### Components (8 files + sub-components)
+| File | Lines | Purpose |
+|------|-------|---------|
+| `components/maps/AoETemplateOverlay.tsx` | ~200 | SVG overlay rendering all AOE templates with glow filters, labels, damage icons |
+| `components/maps/AoEPresetPanel.tsx` | ~300 | Sidebar for selecting/placing/removing presets, search, direction selector |
+| `components/maps/AoEPlacementMode.tsx` | ~150 | Ghost preview overlay during placement with crosshair, rotation controls |
+| `components/maps/GroundEffectOverlay.tsx` | ~120 | SVG layer rendering residual ground effects with fade animation |
+| `components/maps/RunicRingOverlay.tsx` | ~170 | Animated rune circles with Elder Futhark glyphs per magic school |
+| `components/maps/HazardTimeline.tsx` | ~130 | Main timeline panel with round counter, tick/advance buttons |
+| `components/maps/HazardTimelineItem.tsx` | ~90 | Individual hazard row in timeline |
+| `components/maps/HazardTimelineEmpty.tsx` | ~30 | Empty state |
+| `components/maps/HazardTimelineFooter.tsx` | ~30 | Timeline summary footer |
+| `components/maps/GroundEffectsList.tsx` | ~60 | List of active ground effects |
+
+##### Integration
+- `MapEditor.tsx` — Wires all 8+ components into the battle map UI
+- `types/index.ts` — Re-exports all AOE and hazard zone types
+
+#### Enhancement Opportunities Identified
+1. **Firebase sync** for hazard zones across DM sessions (currently client-only)
+2. **Player-visible AOE preview** on the Player Dashboard during combat
+3. **Custom preset creation** (DM-defined spells beyond the 12 built-in)
+4. **Keyboard shortcuts** for quick AOE placement (e.g., F1-F12 for presets)
+5. **Undo/redo** for hazard placement and tick applications
+
+---
