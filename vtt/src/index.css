@@ -205,6 +205,12 @@ div[class*="rounded-xl"][class*="border-surface-700"][class*="bg-surface-850"] {
   50% { filter: drop-shadow(0 0 6px rgba(139, 48, 255, 0.5)); }
 }
 
+@keyframes aoe-runic-rotate-reverse {
+  0% { transform: rotate(360deg); opacity: 0.15; }
+  50% { opacity: 0.3; }
+  100% { transform: rotate(0deg); opacity: 0.15; }
+}
+
 /* ── AOE CSS Classes ───────────────────────────────────────── */
 .aoe-shimmer {
   background: linear-gradient(90deg,

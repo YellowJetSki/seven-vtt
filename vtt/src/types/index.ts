@@ -489,3 +489,13 @@ export type { HomebrewItem, HomebrewFeat, HomebrewSpell, ItemCategory, ItemRarit
 /* ── AOE Template re-exports ─────────────────────────────────── */
 export type { AoETemplate, AoE_Shape, AoE_Direction, AoE_OriginAnchor, AoEPreset } from "./aoe-templates";
 export { AOE_PRESETS, getAoEShapePath } from "./aoe-templates";
+
+/* ── Hazard Zone re-exports ──────────────────────────────────── */
+export type {
+  HazardZone, HazardTick, HazardState, GroundEffect,
+  GroundEffectType, MagicSchool, AltitudeLayer,
+} from "./hazard-zones";
+export {
+  SCHOOL_COLORS, ALTITUDE_LABELS, ALTITUDE_OFFSETS,
+  RUNE_GLYPHS, templateToHazard, damageTypeToGroundEffect,
+} from "./hazard-zones";

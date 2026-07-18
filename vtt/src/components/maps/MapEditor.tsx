@@ -7,12 +7,17 @@
 
 import { useState, useCallback, useMemo } from "react";
 import type { BattleMap, MapToken, AoETemplate, AoE_Direction } from "@/types";
+import type { MagicSchool, AltitudeLayer } from "@/types/hazard-zones";
 import { useUiStore } from "@/stores/uiStore";
 import { Button } from "@/components/ui/Button";
 import { FogOfWarControls } from "@/components/maps/FogOfWarLayer";
+import { useHazardEngine } from "@/hooks/useHazardEngine";
 import { AoEPresetPanel } from "./AoEPresetPanel";
 import { AoEPlacementMode } from "./AoEPlacementMode";
 import { AoETemplateOverlay } from "./AoETemplateOverlay";
+import { HazardTimeline } from "./HazardTimeline";
+import { GroundEffectOverlay } from "./GroundEffectOverlay";
+import { RunicRingOverlay } from "./RunicRingOverlay";
 import { MapEditorToolbar } from "./MapEditorToolbar";
 import { MapCanvas } from "./MapCanvas";
 import { TokenInspector } from "./TokenInspector";
@@ -47,6 +52,9 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
   const [gridOpacity] = useState(0.08);
   const [showGrid, setShowGrid] = useState(true);
   const [pendingDashMove, setPendingDashMove] = useState<{ tokenId: string; x: number; y: number } | null>(null);
+  const [showHazardTimeline, setShowHazardTimeline] = useState(false);
+
+  const hazardEngine = useHazardEngine();
 
   const selectedToken = useMemo(
     () => map.tokens.find((t) => t.id === selectedTokenId) ?? null,
@@ -61,13 +69,23 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
     const current = map.aoeTemplates ?? [];
     onUpdate({ aoeTemplates: [...current, template] });
     setPlacementMode({ template, hoverX: template.gridX, hoverY: template.gridY });
+    // Register as persistent hazard zone (client-side state)
+    hazardEngine.registerHazardFromTemplate(template, {
+      durationRounds: template.damageDice ? 3 : null,
+      requiresConcentration: true,
+      tickDamage: template.damageDice,
+      magicSchool: "evocation",
+      altitude: "ground",
+      leavesGroundEffect: !!template.damageType,
+    });
     showToast({ message: `${template.label} template added. Click map to position.`, type: "info" });
-  }, [map.aoeTemplates, onUpdate, showToast]);
+  }, [map.aoeTemplates, onUpdate, showToast, hazardEngine]);
 
   const handleRemoveAoETemplate = useCallback((id: string) => {
     const current = map.aoeTemplates ?? [];
     onUpdate({ aoeTemplates: current.filter((t) => t.id !== id) });
-  }, [map.aoeTemplates, onUpdate]);
+    hazardEngine.expireHazard(id);
+  }, [map.aoeTemplates, onUpdate, hazardEngine]);
 
   const handleUpdateAoETemplate = useCallback((id: string, updates: Partial<AoETemplate>) => {
     const current = map.aoeTemplates ?? [];
@@ -146,6 +164,17 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
         onToggleGrid={() => setShowGrid(!showGrid)}
         onOpenTheatric={onOpenTheatric} selectedToken={selectedToken}
       />
+      {/* Hazard Timeline toggle */}
+      <div className="flex items-center gap-2 px-1">
+        <Button
+          size="xs"
+          variant={showHazardTimeline ? "accent" : "ghost"}
+          onClick={() => setShowHazardTimeline((o) => !o)}
+          title="Toggle Hazard Timeline"
+        >
+          ⏳ Hazards
+        </Button>
+      </div>
 
       <div className="relative">
         <MapCanvas
@@ -177,6 +206,41 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
               isGmView={gmView}
             />
           </div>
+        )}
+
+        {/* Ground Effect Overlay (residual AOE) */}
+        {hazardEngine.groundEffects.length > 0 && !placementMode && (
+          <svg
+            className="absolute inset-0 h-full w-full pointer-events-none z-[7]"
+            viewBox={`0 0 ${map.gridWidth} ${map.gridHeight}`}
+            preserveAspectRatio="none"
+          >
+            <GroundEffectOverlay
+              effects={hazardEngine.groundEffects}
+              gridWidth={map.gridWidth}
+              gridHeight={map.gridHeight}
+              isGmView={gmView}
+            />
+          </svg>
+        )}
+
+        {/* Runic Ring Overlays for persistent HazardZones */}
+        {hazardEngine.hazardZones.length > 0 && !placementMode && (
+          <svg
+            className="absolute inset-0 h-full w-full pointer-events-none z-[4]"
+            viewBox={`0 0 ${map.gridWidth} ${map.gridHeight}`}
+            preserveAspectRatio="none"
+          >
+            {hazardEngine.hazardZones.map((hz) => (
+              <RunicRingOverlay
+                key={hz.id}
+                hazard={hz}
+                radiusCells={hz.size / 5}
+                cx={hz.gridX}
+                cy={hz.gridY}
+              />
+            ))}
+          </svg>
         )}
 
         {/* AOE Placement Mode */}
@@ -214,6 +278,21 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
             onAddTemplate={handleAddAoETemplate}
             onRemoveTemplate={handleRemoveAoETemplate}
             onUpdateTemplate={handleUpdateAoETemplate}
+          />
+        </div>
+      )}
+
+      {showHazardTimeline && (
+        <div className="animate-slide-up">
+          <HazardTimeline
+            hazards={hazardEngine.hazardZones}
+            groundEffects={hazardEngine.groundEffects}
+            currentRound={hazardEngine.currentRound}
+            onExpireHazard={hazardEngine.expireHazard}
+            onExtendHazard={hazardEngine.extendHazard}
+            onToggleHazardVisibility={hazardEngine.toggleHazardVisibility}
+            onAdvanceRound={hazardEngine.advanceRound}
+            onProcessTicks={hazardEngine.processTicks}
           />
         </div>
       )}
