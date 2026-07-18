@@ -1,0 +1,191 @@
+# Subject: FILE: MapCanvasEngine.ts (REFACTORED - reduced to ~120 lines)
+System Log Initialized: 2026-07-18 12:04:29
+
+/* ── MapCanvasEngine ─────────────────────────────────────────────
+ * Core Canvas battle map orchestrator.
+ * Owns the canvas, state, and render loop. Delegates all drawing
+ * to MapCanvasRenderer and hit-detection to CanvasMapView.
+ *
+ * ARCHITECTURE: Light orchestrator — rendering logic lives in
+ * MapCanvasRenderer (pure functions), input handling in CanvasMapView.
+ * ─────────────────────────────────────────────────────────────── */
+
+import type { BattleMap, MapToken, MapDrawingStroke, FogZone } from "@/types";
+import type { AoETemplate } from "@/types/aoe-templates";
+import { MapCanvasRenderer } from "./MapCanvasRenderer";
+
+export interface CanvasRenderOptions {
+  gmView: boolean;
+  showFog: boolean;
+  showGrid: boolean;
+  gridOpacity: number;
+  selectedTokenId: string | null;
+  hoveredCell: { x: number; y: number } | null;
+  panOffset: { x: number; y: number };
+  zoomLevel: number;
+}
+
+export class MapCanvasEngine {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private map: BattleMap | null = null;
+  private options: CanvasRenderOptions;
+  private animFrameId: number | null = null;
+  private tokens: MapToken[] = [];
+  private aoeTemplates: AoETemplate[] = [];
+  private drawings: MapDrawingStroke[] = [];
+  private fogZones: FogZone[] = [];
+  private backgroundImage: HTMLImageElement | null = null;
+  private imageCache: Map<string, HTMLImageElement> = new Map();
+  private canvasW = 0;
+  private canvasH = 0;
+  private cellW = 0;
+  private cellH = 0;
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) throw new Error("Canvas 2D context unavailable");
+    this.ctx = ctx;
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = "high";
+    this.options = {
+      gmView: true, showFog: true, showGrid: true, gridOpacity: 0.08,
+      selectedTokenId: null, hoveredCell: null,
+      panOffset: { x: 0, y: 0 }, zoomLevel: 1,
+    };
+  }
+
+  /* ── Public API ── */
+  setMap(map: BattleMap) {
+    this.map = map;
+    this.fogZones = map.fogOfWar ?? [];
+    this.drawings = map.drawings ?? [];
+    if (map.imageUrl && map.imageUrl !== this.backgroundImage?.src) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => { this.backgroundImage = img; this.render(); };
+      img.onerror = () => { this.backgroundImage = null; this.render(); };
+      img.src = map.imageUrl;
+    } else if (!map.imageUrl) {
+      this.backgroundImage = null;
+    }
+    this.render();
+  }
+
+  setTokens(tokens: MapToken[]) {
+    this.tokens = tokens;
+    for (const t of tokens) {
+      if (t.imageUrl && !this.imageCache.has(t.imageUrl)) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = t.imageUrl;
+        this.imageCache.set(t.imageUrl, img);
+      }
+    }
+    this.render();
+  }
+
+  setAoETemplates(templates: AoETemplate[]) { this.aoeTemplates = templates; this.render(); }
+  setDrawings(drawings: MapDrawingStroke[]) { this.drawings = drawings; this.render(); }
+  setFogZones(zones: FogZone[]) { this.fogZones = zones; this.render(); }
+  setOptions(opts: Partial<CanvasRenderOptions>) { Object.assign(this.options, opts); this.render(); }
+
+  updateSize(width: number, height: number) {
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.canvasW = width;
+    this.canvasH = height;
+    this.render();
+  }
+
+  getGridCoords(clientX: number, clientY: number): { gridX: number; gridY: number } | null {
+    if (!this.map) return null;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = (clientX - rect.left - this.options.panOffset.x) / this.options.zoomLevel;
+    const y = (clientY - rect.top - this.options.panOffset.y) / this.options.zoomLevel;
+    const gridX = Math.floor((x / this.canvasW) * this.map.gridWidth);
+    const gridY = Math.floor((y / this.canvasH) * this.map.gridHeight);
+    if (gridX < 0 || gridX >= this.map.gridWidth || gridY < 0 || gridY >= this.map.gridHeight) return null;
+    return { gridX, gridY };
+  }
+
+  getTokenAt(clientX: number, clientY: number): MapToken | null {
+    if (!this.map) return null;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = (clientX - rect.left - this.options.panOffset.x) / this.options.zoomLevel;
+    const y = (clientY - rect.top - this.options.panOffset.y) / this.options.zoomLevel;
+    const viewX = (x / this.canvasW) * this.map.gridWidth;
+    const viewY = (y / this.canvasH) * this.map.gridHeight;
+    for (let i = this.tokens.length - 1; i >= 0; i--) {
+      const t = this.tokens[i];
+      if (!t) continue;
+      const r = (t.size * 0.4) + 0.3;
+      if (Math.abs(viewX - t.x - t.size / 2) < r && Math.abs(viewY - t.y - t.size / 2) < r) {
+        return t;
+      }
+    }
+    return null;
+  }
+
+  /* ── Render ── */
+  render() {
+    if (!this.map || this.canvasW === 0) return;
+    const ctx = this.ctx;
+    const { zoomLevel, panOffset } = this.options;
+
+    ctx.save();
+    ctx.clearRect(0, 0, this.canvasW, this.canvasH);
+    ctx.translate(panOffset.x, panOffset.y);
+    ctx.scale(zoomLevel, zoomLevel);
+
+    this.cellW = this.canvasW / this.map.gridWidth;
+    this.cellH = this.canvasH / this.map.gridHeight;
+
+    MapCanvasRenderer.drawBackground(ctx, this.canvasW, this.canvasH, this.backgroundImage);
+    if (this.options.showGrid) {
+      MapCanvasRenderer.drawGrid(ctx, this.map.gridWidth, this.map.gridHeight, this.cellW, this.cellH, this.options.gridOpacity);
+    }
+    MapCanvasRenderer.drawDrawings(ctx, this.drawings, this.cellW, this.cellH);
+    MapCanvasRenderer.drawMovementRange(ctx, this.tokens, this.options.selectedTokenId, this.options.gmView, this.cellW, this.cellH);
+    MapCanvasRenderer.drawAoeTemplates(ctx, this.aoeTemplates, this.options.gmView, this.cellW, this.cellH);
+    MapCanvasRenderer.drawTokens(ctx, this.tokens, this.options.selectedTokenId, this.options.gmView, this.cellW, this.cellH, this.imageCache);
+    if (this.options.showFog && !this.options.gmView) {
+      MapCanvasRenderer.drawFogOfWar(ctx, this.fogZones, this.tokens, this.canvasW, this.canvasH, this.cellW, this.cellH);
+    }
+    MapCanvasRenderer.drawSelectedTokenOverlay(ctx, this.tokens, this.options.selectedTokenId, this.cellW, this.cellH);
+
+    ctx.restore();
+    this.animFrameId = null;
+  }
+
+  /* ── Lifecycle ── */
+  startRenderLoop() {
+    const loop = () => {
+      if (this.options.selectedTokenId) this.render();
+      this.animFrameId = requestAnimationFrame(loop);
+    };
+    this.animFrameId = requestAnimationFrame(loop);
+  }
+
+  stopRenderLoop() {
+    if (this.animFrameId !== null) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+  }
+
+  destroy() {
+    this.stopRenderLoop();
+    this.backgroundImage = null;
+    this.imageCache.clear();
+    this.map = null;
+    this.tokens = [];
+    this.aoeTemplates = [];
+  }
+}
+

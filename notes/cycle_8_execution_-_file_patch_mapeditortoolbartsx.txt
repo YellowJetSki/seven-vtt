@@ -1,0 +1,31 @@
+# Subject: CYCLE 8 EXECUTION - FILE PATCH: MapEditorToolbar.tsx
+System Log Initialized: 2026-07-18 12:05:05
+
+PATCH for MapEditorToolbar.tsx — Add combat & share buttons:
+
+Add to interface Props:
+```
+  showCombat: boolean;
+  showAssetShare: boolean;
+  onToggleCombat: () => void;
+  onToggleAssetShare: () => void;
+```
+
+Add destructured props after `hasSelectedToken`:
+```
+  showCombat, showAssetShare,
+  onToggleCombat, onToggleAssetShare,
+```
+
+Add buttons after the AOE button:
+```
+        <Button size="xs" variant={showCombat ? "default" : "ghost"} onClick={onToggleCombat}>
+          ⚔️ Combat
+        </Button>
+        <Button size="xs" variant={showAssetShare ? "default" : "ghost"} onClick={onToggleAssetShare}>
+          📦 Share
+        </Button>
+```
+
+That's it — minimal integration. The Button component handles all styling.
+

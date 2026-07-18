@@ -1,0 +1,41 @@
+# Subject: CYCLE 8 - FILE AUDIT RESULTS
+System Log Initialized: 2026-07-18 12:03:37
+
+# CYCLE 8: FILE INVENTORY & REFACTOR PLAN
+
+## Files Exceeding 150 Lines
+
+| File | Lines | Action |
+|------|-------|--------|
+| `src/lib/canvas/MapCanvasEngine.ts` | 535 | REFACTOR → split into renderer/input/token sub-modules |
+| `src/components/maps/MapEditor.tsx` | 327 | REFACTOR → split state management, extract panels |
+| `src/pages/PlayerDashboard.tsx` | 319 | REFACTOR → extract sub-components |
+| `src/components/share/AssetSharePanel.tsx` | 270 | Near threshold — can defer |
+| `src/components/combat/InitiativeTrackerHUD.tsx` | 380 | NEW — REFACTOR → extract prep/active/log panels |
+| `src/components/maps/AoEPresetPanel.tsx` | ~200 | Review |
+| `src/lib/canvas/MapCanvasRenderer.ts` | N/A | Will create from split |
+| `src/components/player/PlayerCharacterSheetPremium.tsx` | ~250 | Review |
+| `src/stores/campaignStore.ts` | ~200 | Review |
+
+## Refactoring Strategy
+
+### 1. MapCanvasEngine (535 lines) → 3 files:
+- `MapCanvasEngine.ts` — Core class (orchestrator) ~150 lines
+- `MapCanvasRenderer.ts` — Pure rendering functions ~200 lines
+- `MapCanvasInput.ts` — Mouse/touch handling, hit-testing ~100 lines
+- `MapCanvasTokenLayer.ts` — Token rendering, drag logic ~80 lines
+
+### 2. MapEditor (327 lines) → 2 files:
+- `MapEditor.tsx` — Core orchestration ~150 lines
+- `MapEditorPanels.tsx` — All collapsible panels extracted ~170 lines
+
+### 3. InitiativeTrackerHUD (380 lines) → 3 files:
+- `InitiativeTrackerHUD.tsx` — Core HUD with drag logic ~120 lines
+- `InitiativePrepPanel.tsx` — Encounter creation/setup ~80 lines
+- `InitiativeActivePanel.tsx` — Combat flow, turn management ~180 lines
+
+### 4. PlayerDashboard (319 lines) → 2-3 files:
+- `PlayerDashboard.tsx` — Core layout ~120 lines
+- `PlayerSessionBar.tsx` — Session status + conditions ~100 lines
+- `PlayerCombatPreview.tsx` — Initiative tracker for players ~80 lines
+

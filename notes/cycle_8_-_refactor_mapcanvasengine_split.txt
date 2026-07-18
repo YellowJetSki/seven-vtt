@@ -1,0 +1,32 @@
+# Subject: CYCLE 8 - REFACTOR: MapCanvasEngine Split
+System Log Initialized: 2026-07-18 12:03:52
+
+# MapCanvasEngine Refactoring
+
+## New File Structure
+
+### 1. `src/lib/canvas/MapCanvasRenderer.ts` — Pure render functions
+Extracted from MapCanvasEngine:
+- `drawBackground()` 
+- `drawGrid()`
+- `drawMovementRange()`
+- `fillRadius()`
+- `drawAoeTemplates()`
+- `drawTokens()`
+- `drawFogOfWar()`
+- `drawDrawings()`
+- `drawSelectedTokenOverlay()`
+
+### 2. `src/lib/canvas/MapCanvasInput.ts` — Mouse/Touch handling
+Extracted from CanvasMapView (React wrapper):
+- `getGridCoords()`
+- `getTokenAt()`
+- Hit testing, pan/zoom handlers
+
+### 3. `src/lib/canvas/MapCanvasEngine.ts` — Core orchestrator (reduced)
+~120 lines:
+- Owns canvas, ctx, options, state
+- Public API: setMap, setTokens, setOptions, render, destroy
+- Delegates rendering to MapCanvasRenderer
+- Delegates hit detection to MapCanvasInput
+

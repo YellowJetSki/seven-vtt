@@ -1,0 +1,339 @@
+# Subject: FILE: MapCanvasRenderer.ts (created)
+System Log Initialized: 2026-07-18 12:04:16
+
+/* ── MapCanvasRenderer ─────────────────────────────────────────
+ * Pure rendering functions for the Canvas battle map.
+ * Stateless — all state is passed in as parameters.
+ * ─────────────────────────────────────────────────────────────── */
+
+import type { BattleMap, MapToken, MapDrawingStroke, FogZone } from "@/types";
+import type { AoETemplate } from "@/types/aoe-templates";
+import { getAoEShapePath } from "@/types/aoe-shapes";
+import type { CanvasRenderOptions } from "./MapCanvasEngine";
+
+const GRID_LINE_COLOR = "rgba(255, 255, 255, 0.12)";
+const GRID_LINE_ACCENT = "rgba(139, 48, 255, 0.06)";
+const FOG_COLOR = "rgba(0, 0, 0, 0.75)";
+const TOKEN_RADIUS_RATIO = 0.4;
+const SELECTION_RING_COLOR = "#a35aff";
+const MOVEMENT_COLOR = "rgba(57, 255, 144, 0.12)";
+const MOVEMENT_BORDER = "rgba(57, 255, 144, 0.3)";
+const DASH_COLOR = "rgba(255, 200, 57, 0.08)";
+const DASH_BORDER = "rgba(255, 200, 57, 0.2)";
+const HP_BAR_HEIGHT = 3;
+
+export class MapCanvasRenderer {
+  /* ── Background ── */
+  static drawBackground(
+    ctx: CanvasRenderingContext2D,
+    canvasW: number,
+    canvasH: number,
+    backgroundImage: HTMLImageElement | null,
+  ) {
+    if (backgroundImage) {
+      ctx.drawImage(backgroundImage, 0, 0, canvasW, canvasH);
+    } else {
+      ctx.fillStyle = "#1e1f2b";
+      ctx.fillRect(0, 0, canvasW, canvasH);
+      ctx.fillStyle = "rgba(255,255,255,0.02)";
+      for (let x = 0; x < canvasW; x += 40) {
+        for (let y = 0; y < canvasH; y += 40) {
+          ctx.beginPath();
+          ctx.arc(x, y, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+  }
+
+  /* ── Grid ── */
+  static drawGrid(
+    ctx: CanvasRenderingContext2D,
+    gridWidth: number,
+    gridHeight: number,
+    cellW: number,
+    cellH: number,
+    gridOpacity: number,
+  ) {
+    const op = gridOpacity;
+    ctx.strokeStyle = `rgba(139, 48, 255, ${op * 0.5})`;
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i <= gridWidth; i += 5) {
+      ctx.beginPath();
+      ctx.moveTo(i * cellW, 0);
+      ctx.lineTo(i * cellW, gridHeight * cellH);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= gridHeight; i += 5) {
+      ctx.beginPath();
+      ctx.moveTo(0, i * cellH);
+      ctx.lineTo(gridWidth * cellW, i * cellH);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = `rgba(255, 255, 255, ${op})`;
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= gridWidth; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * cellW, 0);
+      ctx.lineTo(i * cellW, gridHeight * cellH);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= gridHeight; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, i * cellH);
+      ctx.lineTo(gridWidth * cellW, i * cellH);
+      ctx.stroke();
+    }
+    ctx.fillStyle = `rgba(255, 255, 255, ${op * 3})`;
+    ctx.font = "10px monospace";
+    for (let i = 0; i < gridWidth; i += 5) {
+      ctx.fillText(`${i}`, i * cellW + 2, cellH - 2);
+    }
+    for (let i = 0; i < gridHeight; i += 5) {
+      ctx.fillText(`${i}`, 2, i * cellH + cellH - 2);
+    }
+  }
+
+  /* ── Movement Range ── */
+  static drawMovementRange(
+    ctx: CanvasRenderingContext2D,
+    tokens: MapToken[],
+    selectedTokenId: string | null,
+    gmView: boolean,
+    cellW: number,
+    cellH: number,
+  ) {
+    if (!selectedTokenId || !gmView) return;
+    const selToken = tokens.find((t) => t.id === selectedTokenId);
+    if (!selToken) return;
+    const speed = selToken.speed ?? 30;
+    const normalCells = Math.floor(speed / 5);
+    const dashCells = Math.floor(speed * 2 / 5);
+    this.fillRadius(ctx, selToken.x, selToken.y, dashCells, DASH_COLOR, DASH_BORDER, cellW, cellH);
+    this.fillRadius(ctx, selToken.x, selToken.y, normalCells, MOVEMENT_COLOR, MOVEMENT_BORDER, cellW, cellH);
+  }
+
+  static fillRadius(
+    ctx: CanvasRenderingContext2D,
+    gx: number, gy: number, cells: number,
+    fillColor: string, strokeColor: string,
+    cellW: number, cellH: number,
+  ) {
+    const cx = (gx + 0.5) * cellW;
+    const cy = (gy + 0.5) * cellH;
+    const radius = cells * cellW;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /* ── AOE Templates ── */
+  static drawAoeTemplates(
+    ctx: CanvasRenderingContext2D,
+    templates: AoETemplate[],
+    gmView: boolean,
+    cellW: number,
+    cellH: number,
+  ) {
+    for (const tpl of templates) {
+      if (!tpl.visibleToPlayers && !gmView) continue;
+      const pathData = getAoEShapePath(tpl.shape, tpl.direction, tpl.size / 5);
+      const centerX = (tpl.gridX + 0.5) * cellW;
+      const centerY = (tpl.gridY + 0.5) * cellH;
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      const scaleX = cellW / 5;
+      const scaleY = cellH / 5;
+      ctx.scale(scaleX, scaleY);
+      const path = new Path2D(pathData);
+      ctx.fillStyle = tpl.color ?? "rgba(139, 48, 255, 0.15)";
+      ctx.strokeStyle = tpl.color ?? "rgba(139, 48, 255, 0.5)";
+      ctx.lineWidth = 0.3;
+      ctx.fill(path);
+      ctx.stroke(path);
+      ctx.restore();
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(tpl.label, centerX, centerY + 16);
+      if (tpl.damageDice) {
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "8px sans-serif";
+        ctx.fillText(`${tpl.damageDice}`, centerX, centerY + 28);
+      }
+    }
+  }
+
+  /* ── Tokens ── */
+  static drawTokens(
+    ctx: CanvasRenderingContext2D,
+    tokens: MapToken[],
+    selectedTokenId: string | null,
+    gmView: boolean,
+    cellW: number,
+    cellH: number,
+    imageCache: Map<string, HTMLImageElement>,
+  ) {
+    for (const token of tokens) {
+      if (!token.visible && !gmView) continue;
+      const cx = (token.x + token.size / 2) * cellW;
+      const cy = (token.y + token.size / 2) * cellH;
+      const radius = (token.size * TOKEN_RADIUS_RATIO) * Math.min(cellW, cellH);
+      ctx.beginPath();
+      ctx.arc(cx + 2, cy + 2, radius, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.3)";
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = token.imageUrl ? "transparent" : (token.color ?? "#6366f1");
+      ctx.fill();
+      ctx.strokeStyle = selectedTokenId === token.id ? SELECTION_RING_COLOR : "rgba(255,255,255,0.2)";
+      ctx.lineWidth = selectedTokenId === token.id ? 2.5 : 1.5;
+      ctx.stroke();
+      if (token.imageUrl) {
+        const img = imageCache.get(token.imageUrl);
+        if (img?.complete) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, cx - radius, cy - radius, radius * 2, radius * 2);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = token.color ?? "#6366f1";
+          const letter = token.label?.charAt(0)?.toUpperCase() ?? "?";
+          ctx.font = `bold ${radius * 0.7}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#fff";
+          ctx.fillText(letter, cx, cy);
+        }
+      } else {
+        const letter = token.label?.charAt(0)?.toUpperCase() ?? "?";
+        ctx.font = `bold ${radius * 0.6}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#fff";
+        ctx.fillText(letter, cx, cy);
+      }
+      if (token.hp && token.hp.max > 0) {
+        const barW = radius * 1.6;
+        const barH = HP_BAR_HEIGHT;
+        const barX = cx - barW / 2;
+        const barY = cy + radius + 4;
+        const pct = Math.max(0, token.hp.current / token.hp.max);
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(barX, barY, barW, barH);
+        const hpColor = pct > 0.5 ? "#27ae60" : pct > 0.25 ? "#f39c12" : "#e74c3c";
+        ctx.fillStyle = hpColor;
+        ctx.fillRect(barX, barY, barW * pct, barH);
+      }
+      if (token.statusMarkers && token.statusMarkers.length > 0) {
+        const dots = Math.min(token.statusMarkers.length, 3);
+        for (let i = 0; i < dots; i++) {
+          const dx = cx + radius - 4 - i * 6;
+          const dy = cy - radius + 4;
+          ctx.beginPath();
+          ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+          ctx.fillStyle = "#f39c12";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(0,0,0,0.5)";
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.font = "8px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(token.label, cx, cy + radius + HP_BAR_HEIGHT + 6);
+    }
+  }
+
+  /* ── Fog of War ── */
+  static drawFogOfWar(
+    ctx: CanvasRenderingContext2D,
+    fogZones: FogZone[],
+    tokens: MapToken[],
+    canvasW: number,
+    canvasH: number,
+    cellW: number,
+    cellH: number,
+  ) {
+    ctx.fillStyle = FOG_COLOR;
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.globalCompositeOperation = "destination-out";
+    for (const zone of fogZones) {
+      ctx.fillRect(zone.x * cellW, zone.y * cellH, zone.width * cellW, zone.height * cellH);
+    }
+    for (const token of tokens) {
+      if (token.type !== "player") continue;
+      const cx = (token.x + token.size / 2) * cellW;
+      const cy = (token.y + token.size / 2) * cellH;
+      const visionRadius = 8 * cellW;
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, visionRadius);
+      gradient.addColorStop(0, "rgba(0,0,0,1)");
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, visionRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  /* ── Drawings ── */
+  static drawDrawings(
+    ctx: CanvasRenderingContext2D,
+    drawings: MapDrawingStroke[],
+    cellW: number,
+    cellH: number,
+  ) {
+    for (const stroke of drawings) {
+      if (stroke.points.length < 2) continue;
+      ctx.beginPath();
+      const first = stroke.points[0];
+      ctx.moveTo(first.x * cellW, first.y * cellH);
+      for (let i = 1; i < stroke.points.length; i++) {
+        const p = stroke.points[i];
+        ctx.lineTo(p.x * cellW, p.y * cellH);
+      }
+      ctx.strokeStyle = stroke.color ?? "#e74c3c";
+      ctx.lineWidth = (stroke.width ?? 2) * Math.min(cellW, cellH) / 100;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.globalAlpha = stroke.opacity ?? 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* ── Selection Ring ── */
+  static drawSelectedTokenOverlay(
+    ctx: CanvasRenderingContext2D,
+    tokens: MapToken[],
+    selectedTokenId: string | null,
+    cellW: number,
+    cellH: number,
+  ) {
+    if (!selectedTokenId) return;
+    const selToken = tokens.find((t) => t.id === selectedTokenId);
+    if (!selToken) return;
+    const cx = (selToken.x + selToken.size / 2) * cellW;
+    const cy = (selToken.y + selToken.size / 2) * cellH;
+    const radius = (selToken.size * TOKEN_RADIUS_RATIO) * Math.min(cellW, cellH) + 4;
+    const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 500);
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(163, 90, 255, ${0.3 + 0.3 * pulse})`;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+}
+

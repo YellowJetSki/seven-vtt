@@ -1,0 +1,45 @@
+# Subject: CYCLE 8 EXECUTION - FILE PATCH: MapEditor.tsx
+System Log Initialized: 2026-07-18 12:05:09
+
+PATCH for MapEditor.tsx — Add combat tracker + asset share:
+
+CHANGE 1: Add imports at top (after existing imports):
+```
+import { InitiativeTrackerHUD } from "@/components/combat/InitiativeTrackerHUD";
+import { AssetSharePanel } from "@/components/share/AssetSharePanel";
+```
+
+CHANGE 2: Add state declarations after `showHazardTimeline`:
+```
+  const [showCombat, setShowCombat] = useState(false);
+  const [showAssetShare, setShowAssetShare] = useState(false);
+```
+
+CHANGE 3: Update `<MapEditorToolbar ...>` to pass new props:
+Insert `showCombat={showCombat}` `showAssetShare={showAssetShare}`
+Insert `onToggleCombat={() => setShowCombat((o) => !o)}`
+Insert `onToggleAssetShare={() => setShowAssetShare((o) => !o)}`
+
+CHANGE 4: Add InitiativeTrackerHUD after the CanvasMapView closing:
+```
+        {/* Initiative Tracker HUD */}
+        <InitiativeTrackerHUD
+          visible={showCombat}
+          onClose={() => setShowCombat(false)}
+          mapCombatants={map.tokens.map((t) => ({
+            id: t.id,
+            name: t.label,
+            type: t.type === "player" ? "player" as const : "enemy" as const,
+            ac: t.ac ?? 12,
+            hp: t.hp ?? 15,
+          }))}
+        />
+```
+
+CHANGE 5: Add AssetSharePanel after the HazardTimeline section (before TokenInspector):
+```
+      {showAssetShare && (
+        <AssetSharePanel visible={showAssetShare} />
+      )}
+```
+
