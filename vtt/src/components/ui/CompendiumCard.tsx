@@ -1,5 +1,5 @@
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat } from "@/types/homebrew";
-import { rarityColor } from "@/stores/compendiumStore";
+import { rarityColor } from "@/stores/compendium";
 
 type CompendiumEntry =
   | { type: "item"; data: HomebrewItem }

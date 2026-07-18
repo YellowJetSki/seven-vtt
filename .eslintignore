@@ -1,0 +1,7 @@
+venv/
+scripts/
+docs/
+dist/
+node_modules/
+test-results/
+*.config.js

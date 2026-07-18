@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCompendiumStore, getCompendiumItems, getCompendiumSpells, getCompendiumFeats, ITEM_CATEGORIES, SPELL_SCHOOLS } from "@/stores/compendiumStore";
+import { useCompendiumStore, getCompendiumItems, getCompendiumSpells, getCompendiumFeats, ITEM_CATEGORIES, SPELL_SCHOOLS } from "@/stores/compendium";
 import CompendiumSearchBar from "./CompendiumSearchBar";
 import CompendiumCard from "./CompendiumCard";
 
@@ -9,9 +9,9 @@ export default function GlobalCompendium() {
 
   const [compact, setCompact] = useState(false);
 
-  const items = getCompendiumItems(store);
-  const spells = getCompendiumSpells(store);
-  const feats = getCompendiumFeats(store);
+  const items = getCompendiumItems(store.items, { searchQuery, categoryFilter, schoolFilter, showSRD });
+  const spells = getCompendiumSpells(store.spells, { searchQuery, categoryFilter, schoolFilter, showSRD });
+  const feats = getCompendiumFeats(store.feats, { searchQuery, categoryFilter, schoolFilter, showSRD });
 
   return (
     <div className="flex flex-col h-full">

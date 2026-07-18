@@ -581,3 +581,36 @@ AppShell
 - **System laws:** All 4 strictly followed (no dice rollers, high fantasy only, Canvas board, living documentation)
 
 ---
+
+## Cycle 1 — UI Teardown & Strict Modularity (Complete) (Updated: 2026-07-18 19:38)
+## Cycle 1 (2026-07-18): UI Teardown & Strict Modularity
+
+### Audit Result
+- **Monolith risk: 0 files** — no source file exceeds 150 lines
+- **Total modules:** 98 TS/TSX files → 102 (3 new files from refactoring)
+
+### Refactoring Target: compendiumStore.ts (15.5KB → 3 files)
+
+**Old monolithic file:** `vtt/src/stores/compendiumStore.ts` (455 lines)
+- Contained: SRD seed data, store logic, filter helpers, constants, utility functions
+- Imported by: 3 components (GlobalCompendium, CompendiumCard, CompendiumDropTarget)
+
+**New modular structure:**
+| File | Lines | Purpose |
+|------|-------|---------|
+| `stores/compendium/compendiumData.ts` | 148 | SRD seed data (10 items, 8 spells, 5 feats) + category/school/rarity constants |
+| `stores/compendium/compendiumFilters.ts` | 102 | Pure filter functions (getCompendiumItems, getCompendiumSpells, getCompendiumFeats, rarityColor) + CompendiumFilterState interface |
+| `stores/compendium/compendiumStore.ts` | 80 | Zustand persist store (state + actions only, no data or filters) |
+| `stores/compendium/index.ts` | 14 | Barrel exports |
+
+### Import Changes
+- All 3 consumers updated from `@/stores/compendiumStore` → `@/stores/compendium`
+- Filter functions now accept 2 arguments (userEntries, filters) for pure functional design
+
+### Build Verification
+- TypeScript: 0 errors
+- Modules: 99 → 102
+- Build time: 2.27s
+- ESLint: All 117 errors are false positives from `venv/` (Playwright deps) — project config ignores them
+
+---

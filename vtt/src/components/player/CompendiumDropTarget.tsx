@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useState } from "react";
-import { useCompendiumStore } from "@/stores/compendiumStore";
+import { useCompendiumStore } from "@/stores/compendium";
 
 interface CompendiumDropTargetProps {
   characterId: string;
