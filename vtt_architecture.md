@@ -2077,3 +2077,36 @@ Deep-dive analysis of pedal-sheet's `DMPlayerCard.jsx`, `InventoryTab.jsx`, `Com
 - Deployed: https://vtt-five.vercel.app
 
 ---
+
+## Sprint — Cycle 3: Temp Buffs System (2026-07-18) (Updated: 2026-07-18 15:01)
+## Sprint — Cycle 3: Temp Buffs System
+
+### Feature: Temporary Buff/Debuff Manager
+Inspired by the pedal-sheet's `TempBuffsModal.jsx` and `tempBuffs[]` system.
+
+**What was Built:**
+1. **`types/temp-buffs.ts`** — 80 lines — Types: `TempBuff`, `BuffTarget` (AC/Attack/Speed/SavingThrow/Damage), `BUFF_PRESETS` (11 built-in buffs: Shield of Faith, Barkskin, Haste, Bless, Bane, Half Cover, etc.), `getBuffTotal()`, `getBuffDisplay()`, `BUFF_TARGETS` metadata
+2. **`components/player/premium-sheet/TempBuffsModal.tsx`** — 190 lines — Full modal with:
+   - Effect preview (effective AC vs base AC, effective Speed vs base Speed)
+   - Quick Presets grid (2-column, 11 presets, active-state disabled)
+   - Custom Buff form: target selector (5 targets with icons), name input, value input, buff/debuff toggle
+   - Active Buffs list with clear-all, per-buff remove, source/duration display
+   - All pedal-sheet chunky styling (3px borders, 8px shadows, press animations)
+
+**Integration:**
+- `PlayerCharacter` interface extended with `tempBuffs?: TempBuff[]`
+- `PlayerCharacterSheetPedal.tsx` updated with:
+  - Buffs toggle button in header (glows when active, pulse indicator)
+  - `onUpdateCharacter` prop for store-level state management
+- `PlayerDashboard.tsx` updated with:
+  - `updateCharacter` store import
+  - `onHpChange` and `onUpdateCharacter` callbacks passed to the sheet
+
+**Build Metrics:**
+- Modules: 253
+- PlayerDashboard bundle: 53.98KB (includes TempBuffsModal)
+- Build time: 878ms
+- TypeScript: 0 errors
+- Deployed: https://vtt-five.vercel.app
+
+---
