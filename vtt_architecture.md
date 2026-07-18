@@ -1615,3 +1615,44 @@ A visual campaign-spanning meta-layer that tracks the 7 legendary obelisks. Each
 - `vtt/eslint.config.js` — Created for hygiene tool compatibility
 
 ---
+
+## Sprint 10 (Cycle 5) — Local DOM Vision QA & Security Auditing (Updated: 2026-07-18 00:45)
+## Sprint 10 Cycle 5 — Local DOM Vision QA & Security Auditing
+
+### Visual QA Results (Playwright DOM scan)
+
+| Page | Route | Status | Visual Notes |
+|------|-------|--------|--------------|
+| **Login** | `/login` | ✅ | Dark fantasy glassmorphism card with ambient blur orbs (accent/mage gradient), app icon with pulse |
+| **DM Login Form** | `/login` (clicked DM) | ✅ | Glassmorphic form with username/password fields, back button, subtle focus ring styling |
+| **DM Dashboard** | `/campaign/dashboard` | ✅ | Full sidebar (glass-strong), 7 nav items with active accent-glow indicator, header with breadcrumbs, status badges (Online/Sync/DM with pulse), welcome screen |
+| **Theatric View** | `/theatric` | ✅ | Empty state with animated STᚱ logo (pulse-glow + ring), ambient background blur orbs, glass close button |
+| **Encounters** | `/campaign/encounters` | ✅ | Full Combat Center with 4 tabs (Initiative/Session/Quick Ref/Builder), empty encounter state, Quick-Start button, glassmorphic cards |
+
+### Console Errors: 0 across all pages ✅
+
+### TypeScript Verification
+- `npx -p typescript tsc --noEmit`: **0 errors** ✅
+- All 7 obelisk components compile cleanly
+
+### Firestore Security Audit
+- **Firestore rules** at `vtt/firestore.rules` use recursive wildcard `{document=**}` covering all 13 subcollections
+- Obelisk data stored in **Zustand campaignStore** (local-first) with optional Firebase sync
+- If synced to Firebase, obelisk data would live under `campaigns/{campaignId}/obelisks/{obeliskId}` which is protected by `match /campaigns/{campaignId}/{document=**}` rule
+- Emulator not running locally (expected for dev mode); rules verified by inspection
+- **Write:** DM-only (role == "dm" custom claim)
+- **Read:** Any authenticated user
+- **Catch-all deny guard** at bottom prevents any unlisted path access
+
+### Playwright Tests: 7/7 PASSING (6.5s) ✅
+- Test 1: Login page loads (819ms)
+- Test 2: DM role click shows form (1.3s)  
+- Test 3: DM login redirects to dashboard (1.5s)
+- Test 4: Theatric page loads without auth (462ms)
+- Test 5: Unknown route redirects to login (459ms)
+- Test 6: Player page loads without auth (435ms)
+- Test 7: Campaign routes redirect when unauthenticated (559ms)
+
+### Dev Server: Stopped ✅ (ports cleared)
+
+---
