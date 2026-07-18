@@ -158,6 +158,19 @@ export function getClassSummary(classes: ClassEntry[]): string {
   return classes.map(c => `${c.name} ${c.level}`).join(", ");
 }
 
+/** Calculate ability score modifier (D&D 5e formula) */
+export function getAbilityMod(score: number): number {
+  return Math.floor((score - 10) / 2);
+}
+
+/** Format initiative value defensively — handles undefined, null, "--", "", NaN */
+export function formatInitiative(init: string | number | undefined | null): string {
+  if (init === undefined || init === null || init === "--" || init === "") return "—";
+  const num = Number(init);
+  if (isNaN(num)) return "—";
+  return num >= 0 ? `+${num}` : `${num}`;
+}
+
 /** Check if the character has a specific class */
 export function hasClass(classes: ClassEntry[], className: string): boolean {
   return classes.some(c => c.name.toLowerCase() === className.toLowerCase());

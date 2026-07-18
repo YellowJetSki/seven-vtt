@@ -19,7 +19,7 @@ import { HazardTimeline } from "./HazardTimeline";
 import { GroundEffectOverlay } from "./GroundEffectOverlay";
 import { RunicRingOverlay } from "./RunicRingOverlay";
 import { MapEditorToolbar } from "./MapEditorToolbar";
-import { MapCanvas } from "./MapCanvas";
+import { CanvasMapView } from "./CanvasMapView";
 import { TokenInspector } from "./TokenInspector";
 
 const ROTATION_ORDER: AoE_Direction[] = [
@@ -177,23 +177,25 @@ export function MapEditor({ map, onUpdate, onOpenTheatric }: Props) {
       </div>
 
       <div className="relative">
-        <MapCanvas
-          map={map} gmView={gmView} showFog={showFog} showGrid={showGrid}
-          gridOpacity={gridOpacity} selectedTokenId={selectedTokenId}
-          showMovement={showMovement} dashMode={dashMode} drawingEnabled={drawingEnabled}
-          onTokenClick={handleTokenClick} onCanvasClick={handleCanvasClick}
-          onDragToCell={handleDragToCell}
-          _onMoveToken={(id, dx, dy) => {
-            const t = map.tokens.find((tk) => tk.id === id);
-            if (!t) return;
-            performMove(id, t.x + dx, t.y + dy);
-          }}
+        <CanvasMapView
+          map={map}
+          tokens={map.tokens}
+          aoeTemplates={templates}
+          drawings={map.drawings ?? []}
+          fogZones={map.fogOfWar ?? []}
+          gmView={gmView}
+          showFog={showFog}
+          showGrid={showGrid}
+          gridOpacity={gridOpacity}
+          selectedTokenId={selectedTokenId}
+          hoveredCell={placementMode ? { x: placementMode.hoverX, y: placementMode.hoverY } : null}
+          onTokenClick={handleTokenClick}
+          onCanvasClick={handleCanvasClickGrid}
           onCanvasMove={handleCanvasMove}
-          onCanvasClickWithGrid={handleCanvasClickGrid}
-          onUpdateToken={handleUpdateToken}
-          onTokensUpdate={(tokens) => onUpdate({ tokens })}
-          onDrawingsChange={(drawings) => onUpdate({ drawings })}
-          _onAoETemplatesChange={(aoeTemplates) => onUpdate({ aoeTemplates })}
+          onTokenDragEnd={(tokenId, gridX, gridY) => handleDragToCell(tokenId, gridX, gridY)}
+          onCanvasContextMenu={(gx, gy) => {
+            // Future: right-click context menu
+          }}
         />
 
         {/* AOE Template Overlay */}
