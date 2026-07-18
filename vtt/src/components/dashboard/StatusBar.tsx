@@ -1,17 +1,34 @@
 export default function StatusBar() {
   return (
-    <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-800/30 border border-surface-700/30">
+    <div className="premium-surface rounded-xl p-4 flex items-center gap-4 flex-wrap">
       <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-rogue-500 animate-pulse-soft" />
-        <span className="text-xs text-surface-400">System Online</span>
+        <span className="relative flex w-2.5 h-2.5">
+          <span className="animate-ping absolute inset-0 rounded-full bg-rogue-500/40" />
+          <span className="relative rounded-full w-2.5 h-2.5 bg-rogue-500" />
+        </span>
+        <span className="text-xs text-surface-400 font-medium">System Online</span>
       </div>
-      <div className="h-4 w-px bg-surface-700/50" />
+
+      <div className="h-5 w-px bg-surface-700/30" />
+
       <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-accent-500 animate-pulse-soft" />
-        <span className="text-xs text-surface-400">Local Storage Active</span>
+        <span className="relative flex w-2.5 h-2.5">
+          <span className="animate-ping absolute inset-0 rounded-full bg-accent-500/40" style={{ animationDelay: "1s" }} />
+          <span className="relative rounded-full w-2.5 h-2.5 bg-accent-500" />
+        </span>
+        <span className="text-xs text-surface-400 font-medium">Local Storage Active</span>
       </div>
-      <div className="h-4 w-px bg-surface-700/50" />
-      <span className="text-xs text-surface-500">Physical Dice Only — No Digital RNG</span>
+
+      <div className="h-5 w-px bg-surface-700/30" />
+
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-divine-500/60" />
+        <span className="text-xs text-surface-500 font-medium">Physical Dice — No Digital RNG</span>
+      </div>
+
+      <div className="flex-1" />
+
+      <span className="text-[10px] text-surface-600 uppercase tracking-widest">Arkla v4.0</span>
     </div>
   );
 }

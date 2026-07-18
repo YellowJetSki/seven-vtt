@@ -9,29 +9,44 @@ const typeIcons: Record<string, string> = {
 };
 
 export default function RecentActivity({ entries }: RecentActivityProps) {
-  if (entries.length === 0) {
-    return (
-      <div className="premium-card rounded-xl p-6">
-        <h2 className="text-lg font-bold text-white mb-4">Recent Activity</h2>
-        <p className="text-surface-500 text-sm">No journal entries yet. Start documenting your campaign!</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="premium-card rounded-xl p-6">
-      <h2 className="text-lg font-bold text-white mb-4">Recent Activity</h2>
-      <div className="space-y-3">
-        {entries.slice(-5).reverse().map((entry) => (
-          <div key={entry.id} className="flex items-start gap-3 p-3 rounded-lg bg-surface-800/30">
-            <span className="text-lg">{typeIcons[entry.type] ?? "📌"}</span>
-            <div>
-              <p className="text-sm font-medium text-white">{entry.title}</p>
-              <p className="text-xs text-surface-400">{new Date(entry.createdAt).toLocaleDateString()}</p>
-            </div>
-          </div>
-        ))}
+    <div className="premium-surface rounded-xl p-6 relative">
+      <div className="corner-ornament corner-tl" />
+      <div className="corner-ornament corner-tr" />
+      <div className="flex items-center gap-2 mb-5">
+        <h2 className="text-lg font-black text-gradient-arcane">Recent Activity</h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-accent-500/20 to-transparent" />
       </div>
+
+      {entries.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-surface-500 text-sm italic">No journal entries yet. Begin your chronicle!</p>
+          <div className="rune-divider mt-4">ᚱ</div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {entries.slice(-5).reverse().map((entry, idx) => (
+            <div
+              key={entry.id}
+              className="flex items-start gap-3 p-3 rounded-xl bg-surface-800/30 border border-surface-700/15 hover:border-accent-500/10 transition-all duration-200 animate-slide-in-up"
+              style={{ animationDelay: `${idx * 50}ms` }}
+            >
+              <span className="text-lg mt-0.5" aria-hidden="true">{typeIcons[entry.type] ?? "📌"}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-surface-200 truncate">{entry.title}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] uppercase tracking-wider text-surface-500 bg-surface-700/30 px-1.5 py-0.5 rounded">
+                    {entry.type}
+                  </span>
+                  <span className="text-xs text-surface-500">
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

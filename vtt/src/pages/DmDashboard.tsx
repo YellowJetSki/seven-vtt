@@ -35,7 +35,7 @@ export default function DmDashboard() {
     return (
       <AppShell>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <LoadingSpinner size="lg" label="Loading dashboard..." />
+          <LoadingSpinner size="lg" label="Awakening the campaign..." />
         </div>
       </AppShell>
     );
@@ -44,11 +44,22 @@ export default function DmDashboard() {
   if (!meta) {
     return (
       <AppShell>
-        <EmptyState
-          icon="🏰"
-          title="Welcome to the Arkla Campaign!"
-          description="Start by creating your campaign or importing an existing one."
-        />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <EmptyState
+            icon="🏰"
+            title="Welcome to the Arkla Campaign"
+            description="Forge your first campaign or awaken an ancient realm from slumber."
+          >
+            <div className="flex gap-3 mt-6">
+              <Button variant="arcane" size="lg">
+                ✦ New Campaign
+              </Button>
+              <Button variant="secondary" size="lg">
+                📜 Import Campaign
+              </Button>
+            </div>
+          </EmptyState>
+        </div>
       </AppShell>
     );
   }
@@ -56,21 +67,42 @@ export default function DmDashboard() {
   return (
     <AppShell>
       <div className="max-w-6xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{meta.name}</h1>
-          <p className="text-surface-400 mt-1">{meta.description}</p>
+        {/* Campaign header */}
+        <div className="glass-crystal rounded-2xl p-6 relative overflow-hidden">
+          <div className="corner-ornament corner-tl" />
+          <div className="corner-ornament corner-tr" />
+          <div className="corner-ornament corner-bl" />
+          <div className="corner-ornament corner-br" />
+          <h1 className="text-2xl font-black text-gradient-arcane">{meta.name}</h1>
+          <p className="text-surface-400 mt-1 text-sm">{meta.description}</p>
+          <div className="rune-divider mt-3">✦</div>
         </div>
 
+        {/* Quick Action Bar */}
         <QuickActions />
 
+        {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {statCards.map((stat) => (
-            <StatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} />
+          {statCards.map((stat, idx) => (
+            <div
+              key={stat.label}
+              className="animate-slide-in-up"
+              style={{ animationDelay: `${idx * 60}ms` }}
+            >
+              <StatCard label={stat.label} value={stat.value} icon={stat.icon} />
+            </div>
           ))}
         </div>
 
-        <RecentActivity entries={journal} />
-        <StatusBar />
+        {/* Recent Activity */}
+        <div className="animate-slide-in-up" style={{ animationDelay: "300ms" }}>
+          <RecentActivity entries={journal} />
+        </div>
+
+        {/* Status Bar */}
+        <div className="animate-slide-in-up" style={{ animationDelay: "400ms" }}>
+          <StatusBar />
+        </div>
       </div>
     </AppShell>
   );

@@ -24,39 +24,50 @@ export default function Sidebar() {
     <aside
       className={`${
         sidebarOpen ? "w-64" : "w-16"
-      } flex-shrink-0 glass-strong border-r border-surface-700/50 flex flex-col transition-all duration-300 ease-in-out overflow-hidden`}
+      } flex-shrink-0 glass-arcane border-r border-accent-500/8 flex flex-col transition-all duration-300 ease-in-out overflow-hidden relative`}
     >
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-surface-700/50">
-        <span className="text-2xl">ᚱ</span>
+      {/* Brand */}
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-surface-700/20">
+        <span className="text-2xl float-arcane select-none" aria-hidden="true">ᚱ</span>
         {sidebarOpen && (
-          <span className="font-bold text-white text-lg whitespace-nowrap">
+          <span className="font-black text-gradient-arcane text-lg whitespace-nowrap tracking-tight">
             STᚱ VTT
           </span>
         )}
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 py-4 space-y-1 px-2">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                 isActive
-                  ? "bg-accent-600/15 text-accent-300 border-l-2 border-accent-500"
-                  : "text-surface-400 hover:text-surface-200 hover:bg-surface-800/40 border-l-2 border-transparent"
+                  ? "bg-accent-600/12 text-accent-300 border-l-[3px] border-accent-500 shadow-sm shadow-accent-500/5"
+                  : "text-surface-500 hover:text-surface-200 hover:bg-surface-800/30 border-l-[3px] border-transparent"
               }`
             }
           >
             <span className="text-lg flex-shrink-0">{item.icon}</span>
             {sidebarOpen && (
-              <span className="text-sm font-medium whitespace-nowrap">
+              <span className="text-sm font-semibold whitespace-nowrap tracking-wide">
                 {item.label}
               </span>
             )}
           </NavLink>
         ))}
       </nav>
+
+      {/* Footer */}
+      {sidebarOpen && (
+        <div className="px-4 py-3 border-t border-surface-700/20">
+          <p className="text-[10px] text-surface-600 uppercase tracking-widest text-center">
+            Arkla Campaign
+          </p>
+        </div>
+      )}
     </aside>
   );
 }

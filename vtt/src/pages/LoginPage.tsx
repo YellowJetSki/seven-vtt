@@ -19,17 +19,30 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Ambient fantasy glow orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl animate-pulse-glow" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-mage-500/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
+        <div className="absolute top-1/4 -left-24 w-[500px] h-[500px] bg-accent-500/8 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: "5s" }} />
+        <div className="absolute bottom-1/4 -right-24 w-[450px] h-[450px] bg-mage-500/8 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "2.5s", animationDuration: "6s" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-divine-500/4 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: "1.25s", animationDuration: "7s" }} />
+
+        {/* Particle sparkle overlay */}
+        <div className="absolute inset-0 bg-particle opacity-50" />
       </div>
 
       <div className="relative w-full max-w-md animate-scale-in">
-        <div className="glass rounded-2xl p-8 border border-surface-700/30 shadow-2xl">
+        <div className="glass-arcane rounded-2xl p-8 border border-accent-500/10 shadow-2xl shadow-accent-500/5 relative overflow-hidden">
+          {/* Decorative corner runes */}
+          <div className="corner-ornament corner-tl" />
+          <div className="corner-ornament corner-tr" />
+          <div className="corner-ornament corner-bl" />
+          <div className="corner-ornament corner-br" />
+
+          {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-5xl mb-4">ᚱ</div>
-            <h1 className="text-2xl font-bold text-white">STᚱ VTT</h1>
-            <p className="text-surface-400 text-sm mt-1">The Obelisks of Arkla</p>
+            <div className="text-5xl mb-4 float-arcane select-none" aria-hidden="true">ᚱ</div>
+            <h1 className="text-3xl font-black text-gradient-arcane tracking-tight">STᚱ VTT</h1>
+            <div className="rune-divider my-3">✦ ✦ ✦</div>
+            <p className="text-surface-500 text-sm">The Obelisks of Arkla</p>
           </div>
 
           {step === "role" && <RoleSelection onSelect={setStep} />}
@@ -37,8 +50,8 @@ export default function LoginPage() {
           {step === "player" && <PlayerPlaceholder onBack={() => setStep("role")} />}
         </div>
 
-        <p className="text-center mt-6 text-surface-500 text-xs">
-          STᚱ VTT — Premium Virtual Tabletop for the Arkla Campaign
+        <p className="text-center mt-6 text-surface-600 text-xs tracking-wider uppercase">
+          Premium Virtual Tabletop — Arkla Campaign
         </p>
       </div>
     </div>

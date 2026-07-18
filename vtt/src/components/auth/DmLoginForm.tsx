@@ -17,12 +17,10 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
     if (!username.trim() || !password.trim()) {
       setError("Please enter both username and password");
       return;
     }
-
     const success = login(username, password);
     if (success) {
       navigate("/campaign/dashboard", { replace: true });
@@ -32,48 +30,49 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <button
         type="button"
         onClick={onBack}
-        className="text-sm text-surface-400 hover:text-surface-200 transition-colors flex items-center gap-1"
+        className="text-sm text-surface-500 hover:text-accent-300 transition-all duration-200 flex items-center gap-1.5 group"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Back
+        <span className="tracking-wide">Return</span>
       </button>
 
-      <div>
-        <label className="block text-sm font-medium text-surface-300 mb-1">Username</label>
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-surface-400">Username</label>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Enter DM username"
-          className="w-full px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-600/50 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500/50 focus:ring-1 focus:ring-accent-500/30 transition-colors"
+          className="input-arcane"
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-surface-300 mb-1">Password</label>
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-surface-400">Password</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter password"
-          className="w-full px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-600/50 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500/50 focus:ring-1 focus:ring-accent-500/30 transition-colors"
+          className="input-arcane"
         />
       </div>
 
       {error && (
-        <p className="text-warrior-400 text-sm bg-warrior-500/10 border border-warrior-500/20 rounded-lg px-3 py-2">
-          {error}
-        </p>
+        <div className="flex items-center gap-2 text-warrior-400 text-sm bg-warrior-500/10 border border-warrior-500/15 rounded-xl px-4 py-3">
+          <span>⚠</span>
+          <span>{error}</span>
+        </div>
       )}
 
-      <Button type="submit" variant="primary" className="w-full">
-        Sign In
+      <Button type="submit" variant="arcane" size="lg" className="w-full">
+        ✦ Sign In as Dungeon Master
       </Button>
     </form>
   );
