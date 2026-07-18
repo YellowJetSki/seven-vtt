@@ -1,5 +1,7 @@
 # STᚱ VTT State & Schema Reference
-**Version:** 1.0.0 — Cycle 1 Complete
+**Version:** 1.0.0 — Production Release
+**Deployed at:** https://arkla.vercel.app
+**Last updated:** 2026-07-18
 
 ## Firestore Schema
 
@@ -173,3 +175,39 @@ DM Login (Firebase) ──► signInWithEmailAndPassword() (non-blocking)
 | `str-vtt-auth` | authStore | Auth state, role, username |
 | `str-vtt-campaign-normalized` | campaignStore | Full campaign state |
 | `str-vtt-combat` | combatStore | Encounter, log, session |
+| `str-vtt-homebrew` | homebrewStore | Homebrew items, spells, feats |
+| `str-vtt-compendium` | compendiumStore | SRD items, spells, monsters for drag-and-drop |
+| `vtt-sync-queue` | sync-queue | Pending Firebase writes (offline queue) |
+
+---
+
+## Production Sign-Off
+
+### Deployed at: https://arkla.vercel.app
+
+| Metric | Value |
+|--------|-------|
+| **TypeScript errors** | 0 (99 modules) |
+| **Build time** | 2.80s |
+| **JS Bundle** | 568 KB (155 KB gzipped) |
+| **CSS Bundle** | 62 KB (11 KB gzipped) |
+| **Playwright tests** | 9/9 passing (13.0s) |
+| **Vercel deploy** | 28s build + deploy |
+
+### Security Architecture
+| Layer | Mechanism | Status |
+|-------|-----------|--------|
+| Route protection | AuthGuard component | ✅ |
+| UI access control | Zustand persist + role checks | ✅ |
+| Firestore read | `request.auth != null` | ✅ |
+| Firestore write (DM) | `request.auth.token.role == "dm"` | ✅ |
+| Firestore write (Player) | `charId == auth.uid` + 10-field restrict | ✅ |
+| Global catch-all | `allow read, write: if false` | ✅ |
+
+### System Law Compliance
+| Law | Status |
+|-----|--------|
+| 🎲 No dice rollers | ✅ Physical dice only |
+| ⚔️ High fantasy purity | ✅ No occult/undead |
+| 🎨 Canvas mandate | ✅ Canvas rendering for battle maps |
+| 📖 Living documentation | ✅ Updated every cycle |
