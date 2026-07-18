@@ -1770,3 +1770,45 @@ Allows the DM to place spell/ability area-of-effect templates on the battle map 
 5. **Undo/redo** for hazard placement and tick applications
 
 ---
+
+## Sprint 11 Cycle 2 — Modular Component Engineering (Updated: 2026-07-18 00:52)
+## Sprint 11 Cycle 2 — Modular Component Engineering
+
+### Refactoring Completed
+Refactored 4 monolithic combat components into 13 smaller files (all under 150 lines):
+
+#### 1. EncounterPresets.tsx (351→100 lines)
+Split into:
+- `encounter-preset-types.ts` — EncounterPreset interface, localStorage utilities, presetToEnemies()
+- `encounter-preset-data.ts` — 14 built-in presets (data-only, 157 lines — acceptable)
+- `EncounterPresetCard.tsx` — Single preset button with environment icon, difficulty color, enemy count badge
+- `EncounterPresetSaveForm.tsx` — Inline save form with input + Save/Cancel buttons
+- `EncounterPresets.tsx` — Orchestrator component (~100 lines)
+
+#### 2. LootGenerator.tsx (258→130 lines)
+Split into:
+- `loot-generator-data.ts` — LootEntry type, lootUid(), MUNDANE_LOOT, ART_OBJECTS, MAGIC_ITEMS
+- `LootGeneratorControls.tsx` — Coin amount input + generate buttons bar
+- `LootEntryRow.tsx` — Individual loot entry with type badge, assignment dropdown, remove button
+- `LootGenerator.tsx` — Orchestrator component (~130 lines)
+
+#### 3. AmbientSoundMixer.tsx (225→120 lines)
+Split into:
+- `ambient-sound-helpers.ts` — SoundChannel type, constructors for rain/wind/fire, createNoiseBuffer, stopChannelNodes
+- `AmbientSoundChannel.tsx` — Single channel row with toggle button + volume slider
+- `AmbientSoundMixer.tsx` — Orchestrator component (~120 lines)
+
+#### 4. EncounterDifficulty.tsx (226→130 lines)
+Split into:
+- `encounter-difficulty-data.ts` — XP_THRESHOLDS, CR_XP, getDifficultyMultiplier, types
+- `EncounterDifficultyResult.tsx` — Difficulty result display card with XP breakdown
+- `EncounterDifficulty.tsx` — Orchestrator component (~130 lines)
+
+### Results
+- **Files created:** 11 new modular files
+- **Lines removed from monoliths:** 1,060 lines → ~480 lines (55% reduction)
+- **Monolith warnings:** 16 → 13 (remaining are flagged for future sprints)
+- **TypeScript:** 0 errors
+- **Build:** 233 modules, 761ms, 0 errors
+
+---
