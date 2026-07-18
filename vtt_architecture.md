@@ -614,3 +614,76 @@ AppShell
 - ESLint: All 117 errors are false positives from `venv/` (Playwright deps) — project config ignores them
 
 ---
+
+## Cycle 2 — Premium Aesthetic Overhaul v2 (Complete) (Updated: 2026-07-18 19:44)
+## Cycle 2 (2026-07-18): Premium Aesthetic Overhaul v2
+
+### Complete CSS Redesign — `vtt/src/styles/premium.css` (expanded from 230 → ~870 lines)
+
+**New Background Systems:**
+- `.fantasy-bg` — Rich ambient gradient + multi-layer particle sparkles (10 star fields) + radial gradient atmospheric depth
+- `.depth-ring` — Slow-rotating conic-gradient ring for immersive depth effect
+- `.atmo-haze-top` / `.atmo-haze-bottom` — Soft Vignette-like haze layers
+- `.bg-particle-dense` — 12-point dense particle overlay for rich ambient scenes
+
+**Enhanced Glass Levels:**
+- `.glass-crystal` — Added hover state with deeper shadows, multi-layer shadow stacking
+- `.glass-arcane` — Added 3-stop vertical gradient with deep base, enhanced inset glow
+- `.glass-obsidian` — Darker base, hover state with enhanced shadow depth
+
+**Premium Surface v2:**
+- Added `::before` element with subtle arcane gradient that fades in on hover
+- 4-stop gradient background (vs. 2-stop previously)
+- `transform: translateY(-1px)` on hover with enhanced shadow
+- Active state resets transform
+
+**Glow Effects v2:**
+- Added `glow-deep` for large panel ambient glow (60px+120px blur rings)
+- All existing glows now include `inset 0 0 20px` for inner luminance
+
+**Button System v2:**
+- All buttons now have `::before` shimmer gradient overlays with `background-size: 200%`
+- New `::after` pseudo-element on `btn-arcane` with gradient border glow (mask-composite)
+- New `.btn-divine` variant for divine/thematic actions
+- All buttons: enhanced hover colors, `box-shadow` with spread glow, `letter-spacing`
+
+**Input System v2:**
+- Added `caret-color: accent` for magical cursor
+- Enhanced focus ring with 3-layer shadow (ring + glow + drop)
+- Added `:disabled` state
+- New `.input-premium-sm` compact variant
+
+**New Animations:**
+- `.rune-pulse` — Opacity + drop-shadow pulse for rune icons
+- `.arcane-sweep` — Moving gradient line across top edge
+- `.crystal-shimmer` — Conic gradient rotation for crystal glass panels
+- `.float-slow` / `.float-fast` — Speed variants of floating animation
+
+**Decorative Upgrades:**
+- `.corner-ornament` — Expanded to 28px from 24px, with `.corner-ornament-glow` filter variant
+- `.container-ornaments:hover .corner-ornament` — Hover border brightening
+- `.rune-divider-glow` — Glow variant with box-shadow on divider lines
+
+**Toast System:**
+- Enhanced `.toast-premium` with bottom inset glow
+- `.toast-success/error/warning/info` — Color-coded left border variants
+
+### Component Upgrades
+
+| Component | Changes |
+|-----------|---------|
+| `LoginPage.tsx` | Added `fantasy-bg`, `atmo-haze-top/bottom`, `depth-ring`, `bg-particle opacity-60` |
+| `TheatricPage.tsx` | Added `fantasy-bg`, `depth-ring`, `bg-particle-dense` |
+| `AppShell.tsx` | Added `fantasy-bg` on root, `depth-ring` + `bg-particle` ambient |
+| `Header.tsx` | Added `crystal-shimmer` for animated header glow |
+| `DmDashboard.tsx` | Enhanced campaign header with `crystal-shimmer`, `corner-ornament-glow`, `depth-ring` |
+| `Button.tsx` | Added `divine` variant |
+
+### Build Metrics
+- TypeScript: 0 errors
+- Modules: 102
+- Build: 2.57s
+- CSS: 71.90 KB (12.19 KB gzipped) — up from 62KB (+16%)
+- JS: 486.53 KB (138.32 KB gzipped)
+
+---
