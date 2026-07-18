@@ -1,0 +1,33 @@
+# Subject: CYCLE 7 - BUILD INITIATIVE TRACKER HUD
+System Log Initialized: 2026-07-18 11:59:12
+
+Building InitiativeTrackerHUD.tsx and AssetSharePanel.tsx. Status: About to create combat directory and core files.
+
+DESIGN:
+1. InitiativeTrackerHUD - Floating draggable panel over the MapEditor
+   - Shows turn order (sorted by initiative descending)
+   - Highlights current combatant with gold glow
+   - HP bar per combatant, AC, status effect icons
+   - Controls: Start Encounter, Next Turn, Previous Turn, End Encounter
+   - Draggable header; stores position in localStorage
+   - Toggle visibility with keyboard shortcut C (for Combat)
+   - Wire to useCombatStore
+
+2. CombatantRow - Individual combatant row inside HUD
+   - Avatar circle with class/type color
+   - Name + Condition badges
+   - Compact HP bar with current/max/temp numbers
+   - Status effect icons (status icons map)
+   - Quick-damage/heal buttons on hover
+
+3. AssetSharePanel - DM panel for sharing images to players
+   - ImagePicker from public folder library
+   - Preview of selected image
+   - "Push to Players" button -> writes to sharedAssetStore
+   - Per-player "Deposit to Inventory" buttons
+   - SharedAssetStore with Zustand persist
+
+4. Player-side AssetViewer - Lightweight overlay on player dashboard
+   - Shows currently shared image from DM
+   - Accept/Decline buttons for inventory deposit
+

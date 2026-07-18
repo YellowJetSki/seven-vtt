@@ -1,0 +1,526 @@
+# Subject: FILE: InitiativeTrackerHUD.tsx
+System Log Initialized: 2026-07-18 12:00:47
+
+/* ── InitiativeTrackerHUD ──────────────────────────────────────
+ * Floating combat tracker HUD that overlays the battlemap.
+ * Provides full combat flow: encounter creation, initiative sorting,
+ * turn advancement, HP tracking, status effects, and a combat log.
+ *
+ * DESIGN: Floating draggable panel, position-persisted in localStorage.
+ * Glassmorphism + fantasy aesthetic with school-color accents.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useCombatStore } from "@/stores/combatStore";
+import type { Combatant } from "@/types/combat";
+import { CombatantRow } from "./CombatantRow";
+import { CombatantTurnTimer } from "./CombatantTurnTimer";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+
+/* ── Draggable HUD position persistence ────────────────────── */
+
+const POSITION_KEY = "str-vtt:initiative-hud-pos";
+
+interface HudPosition {
+  top: number;
+  left: number;
+}
+
+function loadPosition(): HudPosition {
+  try {
+    const raw = localStorage.getItem(POSITION_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return { top: 80, left: 20 };
+}
+
+function savePosition(pos: HudPosition) {
+  try {
+    localStorage.setItem(POSITION_KEY, JSON.stringify(pos));
+  } catch { /* ignore */ }
+}
+
+/* ── Status Effects Quick Menu ──────────────────────────────── */
+
+const QUICK_STATUSES = [
+  { value: "blinded", icon: "👁️‍🗨️", label: "Blinded" },
+  { value: "charmed", icon: "💖", label: "Charmed" },
+  { value: "frightened", icon: "😱", label: "Frightened" },
+  { value: "grappled", icon: "🤝", label: "Grappled" },
+  { value: "poisoned", icon: "☠️", label: "Poisoned" },
+  { value: "prone", icon: "🙇", label: "Prone" },
+  { value: "restrained", icon: "⛓️", label: "Restrained" },
+  { value: "stunned", icon: "✨", label: "Stunned" },
+  { value: "unconscious", icon: "💤", label: "Unconscious" },
+];
+
+/* ── Props ──────────────────────────────────────────────────── */
+
+interface InitiativeTrackerHUDProps {
+  /** Whether the HUD is visible */
+  visible: boolean;
+  /** Called when the HUD should be hidden */
+  onClose: () => void;
+  /** Map tokens that can be imported as combatants */
+  mapCombatants?: { id: string; name: string; type: "player" | "enemy" | "ally"; ac: number; hp: number }[];
+}
+
+export function InitiativeTrackerHUD({ visible, onClose, mapCombatants }: InitiativeTrackerHUDProps) {
+  const store = useCombatStore();
+  const {
+    activeEncounter, combatLog,
+    createEncounter, addCombatant, addEnemyGroup, removeCombatant,
+    setCombatantInitiative, damageCombatant, healCombatant,
+    toggleStatus, toggleConcentration, toggleDead,
+    startEncounter, nextTurn, previousTurn, endEncounter, togglePause,
+    addNote, clearLog,
+  } = store;
+
+  const [position, setPosition] = useState<HudPosition>(loadPosition);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ startX: 0, startY: 0, startTop: 0, startLeft: 0 });
+  const hudRef = useRef<HTMLDivElement>(null);
+  const [encounterName, setEncounterName] = useState("");
+  const [showLog, setShowLog] = useState(false);
+  const [newNote, setNewNote] = useState("");
+  const [showAddEnemy, setShowAddEnemy] = useState(false);
+  const [enemyName, setEnemyName] = useState("");
+  const [enemyCount, setEnemyCount] = useState(1);
+  const [showImportMapTokens, setShowImportMapTokens] = useState(false);
+  const [showNewEncounter, setShowNewEncounter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  /* ── Drag handlers ── */
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startTop: position.top,
+      startLeft: position.left,
+    };
+  }, [position]);
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMove = (e: MouseEvent) => {
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      const newPos = {
+        top: Math.max(0, dragRef.current.startTop + dy),
+        left: Math.max(0, dragRef.current.startLeft + dx),
+      };
+      setPosition(newPos);
+    };
+    const handleUp = () => {
+      setIsDragging(false);
+      savePosition(position);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [isDragging, position]);
+
+  /* ── Combat sorted by initiative ── */
+  const sortedCombatants = activeEncounter
+    ? [...activeEncounter.combatants].sort((a, b) => b.initiative - a.initiative)
+    : [];
+
+  const currentCombatant = activeEncounter && activeEncounter.combatants.length > 0
+    ? activeEncounter.combatants[activeEncounter.currentCombatantIndex]
+    : null;
+
+  const isCombatActive = activeEncounter?.phase === "active";
+  const isPrep = activeEncounter?.phase === "prep";
+
+  if (!visible) return null;
+
+  return (
+    <div
+      ref={hudRef}
+      className="fixed z-50 w-[380px] max-w-[calc(100vw-24px)] rounded-xl border border-surface-600/60 bg-surface-850/92 shadow-2xl shadow-black/40 backdrop-blur-xl"
+      style={{ top: position.top, left: position.left, maxHeight: "calc(100vh - 40px)" }}
+    >
+      {/* ── Header (draggable) ── */}
+      <div
+        className="flex cursor-grab items-center justify-between rounded-t-xl border-b border-surface-700/60 bg-surface-800/50 px-3 py-2 select-none"
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isDragging ? "grabbing" : "grab" }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm">⚔️</span>
+          <span className="text-xs font-semibold text-surface-200">
+            {activeEncounter ? activeEncounter.name : "Combat Tracker"}
+          </span>
+          {isCombatActive && (
+            <Badge variant="accent" size="xs">Round {activeEncounter.round}</Badge>
+          )}
+          {isPrep && <Badge variant="warning" size="xs">Prep</Badge>}
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowLog(!showLog)}
+            className={`rounded px-1.5 py-0.5 text-[9px] ${showLog ? "bg-accent-500/20 text-accent-400" : "text-surface-500 hover:text-surface-300"}`}
+          >
+            📋
+          </button>
+          <button onClick={onClose} className="rounded px-1.5 py-0.5 text-[11px] text-surface-500 hover:text-surface-200">✕</button>
+        </div>
+      </div>
+
+      {/* ── Content (scrollable) ── */}
+      <div className="overflow-y-auto p-3 space-y-3" style={{ maxHeight: "calc(100vh - 120px)" }}>
+        {/* ── No Encounter State ── */}
+        {!activeEncounter && (
+          <div className="flex flex-col items-center gap-3 py-6">
+            <span className="text-2xl">⚔️</span>
+            <p className="text-xs text-surface-400 text-center">No active encounter.<br/>Create one to start tracking initiative.</p>
+
+            {showNewEncounter ? (
+              <div className="w-full space-y-2">
+                <input
+                  value={encounterName}
+                  onChange={(e) => setEncounterName(e.target.value)}
+                  placeholder="Encounter name..."
+                  className="w-full rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-surface-100 placeholder:text-surface-500"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && encounterName.trim()) {
+                      createEncounter(encounterName.trim());
+                      setEncounterName("");
+                      setShowNewEncounter(false);
+                    }
+                  }}
+                />
+                <div className="flex gap-2">
+                  <Button size="xs" onClick={() => { if (encounterName.trim()) { createEncounter(encounterName.trim()); setEncounterName(""); setShowNewEncounter(false); } }}>
+                    Create
+                  </Button>
+                  <Button size="xs" variant="ghost" onClick={() => setShowNewEncounter(false)}>Cancel</Button>
+                </div>
+              </div>
+            ) : (
+              <Button size="sm" onClick={() => setShowNewEncounter(true)}>+ New Encounter</Button>
+            )}
+          </div>
+        )}
+
+        {/* ── Prep Phase ── */}
+        {isPrep && activeEncounter && (
+          <div className="space-y-3">
+            {/* Add Combatant forms */}
+            <div className="flex flex-wrap gap-2">
+              <input
+                value={encounterName}
+                onChange={(e) => setEncounterName(e.target.value)}
+                placeholder="Combatant name..."
+                className="flex-1 min-w-[100px] rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-[11px] text-surface-100 placeholder:text-surface-500"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && encounterName.trim()) {
+                    addCombatant({
+                      name: encounterName.trim(),
+                      type: "enemy",
+                      initiative: 0,
+                      armorClass: 12,
+                      hitPoints: { current: 15, max: 15, temporary: 0 },
+                      statusEffects: [],
+                      isDead: false,
+                      isConcentrating: false,
+                      notes: "",
+                    });
+                    setEncounterName("");
+                  }
+                }}
+              />
+              <Button size="xs" onClick={() => {
+                if (encounterName.trim()) {
+                  addCombatant({
+                    name: encounterName.trim(),
+                    type: "enemy",
+                    initiative: 0,
+                    armorClass: 12,
+                    hitPoints: { current: 15, max: 15, temporary: 0 },
+                    statusEffects: [],
+                    isDead: false,
+                    isConcentrating: false,
+                    notes: "",
+                  });
+                  setEncounterName("");
+                }
+              }}>+ Add</Button>
+            </div>
+
+            {/* Quick Add Enemy Group */}
+            <div className="flex items-center gap-2">
+              <Button size="xs" variant="secondary" onClick={() => setShowAddEnemy(!showAddEnemy)}>
+                {showAddEnemy ? "− Enemy Group" : "+ Enemy Group"}
+              </Button>
+              {mapCombatants && mapCombatants.length > 0 && (
+                <Button size="xs" variant="ghost" onClick={() => setShowImportMapTokens(!showImportMapTokens)}>
+                  📌 Import Tokens
+                </Button>
+              )}
+            </div>
+
+            {showAddEnemy && (
+              <div className="flex items-center gap-2 rounded-lg bg-surface-800/60 p-2">
+                <input
+                  value={enemyName}
+                  onChange={(e) => setEnemyName(e.target.value)}
+                  placeholder="Enemy type (e.g. Goblin)"
+                  className="flex-1 rounded border border-surface-700 bg-surface-800 px-2 py-1 text-[10px] text-surface-100"
+                />
+                <input
+                  type="number"
+                  value={enemyCount}
+                  onChange={(e) => setEnemyCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-12 rounded border border-surface-700 bg-surface-800 px-2 py-1 text-[10px] text-surface-100 text-center"
+                  min={1}
+                  max={20}
+                />
+                <Button size="xs" onClick={() => { if (enemyName.trim()) { addEnemyGroup(enemyName.trim(), enemyCount); } }}>Add</Button>
+              </div>
+            )}
+
+            {/* Import from Map Tokens */}
+            {showImportMapTokens && mapCombatants && (
+              <div className="space-y-1 max-h-[200px] overflow-y-auto rounded-lg bg-surface-800/60 p-2">
+                <p className="text-[9px] text-surface-500 mb-1">Click to import:</p>
+                {mapCombatants.map((mc) => (
+                  <button
+                    key={mc.id}
+                    onClick={() => {
+                      addCombatant({
+                        name: mc.name,
+                        type: mc.type,
+                        initiative: 0,
+                        armorClass: mc.ac,
+                        hitPoints: { current: mc.hp, max: mc.hp, temporary: 0 },
+                        statusEffects: [],
+                        isDead: false,
+                        isConcentrating: false,
+                        notes: "",
+                      });
+                    }}
+                    className="w-full flex items-center gap-2 rounded px-2 py-1 text-[10px] text-surface-300 hover:bg-surface-700 transition-colors"
+                  >
+                    <span className={`w-2 h-2 rounded-full ${mc.type === "player" ? "bg-accent-500" : mc.type === "ally" ? "bg-rogue-500" : "bg-warrior-500"}`} />
+                    {mc.name}
+                    <span className="text-surface-500 ml-auto">AC {mc.ac} · HP {mc.hp}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Initiative Inputs */}
+            {sortedCombatants.length > 0 && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-medium text-surface-400">Set Initiatives</span>
+                  <Badge size="xs">{sortedCombatants.length} combatants</Badge>
+                </div>
+                <div className="space-y-1 max-h-[300px] overflow-y-auto">
+                  {sortedCombatants.map((c, i) => (
+                    <div key={c.id} className="flex items-center gap-2 rounded bg-surface-800/40 px-2 py-1.5">
+                      <span className="text-[10px] text-surface-500 w-4">{i + 1}</span>
+                      <span className="flex-1 text-[11px] text-surface-200 truncate">{c.name}</span>
+                      <input
+                        type="number"
+                        value={c.initiative || ""}
+                        onChange={(e) => setCombatantInitiative(c.id, parseInt(e.target.value) || 0)}
+                        className="w-14 rounded border border-surface-700 bg-surface-800 px-1.5 py-0.5 text-[10px] text-surface-100 text-center"
+                        placeholder="Init"
+                      />
+                      <button onClick={() => removeCombatant(c.id)} className="text-surface-500 hover:text-warrior-400 text-[10px]">✕</button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <Button size="xs" variant="danger" onClick={endEncounter}>Cancel</Button>
+                  <Button size="sm" onClick={startEncounter} disabled={sortedCombatants.length === 0}>
+                    ⚔️ Start Combat
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Active Combat ── */}
+        {isCombatActive && (
+          <div className="space-y-2">
+            {/* Search */}
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search combatants..."
+              className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-[11px] text-surface-100 placeholder:text-surface-500"
+            />
+
+            {/* Turn Timer Bar */}
+            {currentCombatant && (
+              <div className="flex items-center justify-between rounded-lg bg-accent-500/10 px-3 py-2 ring-1 ring-accent-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🎯</span>
+                  <span className="text-xs font-semibold text-accent-200">{currentCombatant.name}'s Turn</span>
+                </div>
+                <CombatantTurnTimer
+                  turnStartedAt={activeEncounter.turnStartedAt}
+                  isPaused={activeEncounter.isPaused}
+                />
+              </div>
+            )}
+
+            {/* Turn Controls */}
+            <div className="flex items-center gap-2">
+              <Button size="xs" variant="ghost" onClick={previousTurn} title="Previous Turn">◀</Button>
+
+              {activeEncounter.isPaused ? (
+                <Button size="xs" variant="secondary" onClick={togglePause}>▶ Resume</Button>
+              ) : (
+                <Button size="xs" variant="ghost" onClick={togglePause}>⏸ Pause</Button>
+              )}
+
+              <Button size="xs" onClick={nextTurn} className="flex-1">
+                Next Turn ▶
+              </Button>
+              <Button size="xs" variant="danger" onClick={endEncounter}>End</Button>
+            </div>
+
+            {/* Combatant List */}
+            <div className="space-y-1 max-h-[400px] overflow-y-auto pr-1">
+              {sortedCombatants
+                .filter((c) => !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((c, i) => (
+                  <CombatantRow
+                    key={c.id}
+                    combatant={c}
+                    isActive={activeEncounter.combatants[activeEncounter.currentCombatantIndex]?.id === c.id}
+                    turnOrder={i + 1}
+                    onDamage={(id, amount) => damageCombatant(id, amount, "DM")}
+                    onHeal={(id, amount) => healCombatant(id, amount, "DM")}
+                    onToggleStatus={(id, effect) => toggleStatus(id, effect as any)}
+                    onToggleDead={toggleDead}
+                    isPaused={activeEncounter.isPaused}
+                    turnStartedAt={activeEncounter.turnStartedAt}
+                  />
+                ))}
+            </div>
+
+            {/* Quick Action: Add Combatant mid-combat */}
+            <div className="flex gap-2">
+              <input
+                value={encounterName}
+                onChange={(e) => setEncounterName(e.target.value)}
+                placeholder="Add creature..."
+                className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-[10px] text-surface-100 placeholder:text-surface-500"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && encounterName.trim()) {
+                    addCombatant({
+                      name: encounterName.trim(),
+                      type: "enemy",
+                      initiative: 0,
+                      armorClass: 12,
+                      hitPoints: { current: 15, max: 15, temporary: 0 },
+                      statusEffects: [],
+                      isDead: false,
+                      isConcentrating: false,
+                      notes: "",
+                    });
+                    setEncounterName("");
+                  }
+                }}
+              />
+              <Button size="xs" variant="secondary" onClick={() => setShowAddEnemy(!showAddEnemy)}>
+                {showAddEnemy ? "−" : "+ Group"}
+              </Button>
+            </div>
+
+            {/* Status Effect Quick Toggle */}
+            {currentCombatant && (
+              <div className="flex flex-wrap gap-1">
+                {QUICK_STATUSES.map((qs) => {
+                  const hasStatus = currentCombatant.statusEffects.some((se) => se.effect === qs.value);
+                  return (
+                    <button
+                      key={qs.value}
+                      onClick={() => toggleStatus(currentCombatant.id, qs.value as any)}
+                      className={`rounded px-1.5 py-0.5 text-[10px] transition-all ${
+                        hasStatus
+                          ? "bg-accent-500/20 text-accent-400 ring-1 ring-accent-500/30"
+                          : "bg-surface-800 text-surface-500 hover:bg-surface-700 hover:text-surface-300"
+                      }`}
+                      title={qs.label}
+                    >
+                      {qs.icon} {qs.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Combat Log ── */}
+        {showLog && (
+          <div className="border-t border-surface-700/60 pt-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-surface-300">Combat Log</span>
+              <div className="flex gap-2">
+                <Button size="xs" variant="ghost" onClick={clearLog}>Clear</Button>
+              </div>
+            </div>
+
+            {/* Add Note */}
+            <div className="flex gap-2">
+              <input
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                placeholder="DM Note..."
+                className="flex-1 rounded border border-surface-700 bg-surface-800 px-2 py-1 text-[10px] text-surface-100"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newNote.trim()) {
+                    addNote(newNote.trim());
+                    setNewNote("");
+                  }
+                }}
+              />
+              <Button size="xs" variant="ghost" onClick={() => { if (newNote.trim()) { addNote(newNote.trim()); setNewNote(""); } }}>
+                + Note
+              </Button>
+            </div>
+
+            {/* Log Entries */}
+            <div className="space-y-1 max-h-[200px] overflow-y-auto">
+              {combatLog.slice(0, 50).map((entry) => (
+                <div key={entry.id} className="flex items-start gap-2 rounded bg-surface-800/40 px-2 py-1.5">
+                  <span className="shrink-0 text-[9px] text-surface-500 font-mono">
+                    {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span className={`text-[10px] ${
+                    entry.type === "damage" ? "text-warrior-400" :
+                    entry.type === "heal" ? "text-rogue-400" :
+                    entry.type === "death" ? "text-warrior-500" :
+                    entry.type === "round_start" ? "text-accent-400" :
+                    "text-surface-300"
+                  }`}>
+                    {entry.description}
+                  </span>
+                </div>
+              ))}
+              {combatLog.length === 0 && (
+                <p className="text-[10px] text-surface-500 text-center py-2">No combat actions yet.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

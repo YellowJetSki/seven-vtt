@@ -1,0 +1,117 @@
+# Subject: CYCLE 7 COMPLETE - Initiative Tracker & Asset Share
+System Log Initialized: 2026-07-18 12:02:20
+
+# ✅ CYCLE 7 COMPLETE — Combat Engine & Asset Sharing
+
+## Production Summary
+
+### Deliverable 1: Initiative Tracker HUD
+**File:** `InitiativeTrackerHUD.tsx` (380 lines)
+| Feature | Detail |
+|---------|--------|
+| **Position** | Floating draggable panel over battlemap, position persisted in localStorage |
+| **Encounter Lifecycle** | Create → Add combatants → Set initiatives → Start → Next/Prev Turn → End |
+| **Combatant Row** | HP bar (color-coded), AC, initiative, status effects, quick damage/heal, dead toggle |
+| **Turn Timer** | Per-turn elapsed timer via existing `CombatantTurnTimer` (green <30s, yellow <60s, red 60s+) |
+| **Status Effects** | Quick-toggle menu with 9 conditions (blinded, charmed, frightened, grappled, poisoned, prone, restrained, stunned, unconscious) |
+| **Combat Log** | Timestamped entries (damage/heal/death/round start), DM notes, undo support |
+| **Map Token Import** | Import map tokens as combatants (AC/HP auto-filled) |
+| **Enemy Groups** | Quick-add enemy groups by name/count via enemy database |
+| **Search** | Filter combatants by name |
+| **Pause/Resume** | Full pause support, timer pauses accordingly |
+
+### Deliverable 2: Asset Share Panel
+**File:** `AssetSharePanel.tsx` (270 lines)
+| Feature | Detail |
+|---------|--------|
+| **Image Picker** | Uses existing `ImagePicker` with `libraryCategory="battlemaps"` |
+| **Preview** | Image preview with "Currently Shared" indicator |
+| **Label + DM Note** | Optional label and description text |
+| **Push to Players** | Broadcasts image to all player screens in real-time via `sharedAssetStore` (Zustand persist) |
+| **Deposit to Inventory** | Per-player buttons that add the image as a quest item to the character's inventory |
+| **History** | Previously shared assets with "Re-share" button |
+| **Pending Status** | Shows "Pending..." while player hasn't accepted |
+
+### Deliverable 3: Player-Side Asset Viewer
+**File:** `PlayerSideAssetViewer.tsx` (100 lines)
+| Feature | Detail |
+|---------|--------|
+| **Auto-show** | Appears when DM pushes a new asset |
+| **Accept/Decline** | Buttons for inventory deposit request |
+| **Auto-dismiss** | After 10 seconds of inactivity |
+| **Slide-up animation** | Bottom-center glassmorphism card |
+
+### Deliverable 4: Zustand Store
+**File:** `sharedAssetStore.ts` (85 lines)
+| Feature | Detail |
+|---------|--------|
+| **SharedAsset** | Image URL, label, timestamp, DM note |
+| **PendingDeposit** | Per-character deposit requests with pending/accepted/declined status |
+| **Asset History** | Last 10 assets stored for quick re-share |
+| **Persistence** | Zustand persist middleware with partialize |
+
+### Integration Points
+| Component | Changes |
+|-----------|---------|
+| `MapEditorToolbar.tsx` | Added ⚔️ Combat and 📦 Share buttons |
+| `MapEditor.tsx` | Added showCombat/showAssetShare state + InitiativeTrackerHUD overlay + AssetSharePanel |
+| `PlayerDashboard.tsx` | Added PlayerSideAssetViewer at bottom of player view |
+
+## Architecture Ledger Update
+
+### Combat Flow Diagram
+```
+DM pushes ⚔️ → HUD appears
+  → Create Encounter
+    → Add Combatants (type name/manual or import from tokens)
+      → Set initiatives (sortable input fields)
+        → Start Combat (sorts by initiative descending)
+          → [Active Turn] Current combatant highlighted with timer
+            → Damage/Heal via quick-damage inputs on hover
+            → Status effect toggles (9 conditions)
+            → Next Turn / Previous Turn
+              → Round tracking (auto-increment)
+                → End Encounter
+```
+
+### Asset Share Flow Diagram
+```
+DM opens 📦 panel
+  → Selects image from library
+    → Sets label + optional note
+      → Pushes to all players
+        → Players see asset viewer overlay
+          → DM clicks "Deposit to [Player]"
+            → Player sees Accept/Decline prompt
+              → Accepted: Item added to inventory
+```
+
+## Cycle 7 → Cycle 8 Handoff
+
+**Cycle 8: Deep Programmatic QA & Surgical Patching** requires:
+1. `validate_code_hygiene` across entire workspace
+2. Resolve every TypeScript and linting error
+3. Refactor files > 150 lines into modular components
+4. Stabilize Firebase emulators/mocks
+
+**Large Files to Note for Refactoring:**
+| File | Lines | Notes |
+|------|-------|-------|
+| `InitiativeTrackerHUD.tsx` | 380 | NEW — Candidate for splitting post-Cycle 7 |
+| `MapEditor.tsx` | 327 | Needs refactoring |
+| `MapCanvasEngine.ts` | 535 | Needs refactoring (noted in Cycle 5) |
+| `PlayerDashboard.tsx` | 319 | Needs refactoring |
+| `AssetSharePanel.tsx` | 270 | NEW — Near threshold |
+| `AoEPresetPanel.tsx` | ~200 | Good |
+| `FogOfWarLayer.tsx` | 140 | Under threshold |
+
+## Deployment Readiness
+
+All Cycle 7 deliverables are:
+- ✅ TypeScript compatible (follows existing `CombatStoreState` types)
+- ✅ Zustand persist middleware (survives page refresh)
+- ✅ Fantasy glassmorphism aesthetic (matches existing design system)
+- ✅ No dice rollers (hard ban respected)
+- ✅ Purity Protocol (no occult/demonic content)
+- ✅ Canvas mandate (HUD is DOM, not canvas — correct separation)
+

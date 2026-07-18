@@ -1,0 +1,289 @@
+# Subject: FILE: AssetSharePanel.tsx
+System Log Initialized: 2026-07-18 12:01:02
+
+/* ── AssetSharePanel ───────────────────────────────────────────
+ * DM panel for pushing images (maps, letters, handouts) to all
+ * player screens simultaneously, with "Deposit to Inventory"
+ * functionality for permanent keeping.
+ *
+ * FEATURES:
+ * • Image picker from public folder library
+ * • Preview with optional DM note
+ * • "Push to All Players" button → writes to sharedAssetStore
+ * • Per-player "Deposit to [Player Name]'s Inventory" button
+ * • All players see the shared asset in real-time via Zustand persist
+ * ─────────────────────────────────────────────────────────────── */
+
+import { useState, useMemo } from "react";
+import { useSharedAssetStore } from "@/stores/sharedAssetStore";
+import { useCampaignStore } from "@/stores/campaignStore";
+import { useUiStore } from "@/stores/uiStore";
+import { ImagePicker } from "@/components/ui/ImagePicker";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+
+interface AssetSharePanelProps {
+  /** Whether the panel is visible */
+  visible: boolean;
+}
+
+export function AssetSharePanel({ visible }: AssetSharePanelProps) {
+  const { currentAsset, setSharedAsset, clearSharedAsset, requestDeposit, cancelDepositRequest, pendingDeposits, assetHistory } = useSharedAssetStore();
+  const characters = useCampaignStore((s) => s.characters);
+  const updatePlayerCharacter = useCampaignStore((s) => s.updatePlayerCharacter);
+  const showToast = useUiStore((s) => s.showToast);
+
+  const [selectedImage, setSelectedImage] = useState("");
+  const [assetLabel, setAssetLabel] = useState("");
+  const [dmNote, setDmNote] = useState("");
+  const [activeTab, setActiveTab] = useState<"share" | "history">("share");
+
+  /* ── Handle Push to Players ── */
+  const handlePush = () => {
+    if (!selectedImage) {
+      showToast({ message: "Select an image first.", type: "error" });
+      return;
+    }
+    setSharedAsset({
+      imageUrl: selectedImage,
+      label: assetLabel || "Shared Asset",
+      sharedAt: Date.now(),
+      dmNote: dmNote || undefined,
+    });
+    showToast({ message: `Asset pushed to ${characters.length} player(s)!`, type: "success" });
+  };
+
+  /* ── Handle Deposit to Player Inventory ── */
+  const handleDeposit = (characterId: string, playerName: string, characterName: string) => {
+    if (!currentAsset) {
+      showToast({ message: "No active asset to deposit.", type: "error" });
+      return;
+    }
+
+    // Find the character and add to inventory
+    const character = characters.find((c) => c.id === characterId);
+    if (!character) {
+      showToast({ message: "Character not found.", type: "error" });
+      return;
+    }
+
+    const newItem = {
+      id: `shared_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      name: currentAsset.label || "Shared Image",
+      description: currentAsset.dmNote || `Shared by DM on ${new Date(currentAsset.sharedAt).toLocaleDateString()}`,
+      imageUrl: currentAsset.imageUrl,
+      quantity: 1,
+      weight: 0,
+      type: "quest" as const,
+      rarity: "common" as const,
+      attunement: false,
+      equipped: false,
+    };
+
+    const updatedInventory = [...(character.inventory || []), newItem];
+    updatePlayerCharacter(characterId, { inventory: updatedInventory });
+
+    // Request deposit (for player-side notification)
+    requestDeposit(characterId, playerName, characterName);
+    showToast({ message: `Deposited to ${characterName}'s inventory.`, type: "success" });
+
+    // Auto-accept on DM side (since DM is forcing it)
+    setTimeout(() => {
+      useSharedAssetStore.getState().respondToDeposit(characterId, true);
+    }, 500);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="rounded-xl border border-surface-700 bg-surface-850 p-4 space-y-4 animate-slide-up">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">📦</span>
+          <h3 className="text-sm font-semibold text-surface-200">Asset Share</h3>
+          {currentAsset && <Badge variant="accent" size="xs">Active</Badge>}
+        </div>
+        <div className="flex gap-1 rounded-lg bg-surface-800 p-0.5">
+          <button
+            onClick={() => setActiveTab("share")}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${activeTab === "share" ? "bg-surface-700 text-surface-200" : "text-surface-500 hover:text-surface-300"}`}
+          >
+            Share
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${activeTab === "history" ? "bg-surface-700 text-surface-200" : "text-surface-500 hover:text-surface-300"}`}
+          >
+            History
+          </button>
+        </div>
+      </div>
+
+      {activeTab === "share" && (
+        <div className="space-y-4">
+          {/* Image Picker */}
+          <div>
+            <label className="text-[11px] font-medium text-surface-400 mb-1.5 block">Select Image</label>
+            <ImagePicker
+              value={selectedImage}
+              onChange={setSelectedImage}
+              label="Asset image"
+              libraryCategory="battlemaps"
+            />
+          </div>
+
+          {/* Preview */}
+          {selectedImage && (
+            <div className="relative rounded-lg overflow-hidden border border-surface-700 bg-surface-800">
+              <img
+                src={selectedImage}
+                alt="Asset preview"
+                className="w-full h-40 object-contain"
+              />
+              {/* Currently active overlay */}
+              {currentAsset?.imageUrl === selectedImage && (
+                <div className="absolute top-2 right-2 rounded-full bg-rogue-500/80 px-2 py-0.5 text-[9px] text-white font-medium">
+                  Currently Shared
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Label + Note */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-medium text-surface-500 mb-1 block">Label</label>
+              <input
+                value={assetLabel}
+                onChange={(e) => setAssetLabel(e.target.value)}
+                placeholder="e.g. Cave Map, Royal Letter"
+                className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-[11px] text-surface-100 placeholder:text-surface-500"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-surface-500 mb-1 block">DM Note (optional)</label>
+              <input
+                value={dmNote}
+                onChange={(e) => setDmNote(e.target.value)}
+                placeholder="A hint or description..."
+                className="w-full rounded-lg border border-surface-700 bg-surface-800 px-2.5 py-1.5 text-[11px] text-surface-100 placeholder:text-surface-500"
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <Button
+              size="sm"
+              onClick={handlePush}
+              disabled={!selectedImage}
+              className="flex-1"
+            >
+              📤 Push to All Players
+            </Button>
+            {currentAsset && (
+              <Button size="sm" variant="ghost" onClick={clearSharedAsset}>
+                Clear
+              </Button>
+            )}
+          </div>
+
+          {/* Current Asset Status */}
+          {currentAsset && (
+            <div className="rounded-lg border border-rogue-500/20 bg-rogue-500/5 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-green-400 text-xs">●</span>
+                <span className="text-xs font-semibold text-surface-200">Currently Shared</span>
+                <Badge variant="success" size="xs">Live</Badge>
+              </div>
+              <div className="flex gap-3">
+                {currentAsset.imageUrl && (
+                  <img src={currentAsset.imageUrl} alt="" className="w-16 h-16 rounded object-cover border border-surface-700" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-surface-200 truncate">{currentAsset.label}</p>
+                  {currentAsset.dmNote && <p className="text-[10px] text-surface-400 mt-0.5">{currentAsset.dmNote}</p>}
+                  <p className="text-[9px] text-surface-500 mt-1">
+                    Shared {new Date(currentAsset.sharedAt).toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Player Deposit Buttons */}
+          {currentAsset && characters.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-medium uppercase tracking-wider text-surface-500">Deposit to Player Inventory</h4>
+              <div className="space-y-1">
+                {characters.map((char) => {
+                  const isPending = pendingDeposits.some(
+                    (d) => d.characterId === char.id && d.status === "pending"
+                  );
+                  return (
+                    <div key={char.id} className="flex items-center gap-2 rounded-lg bg-surface-800/60 px-3 py-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500/20 text-[9px] font-bold text-accent-400">
+                        {char.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-medium text-surface-200 truncate">{char.name}</p>
+                        <p className="text-[9px] text-surface-500">{char.playerName || "Player"}</p>
+                      </div>
+                      <Button
+                        size="xs"
+                        variant={isPending ? "secondary" : "primary"}
+                        onClick={() => handleDeposit(char.id, char.playerName || "Player", char.name)}
+                        disabled={isPending}
+                      >
+                        {isPending ? "Pending..." : "Deposit"}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* No characters */}
+          {characters.length === 0 && currentAsset && (
+            <p className="text-[10px] text-surface-500 text-center py-2">
+              No player characters found. Create characters in the DM dashboard first.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── History Tab ── */}
+      {activeTab === "history" && (
+        <div className="space-y-2">
+          {assetHistory.length === 0 ? (
+            <p className="text-[10px] text-surface-500 text-center py-4">No shared assets yet.</p>
+          ) : (
+            assetHistory.map((asset, i) => (
+              <div key={`${asset.sharedAt}-${i}`} className="flex gap-3 rounded-lg bg-surface-800/60 p-2">
+                {asset.imageUrl && (
+                  <img src={asset.imageUrl} alt="" className="w-12 h-12 rounded object-cover border border-surface-700" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-medium text-surface-200 truncate">{asset.label}</p>
+                  {asset.dmNote && <p className="text-[9px] text-surface-400 truncate">{asset.dmNote}</p>}
+                  <p className="text-[8px] text-surface-500 mt-0.5">
+                    {new Date(asset.sharedAt).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setSelectedImage(asset.imageUrl); setAssetLabel(asset.label); setDmNote(asset.dmNote || ""); setActiveTab("share"); }}
+                  className="self-center rounded px-1.5 py-0.5 text-[9px] text-surface-500 hover:text-surface-200"
+                >
+                  Re-share
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

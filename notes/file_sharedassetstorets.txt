@@ -1,0 +1,133 @@
+# Subject: FILE: sharedAssetStore.ts
+System Log Initialized: 2026-07-18 12:00:02
+
+/* ── Shared Asset Store ────────────────────────────────────────
+ * Lightweight Zustand store that holds the currently shared
+ * DM asset (image) and per-player deposit state.
+ * 
+ * FLOW:
+ * 1. DM selects an image in AssetSharePanel → calls setSharedAsset()
+ * 2. All connected player clients see the image via useSharedAssetStore()
+ * 3. DM clicks "Deposit to [Player]" → calls depositToPlayerInventory()
+ * 4. Player sees "Accept/Decline" prompt
+ * 5. On accept, asset is added to the player's character inventory
+ * ─────────────────────────────────────────────────────────────── */
+
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export interface SharedAsset {
+  /** URL of the shared image */
+  imageUrl: string;
+  /** Optional label/description */
+  label: string;
+  /** Timestamp of when it was shared */
+  sharedAt: number;
+  /** DM's note about this asset */
+  dmNote?: string;
+}
+
+export interface PendingDeposit {
+  /** Player character ID */
+  characterId: string;
+  /** Player name */
+  playerName: string;
+  /** Character name */
+  characterName: string;
+  /** Asset being deposited */
+  asset: SharedAsset;
+  /** Status of the deposit request */
+  status: "pending" | "accepted" | "declined";
+  /** When the request was made */
+  requestedAt: number;
+}
+
+interface SharedAssetState {
+  /** Currently active shared asset (null = nothing shared) */
+  currentAsset: SharedAsset | null;
+  /** Pending deposit requests per player */
+  pendingDeposits: PendingDeposit[];
+  /** History of shared assets */
+  assetHistory: SharedAsset[];
+
+  /* ── DM Actions ── */
+  setSharedAsset: (asset: SharedAsset) => void;
+  clearSharedAsset: () => void;
+  requestDeposit: (characterId: string, playerName: string, characterName: string) => void;
+  cancelDepositRequest: (characterId: string) => void;
+
+  /* ── Player Actions ── */
+  respondToDeposit: (characterId: string, accepted: boolean) => void;
+}
+
+export const useSharedAssetStore = create<SharedAssetState>()(
+  persist(
+    (set, get) => ({
+      currentAsset: null,
+      pendingDeposits: [],
+      assetHistory: [],
+
+      setSharedAsset: (asset) => {
+        set({
+          currentAsset: asset,
+          assetHistory: [asset, ...get().assetHistory].slice(0, 20),
+        });
+      },
+
+      clearSharedAsset: () => {
+        set({ currentAsset: null, pendingDeposits: [] });
+      },
+
+      requestDeposit: (characterId, playerName, characterName) => {
+        const { currentAsset } = get();
+        if (!currentAsset) return;
+
+        const deposit: PendingDeposit = {
+          characterId,
+          playerName,
+          characterName,
+          asset: currentAsset,
+          status: "pending",
+          requestedAt: Date.now(),
+        };
+
+        set({
+          pendingDeposits: [...get().pendingDeposits.filter(d => d.characterId !== characterId), deposit],
+        });
+      },
+
+      cancelDepositRequest: (characterId) => {
+        set({
+          pendingDeposits: get().pendingDeposits.filter(d => d.characterId !== characterId),
+        });
+      },
+
+      respondToDeposit: (characterId, accepted) => {
+        set({
+          pendingDeposits: get().pendingDeposits.map(d =>
+            d.characterId === characterId
+              ? { ...d, status: accepted ? "accepted" : "declined" }
+              : d
+          ),
+        });
+
+        // Auto-remove accepted deposits after a brief delay
+        if (accepted) {
+          setTimeout(() => {
+            set({
+              pendingDeposits: get().pendingDeposits.filter(d => d.characterId !== characterId),
+            });
+          }, 3000);
+        }
+      },
+    }),
+    {
+      name: "str-vtt-shared-assets",
+      partialize: (state) => ({
+        currentAsset: state.currentAsset,
+        assetHistory: state.assetHistory.slice(0, 10),
+      }),
+    }
+  )
+);
+

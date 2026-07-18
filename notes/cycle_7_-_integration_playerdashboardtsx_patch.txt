@@ -1,0 +1,24 @@
+# Subject: CYCLE 7 - INTEGRATION: PlayerDashboard.tsx PATCH
+System Log Initialized: 2026-07-18 12:01:54
+
+PATCH for PlayerDashboard.tsx to add PlayerSideAssetViewer:
+
+1. ADD IMPORT near top:
+```
+import { PlayerSideAssetViewer } from "@/components/player/PlayerSideAssetViewer";
+```
+
+2. ADD at the end of the return (before the closing </div>):
+```
+{/* Shared Asset Viewer (DM pushes images) */}
+{character && (
+  <PlayerSideAssetViewer
+    characterId={character.id}
+    playerName={character.playerName || "Player"}
+    characterName={character.name}
+  />
+)}
+```
+
+This is a 1-line import + 6-line JSX insertion.
+

@@ -1,0 +1,8 @@
+# Subject: CYCLE 7 - Integration: MapEditorToolbar
+System Log Initialized: 2026-07-18 12:01:27
+
+Updated MapEditorToolbar to add:
+- showCombat toggle (⚔️ button)
+- showAssetShare toggle (📦 button)
+Both follow the same pattern as existing buttons (showFogControls, showAoePanel, etc.)
+

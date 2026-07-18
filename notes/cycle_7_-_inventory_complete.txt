@@ -1,0 +1,25 @@
+# Subject: CYCLE 7 - INVENTORY COMPLETE
+System Log Initialized: 2026-07-18 11:59:40
+
+CYCLE 7 INVENTORY COMPLETE.
+
+EXISTING:
+- CombatantTurnTimer.tsx (85 lines)
+- Combat store (encounterSlice, combatantSlice, combatFlowSlice, combatLogSlice, liveSessionSlice) — FULL
+- Combat types (combat.ts) — FULL
+- StatusEffect icons partial in TokenInspector
+- MapEditorToolbar with hooks for toggles
+- ImagePicker for asset selection
+
+NEED TO BUILD:
+1. src/stores/sharedAssetStore.ts — Zustand store for DM-to-player shared assets
+2. src/components/combat/CombatantRow.tsx — Single combatant row for the HUD
+3. src/components/combat/InitiativeTrackerHUD.tsx — The floating HUD panel
+4. src/components/share/AssetSharePanel.tsx — DM panel for sharing images
+5. Integration into MapEditor.tsx (add combat toggle + asset share toggle)
+6. Integration into PlayerCards.tsx (player-side asset viewer)
+
+EXISTING MapEditorToolbar has hooks pattern for toggles. I'll add:
+  showCombat → InitiativeTrackerHUD
+  showAssetShare → AssetSharePanel
+

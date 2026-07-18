@@ -1,0 +1,219 @@
+# Subject: FILE: CombatantRow.tsx
+System Log Initialized: 2026-07-18 12:00:19
+
+/* ── CombatantRow ──────────────────────────────────────────────
+ * A single combatant row in the Initiative Tracker HUD.
+ * Displays initiative order, name, HP bar, AC, status effects,
+ * concentration marker, dead state, and quick-actions.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { useState } from "react";
+import type { Combatant } from "@/types/combat";
+import { CombatantTurnTimer } from "./CombatantTurnTimer";
+
+/* ── Status Effect Icon Map ────────────────────────────────── */
+
+const STATUS_ICONS: Record<string, { icon: string; label: string; color: string }> = {
+  blinded:     { icon: "👁️‍🗨️", label: "Blinded", color: "#888" },
+  charmed:     { icon: "💖", label: "Charmed", color: "#ff66aa" },
+  deafened:    { icon: "🔇", label: "Deafened", color: "#aaa" },
+  frightened:  { icon: "😱", label: "Frightened", color: "#ffcc00" },
+  grappled:    { icon: "🤝", label: "Grappled", color: "#cc8844" },
+  incapacitated: { icon: "💫", label: "Incapacitated", color: "#ff4444" },
+  invisible:   { icon: "👻", label: "Invisible", color: "#88aaff" },
+  paralyzed:   { icon: "🧊", label: "Paralyzed", color: "#66ccff" },
+  petrified:   { icon: "🗿", label: "Petrified", color: "#999999" },
+  poisoned:    { icon: "☠️", label: "Poisoned", color: "#44cc44" },
+  prone:       { icon: "🙇", label: "Prone", color: "#ccaa44" },
+  restrained:  { icon: "⛓️", label: "Restrained", color: "#cc6644" },
+  stunned:     { icon: "✨", label: "Stunned", color: "#ffdd00" },
+  unconscious: { icon: "💤", label: "Unconscious", color: "#666" },
+};
+
+interface CombatantRowProps {
+  combatant: Combatant;
+  isActive: boolean;
+  turnOrder: number;
+  onDamage: (id: string, amount: number) => void;
+  onHeal: (id: string, amount: number) => void;
+  onToggleStatus: (id: string, effect: string) => void;
+  onToggleDead: (id: string) => void;
+  isPaused: boolean;
+  turnStartedAt: number | null;
+}
+
+export function CombatantRow({
+  combatant,
+  isActive,
+  turnOrder,
+  onDamage,
+  onHeal,
+  onToggleStatus,
+  onToggleDead,
+  isPaused,
+  turnStartedAt,
+}: CombatantRowProps) {
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const [quickDmg, setQuickDmg] = useState("");
+  const [quickHeal, setQuickHeal] = useState("");
+
+  const hpPercent = combatant.hitPoints.max > 0
+    ? (combatant.hitPoints.current / combatant.hitPoints.max) * 100
+    : 0;
+
+  const hpColor = hpPercent > 50 ? "bg-rogue-500" : hpPercent > 25 ? "bg-divine-500" : "bg-warrior-500";
+  const isDead = combatant.isDead;
+
+  return (
+    <div
+      className={`group relative flex items-center gap-2 rounded-lg px-2.5 py-2 transition-all ${
+        isActive
+          ? "bg-accent-500/15 ring-1 ring-accent-500/40 shadow-lg shadow-accent-500/10"
+          : "bg-surface-800/60 hover:bg-surface-800"
+      } ${isDead ? "opacity-50" : ""}`}
+      onMouseEnter={() => setShowQuickActions(true)}
+      onMouseLeave={() => { setShowQuickActions(false); setQuickDmg(""); setQuickHeal(""); }}
+    >
+      {/* Turn Order Badge */}
+      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+        isActive ? "bg-accent-500 text-white" : "bg-surface-700 text-surface-400"
+      }`}>
+        {turnOrder}
+      </div>
+
+      {/* Avatar / Initial */}
+      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+        style={{ backgroundColor: combatant.type === "player" ? "#7c3aed" : combatant.type === "ally" ? "#22c55e" : "#ef4444" }}>
+        <span className="text-white">{combatant.name.charAt(0).toUpperCase()}</span>
+        {combatant.isConcentrating && (
+          <span className="absolute -top-1 -right-1 text-[9px]" title="Concentrating">🧠</span>
+        )}
+      </div>
+
+      {/* Name + Type + Turn Timer */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className={`truncate text-xs font-semibold ${isActive ? "text-accent-200" : "text-surface-200"}`}>
+            {combatant.name}
+          </span>
+          {isActive && (
+            <span className="shrink-0 rounded-full bg-accent-500/20 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-accent-400">
+              Active
+            </span>
+          )}
+        </div>
+
+        {/* HP Bar */}
+        <div className="mt-1 flex items-center gap-2">
+          <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-surface-700">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${hpColor}`}
+              style={{ width: `${Math.max(0, hpPercent)}%` }}
+            />
+            {combatant.hitPoints.temporary > 0 && (
+              <div
+                className="absolute inset-0 rounded-full bg-yellow-500/30"
+                style={{
+                  width: `${Math.min(100, ((combatant.hitPoints.temporary + combatant.hitPoints.current) / combatant.hitPoints.max) * 100)}%`,
+                }}
+              />
+            )}
+          </div>
+          <span className={`shrink-0 font-mono text-[10px] tabular-nums ${isDead ? "text-warrior-400" : "text-surface-400"}`}>
+            {isDead ? "Dead" : `${combatant.hitPoints.current}/${combatant.hitPoints.max}`}
+            {combatant.hitPoints.temporary > 0 && <span className="text-yellow-500">+{combatant.hitPoints.temporary}t</span>}
+          </span>
+        </div>
+
+        {/* Status Effects Row */}
+        {combatant.statusEffects.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-0.5">
+            {combatant.statusEffects.map((se) => {
+              const def = STATUS_ICONS[se.effect];
+              return def ? (
+                <span
+                  key={se.id}
+                  className="inline-flex items-center gap-0.5 rounded bg-surface-700/50 px-1 py-0.5 text-[8px]"
+                  title={def.label}
+                  style={{ color: def.color }}
+                >
+                  {def.icon}
+                </span>
+              ) : null;
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* AC */}
+      <div className="hidden shrink-0 text-center sm:block">
+        <div className="text-[9px] text-surface-500">AC</div>
+        <div className="font-mono text-xs font-bold text-surface-200">{combatant.armorClass}</div>
+      </div>
+
+      {/* Initiative */}
+      <div className="hidden shrink-0 text-center md:block">
+        <div className="text-[9px] text-surface-500">Init</div>
+        <div className="font-mono text-xs font-bold text-surface-200">{combatant.initiative}</div>
+      </div>
+
+      {/* Turn Timer */}
+      {isActive && turnStartedAt && (
+        <div className="shrink-0">
+          <CombatantTurnTimer turnStartedAt={turnStartedAt} isPaused={isPaused} compact />
+        </div>
+      )}
+
+      {/* Quick Actions (on hover) */}
+      {showQuickActions && (
+        <div className="absolute -right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 rounded-lg bg-surface-800/95 px-2 py-1.5 shadow-xl backdrop-blur-sm border border-surface-700 z-10">
+          {/* Dead Toggle */}
+          <button
+            onClick={() => onToggleDead(combatant.id)}
+            className={`rounded px-1 py-0.5 text-[9px] font-medium ${isDead ? "bg-rogue-500/20 text-rogue-400" : "bg-surface-700 text-surface-400 hover:text-surface-200"}`}
+            title={isDead ? "Revive" : "Mark Dead"}
+          >
+            {isDead ? "💚" : "💀"}
+          </button>
+
+          {/* Quick Damage */}
+          <div className="flex items-center gap-0.5">
+            <input
+              value={quickDmg}
+              onChange={(e) => setQuickDmg(e.target.value.replace(/\D/g, ""))}
+              placeholder="dmg"
+              className="w-10 rounded bg-surface-700 px-1 py-0.5 text-[9px] text-surface-200 placeholder:text-surface-500 text-center"
+              maxLength={4}
+            />
+            <button
+              onClick={() => { if (quickDmg) { onDamage(combatant.id, parseInt(quickDmg)); setQuickDmg(""); } }}
+              className="rounded bg-warrior-500/20 px-1 py-0.5 text-[9px] text-warrior-400 hover:bg-warrior-500/30"
+              disabled={!quickDmg || isDead}
+            >
+              Dmg
+            </button>
+          </div>
+
+          {/* Quick Heal */}
+          <div className="flex items-center gap-0.5">
+            <input
+              value={quickHeal}
+              onChange={(e) => setQuickHeal(e.target.value.replace(/\D/g, ""))}
+              placeholder="heal"
+              className="w-10 rounded bg-surface-700 px-1 py-0.5 text-[9px] text-surface-200 placeholder:text-surface-500 text-center"
+              maxLength={4}
+            />
+            <button
+              onClick={() => { if (quickHeal) { onHeal(combatant.id, parseInt(quickHeal)); setQuickHeal(""); } }}
+              className="rounded bg-rogue-500/20 px-1 py-0.5 text-[9px] text-rogue-400 hover:bg-rogue-500/30"
+              disabled={!quickHeal || isDead}
+            >
+              Heal
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
