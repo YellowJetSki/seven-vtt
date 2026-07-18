@@ -61,6 +61,21 @@
 
 ---
 
+---
+
+## Sprint 10 — Character Card Redesign
+See `sprint2/sprint10-cycle1-notes.md` for full details.
+
+### Changes
+| File | Status | Description |
+|------|--------|-------------|
+| `CharacterCard.tsx` | ✅ Redesigned | Portrait, HP bar, stats grid, saves/skills, actions |
+| `CharacterDetailModal.tsx` | ✅ Redesigned | 4 tabs (Combat/Abilities/Features/Bio), fullscreen portrait |
+| `FullscreenImageModal.tsx` | ✅ NEW | Dismissible fullscreen image viewer |
+| **Build** | ✅ 0 TS errors, 210 modules, 751ms | |
+
+---
+
 ## Quick Reference — Key Files
 
 ### Firebase Architecture

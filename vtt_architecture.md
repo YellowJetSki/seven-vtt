@@ -764,3 +764,51 @@ usePlayerFirebaseSync merge → PlayerDashboard re-render
 6. **Notes consolidation** — All 10 cycles documented in sprint1/ folder with master index
 
 ---
+
+## Sprint 10 — Character Card Redesign (Updated: 2026-07-17 19:20)
+## Sprint 10 — Character Card Redesign
+
+### Changes Made
+1. **CharacterCard.tsx** — Complete redesign with:
+   - **Prominent portrait** (64px × 64px, ring-highlighted on hover, clickable for fullscreen)
+   - **Full identity row** (name, race, class/level summary, background, player name)
+   - **HP bar** with color-coded health (green > orange > red > gray)
+   - **Key stats grid** (AC, Init, Proficiency Bonus, Speed)
+   - **Ability scores grid** (6-column compact grid with mods)
+   - **Proficient saving throws badges** (color-coded per ability)
+   - **Proficient skills summary** (top 4 + overflow count)
+   - **Equipment & Currency footer** with item count and GP display
+   - **Action overlay** (Inventory, Edit, Export, Delete) on hover
+   - **Fullscreen portrait modal** via FullscreenImageModal
+
+2. **CharacterDetailModal.tsx** — Complete redesign with:
+   - **Tabbed navigation** (4 tabs: Combat, Abilities, Features, Bio)
+   - **Large clickable portrait** (80px × 80px → fullscreen on click)
+   - **Quick stats row** (HP, AC, Init, PB, Speed) with color-coded pills
+   - **HP bar** with temp HP indicator
+   - **COMBAT tab**: HP/AC/Init/HitDice grid, Death Saves (dot indicators), Speed detail tags, Saving Throws (with proficiency stars), Conditions, Equipment badges, Currency
+   - **ABILITIES tab**: Full ability score cards (score + mod), All 18 skills with proficiency/expertise dots, Proficiencies badges, Languages badges
+   - **FEATURES tab**: Feature cards with name/description/source, Traits list, Spellcasting info (ability/DC/attack/slots), Resources tracking
+   - **BIO tab**: Personality/Ideals/Bonds/Flaws grid, Appearance, Backstory with whitespace preservation, Allies, DM Notes, XP/Inspiration
+
+3. **FullscreenImageModal.tsx** (NEW) — Dismissible fullscreen image viewer with:
+   - Escape key support
+   - Backdrop click to dismiss
+   - Smooth zoom-in animation
+   - SVG close button
+   - Image caption
+
+### Files Created
+- `vtt/src/components/ui/FullscreenImageModal.tsx` — Reusable fullscreen image viewer
+
+### Files Modified
+- `vtt/src/components/player/CharacterCard.tsx` — Complete redesign
+- `vtt/src/components/player/CharacterDetailModal.tsx` — Complete redesign
+
+### Build Status
+- TypeScript: 0 errors
+- Build: 751ms (210 modules)
+- JS Bundle: 460KB (125KB gzipped) — +19KB from new UI
+- Git: `9cad88c` — pushed to main
+
+---

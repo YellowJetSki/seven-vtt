@@ -11,20 +11,20 @@ import { formatCurrency } from "@/lib/character-export";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { FullscreenImageModal } from "@/components/ui/FullscreenImageModal";
 
+const PORTRAIT_BASE_PATH = "/images/portraits";
 const ABILITY_ORDER: Ability[] = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"];
 const ABILITY_SHORT: Record<Ability, string> = {
   strength: "STR", dexterity: "DEX", constitution: "CON",
   intelligence: "INT", wisdom: "WIS", charisma: "CHA",
 };
 
-const CONDITION_COLORS: Record<string, string> = {
-  strength: "bg-warrior-500/20 text-warrior-400",
-  dexterity: "bg-rogue-500/20 text-rogue-400",
-  constitution: "bg-divine-500/20 text-divine-400",
-  intelligence: "bg-mage-500/20 text-mage-400",
-  wisdom: "bg-accent-500/20 text-accent-400",
-  charisma: "bg-surface-500/20 text-surface-400",
-};
+/** Resolve portrait URL with legacy path correction */
+function resolvePortraitUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith("/images/")) return url;
+  if (url.startsWith("/")) return `${PORTRAIT_BASE_PATH}${url}`;
+  return url;
+}
 
 interface Props {
   character: PlayerCharacter;
@@ -51,6 +51,11 @@ function getHpBarColor(percent: number): string {
   return "bg-rogue-500";
 }
 
+function formatInitiative(init: number | string | undefined | null): string {
+  if (init === undefined || init === null || init === "--" || init === "" || isNaN(Number(init))) return "—";
+  return `+${init}`;
+}
+
 function getHpTextColor(percent: number): string {
   if (percent <= 0) return "text-surface-500";
   if (percent <= 25) return "text-warrior-400";
@@ -75,6 +80,9 @@ export function CharacterCard({ character, index, onOpen, onEdit, onOpenInventor
     .filter(([, v]) => v === "proficient" || v === "expertise")
     .map(([k]) => k.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()));
 
+  const portraitUrl = resolvePortraitUrl(character.imageUrl);
+  const fallbackEmoji = character.race.includes("Gnome") ? "🧙" : character.race.includes("Elf") ? "🧝" : "⚔";
+
   const proficientSaves = Object.entries(character.savingThrows ?? {})
     .filter(([, v]) => v.proficient)
     .map(([k]) => ABILITY_SHORT[k as Ability]);
@@ -94,9 +102,9 @@ export function CharacterCard({ character, index, onOpen, onEdit, onOpenInventor
           {/* Portrait */}
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg ring-2 ring-surface-700 group-hover:ring-accent-500/40 transition-all">
             <ImageWithFallback
-              src={character.imageUrl}
+              src={portraitUrl}
               alt={`${character.name} portrait`}
-              fallback={character.race.includes("Gnome") ? "🧙" : character.race.includes("Elf") ? "🧝" : "⚔"}
+              fallback={fallbackEmoji}
               className="h-full w-full"
               fit="cover"
               onClick={(e) => {
@@ -152,7 +160,7 @@ export function CharacterCard({ character, index, onOpen, onEdit, onOpenInventor
         {/* ── Key Stats Row ── */}
         <div className="grid grid-cols-4 gap-px bg-surface-800 mx-3 rounded-lg overflow-hidden border border-surface-700/50">
           <StatCell label="AC" value={String(character.armorClass)} />
-          <StatCell label="Init" value={`+${character.initiative}`} />
+          <StatCell label="Init" value={formatInitiative(character.initiative)} />
           <StatCell label="PB" value={`+${character.proficiencyBonus}`} />
           <StatCell label="Speed" value={String(character.speed?.walk ?? 30)} />
         </div>
@@ -227,9 +235,9 @@ export function CharacterCard({ character, index, onOpen, onEdit, onOpenInventor
       </div>
 
       {/* ── Fullscreen Portrait ── */}
-      {showFullscreen && character.imageUrl && (
+      {showFullscreen && portraitUrl && (
         <FullscreenImageModal
-          src={character.imageUrl}
+          src={portraitUrl}
           alt={`${character.name} portrait`}
           onClose={() => setShowFullscreen(false)}
         />

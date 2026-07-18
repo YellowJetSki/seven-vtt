@@ -23,6 +23,16 @@ const ABILITY_LONG: Record<Ability, string> = {
   strength: "Strength", dexterity: "Dexterity", constitution: "Constitution",
   intelligence: "Intelligence", wisdom: "Wisdom", charisma: "Charisma",
 };
+const PORTRAIT_BASE_PATH = "/images/portraits";
+
+/** Resolve portrait URL with legacy path correction */
+function resolvePortraitUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith("/images/")) return url;
+  if (url.startsWith("/")) return `${PORTRAIT_BASE_PATH}${url}`;
+  return url;
+}
+
 const SKILL_ABILITIES: Record<string, Ability> = {
   acrobatics: "dexterity", animalHandling: "wisdom", arcana: "intelligence",
   athletics: "strength", deception: "charisma", history: "intelligence",
@@ -117,6 +127,11 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
 
   /* ── Derived data ── */
 
+  const portraitUrl = resolvePortraitUrl(character.imageUrl);
+  const fallbackEmoji = character.race.includes("Gnome") ? "🧙" : character.race.includes("Elf") ? "🧝" : "⚔";
+  const initDisplay = character.initiative !== undefined && character.initiative !== null && character.initiative !== "--" && character.initiative !== ""
+    ? `+${character.initiative}` : "—";
+
   const speedParts: string[] = [];
   if (character.speed?.walk) speedParts.push(`${character.speed.walk}ft walk`);
   if (character.speed?.fly) speedParts.push(`${character.speed.fly}ft fly`);
@@ -146,16 +161,16 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
             {/* Portrait (click to fullscreen) */}
             <div
               className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-2 ring-surface-600 cursor-pointer hover:ring-accent-500/50 transition-all group"
-              onClick={() => character.imageUrl && setShowFullscreen(true)}
+              onClick={() => portraitUrl && setShowFullscreen(true)}
             >
               <ImageWithFallback
-                src={character.imageUrl}
+                src={portraitUrl}
                 alt={`${character.name} portrait`}
-                fallback={character.race.includes("Gnome") ? "🧙" : character.race.includes("Elf") ? "🧝" : "⚔"}
+                fallback={fallbackEmoji}
                 className="h-full w-full"
                 fit="cover"
               />
-              {character.imageUrl && (
+              {portraitUrl && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-all">
                   <span className="text-white/0 group-hover:text-white/80 text-lg transition-all">🔍</span>
                 </div>
@@ -195,7 +210,7 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
           <div className="mt-3 grid grid-cols-5 gap-2">
             <HeaderStat label="HP" value={`${character.hitPoints.current}/${character.hitPoints.max}`} accent={hpPercent > 50 ? "rogue" : hpPercent > 25 ? "divine" : "warrior"} />
             <HeaderStat label="AC" value={String(character.armorClass)} accent="mage" />
-            <HeaderStat label="Init" value={`+${character.initiative}`} accent="rogue" />
+            <HeaderStat label="Init" value={initDisplay} accent="rogue" />
             <HeaderStat label="PB" value={`+${character.proficiencyBonus}`} accent="accent" />
             <HeaderStat label="Speed" value={speedDisplay} accent="surface" small />
           </div>
@@ -538,9 +553,9 @@ export function CharacterDetailModal({ character, onClose, onEdit, onOpenInvento
       </div>
 
       {/* ── Fullscreen Portrait ── */}
-      {showFullscreen && character.imageUrl && (
+      {showFullscreen && portraitUrl && (
         <FullscreenImageModal
-          src={character.imageUrl}
+          src={portraitUrl}
           alt={`${character.name} portrait`}
           onClose={() => setShowFullscreen(false)}
         />
