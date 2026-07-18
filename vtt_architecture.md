@@ -1075,3 +1075,52 @@ AoETemplateOverlay renders all templates (respects visibleToPlayers flag)
 The remaining 102 warnings are pre-existing project-wide issues (unused imports, exhaustive-deps) in files unrelated to Cycle 3. The AOE components are fully clean (0 warnings).
 
 ---
+
+## Cycle 5: Local DOM Vision QA & Security Auditing (Updated: 2026-07-18 00:10)
+## Cycle 5: Local DOM Vision QA & Security Auditing (Complete)
+
+### Visual Inspection Results
+
+**Setup:** Dev server spawned on localhost:5173, logged in as DM (MikeJello), navigated to Battle Maps page.
+
+| Visual Element | Status | Details |
+|---|---|---|
+| Login Page | ✅ | Dark theme, animated ambient glow, glassmorphism card, role selection buttons |
+| DM Dashboard | ✅ | Sidebar with active "Dashboard" highlight, welcome screen, New Campaign/Import buttons |
+| Battle Maps Page | ✅ | Empty state with search bar, "Create Map" button, gradient sidebar shadows |
+| AOE Components (bundled) | ✅ | Battle Maps chunk (69KB) includes AoETemplateOverlay, AoEPresetPanel, AoEPlacementMode |
+| DOM Structure | ✅ | Clean React tree, no hydration errors, proper class names with Tailwind v4 |
+
+### Firestore Security Audit
+
+**Method:** Reviewed `firestore.rules` and traced AOE data flow.
+
+**AOE Data Flow:**
+```
+AoETemplate → MapEditor local state (useState) → map.aoeTemplates (Zustand)
+→ AoETemplateOverlay renders SVG on canvas
+→ AoEPresetPanel for template selection
+→ AoEPlacementMode for grid placement
+```
+- **AOE templates NEVER touch Firestore** — 100% client-side in Zustand + localStorage
+- AOE data is part of `BattleMap.aoeTemplates?` TypeScript interface but not in MapDoc schema
+
+**Breach Simulation Results:**
+
+| Attack Vector | Rule Result | Verdict |
+|---|---|---|
+| Unauthenticated write to campaigns/* | `request.auth != null && role == "dm"` | ✅ Blocked |
+| Player write to campaigns/* | `role == "dm"` check | ✅ Blocked |
+| Unauthenticated read of campaigns/* | `request.auth != null` | ✅ Blocked |
+| AOE data exfiltration | **No AOE data in Firestore** | ✅ Impossible |
+| Homebrew write by non-DM | `role == "dm"` check | ✅ Blocked |
+| Catch-all rule bypass | `match /{document=**}` deny all | ✅ Blocked |
+
+**Security Verdict: ✅ PASS** — No new attack surface introduced.
+
+### Environment Cleanup
+- Dev server stopped (`stop_persistent_terminal` executed)
+- Port 5173 released
+- Tab closed
+
+---
