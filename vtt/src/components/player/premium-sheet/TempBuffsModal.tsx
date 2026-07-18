@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import type { TempBuff, BuffTarget } from "@/types/temp-buffs";
-import { BUFF_TARGETS, BUFF_PRESETS, getBuffTotal, getBuffDisplay } from "@/types/temp-buffs";
+import { BUFF_TARGETS, BUFF_PRESETS, getBuffTotal } from "@/types/temp-buffs";
 
 interface Props {
   tempBuffs: TempBuff[];
@@ -27,10 +27,8 @@ export function TempBuffsModal({ tempBuffs, onAddBuff, onRemoveBuff, onClearBuff
   const [selectedTarget, setSelectedTarget] = useState<BuffTarget>("AC");
   const [buffValue, setBuffValue] = useState(2);
   const [buffLabel, setBuffLabel] = useState("");
-  const [buffSource, setBuffSource] = useState("Spell");
   const [isDebuff, setIsDebuff] = useState(false);
 
-  const activeTotal = getBuffTotal(tempBuffs, selectedTarget);
   const effectAC = baseAC + getBuffTotal(tempBuffs, "AC");
   const effectSpeed = baseSpeed + getBuffTotal(tempBuffs, "Speed");
 
@@ -46,7 +44,7 @@ export function TempBuffsModal({ tempBuffs, onAddBuff, onRemoveBuff, onClearBuff
       target: selectedTarget,
       value: val,
       label: buffLabel.trim(),
-      source: buffSource,
+      source: "Custom",
       duration: "Until removed",
       isDebuff: val < 0,
     });

@@ -7,7 +7,6 @@
 import { useState } from "react";
 import type { PlayerCharacter } from "@/types";
 import type { TempBuff } from "@/types/temp-buffs";
-import { getBuffTotal, getBuffDisplay } from "@/types/temp-buffs";
 import { getThemeForClass } from "./character-theme";
 import { HpBarPedal } from "./HpBarPedal";
 import { PrimaryStatsPedal } from "./PrimaryStatsPedal";
@@ -38,8 +37,6 @@ export function PlayerCharacterSheetPedal({ character, onHpChange, onUpdateChara
   const conditionList = character.conditions || [];
   const resources = (character as any).resources ?? [];
   const buffs: TempBuff[] = (character as any).tempBuffs ?? [];
-  const acBuff = getBuffTotal(buffs, "AC");
-  const spdBuff = getBuffTotal(buffs, "Speed");
   const deathSaves = character.deathSaves ?? { successes: 0, failures: 0 };
   const isDown = character.hitPoints.current <= 0;
   const speeds = [{ label: "Walk", value: character.speed?.walk }, { label: "Fly", value: character.speed?.fly }, { label: "Swim", value: character.speed?.swim }, { label: "Climb", value: character.speed?.climb }, { label: "Burrow", value: character.speed?.burrow }].filter((s) => s.value != null && s.value > 0);
