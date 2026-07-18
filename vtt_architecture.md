@@ -803,3 +803,56 @@ DM Control Center
 - JS: 534.24 KB (151.41 KB gzipped)
 
 ---
+
+## Cycle 5 — Mobile-First Player Experience (Complete) (Updated: 2026-07-18 19:53)
+## Cycle 5 (2026-07-18): Mobile-First Player Experience
+
+### Architecture
+Complete mobile-first rebuild of the Player Character sheet with large touch targets, swipeable tabs, and intuitive split-second tabletop decisions.
+
+### New Files (3 created, 1 modified)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `components/player/PlayerSheet.tsx` | 525 | Full-screen modal character sheet with 3 swipeable tabs (Stats/Combat/Inventory), large HP bar with quick damage buttons (-10/-5/+5/+10), custom HP input, temp HP management, death save toggles, AC/Init/Speed display, condition badges, hit dice, ability scores (3×2 grid), saving throws, skills, currency (5-coin grid), equipment slots, inventory |
+| `components/player/PlayerCardCompact.tsx` | 151 | Mobile-first compact card for player list — avatar, name/class/level, HP bar with health label, quick -5/+5 buttons, AC badge, initiative badge, condition badges (max 4 shown) |
+| `components/player/PlayerList.tsx` | 137 | Container component — responsive grid (1 col mobile / 2 col tablet / 3 col desktop), "Add PC" button with demo character seeding, empty state |
+| `pages/PlayerCards.tsx` | 29 | Rewritten — simplified page header + PlayerList integration |
+
+### Mobile-First Design Decisions
+
+| Feature | Implementation |
+|---------|---------------|
+| **Large touch targets** | All buttons min 32px height, HP buttons 44px+ |
+| **Swipeable tabs** | Touch handlers on tab content area (50px threshold), left/right arrow buttons |
+| **3 tabs** | Stats (abilities, saves, skills), Combat (HP, AC, init, conditions), Items (currency, equipment, inventory) |
+| **No pinch/zoom** | All content fits phone width, no horizontal scroll |
+| **Tap to open** | Card taps → full-screen modal (slide-in animation) |
+| **Quick HP** | -10/-5/+5/+10 buttons on both card and sheet |
+| **Death saves** | Tapable circles for success/failure |
+| **Conditions** | Toggle buttons for all 14 standard conditions |
+
+### Player Sheet Tab Content
+
+| Tab | Content |
+|-----|---------|
+| **Stats** | Inspiration toggle, 6 ability scores (3×2 grid with mod), 6 saving throws (proficient dot), skill list (expertise/proficient/none) |
+| **Combat** | HP bar + temp HP overlay, quick damage (-10/-5/+5/+10), custom input, temp HP +/-5, death saves (3 success + 3 failure circles), AC/Init/Speed, 14 condition toggles, hit dice |
+| **Items** | Currency grid (PP/GP/EP/SP/CP), equipment slots, inventory items with equipped indicator |
+
+### PlayerCardCompact At-a-Glance Stats
+- Avatar + Name + Class/Level
+- HP bar with label (Healthy/Hurt/Bloodied/Critical/Down)
+- Quick -5/+5 HP buttons
+- AC + Initiative badges
+- Active condition badges (max 4)
+
+### Build Metrics
+- TypeScript: 0 errors
+- Modules: 1,907 (lucide-react adds icons)
+- Build: 5.05s
+- CSS: 86.65 KB (14.03 KB gzipped)
+- JS: 565.07 KB (158.56 KB gzipped)
+- New dependency: lucide-react (icon library)
+
+---
