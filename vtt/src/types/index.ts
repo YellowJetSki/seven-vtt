@@ -2,6 +2,9 @@
  * Core data types shared across the app.
  * ─────────────────────────────────────────────────────────────── */
 
+export type { TempBuff, BuffTarget } from "./temp-buffs";
+export { BUFF_TARGETS, BUFF_PRESETS, getBuffTotal, getBuffDisplay } from "./temp-buffs";
+
 /* ── Ability Score Type ─────────────────────────────────────── */
 
 export type Ability = "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
@@ -95,6 +98,9 @@ export interface PlayerCharacter {
   proficiencies: Proficiency[];
   languages: string[];
   features: FeatureEntry[];
+
+  // Temporary buffs/debuffs (AC, Attack, Speed, etc.)
+  tempBuffs?: import("./temp-buffs").TempBuff[];
 
   // Custom resources (e.g. Ki points, Bardic Inspiration — tracked per rest cycle)
   resources?: { id: string; name: string; current: number; max: number; recharge: string }[];

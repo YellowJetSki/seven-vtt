@@ -4,7 +4,10 @@
    chunky physical card aesthetic inspired by pedal-sheet
    ══════════════════════════════════════════════════════════════ */
 
+import { useState } from "react";
 import type { PlayerCharacter } from "@/types";
+import type { TempBuff } from "@/types/temp-buffs";
+import { getBuffTotal, getBuffDisplay } from "@/types/temp-buffs";
 import { getThemeForClass } from "./character-theme";
 import { HpBarPedal } from "./HpBarPedal";
 import { PrimaryStatsPedal } from "./PrimaryStatsPedal";
@@ -14,23 +17,29 @@ import { XpBarPedal } from "./XpBarPedal";
 import { WeaponsPedal } from "./WeaponsPedal";
 import { SpellcastingPedal } from "./SpellcastingPedal";
 import { ResourcesTrackersPedal } from "./ResourcesTrackersPedal";
+import { TempBuffsModal } from "./TempBuffsModal";
 import "./pedal-styles.css";
 
 interface Props {
   character: PlayerCharacter;
   onHpChange?: (delta: number) => void;
+  onUpdateCharacter?: (updates: Partial<PlayerCharacter>) => void;
   compact?: boolean;
 }
 
 function mod(s: number) { return Math.floor((s - 10) / 2); }
 
-export function PlayerCharacterSheetPedal({ character, onHpChange }: Props) {
+export function PlayerCharacterSheetPedal({ character, onHpChange, onUpdateCharacter }: Props) {
+  const [showBuffs, setShowBuffs] = useState(false);
   const theme = getThemeForClass(character.classes?.[0]?.name || character.class || "");
   const hpPercent = character.hitPoints.max > 0 ? (character.hitPoints.current / character.hitPoints.max) * 100 : 0;
   const handleHpChange = (delta: number) => { if (onHpChange) onHpChange(delta); };
 
   const conditionList = character.conditions || [];
   const resources = (character as any).resources ?? [];
+  const buffs: TempBuff[] = (character as any).tempBuffs ?? [];
+  const acBuff = getBuffTotal(buffs, "AC");
+  const spdBuff = getBuffTotal(buffs, "Speed");
   const deathSaves = character.deathSaves ?? { successes: 0, failures: 0 };
   const isDown = character.hitPoints.current <= 0;
   const speeds = [{ label: "Walk", value: character.speed?.walk }, { label: "Fly", value: character.speed?.fly }, { label: "Swim", value: character.speed?.swim }, { label: "Climb", value: character.speed?.climb }, { label: "Burrow", value: character.speed?.burrow }].filter((s) => s.value != null && s.value > 0);
@@ -56,11 +65,19 @@ export function PlayerCharacterSheetPedal({ character, onHpChange }: Props) {
           <p className="text-[9px] text-surface-600 mt-0.5">{character.playerName ? `Player: ${character.playerName}` : character.background || ""}</p>
         </div>
         <div className="flex gap-1 shrink-0">
+          <button
+            onClick={() => setShowBuffs(true)}
+            className={`pedal-btn px-2 py-1 ${buffs.length > 0 ? "bg-accent-600 text-surface-950 hover:bg-accent-500" : "bg-surface-800 text-surface-300 hover:bg-surface-700"}`}
+            title="Temp Buffs"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+            <span className="ml-0.5 hidden sm:inline text-[9px] font-black uppercase tracking-widest">Buffs</span>
+            {buffs.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-rogue-400 animate-pulse ml-1" />}
+          </button>
           <button className="pedal-btn bg-surface-800 text-surface-300 hover:bg-surface-700 px-2 py-1" title="View Sheet">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-          </button>
-          <button className="pedal-btn bg-surface-800 text-surface-300 hover:bg-surface-700 px-2 py-1" title="Edit">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
           </button>
         </div>
       </div>
@@ -132,6 +149,26 @@ export function PlayerCharacterSheetPedal({ character, onHpChange }: Props) {
           </div>
           <p className="text-[9px] text-surface-500 mt-1.5 text-center">~{gpTotal.toLocaleString()} GP equivalent</p>
         </div>
+      )}
+
+      {/* Temp Buffs Modal */}
+      {showBuffs && (
+        <TempBuffsModal
+          tempBuffs={buffs}
+          onAddBuff={(buff) => {
+            const existing = buffs;
+            onUpdateCharacter?.({ tempBuffs: [...existing, buff] });
+          }}
+          onRemoveBuff={(buffId) => {
+            onUpdateCharacter?.({ tempBuffs: buffs.filter((b) => b.id !== buffId) });
+          }}
+          onClearBuffs={() => {
+            onUpdateCharacter?.({ tempBuffs: [] });
+          }}
+          onClose={() => setShowBuffs(false)}
+          baseAC={character.armorClass}
+          baseSpeed={character.speed?.walk ?? 30}
+        />
       )}
 
       {/* Death Saves (only when down) */}

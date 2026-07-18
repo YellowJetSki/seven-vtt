@@ -29,6 +29,7 @@ export function PlayerDashboard() {
   const logout = useAuthStore((s) => s.logout);
   const meta = useCampaignStore((s) => s.meta);
   const characters = useCampaignStore((s) => s.characters);
+  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const campaign = meta ? { id: meta.id, name: meta.name, playerCharacters: characters } : null;
 
   // Subscribe to real-time updates from the DM via Firebase
@@ -313,7 +314,10 @@ export function PlayerDashboard() {
       )}
 
       {/* Character Sheet */}
-      <PlayerCharacterSheet character={character} />
+      <PlayerCharacterSheet character={character} onHpChange={(delta) => {
+        const newHp = Math.max(0, Math.min(character.hitPoints.max, character.hitPoints.current + delta));
+        updateCharacter(character.id, { hitPoints: { ...character.hitPoints, current: newHp }, updatedAt: Date.now() });
+      }} onUpdateCharacter={(updates) => updateCharacter(character.id, { ...updates, updatedAt: Date.now() })} />
     </div>
   );
 }
