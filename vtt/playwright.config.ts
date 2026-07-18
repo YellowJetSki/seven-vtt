@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./vtt/tests",
+  testDir: "./tests",
   timeout: 15000,
   expect: { timeout: 5000 },
   fullyParallel: false,

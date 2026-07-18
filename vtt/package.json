@@ -1,0 +1,33 @@
+{
+  "name": "str-vtt",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "STᚱ VTT — A premium virtual tabletop for the Arkla campaign",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "oxlint --deny-warnings",
+    "test": "node node_modules/@playwright/test/cli.js test"
+  },
+  "dependencies": {
+    "firebase": "^11.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.0.0",
+    "str-vtt-root": "file:..",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "oxlint": "^0.15.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  }
+}

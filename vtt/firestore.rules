@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper Functions ─────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isDm() {
+      return isAuthenticated() && request.auth.token.role == "dm";
+    }
+
+    function isPlayer() {
+      return isAuthenticated() && request.auth.token.role == "player";
+    }
+
+    function isOwner(campaignId: string) {
+      return isAuthenticated()
+        && request.auth.uid == campaignId;
+    }
+
+    // ── Campaign Metdata ─────────────────────────────────────
+    match /campaigns/{campaignId} {
+      // DM full access; players read-only
+      allow read: if isAuthenticated();
+      allow create: if isDm();
+      allow update: if isDm();
+      allow delete: if isDm();
+
+      // ── All Subcollections (recursive wildcard) ────────────
+      match /{document=**} {
+        // Characters: DM writes all, players write only their own
+        allow read: if isAuthenticated();
+        allow create: if isDm()
+          || (isPlayer() && resource == null);
+        allow update: if isDm()
+          || (isPlayer()
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(["hitPoints", "deathSaves", "conditions",
+                       "temporaryHitPoints", "experiencePoints",
+                       "inspiration", "currency", "inventory",
+                       "characterNotes"]));
+        allow delete: if isDm();
+      }
+    }
+
+    // ── Homebrew Collections ─────────────────────────────────
+    match /homebrew/{campaignId}/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isDm();
+    }
+
+    // ── Live Sessions (for player sync) ──────────────────────
+    match /liveSessions/{campaignId}/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isDm();
+    }
+
+    // ── Combat Log ──────────────────────────────────────────
+    match /combatLog/{campaignId}/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isDm();
+    }
+
+    // ── Catch-All: Deny everything else ──────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
