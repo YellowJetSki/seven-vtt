@@ -20,7 +20,14 @@ export default function LoginPage() {
   }, [authState, role, navigate]);
 
   return (
-    <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen fantasy-bg flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Atmospheric haze layers */}
+      <div className="atmo-haze-top" />
+      <div className="atmo-haze-bottom" />
+
+      {/* Fantasy atmosphere rings */}
+      <div className="depth-ring absolute inset-0" />
+
       {/* Ambient fantasy glow orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-24 w-[500px] h-[500px] bg-accent-500/8 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: "5s" }} />
@@ -28,7 +35,7 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-divine-500/4 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: "1.25s", animationDuration: "7s" }} />
 
         {/* Particle sparkle overlay */}
-        <div className="absolute inset-0 bg-particle opacity-50" />
+        <div className="absolute inset-0 bg-particle opacity-60" />
       </div>
 
       <div className="relative w-full max-w-md animate-scale-in">

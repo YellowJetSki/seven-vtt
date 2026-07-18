@@ -1,6 +1,6 @@
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "arcane" | "warrior" | "rogue";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "arcane" | "warrior" | "rogue" | "divine";
 type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -25,6 +25,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     "btn-warrior",
   rogue:
     "btn-rogue",
+  divine:
+    "btn-divine",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

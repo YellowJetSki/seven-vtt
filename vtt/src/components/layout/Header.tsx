@@ -10,7 +10,7 @@ export default function Header() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
 
   return (
-    <header className="h-16 glass-crystal border-b border-surface-700/20 flex items-center justify-between px-4 relative z-10">
+    <header className="h-16 glass-crystal border-b border-surface-700/20 flex items-center justify-between px-4 relative z-10 crystal-shimmer">
       <div className="flex items-center gap-3">
         <button
           onClick={toggleSidebar}

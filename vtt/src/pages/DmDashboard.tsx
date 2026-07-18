@@ -67,15 +67,16 @@ export default function DmDashboard() {
   return (
     <AppShell>
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Campaign header */}
-        <div className="glass-crystal rounded-2xl p-6 relative overflow-hidden">
-          <div className="corner-ornament corner-tl" />
-          <div className="corner-ornament corner-tr" />
-          <div className="corner-ornament corner-bl" />
-          <div className="corner-ornament corner-br" />
-          <h1 className="text-2xl font-black text-gradient-arcane">{meta.name}</h1>
+        {/* Campaign header — Premium fantasy banner */}
+        <div className="glass-crystal rounded-2xl p-6 relative overflow-hidden crystal-shimmer">
+          <div className="corner-ornament corner-tl corner-ornament-glow" />
+          <div className="corner-ornament corner-tr corner-ornament-glow" />
+          <div className="corner-ornament corner-bl corner-ornament-glow" />
+          <div className="corner-ornament corner-br corner-ornament-glow" />
+          <div className="depth-ring absolute inset-0 opacity-30" />
+          <h1 className="text-2xl font-black text-gradient-arcane tracking-tight">{meta.name}</h1>
           <p className="text-surface-400 mt-1 text-sm">{meta.description}</p>
-          <div className="rune-divider mt-3">✦</div>
+          <div className="rune-divider mt-3">✦ ᚱ ✦</div>
         </div>
 
         {/* Quick Action Bar */}

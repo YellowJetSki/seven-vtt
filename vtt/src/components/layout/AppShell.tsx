@@ -10,7 +10,9 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   return (
-    <div className="flex h-screen bg-surface-950 overflow-hidden">
+    <div className="flex h-screen fantasy-bg overflow-hidden">
+      <div className="depth-ring fixed inset-0 pointer-events-none" />
+      <div className="fixed inset-0 bg-particle opacity-30 pointer-events-none" />
       {/* Desktop sidebar — hidden on mobile */}
       <div className="hidden sm:block">
         <Sidebar />

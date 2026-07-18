@@ -28,11 +28,15 @@ export default function TheatricPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-950 relative overflow-hidden">
+    <div className="min-h-screen fantasy-bg relative overflow-hidden">
+      {/* Atmospheric depth */}
+      <div className="depth-ring absolute inset-0" />
+
       {/* Ambient Effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/3 w-[30rem] h-[30rem] bg-accent-500/5 rounded-full blur-3xl animate-pulse-glow" />
         <div className="absolute bottom-1/3 right-1/3 w-[25rem] h-[25rem] bg-mage-500/5 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
+        <div className="absolute inset-0 bg-particle-dense opacity-40" />
       </div>
 
       {error ? (
