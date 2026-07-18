@@ -1,0 +1,101 @@
+# Subject: FILE: tests/visual-regression.spec.ts
+System Log Initialized: 2026-07-18 12:08:19
+
+/* ── Visual Regression & Aesthetic Tests ──────────────────────
+ * Captures screenshots of key pages and verifies layout.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { test, expect } from "@playwright/test";
+
+test.describe("Visual QA", () => {
+  test("login page visual on mobile 375px", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/login");
+    await expect(page.locator("[data-testid=login-page]")).toBeVisible();
+    // Verify glassmorphism styling
+    const loginCard = page.locator("[data-testid=login-card]");
+    const cardClass = await loginCard.getAttribute("class");
+    expect(cardClass).toContain("backdrop-blur");
+    await page.screenshot({ path: "screenshots/login-mobile.png", fullPage: true });
+  });
+
+  test("player sheet visual on mobile 375px", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/login");
+    await page.click("[data-testid=player-login-btn]");
+    await page.fill("[data-testid=player-name-input]", "Wendy");
+    await page.click("[data-testid=player-submit-btn]");
+    await expect(page.locator("[data-testid=player-dashboard]")).toBeVisible();
+    await page.screenshot({ path: "screenshots/player-sheet-mobile.png", fullPage: true });
+  });
+
+  test("player sheet visual on tablet 768px", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto("/login");
+    await page.click("[data-testid=player-login-btn]");
+    await page.fill("[data-testid=player-name-input]", "Wendy");
+    await page.click("[data-testid=player-submit-btn]");
+    await expect(page.locator("[data-testid=player-dashboard]")).toBeVisible();
+    await page.screenshot({ path: "screenshots/player-sheet-tablet.png", fullPage: true });
+  });
+
+  test("dm dashboard visual on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/login");
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "MikeJello");
+    await page.fill("[data-testid=dm-password-input]", "Jello1");
+    await page.click("[data-testid=dm-submit-btn]");
+    await expect(page.locator("[data-testid=dm-dashboard]")).toBeVisible();
+    await page.screenshot({ path: "screenshots/dm-dashboard-desktop.png", fullPage: true });
+  });
+
+  test("map editor visual on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/login");
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "MikeJello");
+    await page.fill("[data-testid=dm-password-input]", "Jello1");
+    await page.click("[data-testid=dm-submit-btn]");
+    await page.click("[data-testid=nav-maps]");
+    await page.screenshot({ path: "screenshots/map-editor-desktop.png", fullPage: true });
+  });
+
+  test("premium styling verification - drop shadows", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/login");
+    await page.click("[data-testid=player-login-btn]");
+    await page.fill("[data-testid=player-name-input]", "Wendy");
+    await page.click("[data-testid=player-submit-btn]");
+    // Check that cards have shadow classes
+    const statCards = page.locator("[data-testid^=stat-card-]");
+    const count = await statCards.count();
+    expect(count).toBeGreaterThan(0);
+    // Verify box-shadow in computed style
+    const firstCard = statCards.first();
+    const boxShadow = await firstCard.evaluate((el) => window.getComputedStyle(el).boxShadow);
+    expect(boxShadow).not.toBe("none");
+  });
+
+  test("responsive grid layout", async ({ page }) => {
+    // Desktop: should show multi-column
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/login");
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "MikeJello");
+    await page.fill("[data-testid=dm-password-input]", "Jello1");
+    await page.click("[data-testid=dm-submit-btn]");
+    await page.click("[data-testid=nav-player-cards]");
+    const grid = page.locator("[data-testid=player-cards-grid]");
+    const gridClass = await grid.getAttribute("class");
+    expect(gridClass).toContain("grid");
+    await page.screenshot({ path: "screenshots/dm-player-cards-desktop.png", fullPage: true });
+
+    // Mobile: single column
+    await page.setViewportSize({ width: 375, height: 812 });
+    const mobileGrid = page.locator("[data-testid=player-cards-grid]");
+    const mobileClass = await mobileGrid.getAttribute("class");
+    expect(mobileClass).toContain("grid-cols-1");
+  });
+});
+

@@ -1,0 +1,149 @@
+# Subject: CYCLE 9 - COMPLETE DATA-TESTID PATCH PLAN
+System Log Initialized: 2026-07-18 12:08:38
+
+# CYCLE 9: data-testid Injection Patch Plan
+
+## LoginPage.tsx — Injections needed
+
+| Element | Current | Add data-testid |
+|---------|---------|-----------------|
+| Root `<div>` | `className="relative flex min-h-screen..."` | `login-page` |
+| Login card `<div>` | `className="rounded-2xl border border-surface-700/50..."` | `login-card` |
+| DM mode button | `onClick={() => setMode("dm")}` | `dm-login-btn` |
+| Player mode button | `onClick={() => setMode("player")}` | `player-login-btn` |
+| DM username input | `value={dmUsername} onChange={...}` | `dm-username-input` |
+| DM password input | `type="password" value={dmPassword}` | `dm-password-input` |
+| DM submit button | `type="submit" disabled={...}` | `dm-submit-btn` |
+| DM error text | `{dmError && <p>...}` | `dm-error` |
+| Player name input | `value={playerName} onChange={...}` | `player-name-input` |
+| Player submit button | `type="submit" disabled={...}` | `player-submit-btn` |
+| Player error text | `{playerError && <p>...}` | `player-error` |
+
+## PlayerDashboard.tsx — Injections needed
+
+| Element | data-testid |
+|---------|-------------|
+| Root container | `player-dashboard` |
+| Character sheet container | `character-sheet-container` |
+| Character sheet grid | `character-sheet-grid` |
+| Stats tab button | `player-stats-tab` |
+| Combat tab button | `player-combat-tab` |
+| Inventory tab button | `player-inventory-tab` |
+| HP current value | `hp-current-value` |
+| HP max value | `hp-max-value` |
+| Logout button | `player-logout-btn` |
+| Player name header | `player-name-header` |
+
+## DmDashboard.tsx — Injections needed
+
+| Element | data-testid |
+|---------|-------------|
+| Root container | `dm-dashboard` |
+| Campaign name | `campaign-name` |
+| Active session panel | `dm-active-session` |
+| Quick action buttons container | `dm-quick-actions` |
+| Homebrew stats | `dm-homebrew-stats` |
+| Campaign card | `dm-campaign-card` |
+
+## Sidebar.tsx — Injections needed
+
+| Element | data-testid |
+|---------|-------------|
+| Nav link "Player Cards" | `nav-player-cards` |
+| Nav link "Homebrew" | `nav-homebrew` |
+| Nav link "Maps" | `nav-maps` |
+| Nav link "Journal" | `nav-journal` |
+| Nav link "Encounters" | `nav-encounters` |
+| Nav link "Settings" | `nav-settings` |
+
+## MapEditorToolbar.tsx — Injections needed
+
+| Button | data-testid |
+|--------|-------------|
+| DM/Player toggle | `gm-view-btn` |
+| Fog toggle | `fog-toggle-btn` |
+| AOE toggle | `aoe-toggle-btn` |
+| Add Token | `add-token-btn` |
+| Draw toggle | `draw-toggle-btn` |
+| Grid toggle | `grid-toggle-btn` |
+| Combat toggle | `combat-toggle-btn` |
+| Share toggle | `share-toggle-btn` |
+| Theatric button | `theatric-btn` |
+
+## CanvasMapView.tsx — Injections needed
+
+| Element | data-testid |
+|---------|-------------|
+| Canvas element | `canvas-map-view` |
+| Zoom in button | `zoom-in-btn` |
+| Zoom out button | `zoom-out-btn` |
+| Reset view button | `reset-view-btn` |
+
+## PlayerCharacterSheetPremium.tsx — Injections needed
+
+| Section component | data-testid |
+|------------------|-------------|
+| PortraitSection | `portrait-section` |
+| HpBarSection | `hp-bar-section` |
+| XpProgressSection | `xp-progress-section` |
+| AbilityScoreGrid | `ability-score-grid` |
+| WeaponsSection | `weapons-section` |
+| SpellcastingSection | `spellcasting-section` |
+| InventorySection | `inventory-section` |
+| CurrencySection | `currency-section` |
+| FeaturesSection | `features-section` |
+| SpeedBreakdown | `speed-breakdown` |
+| ConditionsSection | `conditions-section` |
+
+## Premium Sheet Sub-components
+Each component in premium-sheet/ should accept a `data-testid` prop and pass it to its root element.
+
+## PlayerCards.tsx (DM view)
+| Element | data-testid |
+|---------|-------------|
+| Root container | `dm-player-cards` |
+| Grid container | `player-cards-grid` |
+| Each player card | `player-card-{character.id}` |
+
+## BattleMaps.tsx
+| Element | data-testid |
+|---------|-------------|
+| Root container | `battle-maps` |
+| Each map thumbnail | `map-thumbnail-{map.id}` |
+| New Map button | `new-map-btn` |
+
+## HomebrewPanel.tsx
+| Element | data-testid |
+|---------|-------------|
+| Root container | `homebrew-panel` |
+| Species form section | `homebrew-species-form` |
+| Class form section | `homebrew-class-form` |
+| Spell form section | `homebrew-spell-form` |
+| Item form section | `homebrew-item-form` |
+
+## InitiativeTrackerHUD.tsx
+| Element | data-testid |
+|---------|-------------|
+| Root panel | `initiative-hud` |
+| Prep panel | `encounter-prep-panel` |
+| Active panel | `combat-active-panel` |
+| Log panel | `combat-log-panel` |
+| Next turn button | `next-turn-btn` |
+| Previous turn button | `prev-turn-btn` |
+| End combat button | `end-combat-btn` |
+| Each combatant row | `combatant-row-{id}` |
+| Each timer | `combatant-timer-{id}` |
+
+## AssetSharePanel.tsx
+| Element | data-testid |
+|---------|-------------|
+| Root panel | `asset-share-panel` |
+| Drop zone | `asset-drop-zone` |
+| Preview image | `asset-preview` |
+| Deposit button | `deposit-inventory-btn` |
+
+## PlayerSideAssetViewer.tsx
+| Element | data-testid |
+|---------|-------------|
+| Root container | `player-asset-viewer` |
+

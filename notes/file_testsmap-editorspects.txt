@@ -1,0 +1,67 @@
+# Subject: FILE: tests/map-editor.spec.ts
+System Log Initialized: 2026-07-18 12:08:10
+
+/* ── Map Editor Tests ──────────────────────────────────────────
+ * Tests the Canvas battle map editor and its toolbar.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { test, expect } from "@playwright/test";
+
+test.describe("Map Editor", () => {
+  test.beforeEach(async ({ page }) => {
+    // Login as DM
+    await page.goto("/login");
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "MikeJello");
+    await page.fill("[data-testid=dm-password-input]", "Jello1");
+    await page.click("[data-testid=dm-submit-btn]");
+    await expect(page).toHaveURL(/\/campaign\/dashboard/, { timeout: 5000 });
+
+    // Navigate to maps
+    await page.click("[data-testid=nav-maps]");
+    await expect(page).toHaveURL(/\/campaign\/maps/);
+  });
+
+  test("map editor loads with canvas", async ({ page }) => {
+    // Open an existing map or create new
+    const newMapBtn = page.locator("[data-testid=new-map-btn]");
+    if (await newMapBtn.isVisible()) {
+      await newMapBtn.click();
+    }
+    await expect(page.locator("[data-testid=map-editor]")).toBeVisible();
+    await expect(page.locator("[data-testid=map-editor-toolbar]")).toBeVisible();
+    await expect(page.locator("[data-testid=canvas-map-view]")).toBeVisible();
+  });
+
+  test("toolbar toggles work", async ({ page }) => {
+    const gmViewBtn = page.locator("[data-testid=gm-view-btn]");
+    await expect(gmViewBtn).toBeVisible();
+    await gmViewBtn.click();
+
+    const fogBtn = page.locator("[data-testid=fog-toggle-btn]");
+    await expect(fogBtn).toBeVisible();
+    await fogBtn.click();
+
+    const gridBtn = page.locator("[data-testid=grid-toggle-btn]");
+    await expect(gridBtn).toBeVisible();
+    await gridBtn.click();
+  });
+
+  test("AOE panel can be opened", async ({ page }) => {
+    await page.click("[data-testid=aoe-toggle-btn]");
+    await expect(page.locator("[data-testid=aoe-preset-panel]")).toBeVisible();
+  });
+
+  test("combat tracker HUD can be toggled", async ({ page }) => {
+    await page.click("[data-testid=combat-toggle-btn]");
+    await expect(page.locator("[data-testid=initiative-hud]")).toBeVisible();
+    await page.click("[data-testid=combat-toggle-btn]");
+    await expect(page.locator("[data-testid=initiative-hud]")).not.toBeVisible();
+  });
+
+  test("asset share panel can be opened", async ({ page }) => {
+    await page.click("[data-testid=share-toggle-btn]");
+    await expect(page.locator("[data-testid=asset-share-panel]")).toBeVisible();
+  });
+});
+

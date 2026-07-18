@@ -1,0 +1,51 @@
+# Subject: FILE: tests/login.spec.ts (PLAYWRIGHT TEST)
+System Log Initialized: 2026-07-18 12:07:53
+
+/* ── Login Flow Tests ─────────────────────────────────────────
+ * Tests DM login and Player login flows via data-testid selectors.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { test, expect } from "@playwright/test";
+
+test.describe("Login Page", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/login");
+    await expect(page.locator("[data-testid=login-page]")).toBeVisible();
+  });
+
+  test("shows login mode selection", async ({ page }) => {
+    await expect(page.locator("text=Login as Dungeon Master")).toBeVisible();
+    await expect(page.locator("text=Login as Player")).toBeVisible();
+  });
+
+  test("DM login with valid credentials", async ({ page }) => {
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "MikeJello");
+    await page.fill("[data-testid=dm-password-input]", "Jello1");
+    await page.click("[data-testid=dm-submit-btn]");
+    await expect(page).toHaveURL(/\/campaign\/dashboard/, { timeout: 5000 });
+  });
+
+  test("DM login with invalid credentials shows error", async ({ page }) => {
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "Wrong");
+    await page.fill("[data-testid=dm-password-input]", "Wrong");
+    await page.click("[data-testid=dm-submit-btn]");
+    await expect(page.locator("[data-testid=dm-error]")).toBeVisible();
+  });
+
+  test("Player login with character name", async ({ page }) => {
+    await page.click("[data-testid=player-login-btn]");
+    await page.fill("[data-testid=player-name-input]", "Wendy");
+    await page.click("[data-testid=player-submit-btn]");
+    // Should redirect to player dashboard or show error if not found
+    await expect(page).toHaveURL(/\/player/, { timeout: 5000 });
+  });
+
+  test("Player login with empty name shows error", async ({ page }) => {
+    await page.click("[data-testid=player-login-btn]");
+    await page.click("[data-testid=player-submit-btn]");
+    await expect(page.locator("[data-testid=player-error]")).toBeVisible();
+  });
+});
+

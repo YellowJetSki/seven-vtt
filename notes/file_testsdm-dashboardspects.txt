@@ -1,0 +1,52 @@
+# Subject: FILE: tests/dm-dashboard.spec.ts
+System Log Initialized: 2026-07-18 12:08:05
+
+/* ── DM Dashboard Tests ────────────────────────────────────────
+ * Tests the Dungeon Master's command center.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { test, expect } from "@playwright/test";
+
+test.describe("DM Dashboard", () => {
+  test.beforeEach(async ({ page }) => {
+    // Login as DM
+    await page.goto("/login");
+    await expect(page.locator("[data-testid=login-page]")).toBeVisible();
+    await page.click("[data-testid=dm-login-btn]");
+    await page.fill("[data-testid=dm-username-input]", "MikeJello");
+    await page.fill("[data-testid=dm-password-input]", "Jello1");
+    await page.click("[data-testid=dm-submit-btn]");
+    await expect(page).toHaveURL(/\/campaign\/dashboard/, { timeout: 5000 });
+  });
+
+  test("displays dashboard with campaign info", async ({ page }) => {
+    await expect(page.locator("[data-testid=dm-dashboard]")).toBeVisible();
+    // Should show DM campaign name
+    await expect(page.locator("[data-testid=campaign-name]")).toBeVisible();
+  });
+
+  test("player cards page accessible from sidebar", async ({ page }) => {
+    await page.click("[data-testid=nav-player-cards]");
+    await expect(page).toHaveURL(/\/campaign\/player-cards/);
+    await expect(page.locator("[data-testid=dm-player-cards]")).toBeVisible();
+  });
+
+  test("homebrew panel accessible", async ({ page }) => {
+    await page.click("[data-testid=nav-homebrew]");
+    await expect(page).toHaveURL(/\/campaign\/homebrew/);
+    await expect(page.locator("[data-testid=homebrew-panel]")).toBeVisible();
+  });
+
+  test("battle maps page accessible", async ({ page }) => {
+    await page.click("[data-testid=nav-maps]");
+    await expect(page).toHaveURL(/\/campaign\/maps/);
+    await expect(page.locator("[data-testid=battle-maps]")).toBeVisible();
+  });
+
+  test("journal page accessible", async ({ page }) => {
+    await page.click("[data-testid=nav-journal]");
+    await expect(page).toHaveURL(/\/campaign\/journal/);
+    await expect(page.locator("[data-testid=dm-journal]")).toBeVisible();
+  });
+});
+

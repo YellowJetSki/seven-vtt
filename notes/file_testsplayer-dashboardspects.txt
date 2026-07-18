@@ -1,0 +1,76 @@
+# Subject: FILE: tests/player-dashboard.spec.ts
+System Log Initialized: 2026-07-18 12:08:00
+
+/* ── Player Dashboard Tests ────────────────────────────────────
+ * Tests the player-facing interface with real-time updates.
+ * ─────────────────────────────────────────────────────────────── */
+
+import { test, expect } from "@playwright/test";
+
+test.describe("Player Dashboard", () => {
+  test.beforeEach(async ({ page }) => {
+    // Login as player first
+    await page.goto("/login");
+    await expect(page.locator("[data-testid=login-page]")).toBeVisible();
+    await page.click("[data-testid=player-login-btn]");
+    await page.fill("[data-testid=player-name-input]", "Wendy");
+    await page.click("[data-testid=player-submit-btn]");
+    await expect(page).toHaveURL(/\/player/, { timeout: 5000 });
+  });
+
+  test("displays character sheet with stats tab", async ({ page }) => {
+    await expect(page.locator("[data-testid=player-dashboard]")).toBeVisible();
+    await expect(page.locator("[data-testid=player-character-sheet]")).toBeVisible();
+    // Stats tab should show ability scores
+    await expect(page.locator("[data-testid=ability-score-grid]")).toBeVisible();
+  });
+
+  test("HP bar displays current health", async ({ page }) => {
+    await expect(page.locator("[data-testid=hp-bar-section]")).toBeVisible();
+    const hpCurrent = page.locator("[data-testid=hp-current-value]");
+    const hpText = await hpCurrent.textContent();
+    expect(Number(hpText)).toBeGreaterThanOrEqual(0);
+  });
+
+  test("xp progress bar display", async ({ page }) => {
+    await expect(page.locator("[data-testid=xp-progress-section]")).toBeVisible();
+    const xpBar = page.locator("[data-testid=xp-bar-fill]");
+    await expect(xpBar).toBeVisible();
+  });
+
+  test("combat tab shows weapon attacks", async ({ page }) => {
+    const combatTab = page.locator("[data-testid=player-combat-tab]");
+    await combatTab.click();
+    await expect(page.locator("[data-testid=weapons-section]")).toBeVisible();
+  });
+
+  test("inventory tab lists items", async ({ page }) => {
+    const inventoryTab = page.locator("[data-testid=player-inventory-tab]");
+    await inventoryTab.click();
+    await expect(page.locator("[data-testid=inventory-section]")).toBeVisible();
+  });
+
+  test("logout button works", async ({ page }) => {
+    await page.click("[data-testid=player-logout-btn]");
+    await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
+  });
+
+  test("mobile responsiveness - viewport 375px", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(page.locator("[data-testid=player-dashboard]")).toBeVisible();
+    // Tabs should still be accessible
+    await expect(page.locator("[data-testid=player-stats-tab]")).toBeVisible();
+    await expect(page.locator("[data-testid=player-combat-tab]")).toBeVisible();
+    await expect(page.locator("[data-testid=player-inventory-tab]")).toBeVisible();
+  });
+
+  test("tablet responsiveness - viewport 768px", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await expect(page.locator("[data-testid=player-dashboard]")).toBeVisible();
+    // Two-column layout should be visible
+    const grid = page.locator("[data-testid=character-sheet-grid]");
+    const className = await grid.getAttribute("class");
+    expect(className).toContain("md:grid-cols-2");
+  });
+});
+

@@ -1,0 +1,74 @@
+# Subject: CYCLE 9 - DATA-TESTID INJECTION MAP
+System Log Initialized: 2026-07-18 12:07:48
+
+# data-testid Injection Map
+
+## Core UI Components
+| Component | File | Attribute to add | Placement |
+|-----------|------|------------------|-----------|
+| Button | `src/components/ui/Button.tsx` | `data-testid={props['data-testid'] ?? 'btn'}` | On `<button>` element |
+| Badge | `src/components/ui/Badge.tsx` | `data-testid="badge"` | On `<span>` element |
+| AppShell | `src/components/layout/AppShell.tsx` | `data-testid="app-shell"` | On root `<div>` |
+| Sidebar | `src/components/layout/Sidebar.tsx` | `data-testid="sidebar"` or per-nav-item | On root + nav items |
+
+## Pages (data-testid on root containers)
+| Page | data-testid | Key interactive elements |
+|------|-------------|------------------------|
+| LoginPage | `login-page` | `login-mode-select`, `dm-username-input`, `dm-password-input`, `dm-login-btn`, `player-name-input`, `player-login-btn` |
+| PlayerDashboard | `player-dashboard` | `player-hp-bar`, `player-hp-current`, `player-hp-max`, `player-xp-bar`, `player-stats-tab`, `player-combat-tab`, `player-inventory-tab`, `player-logout-btn` |
+| DmDashboard | `dm-dashboard` | `dm-campaign-card`, `dm-active-session`, `dm-quick-actions`, `dm-homebrew-stats` |
+| DmPlayerCards | `dm-player-cards` | `player-card-{name}` for each character |
+| BattleMaps | `battle-maps` | `map-thumbnail-{id}`, `new-map-btn`, `upload-map-btn` |
+| HomebrewPanel | `homebrew-panel` | `homebrew-species-form`, `homebrew-class-form`, `homebrew-spell-form`, `homebrew-item-form` |
+| PlayerCards | `player-cards` | `player-card-{id}` per character |
+
+## Map Editor
+| Component | data-testid |
+|-----------|-------------|
+| MapEditor root | `map-editor` |
+| MapEditorToolbar | `map-editor-toolbar` |
+| CanvasMapView | `canvas-map-view` |
+| TokenInspector | `token-inspector` |
+| TokenInspector name | `token-name-{id}` |
+| TokenInspector hp | `token-hp-{id}` |
+| FogOfWarLayer | `fog-of-war-controls` |
+| AoEPresetPanel | `aoe-preset-panel` |
+
+## Combat HUD
+| Component | data-testid |
+|-----------|-------------|
+| InitiativeTrackerHUD | `initiative-hud` |
+| EncounterPrepPanel | `encounter-prep-panel` |
+| CombatActivePanel | `combat-active-panel` |
+| CombatLogPanel | `combat-log-panel` |
+| CombatantRow | `combatant-row-{id}` |
+| CombatantTurnTimer | `combatant-timer-{id}` |
+| NextTurnBtn | `next-turn-btn` |
+| PrevTurnBtn | `prev-turn-btn` |
+| EndCombatBtn | `end-combat-btn` |
+
+## Asset Sharing
+| Component | data-testid |
+|-----------|-------------|
+| AssetSharePanel | `asset-share-panel` |
+| AssetDropZone | `asset-drop-zone` |
+| AssetPreview | `asset-preview` |
+| DepositToInventoryBtn | `deposit-inventory-btn` |
+| PlayerSideAssetViewer | `player-asset-viewer` |
+
+## Player Sheet
+| Component | data-testid |
+|-----------|-------------|
+| PlayerCharacterSheetPremium | `player-character-sheet` |
+| PortraitSection | `portrait-section` |
+| HpBarSection | `hp-bar-section` |
+| XpProgressSection | `xp-progress-section` |
+| AbilityScoreGrid | `ability-score-grid` |
+| WeaponsSection | `weapons-section` |
+| SpellcastingSection | `spellcasting-section` |
+| InventorySection | `inventory-section` |
+| CurrencySection | `currency-section` |
+| FeaturesSection | `features-section` |
+| SpeedBreakdown | `speed-breakdown` |
+| ConditionsSection | `conditions-section` |
+
