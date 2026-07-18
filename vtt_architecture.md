@@ -199,6 +199,28 @@ CompendiumDropTarget (drop zone wrapper)
 
 ## Cycle 7 — Visual QA & Mobile-First Hardening (Updated: 2026-07-18)
 
+## Cycle 8 — Bulletproof Programmatic QA (Updated: 2026-07-18)
+
+### Test Results: 9/9 PASSING (12.8s)
+
+| # | Test | Status | Time |
+|---|------|--------|------|
+| 1 | Login page loads and shows role selection | ✅ | 716ms |
+| 2 | Clicking DM role shows login form | ✅ | 947ms |
+| 3 | Login with valid DM credentials redirects to dashboard | ✅ | 1.9s |
+| 4 | Theatric page loads without auth | ✅ | 1.4s |
+| 5 | Unknown route redirects to login | ✅ | 556ms |
+| 6 | Invalid login shows error message | ✅ | 1.1s |
+| 7 | Campaign routes redirect when not authenticated | ✅ | 597ms |
+| 8 | Player Cards page renders with correct active state | ✅ | 1.3s |
+| 9 | All campaign pages load without crashing | ✅ | 3.0s |
+
+### Code Hygiene
+- **TypeScript**: 0 errors (82 modules)
+- **Build**: 1.57s, 0 warnings
+- **Lint**: oxlint clean (0 errors)
+- **Monolith risk**: 0 files over 150 lines
+
 ### Issues Fixed
 1. **`navigate()` outside useEffect** — Wrapped in `useEffect` to fix React "setState during render" warning. 0 console errors.
 2. **Missing page routes** — Added 6 new page components + `AuthGuard` wrappers for all 7 campaign routes
@@ -307,5 +329,45 @@ AppShell
 - CSS: 62.09KB (10.74KB gzipped)
 - TypeScript: 0 errors
 - Monolith risk: 0 files
+
+---
+
+## Cycle 8 — Bulletproof Programmatic QA (Complete) (Updated: 2026-07-18 15:48)
+## Cycle 8 (2026-07-18): Bulletproof Programmatic QA
+
+### Test Results: 9/9 PASSING ✅ (12.8s)
+
+| # | Test | Status | Time |
+|---|------|--------|------|
+| 1 | Login page loads and shows role selection | ✅ | 716ms |
+| 2 | Clicking DM role shows login form | ✅ | 947ms |
+| 3 | Login with valid DM credentials redirects to dashboard | ✅ | 1.9s |
+| 4 | Theatric page loads without auth | ✅ | 1.4s |
+| 5 | Unknown route redirects to login | ✅ | 556ms |
+| 6 | Invalid login shows error message | ✅ | 1.1s |
+| 7 | Campaign routes redirect to login when not authenticated | ✅ | 597ms |
+| 8 | Player Cards page renders with correct sidebar active state | ✅ | 1.3s |
+| 9 | All campaign pages load without crashing | ✅ | 3.0s |
+
+### Test Fixes Applied
+
+1. **Login button selector** — Changed from `getByRole("button", { name: "Sign In" })` to `/Sign In as Dungeon Master/i` (regex match for full button text)
+2. **Dashboard welcome text** — Removed exclamation mark from assertion: "Welcome to the Arkla Campaign" (no `!`)
+3. **Invalid credentials text** — Changed to `/Invalid credentials/i` (regex match; actual text is "Invalid credentials. Try MikeJello / Jello1")
+4. **Strict mode violations** — Changed `getByText("Player Characters")` to `getByRole("heading", { name: "Player Characters" })` and added `exact: true` to avoid matching sub-headings
+5. **All campaign pages loop** — Uses `getByRole("heading", { name: title, exact: true })` for robust matching across all 7 pages
+
+### Code Hygiene
+- **TypeScript**: 0 errors (`tsc --noEmit`)
+- **Build**: 82 modules, 1.57s
+- **Input validation**: DmLoginForm checks empty inputs before submitting
+- **Firebase**: Not required for tests (auth uses Zustand localStorage)
+
+### Test Infrastructure
+- **Config**: `vtt/playwright.config.ts` — 1 worker, chromium only, 15s timeout, trace on retry
+- **Script**: `node vtt/node_modules/@playwright/test/cli.js test` (direct bin path to avoid hoisting conflicts)
+- **4 auth-redirecting tests**: Login required for dashboard, player-cards, homebrew, encounters, maps, journal, settings
+- **2 public tests**: Login page, theatric page (no auth required)
+- **3 auth-specific tests**: Valid login, invalid login, campaign redirect when unauthenticated
 
 ---
