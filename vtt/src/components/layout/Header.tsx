@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
+import CompendiumDrawer from "./CompendiumDrawer";
 
 export default function Header() {
   const username = useAuthStore((s) => s.username);
@@ -25,6 +26,7 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-3">
+        <CompendiumDrawer />
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-800/50 border border-surface-700/20 hover:border-accent-500/15 transition-all duration-200">
           <span className="text-xs">
             {role === "dm" ? "👑" : "⚔"}
