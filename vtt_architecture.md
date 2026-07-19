@@ -2359,3 +2359,106 @@ The DmJournal is now an **operational session and quest tracking tool**:
 **Ready for Sprint 10.** Next in DM Mechanics Phase: CampaignSettings (XP system, allowed races/classes, currency config), PlayerList (DM-facing player card management), or BattleMaps (map creation + grid configuration).
 
 ---
+
+## Sprint 10/25 — CampaignSettings: Campaign Configuration Dashboard (Updated: 2026-07-19 09:07)
+## Sprint 10/25 — CampaignSettings: Campaign Configuration Dashboard (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 5 OF 10**
+**Target:** CampaignSettings — completely untouched before this sprint
+
+### What Was Built
+Transformed a **static placeholder page** ("No campaign created yet") into a **fully operational campaign configuration dashboard** with 5 configurable sections.
+
+### Architecture: 5 Settings Sections
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Glass Gold Header: "Campaign Settings" + Active/No status   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  📋 Campaign Info                                            │
+│  ├─ Campaign Name (text input)                               │
+│  ├─ Dungeon Master (text input)                              │
+│  ├─ Description (textarea)                                   │
+│  ├─ Created/Updated timestamps                               │
+│  └─ [💾 Save Info] button (disabled until changes)           │
+│                                                              │
+│  ⚙ Game Rules                                                │
+│  ├─ XP System: [⭐ Experience Points] or [🏆 Milestone]      │
+│  ├─ Currency: 5 presets (Standard, Silver, Electrum, Gold,   │
+│  │            Custom Name) with explanation descriptions      │
+│  └─ [💾 Save Rules] button                                   │
+│                                                              │
+│  🧬 Character Creation                                       │
+│  ├─ Allowed Races: 34 D&D races as toggle chips              │
+│  │  └─ [All] / [Clear] quick actions                        │
+│  ├─ Allowed Classes: 14 classes as toggle chips              │
+│  │  └─ [All] / [Clear] quick actions                        │
+│  └─ Live count: "12/34 races · 8/14 classes"                │
+│  └─ [💾 Save Restrictions] button                            │
+│                                                              │
+│  🔒 DM Private Notes                                         │
+│  ├─ Private textarea for session prep, plot hooks, secrets   │
+│  ├─ Character count display                                  │
+│  └─ [💾 Save Notes] button                                   │
+│                                                              │
+│  📊 Campaign Statistics                                      │
+│  ├─ 5-grid: 👥 Characters · 👹 Enemies · ⚔ Encounters ·     │
+│  │         🗺 Maps · 📖 Journal Entries (live counts)        │
+│  ├─ 🎲 Session counter with [+ New Session] button          │
+│  └─ Campaign creation date + last updated                    │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### New Files Created (5 components + 1 page rewrite)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/campaign/SettingsSection.tsx` | 35 | Reusable gold glass card wrapper with icon, title, description, gradient divider, corner ornaments |
+| `components/campaign/CampaignInfoForm.tsx` | 115 | Name/DM/description editor with save-on-change, timestamp display, empty state |
+| `components/campaign/XpSystemPicker.tsx` | 155 | XP vs Milestone toggle cards, Currency preset picker (5 options), custom name input |
+| `components/campaign/RaceClassRestrictions.tsx` | 185 | 34-race + 14-class toggle chip arrays with All/Clear, live counts, save |
+| `components/campaign/DmNotesSection.tsx` | 70 | Private DM notes textarea with character count |
+| `components/campaign/CampaignStatsDashboard.tsx` | 100 | 5-stat live grid + session counter with increment button |
+
+### Store Changes
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `stores/campaign/metaSlice.ts` | +25 | Added `updateMeta(updates)`, `updateMetaSettings(settings)` actions to CampaignMetaSlice |
+| `stores/campaignStore.ts` | +20 | Added `incrementSessionCount()` to combined store — increments campaign stats.sessionCount |
+
+### DM Mechanical Value
+
+| Feature | In-Game Value |
+|---------|---------------|
+| **XP/Milestone toggle** | Choose progression system at campaign start; affects XP display everywhere |
+| **Currency presets** | Set campaign-specific currency (standard gold, silver standard, or custom like "Dragon Scales") |
+| **Race restrictions** | Lock character creation to setting-appropriate races (34 official D&D races) |
+| **Class restrictions** | Limit classes for campaign flavor (e.g., "no Artificer in this low-magic setting") |
+| **DM Private Notes** | Keep session prep, plot hooks, secret motivations in-campaign for quick access |
+| **Session counter** | Track how many sessions you've run with one-click increment |
+| **Live statistics** | Real-time counts from actual store data — always accurate |
+| **Save-on-change** | Each section has independent save with dirty-state detection |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (tsc --noEmit) | ✅ **0 errors** (1999 modules) |
+| Vite Build | ✅ **7.63s**, 0 warnings |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 5.60s build |
+| Production URL | ✅ Settings page renders all 5 sections |
+| Section verification | Campaign Info ✅, Game Rules ✅, Character Creation ✅, DM Notes ✅, Statistics ✅ |
+| Interactive elements | 71 buttons, 3 text inputs, 2 textareas, 1 select, 5 labels |
+
+### Sprint 10/25 Complete
+
+The CampaignSettings page is now a **complete campaign configuration dashboard**:
+- **Pre-campaign**: Set up campaign info, choose XP vs milestone, set currency
+- **During campaign**: Adjust race/class restrictions, take private DM notes, increment sessions
+- **Live stats**: Always-accurate counts from actual campaign data
+
+**Ready for Sprint 11.** Next in DM Mechanics Phase remaining: BattleMaps (map creation workflow with grid config), PlayerList (DM-facing player card list + quick actions), or Encounters (more encounter operational tools).
+
+---

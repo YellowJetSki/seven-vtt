@@ -13,6 +13,7 @@ export type CampaignStore = CampaignMetaSlice & CampaignCharacterSlice & Campaig
     battleMaps: CampaignEntitySlice["battleMaps"];
     journal: CampaignEntitySlice["journal"];
   }) => void;
+  incrementSessionCount: () => void;
 };
 
 export const useCampaignStore = create<CampaignStore>()(
@@ -34,6 +35,21 @@ export const useCampaignStore = create<CampaignStore>()(
             battleMaps: data.battleMaps,
             journal: data.journal,
           } as Partial<CampaignStore>);
+        },
+
+        incrementSessionCount: () => {
+          const current = get()?.meta;
+          if (!current) return;
+          set({
+            meta: {
+              ...current,
+              stats: {
+                ...current.stats,
+                sessionCount: (current.stats?.sessionCount || 0) + 1,
+              },
+              updatedAt: Date.now(),
+            },
+          });
         },
       };
     },

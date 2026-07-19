@@ -1,4 +1,4 @@
-import type { CampaignMeta } from "@/types";
+import type { CampaignMeta, CampaignSettings } from "@/types";
 import { buildCampaign, type BuildableCampaign } from "./campaignHelpers";
 
 export interface CampaignMetaState {
@@ -11,6 +11,8 @@ export interface CampaignMetaState {
 
 export interface CampaignMetaActions {
   setMeta: (meta: CampaignMeta) => void;
+  updateMeta: (updates: Partial<CampaignMeta>) => void;
+  updateMetaSettings: (settings: Partial<CampaignSettings>) => void;
   clearCampaign: () => void;
   setForcePushCounter: (counter: number) => void;
   setLoading: (loading: boolean) => void;
@@ -32,9 +34,19 @@ export function createMetaSlice(set: (partial: Partial<CampaignMetaSlice>) => vo
     ...initial,
 
     setMeta: (meta: CampaignMeta) => {
-      // We can't derive campaign here easily without other slices,
-      // so just set meta and let the derived campaign be recomputed elsewhere
       set({ meta });
+    },
+
+    updateMeta: (updates: Partial<CampaignMeta>) => {
+      const current = get?.().meta;
+      if (!current) return;
+      set({ meta: { ...current, ...updates, updatedAt: Date.now() } });
+    },
+
+    updateMetaSettings: (settings: Partial<CampaignSettings>) => {
+      const current = get?.().meta;
+      if (!current) return;
+      set({ meta: { ...current, settings: { ...current.settings, ...settings }, updatedAt: Date.now() } });
     },
 
     clearCampaign: () => set({ ...initial }),
