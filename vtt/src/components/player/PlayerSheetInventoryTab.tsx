@@ -20,28 +20,28 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
 
   return (
     <div className="px-3 py-3 space-y-4">
-      {/* Currency */}
+      {/* Currency — gold cards */}
       <div>
-        <span className="text-[10px] uppercase tracking-widest font-black text-surface-400 block mb-1.5">Currency</span>
+        <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 block mb-1.5">Currency</span>
         <div className="grid grid-cols-5 gap-1.5">
           {coins.map((coin) => (
-            <div key={coin.key} className="flex flex-col items-center bg-surface-800/40 rounded-xl border border-surface-700/20 py-2">
-              <span className="text-[9px] uppercase font-black text-surface-500">{coin.label}</span>
+            <div key={coin.key} className="flex flex-col items-center bg-obsidian-mid/40 rounded-xl border border-surface-700/20 py-2.5 hover:border-gold/10 transition-all duration-200">
+              <span className="text-[9px] uppercase font-black text-gold-500/50">{coin.label}</span>
               <span className={`text-base font-bold tabular-nums ${coin.color}`}>{coin.value}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Equipment */}
+      {/* Equipment — gold rows */}
       {equipment.length > 0 && (
         <div>
-          <span className="text-[10px] uppercase tracking-widest font-black text-surface-400 block mb-1.5">Equipment</span>
+          <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 block mb-1.5">Equipment</span>
           <div className="space-y-1">
             {equipment.map((eq, i) => (
-              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-800/20 border border-surface-700/20">
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10 hover:border-gold/10 transition-all duration-200">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase text-surface-500 font-semibold w-16 shrink-0">{eq.slot}</span>
+                  <span className="text-[10px] uppercase text-gold-500/50 font-semibold w-16 shrink-0">{eq.slot}</span>
                   <span className="text-xs text-surface-300">{eq.item}</span>
                 </div>
                 {eq.quantity > 1 && <span className="text-[10px] text-surface-500">×{eq.quantity}</span>}
@@ -51,18 +51,18 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
         </div>
       )}
 
-      {/* Inventory */}
+      {/* Inventory — gold rows */}
       {inventory.length > 0 ? (
         <div>
-          <span className="text-[10px] uppercase tracking-widest font-black text-surface-400 block mb-1.5">Inventory</span>
+          <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 block mb-1.5">Inventory</span>
           <div className="space-y-1">
             {inventory.map((item, i) => (
-              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-800/20 border border-surface-700/20">
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10 hover:border-gold/10 transition-all duration-200">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className={`text-xs ${item.isEquipped ? "text-accent-400 font-semibold" : "text-surface-300"} truncate`}>
+                  <span className={`text-xs ${item.isEquipped ? "text-gold-400 font-semibold" : "text-surface-300"} truncate`}>
                     {item.name}
                   </span>
-                  {item.isEquipped && <span className="text-[8px] uppercase bg-accent-500/10 text-accent-400 px-1 py-0.5 rounded">Equipped</span>}
+                  {item.isEquipped && <span className="text-[8px] uppercase bg-gold-500/10 text-gold-400 px-1 py-0.5 rounded border border-gold/15">Equipped</span>}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-[10px] text-surface-500">{item.weight} lb</span>
@@ -75,6 +75,7 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
       ) : (
         <div className="text-center py-6">
           <p className="text-surface-500 text-xs">No items in inventory</p>
+          <div className="mt-2 text-gold-500/20 text-xs">✦ ✦ ✦</div>
         </div>
       )}
     </div>

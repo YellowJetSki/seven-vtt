@@ -41,18 +41,18 @@ export default function PlayerCardHpBar({ character: c }: PlayerCardHpBarProps) 
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1">
           <Heart className="w-3 h-3 text-red-400" />
-          <span className="text-[9px] uppercase tracking-wider text-surface-500 font-semibold">
+          <span className="text-[9px] uppercase tracking-wider text-gold-500/50 font-semibold">
             {hpLabel}
           </span>
         </div>
-        <span className="text-[10px] font-mono font-bold tabular-nums">
+        <span className="text-[10px] font-mono font-bold tabular-nums text-gold-300">
           {c.hitPoints.current}
           <span className="text-surface-500">/{c.hitPoints.max}</span>
         </span>
       </div>
-      <div className="h-2.5 bg-surface-700/60 rounded-full overflow-hidden">
+      <div className="h-2.5 bg-surface-700/60 rounded-full overflow-hidden shadow-inner">
         <div
-          className={`h-full ${hpColor} rounded-full transition-all duration-300`}
+          className={`h-full ${hpColor} rounded-full transition-all duration-500`}
           style={{ width: `${Math.max(0, hpRatio * 100)}%` }}
         />
       </div>

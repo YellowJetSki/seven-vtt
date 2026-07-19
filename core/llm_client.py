@@ -46,7 +46,8 @@ class DeepSeekAgent:
             base_url="https://api.deepseek.com"
         )
         self.model = "deepseek-chat"
-        self.session_manager = SessionManager()
+        self.session_name = "arkla_campaign"
+        self.role_name = "Michael (Director)"
         
         current_date = datetime.now().strftime("%B %d, %Y")
         
@@ -73,7 +74,7 @@ class DeepSeekAgent:
             self.session_name = "vtt_development"
             self.role_name = "Michael (Architect)"
             
-            # --- THE DUAL CONTEXT BOOTLOADER (UPGRADED WITH BEST PRACTICES RULES) ---
+            # --- THE DUAL CONTEXT BOOTLOADER (UPGRADED WITH DESIGN SYSTEM INJECTION) ---
             architecture_context = ""
             try:
                 ledger_path = os.path.join(".", "vtt_architecture.md")
@@ -90,6 +91,11 @@ class DeepSeekAgent:
                 if os.path.exists(practices_path):
                     with open(practices_path, "r", encoding="utf-8") as f:
                         architecture_context += f"\n\n=== MANDATORY CORE ARCHITECTURAL STANDARDS ===\n{f.read()}\n==============================================\n"
+
+                design_path = os.path.join(".", "vtt_design_system.md")
+                if os.path.exists(design_path):
+                    with open(design_path, "r", encoding="utf-8") as f:
+                        architecture_context += f"\n\n=== MANDATORY PREMIUM DESIGN SYSTEM & UI/UX TOKENS ===\n{f.read()}\n=======================================================\n"
             except Exception:
                 pass
 
@@ -112,7 +118,7 @@ class DeepSeekAgent:
                 "- EXTENSIBILITY FIRST: You architect the codebase with a 'hook' or 'plugin' mindset, creating clear event dispatchers so future features (like combat trackers or spell templates) can easily hook into core map events without modifying the base map component.\n\n"
                 "TECH STACK, UI/UX, & AESTHETICS:\n"
                 "- Master-level proficiency in TypeScript, React, SCSS, and Tailwind CSS.\n"
-                "- MODERN UX & STYLING: You must design with deep, immersive aesthetics. Utilize modern UX paradigms (glassmorphism, micro-interactions, fluid transitions, complex drop-shadows, and responsive grid layouts). Your baseline visual target is highly-rendered, detailed fantasy concept art and illustrative digital realism. Every UI element should feel premium, tactile, and visually striking.\n"
+                "- MODERN UI/UX ARCHITECTURE: You must follow the injected design guidelines exactly. Eliminate squished, developers-grade forms. Build expansive, beautiful layouts with meticulous attention to spacing, screen containers, hardware targeting, and mobile breakpoints.\n"
                 "- MODULARITY: You must actively avoid creating giant, monolithic files. Run 'analyze_monolith_risk' regularly. If a file exceeds 150 lines, you MUST pause feature work and refactor it into smaller, individual re-usable components.\n\n"
                 "THE STANDARD DEVELOPMENT LIFECYCLE (DEV -> QA -> DEPLOY):\n"
                 "When executing tasks, you must follow this strict sequence to avoid getting stuck in loops:\n"

@@ -42,14 +42,14 @@ export default function PlayerSheetSkills({ character }: PlayerSheetSkillsProps)
         const profBonus = prof === "proficient" ? c.proficiencyBonus : prof === "expertise" ? c.proficiencyBonus * 2 : 0;
         const total = mod + profBonus;
         return (
-          <div key={skill} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-800/20">
+          <div key={skill} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-obsidian-mid/40 border border-surface-700/10 hover:border-gold/10 transition-all duration-200">
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] w-4 text-center ${prof === "none" ? "text-surface-600" : "text-accent-400"}`}>
+              <span className={`text-[10px] w-4 text-center ${prof === "none" ? "text-surface-600" : "text-gold-400"}`}>
                 {prof === "expertise" ? "⨁" : prof === "proficient" ? "●" : "○"}
               </span>
               <span className="text-xs text-surface-300 capitalize">{skill.replace(/_/g, " ")}</span>
             </div>
-            <span className="text-xs font-mono font-bold tabular-nums">{modStr(total)}</span>
+            <span className="text-xs font-mono font-bold tabular-nums text-gold-300">{modStr(total)}</span>
           </div>
         );
       })}

@@ -17,7 +17,7 @@ export default function PlayerSheetConditions({ character }: PlayerSheetConditio
 
   return (
     <div>
-      <span className="text-[10px] uppercase tracking-widest font-black text-surface-400 block mb-1.5">Conditions</span>
+      <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 block mb-1.5">Conditions</span>
       <div className="flex flex-wrap gap-1.5">
         {ALL_CONDITIONS.map((cond) => {
           const isActive = c.conditions.includes(cond.toLowerCase());
@@ -28,8 +28,10 @@ export default function PlayerSheetConditions({ character }: PlayerSheetConditio
                 : [...c.conditions, cond.toLowerCase()];
               updateCharacter(c.id, { conditions: updated });
             }}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold active:scale-95 transition-all duration-150 border ${
-                isActive ? "bg-accent-600/20 border-accent-500/30 text-accent-300" : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-surface-700/40"
+              className={`px-2.5 py-2 rounded-lg text-xs font-semibold active:scale-95 transition-all duration-150 border ${
+                isActive
+                  ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-[0_0_6px_rgba(234,179,8,0.06)]"
+                  : "bg-obsidian-mid/40 border-surface-700/20 text-surface-400 hover:border-gold/15 hover:text-gold-500/50"
               }`}>
               {cond}
             </button>

@@ -26,10 +26,10 @@ export default function PlayerSheetAbilityScores({ character }: PlayerSheetAbili
   return (
     <div className="grid grid-cols-3 gap-2">
       {abilities.map((a) => (
-        <div key={a.key} className="flex flex-col items-center bg-surface-800/40 rounded-xl border border-surface-700/20 py-2.5">
-          <span className="text-[9px] uppercase tracking-widest font-black text-surface-500">{a.name}</span>
-          <span className="text-2xl font-bold tabular-nums leading-none mt-0.5">{a.value}</span>
-          <span className="text-xs font-medium text-surface-400 tabular-nums">{modStr(abilityMod(a.value))}</span>
+        <div key={a.key} className="flex flex-col items-center bg-obsidian-mid/40 rounded-xl border border-surface-700/20 py-2.5 hover:border-gold/10 transition-all duration-200">
+          <span className="text-[9px] uppercase tracking-widest font-black text-gold-500/60">{a.name}</span>
+          <span className="text-2xl font-bold tabular-nums leading-none mt-0.5 text-gold-200 drop-shadow-[0_0_4px_rgba(234,179,8,0.06)]">{a.value}</span>
+          <span className="text-xs font-medium text-gold-500/50 tabular-nums">{modStr(abilityMod(a.value))}</span>
         </div>
       ))}
     </div>

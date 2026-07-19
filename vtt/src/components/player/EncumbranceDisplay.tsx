@@ -28,8 +28,8 @@ export default function EncumbranceDisplay({
   };
 
   return (
-    <div className="space-y-2 p-3 rounded-lg bg-surface-800/40 border border-surface-700/20">
-      <h3 className="text-[10px] uppercase tracking-widest text-surface-500 font-black">Encumbrance</h3>
+    <div className="space-y-2 p-3 rounded-xl bg-obsidian-mid/40 border border-surface-700/20 hover:border-gold/10 transition-all duration-200">
+      <h3 className="text-[10px] uppercase tracking-widest text-gold-500/60 font-black">Encumbrance</h3>
 
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">

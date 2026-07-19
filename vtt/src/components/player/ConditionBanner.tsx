@@ -11,7 +11,7 @@ interface ConditionBannerProps {
 export default function ConditionBanner({ conditions, onToggle, editable = false, compact = false }: ConditionBannerProps) {
   if (conditions.length === 0 && !compact) {
     return (
-      <div className="px-3 py-2 rounded-lg bg-surface-800/30 border border-surface-700/20 text-xs text-surface-500 text-center italic">
+      <div className="px-3 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/20 text-xs text-surface-500 text-center italic">
         No active conditions
       </div>
     );
@@ -80,8 +80,8 @@ export function ConditionEffectSummary({ conditions }: { conditions: string[] })
   if (!hasAny) return null;
 
   return (
-    <div className="space-y-1 p-2 rounded-lg bg-surface-800/40 border border-surface-700/20">
-      <h4 className="text-[10px] uppercase tracking-widest text-surface-500 font-black">Mechanical Effects</h4>
+    <div className="space-y-1 p-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/20">
+      <h4 className="text-[10px] uppercase tracking-widest text-gold-500/60 font-black">Mechanical Effects</h4>
       <div className="flex flex-wrap gap-1">
         {effects.isIncapacitated && <span className="px-1.5 py-0.5 rounded bg-surface-700/50 text-[9px] text-surface-300">Incapacitated</span>}
         {effects.hasDisadvantageOnAttacks && <span className="px-1.5 py-0.5 rounded bg-warrior-500/20 text-[9px] text-warrior-400">⬇ Attacks</span>}

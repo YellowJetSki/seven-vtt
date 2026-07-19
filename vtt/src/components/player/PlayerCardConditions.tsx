@@ -18,17 +18,17 @@ export default function PlayerCardConditions({
   if (activeConditions.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-surface-700/20">
+    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gold/10">
       {activeConditions.slice(0, 4).map((cond) => (
         <span
           key={cond}
-          className="px-1.5 py-0.5 rounded text-[9px] bg-accent-600/15 text-accent-400 border border-accent-500/10"
+          className="px-1.5 py-0.5 rounded text-[9px] bg-gold-500/10 text-gold-400 border border-gold/15"
         >
           {cond.charAt(0).toUpperCase() + cond.slice(1)}
         </span>
       ))}
       {activeConditions.length > 4 && (
-        <span className="text-[9px] text-surface-500">
+        <span className="text-[9px] text-gold-500/40">
           +{activeConditions.length - 4}
         </span>
       )}

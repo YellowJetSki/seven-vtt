@@ -19,12 +19,12 @@ export default function PlayerSheetTabBar({ activeTab, onTabChange }: PlayerShee
   const currentIdx = TAB_ORDER.indexOf(activeTab);
 
   return (
-    <div className="flex items-center justify-between px-2 py-1.5 border-b border-surface-700/20 shrink-0">
+    <div className="flex items-center justify-between px-2 py-1.5 border-b border-gold/10 shrink-0">
       <button
         onClick={() => currentIdx > 0 && onTabChange(TAB_ORDER[currentIdx - 1])}
-        className={`p-1.5 rounded-lg transition-colors ${
+        className={`p-1.5 rounded-lg transition-all duration-150 ${
           currentIdx > 0
-            ? "text-surface-400 hover:bg-surface-700/50 active:scale-90"
+            ? "text-surface-400 hover:bg-gold-500/10 hover:text-gold-400 active:scale-90"
             : "text-surface-700"
         }`}
         disabled={currentIdx === 0}
@@ -40,10 +40,10 @@ export default function PlayerSheetTabBar({ activeTab, onTabChange }: PlayerShee
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all active:scale-95 ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all duration-150 active:scale-95 ${
                 isActive
-                  ? "bg-accent-600/15 text-accent-300"
-                  : "text-surface-500 hover:text-surface-300"
+                  ? "bg-gold-500/10 text-gold-400 shadow-[0_0_8px_rgba(234,179,8,0.06)]"
+                  : "text-surface-500 hover:text-surface-300 hover:bg-gold-500/[0.03]"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -55,9 +55,9 @@ export default function PlayerSheetTabBar({ activeTab, onTabChange }: PlayerShee
 
       <button
         onClick={() => currentIdx < TAB_ORDER.length - 1 && onTabChange(TAB_ORDER[currentIdx + 1])}
-        className={`p-1.5 rounded-lg transition-colors ${
+        className={`p-1.5 rounded-lg transition-all duration-150 ${
           currentIdx < TAB_ORDER.length - 1
-            ? "text-surface-400 hover:bg-surface-700/50 active:scale-90"
+            ? "text-surface-400 hover:bg-gold-500/10 hover:text-gold-400 active:scale-90"
             : "text-surface-700"
         }`}
         disabled={currentIdx === TAB_ORDER.length - 1}

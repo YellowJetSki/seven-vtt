@@ -45,7 +45,7 @@ export default function PlayerCardCompact({
   return (
     <div
       onClick={() => onOpen(c)}
-      className="premium-surface rounded-xl p-3 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation"
+      className="bg-obsidian-mid/50 border border-surface-700/20 rounded-xl p-3 cursor-pointer active:scale-[0.98] transition-all duration-200 touch-manipulation hover:border-gold/15 shadow-[0_0_12px_rgba(0,0,0,0.2)]"
     >
       <PlayerCardAvatar character={c} />
 
