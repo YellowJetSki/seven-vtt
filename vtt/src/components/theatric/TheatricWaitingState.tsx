@@ -1,8 +1,9 @@
 /**
- * STᚱ VTT — Theatric Waiting State (Premium Gold)
+ * STᚱ VTT — Theatric Waiting State (Premium Cinematic Gold)
  *
- * Gold-accented loading/error state for the Theatric Display.
- * Shows the ᚱ rune with gold glow animation.
+ * Cinematic loading/error state for the Theatric Display.
+ * Features gold ᚱ rune with pulsing glow, ambient particle background,
+ * and gold-accented status indicators.
  */
 
 interface TheatricWaitingStateProps {
@@ -19,11 +20,21 @@ export default function TheatricWaitingState({
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-[#0a0b12] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4 float-arcane text-gold-400">ᚱ</div>
-          <div className="mt-4">
-            <div className="w-6 h-6 border-2 border-gold-500/30 border-t-gold-500 rounded-full animate-spin mx-auto" />
-            <p className="text-surface-400 text-xs mt-2">Awakening the theatric display...</p>
+        {/* Ambient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gold-500/[0.03] rounded-full blur-[100px] animate-pulse-glow" style={{ animationDuration: "4s" }} />
+
+        <div className="relative z-10 text-center">
+          <div className="text-6xl mb-6 float-arcane text-gold-400 drop-shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+            ᚱ
+          </div>
+          <div className="mt-4 flex flex-col items-center gap-3">
+            <div className="w-7 h-7 border-[2px] border-gold-500/20 border-t-gold-500 rounded-full animate-spin" />
+            <p className="text-gold-400/60 text-sm font-light tracking-wide">
+              Awakening the theatric display...
+            </p>
+            <p className="text-surface-600 text-[10px] uppercase tracking-[0.2em]">
+              STᚱ VTT — Arkla
+            </p>
           </div>
         </div>
       </div>
@@ -32,19 +43,44 @@ export default function TheatricWaitingState({
 
   return (
     <div className="fixed inset-0 bg-[#0a0b12] flex items-center justify-center">
-      <div className="text-center max-w-md p-8">
-        <div className="text-6xl mb-6 text-gold-400 animate-pulse-glow drop-shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+      {/* Ambient glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold-500/[0.02] rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: "6s" }} />
+
+      <div className="relative z-10 text-center max-w-md p-8">
+        <div className="text-7xl mb-6 text-gold-400/80 animate-pulse-glow drop-shadow-[0_0_30px_rgba(234,179,8,0.15)]">
           ᚱ
         </div>
-        <h1 className="text-2xl font-bold text-gold-300 mb-2">STᚱ VTT</h1>
-        <p className="text-surface-400 text-sm mb-4 leading-relaxed">{error}</p>
-        <div className="flex items-center justify-center gap-2 text-xs text-surface-500">
+        <h1 className="text-2xl font-bold text-gold-300/90 mb-3 tracking-tight">
+          STᚱ VTT
+        </h1>
+
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="h-px w-8 bg-gradient-to-r from-transparent to-gold-500/20" />
+          <span className="text-[10px] text-gold-500/40 uppercase tracking-[0.15em]">Theatric Display</span>
+          <div className="h-px w-8 bg-gradient-to-l from-transparent to-gold-500/20" />
+        </div>
+
+        <p className="text-surface-400/70 text-sm leading-relaxed mb-6 font-light">
+          {error}
+        </p>
+
+        <div className="flex items-center justify-center gap-2.5">
           <span
             className={`inline-block w-2 h-2 rounded-full ${
-              isConnected ? "bg-gold-500" : "bg-gold-500/50"
+              isConnected
+                ? "bg-gold-400 shadow-[0_0_8px_rgba(234,179,8,0.4)]"
+                : "bg-amber-500/50"
             }`}
           />
-          {isConnected ? "🟢 Live" : "🟡 Connecting..."}
+          <span className={`text-[10px] uppercase tracking-wider font-mono ${
+            isConnected ? "text-gold-400/60" : "text-amber-400/50"
+          }`}>
+            {isConnected ? "Live" : "Connecting..."}
+          </span>
+        </div>
+
+        <div className="rune-gold mt-8 justify-center opacity-40">
+          ✦ ✦ ✦
         </div>
       </div>
     </div>

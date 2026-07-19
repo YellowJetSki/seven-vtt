@@ -1,9 +1,10 @@
 /**
- * STᚱ VTT — Theatric Display
+ * STᚱ VTT — Theatric Display (Premium Cinematic)
  *
- * A pure cinematic canvas renderer for the player-facing monitor/TV.
- * Deliberately NO grid overlay, NO HUD, NO UI elements.
- * Optimized for large-screen 4K displays at cinematic 16:9 aspect ratio.
+ * Pure cinematic canvas renderer for the player-facing monitor/TV.
+ * Zero chrome — no grid, no HUD, no DM elements by default.
+ * Optional grid overlay toggled via parent TheatricPage.
+ * Optimized for 4K displays with HiDPI canvas scaling.
  */
 
 import { useRef } from "react";
@@ -13,13 +14,14 @@ import type { BattleMap, MapToken } from "@/types";
 interface TheatricDisplayProps {
   mapData: BattleMap;
   tokens: MapToken[];
+  showGrid?: boolean;
 }
 
-export default function TheatricDisplay({ mapData, tokens }: TheatricDisplayProps) {
+export default function TheatricDisplay({ mapData, tokens, showGrid = false }: TheatricDisplayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useTheatricCanvas(canvasRef, containerRef, mapData, tokens);
+  useTheatricCanvas(canvasRef, containerRef, mapData, tokens, showGrid);
 
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-[#0a0b12]">

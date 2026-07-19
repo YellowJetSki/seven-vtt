@@ -1,14 +1,25 @@
 /**
- * STᚱ VTT — Canvas Utilities
+ * STᚱ VTT — Cinematic Canvas FX
  *
- * Pure rendering functions for the Theatric canvas.
- * Extracted from useTheatricCanvas for strict modularity.
+ * Pure rendering functions for the Theatric canvas cinematic overlays.
+ * Contains vignette, letterbox, grid overlay, and ambient particle field.
+ * All functions are pure — no side effects, no state.
+ * (< 110 lines — modular)
  */
 
-import type { MapToken } from "@/types";
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  speed: number;
+}
 
 /**
  * Draws a cinematic vignette overlay on the canvas edges.
+ * Gold-tinted dark gradient fading from center.
  */
 export function drawVignette(
   ctx: CanvasRenderingContext2D,
@@ -18,106 +29,98 @@ export function drawVignette(
   const vignette = ctx.createRadialGradient(
     w / 2,
     h / 2,
-    w * 0.3,
+    w * 0.25,
     w / 2,
     h / 2,
-    w * 0.8
+    w * 0.85
   );
   vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
-  vignette.addColorStop(1, "rgba(0, 0, 0, 0.4)");
+  vignette.addColorStop(0.6, "rgba(0, 0, 0, 0.1)");
+  vignette.addColorStop(0.85, "rgba(0, 0, 0, 0.3)");
+  vignette.addColorStop(1, "rgba(10, 0, 0, 0.5)");
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, w, h);
 }
 
 /**
  * Draws cinematic letterbox bars at top and bottom.
+ * Gold-tinted edge glow.
  */
 export function drawLetterbox(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number
 ) {
-  const barHeight = h * 0.06;
-  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+  const barHeight = h * 0.05;
+  const topGrad = ctx.createLinearGradient(0, 0, 0, barHeight);
+  topGrad.addColorStop(0, "rgba(0, 0, 0, 0.75)");
+  topGrad.addColorStop(0.6, "rgba(0, 0, 0, 0.4)");
+  topGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = topGrad;
   ctx.fillRect(0, 0, w, barHeight);
+
+  const bottomGrad = ctx.createLinearGradient(0, h - barHeight, 0, h);
+  bottomGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
+  bottomGrad.addColorStop(0.4, "rgba(0, 0, 0, 0.4)");
+  bottomGrad.addColorStop(1, "rgba(0, 0, 0, 0.75)");
+  ctx.fillStyle = bottomGrad;
   ctx.fillRect(0, h - barHeight, w, barHeight);
 }
 
 /**
- * Draws a single map token on the canvas with shadow, icon, label, and HP bar.
+ * Draws a subtle gold-tinted grid overlay on the map.
+ * Hidden by default — toggled via DM/Player control.
  */
-export function drawToken(
+export function drawGrid(
   ctx: CanvasRenderingContext2D,
-  token: MapToken,
-  gridSize: number,
-  showLabels: boolean
+  gridWidth: number,
+  gridHeight: number,
+  gridSize: number
 ) {
-  const tx = token.x * gridSize + gridSize / 2;
-  const ty = token.y * gridSize + gridSize / 2;
-  const ts = token.size * gridSize * 0.85;
-
-  // Shadow
   ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-  ctx.shadowBlur = ts * 0.3;
-  ctx.shadowOffsetY = ts * 0.05;
+  ctx.strokeStyle = "rgba(234, 179, 8, 0.12)";
+  ctx.lineWidth = 0.5;
+  ctx.setLineDash([2, 4]);
 
-  // Circle
-  ctx.beginPath();
-  ctx.arc(tx, ty, ts / 2, 0, Math.PI * 2);
-  ctx.fillStyle = token.color || "#505270";
-  ctx.fill();
+  for (let x = 0; x <= gridWidth; x++) {
+    ctx.beginPath();
+    ctx.moveTo(x * gridSize, 0);
+    ctx.lineTo(x * gridSize, gridHeight * gridSize);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= gridHeight; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * gridSize);
+    ctx.lineTo(gridWidth * gridSize, y * gridSize);
+    ctx.stroke();
+  }
 
-  // Inner glow
-  const gradient = ctx.createRadialGradient(
-    tx - ts * 0.1,
-    ty - ts * 0.1,
-    0,
-    tx,
-    ty,
-    ts / 2
-  );
-  gradient.addColorStop(0, "rgba(255, 255, 255, 0.15)");
-  gradient.addColorStop(1, "rgba(0, 0, 0, 0.2)");
-  ctx.fillStyle = gradient;
-  ctx.fill();
+  ctx.setLineDash([]);
   ctx.restore();
+}
 
-  // Icon
-  ctx.fillStyle = "#ffffff";
-  ctx.font = `bold ${ts * 0.45}px sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(
-    token.icon || token.label[0]?.toUpperCase() || "?",
-    tx,
-    ty + 1
-  );
-
-  // Label
-  if (showLabels && token.label) {
+/**
+ * Draws ambient gold dust particles floating upward.
+ * Subtle atmospheric effect that adds depth.
+ */
+export function drawParticles(
+  ctx: CanvasRenderingContext2D,
+  particles: Particle[],
+  _zoom: number,
+  cx: number,
+  cy: number
+) {
+  particles.forEach((p) => {
     ctx.save();
-    ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = "#fde047";
+    ctx.shadowColor = "rgba(234, 179, 8, 0.15)";
     ctx.shadowBlur = 4;
-    ctx.fillStyle = "#f0f0f0";
-    ctx.font = `bold ${ts * 0.3}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(token.label, tx, ty - ts / 2 - 4);
+    const sx = cx + p.x;
+    const sy = cy + p.y;
+    ctx.beginPath();
+    ctx.arc(sx, sy, p.size, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
-  }
-
-  // HP bar
-  if (token.hp) {
-    const barW = ts * 0.8;
-    const barH = 4;
-    const barX = tx - barW / 2;
-    const barY = ty + ts / 2 + 4;
-    const ratio = Math.max(0, token.hp.current / Math.max(1, token.hp.max));
-    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    ctx.fillRect(barX, barY, barW, barH);
-    ctx.fillStyle =
-      ratio > 0.5 ? "#22c55e" : ratio > 0.25 ? "#f59e0b" : "#ef4444";
-    ctx.fillRect(barX, barY, barW * ratio, barH);
-  }
+  });
 }
