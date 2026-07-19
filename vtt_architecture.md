@@ -449,3 +449,74 @@ Split PlayerSheetCombatTab (211→70) and PlayerSheetStatsTab (153→80) into 7 
 - **Monolith risk:** 0 files over 150 lines
 
 ---
+
+## Cycle 3 — Unbreakable Viewport Shell (2026-07-18) (Updated: 2026-07-18 20:47)
+## Unbreakable Viewport Shell — Rigid Layout Enforcement
+
+### Problem
+Body overflow, squished layouts, canvas area collapsing, sidebars without boundary enforcement.
+
+### Fixes Applied
+
+#### 1. Global CSS (`index.css` + `vtt-design-system.css`)
+| Before | After |
+|--------|-------|
+| `min-height: 100vh`, `overflow-x: hidden` on body | `h-full w-full overflow-hidden` on `html, body, #root` |
+| Duplicate body rules | Merged into single `@layer base` block |
+| No scrollbar utility | `.scrollbar-gold` class added with gold-tinged scrollbar |
+
+#### 2. AppShell (`AppShell.tsx`)
+| Before | After |
+|--------|-------|
+| `flex-1 flex flex-col overflow-hidden` | Added `min-h-0` to flex chain to prevent overflow collapse |
+| Plain `main` | Added `min-h-0` + `scrollbar-gold` |
+
+#### 3. LoginPage
+| Before | After |
+|--------|-------|
+| `min-h-screen` with `overflow-hidden` | `h-screen w-screen overflow-hidden` — rigid viewport |
+
+#### 4. BattleMaps
+| Before | After |
+|--------|-------|
+| `h-screen flex flex-col overflow-hidden bg-surface-950` | `h-screen w-screen overflow-hidden flex flex-col bg-obsidian` |
+
+#### 5. DmControlCenter (`DmControlCenter.tsx`)
+| Before | After |
+|--------|-------|
+| Canvas wrapper: `flex-1 relative overflow-hidden` | Canvas wrapper: `flex-1 min-h-0 relative overflow-hidden` |
+
+#### 6. CanvasMapView (`CanvasMapView.tsx`)
+| Before | After |
+|--------|-------|
+| Container: `relative w-full h-full overflow-hidden bg-surface-950 rounded-xl` | Container: `absolute inset-0 overflow-hidden bg-obsidian` — canvas fills parent absolutely |
+
+#### 7. Sidebar (`Sidebar.tsx`)
+| Before | After |
+|--------|-------|
+| `overflow-y-auto` nav without min-h | Added `min-h-0` + `scrollbar-gold` for proper scroll boundary |
+
+### Viewport Enforcement Summary
+| Container | Class | Scroll |
+|-----------|-------|--------|
+| html, body, #root | `h-full w-full overflow-hidden` | ❌ body scroll disabled |
+| AppShell outer | `h-screen w-screen overflow-hidden` | ❌ viewport lock |
+| AppShell main | `flex-1 min-h-0 overflow-y-auto scrollbar-gold` | ✅ vertical scroll within content |
+| BattleMaps outer | `h-screen w-screen overflow-hidden` | ❌ viewport lock |
+| DmControlCenter outer | `flex h-full` | ✅ cascade from parent |
+| Sidebar nav | `flex-1 min-h-0 overflow-y-auto scrollbar-gold` | ✅ vertical scroll within sidebar |
+| Canvas container | `absolute inset-0 overflow-hidden` | ✅ absolutely positioned |
+| CanvasMapView container | `absolute inset-0 overflow-hidden bg-obsidian` | ✅ absolutely positioned |
+| Panel (Inspector) | `flex flex-col h-full` → `flex-1 overflow-y-auto` | ✅ vertical scroll within panel |
+| Panel (Initiative) | `flex flex-col h-full` → `flex-1 overflow-y-auto` | ✅ vertical scroll within panel |
+| Panel (Encounter) | `flex flex-col h-full` → `flex-1 overflow-y-auto` | ✅ vertical scroll within panel |
+| TheatricPage outer | `fixed inset-0 overflow-hidden` | ❌ fixed, no scroll |
+
+### Build Metrics
+- **TypeScript errors:** 0 (1975 modules)
+- **CSS size:** 97.97 KB (15.85 KB gzipped)
+- **JS size:** 600.10 KB (165.54 KB gzipped)
+- **Build time:** 6.14s
+- **Monolith files:** 0
+
+---

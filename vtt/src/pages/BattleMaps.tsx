@@ -47,8 +47,7 @@ export default function BattleMaps() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-surface-950">
-      {/* Full-control DM layout - no AppShell wrapper (uses its own sidebar) */}
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-obsidian">
       <DmControlCenter />
     </div>
   );

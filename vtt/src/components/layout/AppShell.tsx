@@ -24,15 +24,15 @@ export default function AppShell({ children }: AppShellProps) {
       {/* Ambient particle overlay */}
       <div className="fixed inset-0 bg-particle opacity-40 pointer-events-none z-0" />
 
-      {/* Desktop sidebar — hidden on mobile, min-w enforced */}
-      <div className="hidden sm:block shrink-0">
+      {/* Desktop sidebar — hidden on mobile, rigid min-w/max-w */}
+      <div className="hidden sm:block shrink-0 min-w-0">
         <Sidebar />
       </div>
 
-      {/* Main content area — all remaining space */}
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      {/* Main content area — flex-grow with min-h-0 to prevent overflow collapse */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
         <Header />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 sm:pb-6 scrollbar-gold">
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 pb-20 sm:pb-6 scrollbar-gold">
           {children}
         </main>
       </div>

@@ -441,6 +441,27 @@
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── Gold Scrollbar Utility ─────────────────────────────────── */
+.scrollbar-gold::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-gold::-webkit-scrollbar-track {
+  background: rgba(15, 16, 22, 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-gold::-webkit-scrollbar-thumb {
+  background: rgba(234, 179, 8, 0.25);
+  border-radius: 3px;
+  border: 1px solid rgba(48, 50, 68, 0.1);
+}
+
+.scrollbar-gold::-webkit-scrollbar-thumb:hover {
+  background: rgba(234, 179, 8, 0.4);
+}
+
 /* ── Responsive Gold Accents ───────────────────────────────── */
 @media (max-width: 640px) {
   .glass-premium,

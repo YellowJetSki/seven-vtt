@@ -56,7 +56,7 @@ export default function DmControlCenter() {
           onBack={state.handleGoBack}
         />
 
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 min-h-0 relative overflow-hidden">
           <CanvasMapView
             ref={state.canvasRef}
             mapData={state.activeMap}

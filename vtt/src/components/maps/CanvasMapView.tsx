@@ -124,7 +124,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   }), [renderFrame, updateAndRender, zoom, showFog, isDmView]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-surface-950 rounded-xl" style={{ minHeight: "400px" }}>
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-obsidian" style={{ minHeight: "400px" }}>
       <canvas ref={canvasRef} className="absolute inset-0 cursor-grab active:cursor-grabbing"
         onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp} onWheel={handleWheel} onClick={handleClick} />

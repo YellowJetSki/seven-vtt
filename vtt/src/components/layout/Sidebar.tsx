@@ -44,8 +44,8 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
+      {/* Navigation — scrollable with gold scrollbar */}
+      <nav className="flex-1 min-h-0 py-4 space-y-1 px-2 overflow-y-auto scrollbar-gold">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

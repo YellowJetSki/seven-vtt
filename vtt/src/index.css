@@ -64,6 +64,9 @@
 }
 
 @layer base {
+  html, body, #root {
+    @apply h-full w-full overflow-hidden;
+  }
   body {
     @apply bg-obsidian text-[#e4e5f0];
   }
@@ -87,14 +90,6 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   background-color: var(--color-surface-950);
   color: #e4e5f0;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 @keyframes pulse-glow {

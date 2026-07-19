@@ -27,7 +27,7 @@ export default function LoginPage() {
   }, [authState, role, navigate]);
 
   return (
-    <div className="min-h-screen bg-obsidian-radial flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="h-screen w-screen overflow-hidden bg-obsidian-radial flex items-center justify-center p-4 relative">
       {/* Atmospheric haze layers */}
       <div className="atmo-haze-top" />
       <div className="atmo-haze-bottom" />
