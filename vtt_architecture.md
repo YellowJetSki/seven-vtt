@@ -2752,3 +2752,115 @@ The Encounters page now has a **complete encounter builder workflow**:
 **Ready for Sprint 14.** Next targets: DmJournal (rich text + markdown editor), NPC Manager (statblock creator), or CampaignSettings (enhanced tools).
 
 ---
+
+## Sprint 14/25 — Journal: Enhanced Markdown Editor, Quick Notes, & Pinning (Updated: 2026-07-19 09:26)
+## Sprint 14/25 — Journal: Markdown Preview, Quick Notes, Pin/Unpin & Copy (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 9 OF 10**
+**Target:** DmJournal page + all 3 sub-components — enhanced with 6 new features
+
+### What Was Built
+
+#### 1. JournalMarkdownPreview (`components/journal/JournalMarkdownPreview.tsx`) — NEW (120 lines)
+Lightweight markdown renderer (zero external dependencies):
+- **Headers**: `# h1`, `## h2`, `### h3` with gold text styling
+- **Bold/Italic**: `**bold**` and `*italic*`
+- **Inline code**: `\`code\`` with amber monospace
+- **Links**: `[text](url)` with gold underline
+- **Blockquotes**: `> quote` with gold left border
+- **Lists**: `- unordered` and `1. ordered` with proper indentation
+- **Code blocks**: ` ```language` / ` ``` ` with dark background
+- **Horizontal rules**: `---`
+- **Paragraphs**: Auto-wraps with proper spacing
+- XSS-safe: HTML entity escaping
+
+#### 2. JournalQuickNote (`components/journal/JournalQuickNote.tsx`) — NEW (150 lines)
+Floating action button for instant DM note-taking:
+- Fixed position FAB (bottom-right, gold + pulse ring)
+- Opens compact modal with textarea, word count, character count
+- Auto-timestamps with date + time (`"Quick Note — Jul 19 1:25 PM"`)
+- Auto-attaches to current session number
+- Keyboard shortcuts: `Cmd+Enter` to save, `Escape` to cancel
+- Glassmorphism modal design matching the design system
+
+#### 3. JournalEditor (`components/journal/JournalEditor.tsx`) — ENHANCED
+New features added to existing editor:
+- **Pin/Unpin entries**: ★/☆ toggle persists as `"pinned"` tag in Firestore
+- **Markdown Preview**: Edit/Preview toggle in edit mode
+- **Copy to Clipboard**: Copy button with "Copied" feedback
+- **Relative timestamps**: "just now", "5m ago", "2h ago", "3d ago"
+- **Word count + character count**: Live during editing, shown in read-only
+- **Title char limit indicator**: "45/120"
+- **Keyboard shortcut hint**: `⌘↵ to save` shown in edit mode
+
+#### 4. JournalSidebar (`components/journal/JournalSidebar.tsx`) — ENHANCED
+- **Pinned entries section**: ★ Pinned group at the top of the list
+- **Pin icon on entries**: ★ indicator next to pinned entries
+- **Relative timestamps per entry**: "now", "5m", "2h", "3d" on each line
+- **Pinned count in footer**: "3 sessions · 2 pinned"
+- **Session number badge**: "S#3" shown on session entries
+
+#### 5. DmJournal Page (`pages/DmJournal.tsx`) — ENHANCED
+- Integrated JournalQuickNote FAB
+- Pinned count in stats bar
+- Session auto-attach for quick notes
+
+### Files Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/journal/JournalMarkdownPreview.tsx` | 120 | Zero-dependency markdown renderer |
+| `components/journal/JournalQuickNote.tsx` | 150 | Floating action button + quick note modal |
+
+### Files Modified (3)
+
+| File | Lines | Key Changes |
+|------|:-----:|:-----------:|
+| `components/journal/JournalEditor.tsx` | 380 | Pin/Unpin, markdown preview, copy, relative time, word count |
+| `components/journal/JournalSidebar.tsx` | 230 | Pinned group, relative time per entry, pin indicators |
+| `pages/DmJournal.tsx` | 180 | Quick Note FAB, pinned stat, session auto-attach |
+
+### DM Workflow (Complete)
+
+```
+During a live session:
+
+DM hears "I search the bookshelf" → taps FAB (bottom-right)
+  → types "Bookshelf in study: hidden compartment DC 15 Perception"
+  → Cmd+Enter → saved as "Quick Note — Jul 19 1:25 PM"
+
+Later:
+  → Opens Journal → sidebar shows pinned entries first
+  → Stars important session notes ★
+  → Uses markdown for encounter recaps (# Battle at the Keep)
+  → Copies quest text → pastes to chat
+  → Preview toggle checks formatting before sharing
+```
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1962 modules) |
+| Vite Build | ✅ **7.28s** |
+| Vercel Deploy | ✅ **5.63s build** → arkla.vercel.app |
+| Quick Note FAB renders | ✅ bottom-right, gold pulse ring |
+| Quick Note modal opens | ✅ 4-row textarea, word/char count, session context |
+| Quick Note Cancel | ✅ modal closes, no orphan state |
+| Editor preview toggle | ✅ Edit / Preview tabs functional |
+| Read-only markdown | ✅ headers, bold, lists, code all rendering |
+| Stats bar | ✅ "0 entries · 0 pinned" visible |
+| Sidebar filter buttons | ✅ 6 type filters render correctly |
+
+### Sprint 14/25 Complete
+
+The Journal now offers **premium DM note-taking tools**:
+- **Quick Note FAB**: Instant capture during live sessions (no navigation)
+- **Markdown Preview**: Full formatting for handouts and quest descriptions
+- **Pin/Unpin**: Important entries always at the top of the sidebar
+- **Copy to Clipboard**: One-click share of quest text to players
+- **Relative Timestamps**: "5m ago" context for fast scanning
+- **Word/Char Count**: Writing confidence during session prep
+
+**Ready for Sprint 15/25 (final cycle of DM Mechanics Phase).** Next target: Enemies page (NPC statblock creator) or BattleMaps (token management enhancements).
+
+---

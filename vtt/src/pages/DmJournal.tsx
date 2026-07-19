@@ -6,10 +6,14 @@
  * - Type filtering: Sessions, Quests, Lore, Notes, Handouts
  * - Search across title + content + tags
  * - Session-numbered tracking
- * - Tag system with quick-add
+ * - Tag system with quick-add and suggestions
  * - Full CRUD: create, edit, save, delete
- * - Session quest tracking with live status
- * - All mutations write to Zustand + Firestore via entitySlice
+ * - Pin/Unpin entries for quick access
+ * - Quick Note floating action button
+ * - Markdown preview in read-only and edit mode
+ * - Relative timestamps ("5m ago", "2h ago")
+ * - Word count, character count
+ * - Copy to clipboard for handouts
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -17,6 +21,7 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import AppShell from "@/components/layout/AppShell";
 import JournalSidebar from "@/components/journal/JournalSidebar";
 import JournalEditor from "@/components/journal/JournalEditor";
+import JournalQuickNote from "@/components/journal/JournalQuickNote";
 import type { JournalEntry, JournalEntryType } from "@/types";
 
 export default function DmJournal() {
@@ -42,15 +47,13 @@ export default function DmJournal() {
       lore: journal.filter((e) => e.type === "lore").length,
       notes: journal.filter((e) => e.type === "note").length,
       handouts: journal.filter((e) => e.type === "handout").length,
+      pinned: journal.filter((e) => e.tags?.includes("pinned")).length,
       currentSession: Math.max(
         ...journal
           .filter((e) => e.type === "session" && e.sessionNumber)
           .map((e) => e.sessionNumber || 0),
         0
       ),
-      recentEntries: [...journal]
-        .sort((a, b) => b.updatedAt - a.updatedAt)
-        .slice(0, 3),
     };
   }, [journal]);
 
@@ -61,7 +64,7 @@ export default function DmJournal() {
 
   const handleSave = useCallback(
     (data: Partial<JournalEntry> & { id: string }) => {
-      if (isCreating) {
+      if (isCreating || data.id.startsWith("journal_")) {
         addJournalEntry({
           id: data.id,
           title: data.title || "Untitled",
@@ -69,7 +72,7 @@ export default function DmJournal() {
           type: (data.type as JournalEntryType) || "note",
           tags: data.tags || [],
           sessionNumber: data.sessionNumber,
-          createdAt: Date.now(),
+          createdAt: data.createdAt || Date.now(),
           updatedAt: Date.now(),
         });
         setActiveEntryId(data.id);
@@ -103,6 +106,22 @@ export default function DmJournal() {
       setIsCreating(false);
     },
     []
+  );
+
+  const handleQuickNote = useCallback(
+    (data: { title: string; content: string; type: "note" }) => {
+      addJournalEntry({
+        id: `journal_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        title: data.title,
+        content: data.content,
+        type: "note",
+        tags: [],
+        sessionNumber: stats.currentSession > 0 ? stats.currentSession : undefined,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+    },
+    [addJournalEntry, stats.currentSession]
   );
 
   return (
@@ -150,6 +169,9 @@ export default function DmJournal() {
           <span>📜 {stats.lore} lore</span>
           <span>📝 {stats.notes} notes</span>
           <span>📄 {stats.handouts} handouts</span>
+          {stats.pinned > 0 && (
+            <span className="text-gold-400/40">★ {stats.pinned} pinned</span>
+          )}
         </div>
 
         {/* ── Main content: sidebar + editor ── */}
@@ -173,6 +195,12 @@ export default function DmJournal() {
             isNew={isCreating}
           />
         </div>
+
+        {/* ── Quick Note FAB ── */}
+        <JournalQuickNote
+          onSave={handleQuickNote}
+          lastSessionNumber={stats.currentSession}
+        />
       </div>
     </AppShell>
   );
