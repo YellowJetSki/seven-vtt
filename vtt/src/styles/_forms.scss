@@ -21,10 +21,10 @@
   }
 
   &:focus {
-    border-color: rgba(155, 77, 255, 0.45);
+    border-color: rgba(234, 179, 8, 0.4);
     box-shadow:
-      0 0 0 3px rgba(155, 77, 255, 0.1),
-      0 0 20px rgba(155, 77, 255, 0.05),
+      0 0 0 3px rgba(234, 179, 8, 0.08),
+      0 0 20px rgba(234, 179, 8, 0.04),
       0 2px 8px rgba(0, 0, 0, 0.2);
     background: rgba(30, 31, 43, 0.95);
   }

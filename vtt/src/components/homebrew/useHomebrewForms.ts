@@ -15,19 +15,21 @@ type FormMode = "add" | "edit" | null;
 const emptyItem: Omit<HomebrewItem, "id" | "createdAt" | "updatedAt"> = {
   name: "", category: "other", rarity: "common", description: "",
   flavorText: "", requiresAttunement: false, weight: 0, value: 0,
-  isCursed: false, tags: [], source: "homebrew", isHomebrew: true,
+  isCursed: false, tags: [], visibleToPlayers: true,
+  source: "homebrew", isHomebrew: true,
 };
 
 const emptySpell: Omit<HomebrewSpell, "id" | "createdAt" | "updatedAt"> = {
   name: "", level: 1, school: "Evocation", castingTime: "1 action",
   ritual: false, components: ["V", "S"], concentration: false,
   duration: "Instantaneous", range: "60 feet", classes: [], description: "",
-  isHomebrew: true, source: "homebrew", tags: [],
+  visibleToPlayers: true, isHomebrew: true, source: "homebrew", tags: [],
 };
 
 const emptyFeat: Omit<HomebrewFeat, "id" | "createdAt" | "updatedAt"> = {
   name: "", description: "", prerequisites: [], benefits: [],
-  repeatable: false, tags: [], source: "homebrew", isHomebrew: true,
+  repeatable: false, visibleToPlayers: true,
+  tags: [], source: "homebrew", isHomebrew: true,
 };
 
 export function useHomebrewForms() {

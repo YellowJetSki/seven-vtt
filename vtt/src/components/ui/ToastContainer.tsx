@@ -1,50 +1,90 @@
-import { useUIStore } from "@/stores/uiStore";
+/**
+ * STᚱ VTT — Toast Container
+ *
+ * Lightweight toast notification system for undo feedback and confirmations.
+ * Uses a simple stack pattern via Zustand uiStore.
+ */
 
-const typeStyles: Record<string, string> = {
-  success: "border-rogue-500/25 bg-rogue-500/8",
-  error: "border-warrior-500/25 bg-warrior-500/8",
-  info: "border-mage-500/25 bg-mage-500/8",
-  warning: "border-divine-500/25 bg-divine-500/8",
-};
+import { useCallback, useEffect, useState } from "react";
+import { X } from "lucide-react";
 
-const typeIcons: Record<string, string> = {
-  success: "✓",
-  error: "✕",
-  info: "ℹ",
-  warning: "⚠",
-};
+export interface Toast {
+  id: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  duration?: number;
+  /** Optional undo action */
+  onUndo?: () => void;
+  undoLabel?: string;
+}
 
-const typeColors: Record<string, string> = {
-  success: "text-rogue-400",
-  error: "text-warrior-400",
-  info: "text-mage-400",
-  warning: "text-divine-400",
-};
+// Global toast queue (simple module-level array)
+let toastListeners: Array<(toasts: Toast[]) => void> = [];
+let toastQueue: Toast[] = [];
+let toastCounter = 0;
+
+export function showToast(toast: Omit<Toast, "id">) {
+  const id = `toast_${++toastCounter}`;
+  const entry: Toast = { ...toast, id };
+  toastQueue = [...toastQueue, entry];
+  toastListeners.forEach((fn) => fn(toastQueue));
+
+  // Auto-dismiss
+  const duration = toast.duration ?? 4000;
+  setTimeout(() => {
+    toastQueue = toastQueue.filter((t) => t.id !== id);
+    toastListeners.forEach((fn) => fn(toastQueue));
+  }, duration);
+}
+
+export function dismissToast(id: string) {
+  toastQueue = toastQueue.filter((t) => t.id !== id);
+  toastListeners.forEach((fn) => fn(toastQueue));
+}
 
 export default function ToastContainer() {
-  const toasts = useUIStore((s) => s.toasts);
-  const dismissToast = useUIStore((s) => s.dismissToast);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  useEffect(() => {
+    const handler = (updated: Toast[]) => setToasts([...updated]);
+    toastListeners.push(handler);
+    return () => {
+      toastListeners = toastListeners.filter((h) => h !== handler);
+    };
+  }, []);
 
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
-      {toasts.map((toast, idx) => (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none">
+      {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`toast-premium flex items-start gap-3 px-4 py-3 border ${typeStyles[toast.type]} ${typeColors[toast.type]} animate-slide-in-up`}
-          style={{ animationDelay: `${idx * 50}ms` }}
+          className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border backdrop-blur-md animate-slide-up ${
+            toast.type === "error"
+              ? "bg-red-950/90 border-red-500/30 text-red-200"
+              : toast.type === "warning"
+                ? "bg-amber-950/90 border-amber-500/30 text-amber-200"
+                : toast.type === "success"
+                  ? "bg-emerald-950/90 border-emerald-500/30 text-emerald-200"
+                  : "bg-surface-950/90 border-surface-600/40 text-surface-200"
+          }`}
+          style={{ maxWidth: "420px" }}
         >
-          <span className="mt-0.5 text-base font-bold">{typeIcons[toast.type]}</span>
-          <p className="flex-1 text-sm font-medium">{toast.message}</p>
+          <span className="text-xs font-medium leading-tight flex-1">{toast.message}</span>
+          {toast.onUndo && (
+            <button
+              onClick={toast.onUndo}
+              className="text-[10px] uppercase tracking-wider font-bold text-gold-400 hover:text-gold-300 transition-colors whitespace-nowrap"
+            >
+              {toast.undoLabel ?? "Undo"}
+            </button>
+          )}
           <button
             onClick={() => dismissToast(toast.id)}
-            className="text-current opacity-50 hover:opacity-100 transition-opacity duration-200 p-0.5"
-            aria-label="Dismiss"
+            className="p-0.5 rounded hover:bg-white/10 text-surface-400 hover:text-surface-200 transition-colors"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-3 h-3" />
           </button>
         </div>
       ))}

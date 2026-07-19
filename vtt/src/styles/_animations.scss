@@ -39,8 +39,8 @@
 }
 
 @keyframes card-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(155, 77, 255, 0.05); }
-  50% { box-shadow: 0 0 30px rgba(155, 77, 255, 0.12); }
+  0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.12); }
 }
 
 @keyframes depth-rotate {
@@ -74,6 +74,11 @@
   }
 }
 
+@keyframes shimmer-dot {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
 @keyframes arcane-sweep-line {
   0% { left: -100%; }
   100% { left: 200%; }
@@ -83,6 +88,8 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.animate-shimmer-dot { animation: shimmer-dot 2s ease-in-out infinite; }
 
 // ── Animation Utility Classes ─────────────────────────────────
 .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }

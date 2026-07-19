@@ -178,10 +178,10 @@
 
 // ── Premium (generic accent) ─────────────────────────────────
 .premium-btn {
-  background: linear-gradient(135deg, rgba(155, 77, 255, 0.15), rgba(155, 77, 255, 0.05));
-  border: 1px solid rgba(155, 77, 255, 0.3);
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(234, 179, 8, 0.05));
+  border: 1px solid rgba(234, 179, 8, 0.3);
   border-radius: 8px;
-  color: var(--color-accent-300);
+  color: #fde047;
   padding: 8px 16px;
   font-weight: 600;
   font-size: 0.875rem;
@@ -189,9 +189,9 @@
   cursor: pointer;
 
   &:hover {
-    background: linear-gradient(135deg, rgba(155, 77, 255, 0.25), rgba(155, 77, 255, 0.1));
-    border-color: rgba(155, 77, 255, 0.5);
-    box-shadow: 0 4px 16px rgba(155, 77, 255, 0.15);
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(234, 179, 8, 0.1));
+    border-color: rgba(234, 179, 8, 0.5);
+    box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15);
     transform: translateY(-1px);
   }
 
@@ -208,7 +208,7 @@
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(155, 77, 255, 0.03);
+    inset 0 -1px 0 rgba(234, 179, 8, 0.03);
 }
 
 .toast-success { border-left: 3px solid var(--color-success, #22c55e); }

@@ -1,39 +1,112 @@
-import { Edit3, Trash2 } from "lucide-react";
+/**
+ * STᚱ VTT — Homebrew Item Card (v2.0)
+ *
+ * Enhanced with stat display (damage/AC/charges), duplicate action,
+ * visible-to-players toggle, and bulk-select checkbox.
+ */
+
+import { Edit3, Trash2, Copy, Eye, EyeOff } from "lucide-react";
 import type { HomebrewItem } from "@/types/homebrew";
 
 interface HomebrewItemCardProps {
   item: HomebrewItem;
   onEdit: (item: HomebrewItem) => void;
   onDelete: (id: string) => void;
+  onDuplicate: (item: HomebrewItem) => void;
+  onToggleVisibility: (id: string, visible: boolean) => void;
+  isBulkMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export default function HomebrewItemCard({ item, onEdit, onDelete }: HomebrewItemCardProps) {
+const RARITY_COLORS: Record<string, string> = {
+  common: "text-surface-400",
+  uncommon: "text-rogue-400",
+  rare: "text-mage-400",
+  "very rare": "text-gold-400",
+  legendary: "text-divine-400",
+  artifact: "text-warrior-400",
+};
+
+export default function HomebrewItemCard({
+  item,
+  onEdit,
+  onDelete,
+  onDuplicate,
+  onToggleVisibility,
+  isBulkMode,
+  isSelected,
+  onToggleSelect,
+}: HomebrewItemCardProps) {
+  const isWeapon = item.category === "weapon";
+  const isArmor = item.category === "armor";
+  const hasCharges = item.charges !== undefined && item.chargesMax !== undefined;
+
   return (
-    <div className="premium-surface rounded-xl p-3 hover-lift group">
-      <div className="flex items-start justify-between">
+    <div className={`premium-surface rounded-xl p-3 hover-lift group transition-all duration-200 ${isSelected ? "ring-2 ring-gold/30 bg-gold-500/5" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
+        {/* Bulk checkbox */}
+        {isBulkMode && onToggleSelect && (
+          <input
+            type="checkbox"
+            checked={!!isSelected}
+            onChange={() => onToggleSelect(item.id)}
+            className="mt-1 rounded border-surface-600 bg-surface-800 accent-gold-500 shrink-0"
+          />
+        )}
+
+        {/* Main Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-surface-200 truncate">{item.name}</span>
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${item.rarity === "legendary" ? "text-amber-400" : item.rarity === "rare" ? "text-mage-400" : item.rarity === "uncommon" ? "text-green-400" : "text-surface-400"}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${RARITY_COLORS[item.rarity] ?? "text-surface-400"}`}>
               {item.rarity}
             </span>
+            {/* Visibility icon */}
+            <span className={`text-[10px] ${item.visibleToPlayers ? "text-gold-400" : "text-surface-600"}`} title={item.visibleToPlayers ? "Visible to players" : "DM only"}>
+              {item.visibleToPlayers ? <Eye className="w-3 h-3 inline" /> : <EyeOff className="w-3 h-3 inline" />}
+            </span>
           </div>
+
           <p className="text-xs text-surface-500 mt-1 line-clamp-2">{item.description}</p>
+
+          {/* Stat Chips */}
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <span className="text-[10px] uppercase tracking-wider bg-surface-700/40 text-surface-400 px-1.5 py-0.5 rounded">{item.category}</span>
+            {isWeapon && item.damageDice && (
+              <span className="text-[10px] text-warrior-400 font-medium">{item.damageDice}{item.damageType ? ` ${item.damageType}` : ""}{item.attackBonus ? ` +${item.attackBonus}` : ""}</span>
+            )}
+            {isArmor && item.acBonus && (
+              <span className="text-[10px] text-mage-400 font-medium">AC {item.acBonus}</span>
+            )}
             {item.requiresAttunement && <span className="text-[10px] text-gold-400 font-medium">⚡ Attunement</span>}
+            {hasCharges && <span className="text-[10px] text-amber-400">⟳ {item.charges}/{item.chargesMax}</span>}
             <span className="text-[10px] text-surface-500">{item.weight} lb</span>
             <span className="text-[10px] text-divine-400">{item.value} gp</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 ml-2 shrink-0">
-          <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">
-            <Edit3 className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg hover:bg-red-500/15 text-surface-400 hover:text-red-400 transition-all active:scale-90">
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
+
+        {/* Action Buttons */}
+        {!isBulkMode && (
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => onToggleVisibility(item.id, !item.visibleToPlayers)}
+              className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-500 hover:text-gold-400 transition-all active:scale-90"
+              title={item.visibleToPlayers ? "Hide from players" : "Show to players"}
+            >
+              {item.visibleToPlayers ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+            <button onClick={() => onDuplicate(item)} className="p-1.5 rounded-lg hover:bg-mage-500/10 text-surface-400 hover:text-mage-400 transition-all active:scale-90" title="Duplicate">
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg hover:bg-red-500/15 text-surface-400 hover:text-red-400 transition-all active:scale-90">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

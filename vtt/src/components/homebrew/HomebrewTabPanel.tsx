@@ -1,7 +1,7 @@
 /**
- * STᚱ VTT — Homebrew Tab Panel
+ * STᚱ VTT — Homebrew Tab Panel (v2.0)
  *
- * Renders the appropriate list of cards based on the active tab.
+ * Enhanced with bulk-select mode, duplicate, and visibility callbacks.
  */
 
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat } from "@/types/homebrew";
@@ -22,6 +22,15 @@ interface HomebrewTabPanelProps {
   onDeleteItem: (id: string) => void;
   onDeleteSpell: (id: string) => void;
   onDeleteFeat: (id: string) => void;
+  onDuplicateItem: (item: HomebrewItem) => void;
+  onDuplicateSpell: (spell: HomebrewSpell) => void;
+  onDuplicateFeat: (feat: HomebrewFeat) => void;
+  onToggleItemVisibility: (id: string, visible: boolean) => void;
+  onToggleSpellVisibility: (id: string, visible: boolean) => void;
+  onToggleFeatVisibility: (id: string, visible: boolean) => void;
+  isBulkMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }
 
 export default function HomebrewTabPanel({
@@ -35,6 +44,15 @@ export default function HomebrewTabPanel({
   onDeleteItem,
   onDeleteSpell,
   onDeleteFeat,
+  onDuplicateItem,
+  onDuplicateSpell,
+  onDuplicateFeat,
+  onToggleItemVisibility,
+  onToggleSpellVisibility,
+  onToggleFeatVisibility,
+  isBulkMode,
+  selectedIds,
+  onToggleSelect,
 }: HomebrewTabPanelProps) {
   if (activeTab === "items") {
     if (items.length === 0) return <HomebrewEmptyState tabLabel="items" />;
@@ -46,6 +64,11 @@ export default function HomebrewTabPanel({
             item={item}
             onEdit={() => onEditItem(item)}
             onDelete={() => onDeleteItem(item.id)}
+            onDuplicate={() => onDuplicateItem(item)}
+            onToggleVisibility={onToggleItemVisibility}
+            isBulkMode={isBulkMode}
+            isSelected={selectedIds?.has(item.id)}
+            onToggleSelect={onToggleSelect}
           />
         ))}
       </div>
@@ -62,6 +85,11 @@ export default function HomebrewTabPanel({
             spell={spell}
             onEdit={() => onEditSpell(spell)}
             onDelete={() => onDeleteSpell(spell.id)}
+            onDuplicate={() => onDuplicateSpell(spell)}
+            onToggleVisibility={onToggleSpellVisibility}
+            isBulkMode={isBulkMode}
+            isSelected={selectedIds?.has(spell.id)}
+            onToggleSelect={onToggleSelect}
           />
         ))}
       </div>
@@ -78,6 +106,11 @@ export default function HomebrewTabPanel({
           feat={feat}
           onEdit={() => onEditFeat(feat)}
           onDelete={() => onDeleteFeat(feat.id)}
+          onDuplicate={() => onDuplicateFeat(feat)}
+          onToggleVisibility={onToggleFeatVisibility}
+          isBulkMode={isBulkMode}
+          isSelected={selectedIds?.has(feat.id)}
+          onToggleSelect={onToggleSelect}
         />
       ))}
     </div>

@@ -83,13 +83,17 @@ export default function DmDashboard() {
           <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
           <div className="depth-ring absolute inset-0 opacity-20" />
           <div className="relative z-10">
-            <h1 className="text-2xl sm:text-3xl font-black text-gold tracking-tight drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">
-              {meta.name}
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+              <span className="text-gold drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">{meta.name}</span>
             </h1>
-            <p className="text-surface-400 mt-1.5 text-sm sm:text-base leading-relaxed max-w-2xl">
+            <p className="text-surface-300 mt-1.5 text-sm sm:text-base leading-relaxed max-w-2xl">
               {meta.description}
             </p>
-            <div className="rune-gold mt-4 w-full max-w-md">✦ ᚱ ✦</div>
+            <div className="flex items-center gap-2 mt-4">
+              <span className="w-10 h-px bg-gradient-to-r from-transparent to-gold-500/30" />
+              <span className="text-[8px] text-gold-500/30 uppercase tracking-[0.2em] font-mono">✦ ᚱ ✦</span>
+              <span className="w-10 h-px bg-gradient-to-l from-transparent to-gold-500/30" />
+            </div>
           </div>
         </div>
 

@@ -1,9 +1,9 @@
 /**
- * STᚱ VTT — Header (Premium Gold)
+ * STᚱ VTT — Header (Premium Gold — Enhanced)
  *
  * Top navigation bar with gold-accented glassmorphism.
- * Shows campaign name, role badge, and user controls.
- * Fixed: 44px+ hamburger touch target, proper spacing.
+ * Enhanced: brand presence, gold gradient strip at bottom,
+ * Campaign label now uses gold accent, improved user badge styling.
  */
 
 import { useAuthStore } from "@/stores/authStore";
@@ -19,6 +19,9 @@ export default function Header() {
 
   return (
     <header className="h-14 sm:h-16 glass-gold border-b border-gold flex items-center justify-between px-3 sm:px-4 relative z-10 shrink-0">
+      {/* Gold accent strip at bottom of header */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold-500/30 to-transparent pointer-events-none" />
+
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Hamburger menu — large 44px+ touch target */}
         <button
@@ -30,21 +33,33 @@ export default function Header() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
+
         <div className="h-5 w-px bg-gold-500/10 shrink-0" />
-        {/* Campaign name */}
-        <span className="text-sm text-gold-400 font-bold tracking-wide">Arkla</span>
-        <span className="text-[9px] text-surface-600 uppercase tracking-[0.15em] font-semibold hidden sm:block">Campaign</span>
+
+        {/* Brand section — enhanced campaign identity */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gold-400 font-bold tracking-wide drop-shadow-[0_0_4px_rgba(234,179,8,0.1)]">
+            Arkla
+          </span>
+          <span className="text-[9px] text-surface-400 uppercase tracking-[0.15em] font-semibold hidden sm:block opacity-60">
+            Campaign
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
         <CompendiumDrawer />
-        {/* Role badge */}
-        <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-obsidian-mid/80 border border-gold/10">
+
+        {/* Role badge — enhanced with gold accents */}
+        <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-obsidian-mid/80 to-obsidian-mid/60 border border-gold/10 shadow-sm shadow-gold-500/5">
           <span className="text-xs">{role === "dm" ? "👑" : "⚔"}</span>
-          <span className="text-[11px] sm:text-xs text-surface-400 font-medium hidden sm:block">{role === "dm" ? "DM" : "Player"}</span>
-          <div className="h-4 w-px bg-surface-700/30 shrink-0" />
+          <span className="text-[11px] sm:text-xs text-gold-400/70 font-semibold uppercase tracking-wider hidden sm:block">
+            {role === "dm" ? "DM" : "Player"}
+          </span>
+          <div className="h-4 w-px bg-gold-500/10 shrink-0" />
           <span className="text-xs sm:text-sm text-surface-200 font-semibold truncate max-w-[100px]">{username}</span>
         </div>
+
         {/* Logout */}
         <button
           onClick={logout}

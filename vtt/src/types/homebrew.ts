@@ -1,4 +1,9 @@
-// ── Homebrew ──────────────────────────────────────────────────
+/**
+ * STᚱ VTT — Homebrew Types (v2.0)
+ *
+ * Enhanced with stat integration, VTT AoE fields,
+ * visibility controls, and structured prerequisites.
+ */
 
 export interface HomebrewItem {
   id: string;
@@ -9,6 +14,14 @@ export interface HomebrewItem {
   flavorText?: string;
   requiresAttunement: boolean;
   attunementDetails?: string;
+  /** Weapon damage dice, e.g. "1d8" */
+  damageDice?: string;
+  /** Damage type, e.g. "slashing", "fire" */
+  damageType?: string;
+  /** Flat bonus to attack rolls (weapons) */
+  attackBonus?: number;
+  /** AC bonus (armor) */
+  acBonus?: number;
   charges?: number;
   chargesMax?: number;
   chargesRecharge?: string;
@@ -18,6 +31,8 @@ export interface HomebrewItem {
   curseDetails?: string;
   imageUrl?: string;
   tags: string[];
+  /** Whether this item is visible to players in the compendium */
+  visibleToPlayers: boolean;
   source: string;
   isHomebrew: boolean;
   createdAt: number;
@@ -36,10 +51,24 @@ export interface HomebrewSpell {
   concentration: boolean;
   duration: string;
   range: string;
-  area?: string;
+  /** VTT area shape for AoE placement */
+  shape?: "circle" | "cone" | "cube" | "sphere" | "line" | "cylinder";
+  /** Area size in feet */
+  areaSize?: number;
+  /** Spell save DC override (if not using caster's) */
+  saveDC?: number;
+  /** Spell attack bonus override (if not using caster's) */
+  spellAttackBonus?: number;
+  /** Damage dice, e.g. "8d6" */
+  damageDice?: string;
+  /** Damage type */
+  damageType?: string;
+  /** Healing dice, e.g. "1d8" */
+  healDice?: string;
   classes: string[];
   description: string;
   atHigherLevels?: string;
+  visibleToPlayers: boolean;
   isHomebrew: boolean;
   source: string;
   tags: string[];
@@ -54,7 +83,12 @@ export interface HomebrewFeat {
   flavorText?: string;
   prerequisites: FeatPrerequisite[];
   benefits: string[];
+  /** Which ability score this feat increases, e.g. "strength" or "strength,constitution" */
+  abilityScoreIncrease?: string;
+  /** Skills this feat grants proficiency in */
+  skillProficiencies?: string[];
   repeatable: boolean;
+  visibleToPlayers: boolean;
   tags: string[];
   source: string;
   isHomebrew: boolean;
@@ -68,3 +102,15 @@ export interface FeatPrerequisite {
   ability?: string;
   minimumValue?: number;
 }
+
+/** JSON export/import envelope */
+export interface HomebrewExport {
+  version: number;
+  exportedAt: number;
+  campaign?: string;
+  items: HomebrewItem[];
+  spells: HomebrewSpell[];
+  feats: HomebrewFeat[];
+}
+
+export const HOME_EXPORT_VERSION = 1;
