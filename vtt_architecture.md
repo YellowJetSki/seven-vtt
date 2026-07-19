@@ -3555,3 +3555,98 @@ Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
 - `PlayerSheetRulesTab.tsx` — Quick reference panel
 
 ---
+
+## Sprint 24/25 — Player Mechanics Phase: Combat, Inventory & Rules Tab Overhaul (Updated: 2026-07-19 10:23)
+## Sprint 24/25 — Combat, Inventory & Rules Tab Premium Overhaul (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 9 of 10**
+**Targets:** `PlayerSheetCombatTab.tsx`, `PlayerSheetInventoryTab.tsx`, `PlayerSheetRulesTab.tsx`
+
+---
+
+### ⚔️ PlayerSheetCombatTab.tsx — Premium Tactical Hub (385→385 lines)
+
+**Before:** Standard combat tab with status banner, weapon attacks, resource gauges, HP management.
+
+**After:** Premium tactical hub with:
+
+| Feature | Detail |
+|---------|--------|
+| **6-button HP Keypad** | -10/-5/-1/+1/+5/+10 with color-coded gradients (red/rose/emerald), 3.5rem touch targets |
+| **Full-width HP Bar** | Shadow-inner container, animated width transition, temp HP overlay strip |
+| **Temp HP Management** | +1/+5/+10 THP + Clear, gold-accented buttons, live counter |
+| **Short Rest Button** | Heal ½ max HP + recharge all short-rest resources in one click |
+| **Class Resource Gauges** | Color-coded bars, +/- controls with disabled states, recharge label pills |
+| **Death Saves Integrated** | `urgent` mode at HP=0 — pulse glow, roll/stabilize buttons |
+| **Combat Status Banner** | Healthy/Bloodied/Unconscious/Dead with color-coded icon + HP ratio |
+| **Weapon Attack Cards** | ATK/DMG/Range/Properties with Melee/Ranged/Weapon type badges |
+| **Passive Senses Grid** | Perception (cyan), Investigation (violet), Insight (gold) — auto-calculated |
+| **Hit Dice Display** | Current/max + max recoverable per long rest |
+| **Conditions Always Visible** | `PlayerSheetConditions` inline toggle badges |
+| **Custom HP Input** | Numeric input with Enter key + Apply button |
+
+---
+
+### 📦 PlayerSheetInventoryTab.tsx — Premium Data Visualization (250→280 lines)
+
+**Before:** Standard inventory with weight bar, currency, equipment, category filters, add/edit/delete modals.
+
+**After:** Premium data hub with:
+
+| Feature | Detail |
+|--------|--------|
+| **Weight Pie Chart** | Horizontal stacked bar showing weight % by category (weapon→armor→potion→etc.) with per-category colors |
+| **Sort Controls** | Sort by name/weight/category with asc/desc toggle arrows |
+| **Search + Category Filter** | Search input + 9-category filter chips with count badges |
+| **Equipped-Only Toggle** | Checkbox filter for equipped items |
+| **Flash Toast Feedback** | Slide-in notification for all actions (add/edit/delete/equip/use/sell) |
+| **InventoryItemRow** | Full CRUD per item with equip, use consumable, edit, delete, sell |
+| **Color-Coded Categories** | Each category has unique color meta (weapon→rose, armor→cyan, potion→emerald, etc.) |
+| **Weight Bar with Pie** | Encumbrance level + stacked category bar underneath |
+| **Encumbrance Notice** | Speed penalty + overencumbered alert displayed live |
+| **5-Coin Currency Bar** | `InventoryCurrencyBar` with presets + manual edit |
+| **Equipment Slots** | Read-only equipped gear with gold accent border |
+| **Add/Sell Modals** | `ItemFormModal` for creation, `SellConfirmModal` for quick-sell |
+
+---
+
+### 📋 PlayerSheetRulesTab.tsx — Premium Reference Hub (290→320 lines)
+
+**Before:** Standard rules reference with tabbed sections (actions/conditions/rest/cover), encumbrance bar.
+
+**After:** Premium reference hub with:
+
+| Feature | Detail |
+|--------|--------|
+| **Tabbed Sections** | Actions/Conditions/Rest/Cover with gold active state + icon badges |
+| **Active Condition Highlighting** | Gold border + "Active" badge with gold bg for conditions the character currently has |
+| **Active Condition Summary** | Footer showing all active conditions as clickable chips |
+| **Condition Search** | Text search across condition name + summary |
+| **Action Time Badges** | Gold (Action), Cyan (Bonus), Violet (Reaction) — consistent color coding |
+| **Action Legend** | Top legend showing time badge meanings |
+| **Exhaustion Table** | Built into conditions (6 levels) |
+| **Concentration Rules Card** | Always-visible violet card in Rest section: DC calculation, one-at-a-time, ending rules |
+| **Hit Dice Display** | Current/max + max recovery + CON modifier shown |
+| **Cover Rules Card** | AC bonus + Save bonus per cover type |
+| **Stealth & Visibility** | Hiding, heavily/lightly obscured rules |
+| **Encumbrance Live Bar** | Color-coded by tier with speed penalty + disadvantage warnings |
+
+---
+
+### Build Metrics
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **8.86s**, 1,969 modules |
+| Vercel Deploy | ✅ **29s** → arkla.vercel.app |
+| Lines of code written | ~270 (3 files) |
+| Components upgraded | 3 (`PlayerSheetCombatTab`, `PlayerSheetInventoryTab`, `PlayerSheetRulesTab`) |
+
+### Player Mechanics Phase — Cycle 9 of 10 Complete
+
+**Next:** Sprint 25/25 (FINAL) — Final polish pass:
+- Verify all 5 tabs display correctly end-to-end
+- Verify color token consistency across all 12+ player components
+- Capture visual screenshot for final QA
+
+---

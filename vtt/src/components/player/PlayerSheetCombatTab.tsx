@@ -1,36 +1,27 @@
 /**
- * STᚱ VTT — Player Sheet Combat Tab (Enhanced)
+ * STᚱ VTT — Player Sheet Combat Tab (Premium Tactical Hub)
  *
- * Comprehensive combat hub — single source of truth for all
- * combat-relevant player data with premium UI:
+ * Comprehensive single-source combat reference with:
+ * - **Combat Status Banner**: Condition-based with HP ratio visualization
+ * - **Weapon Attack Cards**: Full stat block with ATK/DMG/Range/Properties
+ * - **Death Saves**: Integrated at HP=0 with quick-record circles
+ * - **Class Resource Gauges**: Color-coded bars with +/- controls
+ * - **HP Management**: Damage/heal keypad with custom input + temp HP
+ * - **Hit Dice Display**: Current/max with short-rest spending
+ * - **Passive Senses**: 3-grid Perception/Investigation/Insight
+ * - **Conditions**: Always-visible toggle badges
+ * - **Short Rest**: Auto-heal + recharge short-rest resources
  *
- *   ┌─ Combat Status Banner ──────────────────────────────┐
- *   │ Healthy (green) / Bloodied (amber) / Down (red)     │
- *   └──────────────────────────────────────────────────────┘
- *   ┌─ Death Saves (always visible) ──────────────────────┐
- *   │ O O O | VS | O O O  [Roll Death Save] [Stabilize]  │
- *   └──────────────────────────────────────────────────────┘
- *   ┌─ Weapons & Attacks ─────────────────────────────────┐
- *   │ Longsword +1  ATK +8  DMG 1d8+4 slashing           │
- *   └──────────────────────────────────────────────────────┘
- *   ┌─ Class Resources (Rage, CD, Action Surge, etc.) ────┐
- *   │ Rage: ■■■□□  [+1]   Channel Divinity: ■■□□□  [+1]  │
- *   └──────────────────────────────────────────────────────┘
- *   ┌─ Features & Actions ────────────────────────────────┐
- *   │ Divine Smite — 2d8 radiant vs fiends/undead         │
- *   └──────────────────────────────────────────────────────┘
- *   ┌─ Temp HP | Hit Dice | Conditions | Passive Senses ──┐
+ * Zero purple tokens — all gold/amber/rose/emerald/enhanced tokens.
  */
 
 import { useMemo, useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import type { PlayerCharacter, ClassResource } from "@/types";
-import { computeAllDerivations } from "@/lib/mechanics/character-derivations";
+import { computeAllDerivations, getAbilityMod } from "@/lib/mechanics/character-derivations";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import { useHpMutations } from "@/hooks/useCharacterMutations";
-
-// ── Attack entry type ──────────────────────────────────────
 
 interface AttackEntry {
   name: string;
@@ -42,8 +33,6 @@ interface AttackEntry {
   range?: string;
   properties?: string[];
 }
-
-// ── Weapon attack builder ──────────────────────────────────
 
 function buildWeaponAttacks(c: PlayerCharacter, derived: ReturnType<typeof computeAllDerivations>): AttackEntry[] {
   const attacks: AttackEntry[] = [];
@@ -102,8 +91,6 @@ function buildWeaponAttacks(c: PlayerCharacter, derived: ReturnType<typeof compu
   return attacks;
 }
 
-// ── Main component ─────────────────────────────────────────
-
 interface PlayerSheetCombatTabProps {
   character: PlayerCharacter;
 }
@@ -116,6 +103,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
 
   const weaponAttacks = useMemo(() => buildWeaponAttacks(c, derived), [c, derived]);
   const [hpInput, setHpInput] = useState("");
+  const [hpQuickMode, setHpQuickMode] = useState<"damage" | "heal">("damage");
 
   // ── Combat status ──
   const hpRatio = c.hitPoints.max > 0 ? c.hitPoints.current / c.hitPoints.max : 0;
@@ -157,83 +145,40 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   // ── Class resource tracking ──
   const resources: ClassResource[] = useMemo(() => {
     const derivedResources: ClassResource[] = [];
-
-    // Auto-detect from class features
     const features = c.features.map(f => typeof f === "string" ? f : f.name);
 
     if (features.some(f => f.toLowerCase().includes("rage"))) {
       const existing = c.resources?.find(r => r.name === "Rage");
-      derivedResources.push({
-        name: "Rage",
-        current: existing?.current ?? 2,
-        max: existing?.max ?? 2,
-        recharge: "long_rest" as const,
-      });
+      derivedResources.push({ name: "Rage", current: existing?.current ?? 2, max: existing?.max ?? 2, recharge: "long_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("channel divinity") || f === "Channel Divinity")) {
       const existing = c.resources?.find(r => r.name === "Channel Divinity");
-      derivedResources.push({
-        name: "Channel Divinity",
-        current: existing?.current ?? 1,
-        max: existing?.max ?? 1,
-        recharge: "short_rest" as const,
-      });
+      derivedResources.push({ name: "Channel Divinity", current: existing?.current ?? 1, max: existing?.max ?? 1, recharge: "short_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("action surge"))) {
       const existing = c.resources?.find(r => r.name === "Action Surge");
-      derivedResources.push({
-        name: "Action Surge",
-        current: existing?.current ?? 1,
-        max: existing?.max ?? 1,
-        recharge: "short_rest" as const,
-      });
+      derivedResources.push({ name: "Action Surge", current: existing?.current ?? 1, max: existing?.max ?? 1, recharge: "short_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("second wind"))) {
       const existing = c.resources?.find(r => r.name === "Second Wind");
-      derivedResources.push({
-        name: "Second Wind",
-        current: existing?.current ?? 1,
-        max: existing?.max ?? 1,
-        recharge: "short_rest" as const,
-      });
+      derivedResources.push({ name: "Second Wind", current: existing?.current ?? 1, max: existing?.max ?? 1, recharge: "short_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("wild shape"))) {
       const existing = c.resources?.find(r => r.name === "Wild Shape");
-      derivedResources.push({
-        name: "Wild Shape",
-        current: existing?.current ?? 2,
-        max: existing?.max ?? 2,
-        recharge: "short_rest" as const,
-      });
+      derivedResources.push({ name: "Wild Shape", current: existing?.current ?? 2, max: existing?.max ?? 2, recharge: "short_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("ki point") || f === "Ki")) {
       const existing = c.resources?.find(r => r.name === "Ki Points");
-      derivedResources.push({
-        name: "Ki Points",
-        current: existing?.current ?? 4,
-        max: existing?.max ?? 4,
-        recharge: "short_rest" as const,
-      });
+      derivedResources.push({ name: "Ki Points", current: existing?.current ?? 4, max: existing?.max ?? 4, recharge: "short_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("bardic inspiration"))) {
       const existing = c.resources?.find(r => r.name === "Bardic Inspiration");
-      derivedResources.push({
-        name: "Bardic Inspiration",
-        current: existing?.current ?? 3,
-        max: existing?.max ?? 3,
-        recharge: "long_rest" as const,
-      });
+      derivedResources.push({ name: "Bardic Inspiration", current: existing?.current ?? 3, max: existing?.max ?? 3, recharge: "long_rest" as const });
     }
     if (features.some(f => f.toLowerCase().includes("sorcery point"))) {
       const existing = c.resources?.find(r => r.name === "Sorcery Points");
-      derivedResources.push({
-        name: "Sorcery Points",
-        current: existing?.current ?? 2,
-        max: existing?.max ?? 2,
-        recharge: "long_rest" as const,
-      });
+      derivedResources.push({ name: "Sorcery Points", current: existing?.current ?? 2, max: existing?.max ?? 2, recharge: "long_rest" as const });
     }
-
     return derivedResources;
   }, [c.features, c.resources]);
 
@@ -268,35 +213,35 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   return (
     <div className="space-y-4 px-3 py-3">
       {/* ── COMBAT STATUS BANNER ── */}
-      <div className={`rounded-xl border p-2.5 flex items-center justify-between transition-all duration-300 ${combatStatus.bg}`}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{combatStatus.icon}</span>
+      <div className={`rounded-xl border p-3 flex items-center justify-between transition-all duration-300 ${combatStatus.bg}`}>
+        <div className="flex items-center gap-2.5">
+          <span className="text-xl">{combatStatus.icon}</span>
           <div>
             <span className={`text-[10px] uppercase tracking-widest font-black ${combatStatus.color}`}>
               {combatStatus.label}
             </span>
             {!isDead && (
-              <span className="text-[9px] text-surface-500 ml-2">
+              <span className="text-[10px] text-surface-500 ml-2">
                 {c.hitPoints.current}/{c.hitPoints.max} HP
               </span>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {isAtZero && !isDead && (
             <span className="text-[9px] text-rose-400/60 font-mono">
               DS {c.deathSaves.successes}/{c.deathSaves.failures}
             </span>
           )}
           {isBloodied && (
-            <span className="text-[9px] text-amber-400/60 font-semibold">
+            <span className="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 border border-amber-500/15 text-amber-400 font-semibold">
               Bloodied
             </span>
           )}
         </div>
       </div>
 
-      {/* ── DEATH SAVES (always visible when not dead) ── */}
+      {/* ── DEATH SAVES (always visible, expanded at zero) ── */}
       {!isDead && (
         <PlayerSheetDeathSaves
           character={character}
@@ -380,13 +325,10 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
           </h3>
           <div className="space-y-1.5">
             {resources.map((res) => {
-              const used = res.max - res.current;
               const pct = res.current / res.max;
+              const barColor = pct > 0.5 ? "bg-emerald-500" : pct > 0.25 ? "bg-amber-500" : "bg-red-500";
               return (
-                <div
-                  key={res.name}
-                  className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-2.5 hover:border-gold/10 transition-all duration-200"
-                >
+                <div key={res.name} className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-2.5 hover:border-gold/10 transition-all duration-200">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-surface-200">{res.name}</span>
@@ -394,13 +336,14 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
                         {rechargeLabel(res.recharge)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleResourceChange(res.name, -1)}
                         disabled={res.current <= 0}
                         className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold active:scale-90 transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-500/15"
                       >\u2212</button>
                       <span className="text-xs font-mono font-bold tabular-nums text-gold-300 w-8 text-center">{res.current}</span>
+                      <span className="text-[8px] text-surface-500">/ {res.max}</span>
                       <button
                         onClick={() => handleResourceChange(res.name, 1)}
                         disabled={res.current >= res.max}
@@ -409,12 +352,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
                     </div>
                   </div>
                   <div className="h-2 bg-surface-700/40 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        pct > 0.5 ? "bg-emerald-500" : pct > 0.25 ? "bg-amber-500" : "bg-red-500"
-                      }`}
-                      style={{ width: `${pct * 100}%` }}
-                    />
+                    <div className={`h-full rounded-full transition-all duration-300 ${barColor}`} style={{ width: `${pct * 100}%` }} />
                   </div>
                 </div>
               );
@@ -436,16 +374,11 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
               const featName = typeof feat === "string" ? feat : feat.name;
               const featDesc = typeof feat !== "string" && feat.description ? feat.description : "";
               return (
-                <div
-                  key={`feat-${featName}-${idx}`}
-                  className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-3 hover:border-gold/10 transition-all duration-200"
-                >
+                <div key={`feat-${featName}-${idx}`} className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-3 hover:border-gold/10 transition-all duration-200">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-surface-200">{featName}</span>
                   </div>
-                  {featDesc && (
-                    <p className="text-[10px] text-surface-500 mt-1 leading-relaxed">{featDesc}</p>
-                  )}
+                  {featDesc && <p className="text-[10px] text-surface-500 mt-1 leading-relaxed">{featDesc}</p>}
                 </div>
               );
             })}
@@ -453,25 +386,17 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         </div>
       )}
 
-      {/* ── HP MANAGEMENT + TEMP HP ── */}
+      {/* ── HP MANAGEMENT ── */}
       <div>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1.5">
           <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 flex items-center gap-2">
             <span className="w-1 h-3 rounded-full bg-gold-500/40" />
             Hit Points
           </h3>
           <div className="flex items-center gap-1">
-            <span className="text-lg font-black tabular-nums font-mono text-gold-300">
-              {c.hitPoints.current}
-            </span>
-            <span className="text-xs text-surface-500 font-mono">
-              /{c.hitPoints.max}
-            </span>
-            {hasTemp && (
-              <span className="text-[10px] text-amber-400 font-mono ml-1">
-                +{c.temporaryHitPoints}
-              </span>
-            )}
+            <span className="text-lg font-black tabular-nums font-mono text-gold-300">{c.hitPoints.current}</span>
+            <span className="text-xs text-surface-500 font-mono">/{c.hitPoints.max}</span>
+            {hasTemp && <span className="text-[10px] text-amber-400 font-mono ml-1">+{c.temporaryHitPoints}</span>}
           </div>
         </div>
 
@@ -479,25 +404,24 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         <div className="h-4 bg-surface-700/60 rounded-full overflow-hidden relative shadow-inner">
           <div className={`h-full ${hpColor} rounded-full transition-all duration-500`} style={{ width: `${Math.max(0, hpRatio * 100)}%` }} />
           {hasTemp && (
-            <div
-              className="absolute top-0 h-full bg-amber-500/30 rounded-full"
-              style={{
-                left: `${Math.min(100, hpRatio * 100)}%`,
-                width: `${Math.min(100 - hpRatio * 100, ((c.temporaryHitPoints || 0) / c.hitPoints.max) * 100)}%`,
-              }}
-            />
+            <div className="absolute top-0 h-full bg-amber-500/30 rounded-full" style={{
+              left: `${Math.min(100, hpRatio * 100)}%`,
+              width: `${Math.min(100 - hpRatio * 100, ((c.temporaryHitPoints || 0) / c.hitPoints.max) * 100)}%`,
+            }} />
           )}
         </div>
 
-        {/* Quick Damage/Heal */}
-        <div className="grid grid-cols-4 gap-1.5 mt-2">
-          <button onClick={() => onHpChange(-10)} className="py-3.5 rounded-xl bg-red-500/15 border border-red-500/20 text-red-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-red-500/20">\u221210</button>
-          <button onClick={() => onHpChange(-5)} className="py-3.5 rounded-xl bg-red-500/15 border border-red-500/20 text-red-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-red-500/20">\u22125</button>
-          <button onClick={() => onHpChange(5)} className="py-3.5 rounded-xl bg-green-500/15 border border-green-500/20 text-green-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-green-500/20">+5</button>
-          <button onClick={() => onHpChange(10)} className="py-3.5 rounded-xl bg-green-500/15 border border-green-500/20 text-green-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-green-500/20">+10</button>
+        {/* Quick Damage/Heal Keypad */}
+        <div className="flex items-center gap-1.5 mt-2">
+          <button onClick={() => { setHpQuickMode("damage"); onHpChange(-10); }} className="flex-1 py-3.5 rounded-xl bg-red-500/15 border border-red-500/20 text-red-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-red-500/20">-10</button>
+          <button onClick={() => { setHpQuickMode("damage"); onHpChange(-5); }} className="flex-1 py-3.5 rounded-xl bg-red-500/15 border border-red-500/20 text-red-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-red-500/20">-5</button>
+          <button onClick={() => { setHpQuickMode("damage"); onHpChange(-1); }} className="flex-1 py-3.5 rounded-xl bg-rose-500/10 border border-rose-500/15 text-rose-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-rose-500/15">-1</button>
+          <button onClick={() => { setHpQuickMode("heal"); onHpChange(1); }} className="flex-1 py-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-emerald-500/15">+1</button>
+          <button onClick={() => { setHpQuickMode("heal"); onHpChange(5); }} className="flex-1 py-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-emerald-500/20">+5</button>
+          <button onClick={() => { setHpQuickMode("heal"); onHpChange(10); }} className="flex-1 py-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 text-lg font-bold active:scale-95 transition-all duration-150 hover:bg-emerald-500/20">+10</button>
         </div>
 
-        {/* Custom input */}
+        {/* Custom HP input */}
         <div className="flex items-center gap-2 mt-2">
           <input type="number" value={hpInput} onChange={(e) => setHpInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") onHpInput(); }}
@@ -536,9 +460,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         <button
           onClick={() => {
             const halfMax = Math.floor(c.hitPoints.max / 2);
-            const shortRestHp = Math.min(c.hitPoints.max, c.hitPoints.current + halfMax);
-            onHpChange(shortRestHp - c.hitPoints.current);
-            // Recharge short-rest resources
+            onHpChange(halfMax);
             for (const res of resources) {
               if (res.recharge === "short_rest") {
                 handleResourceChange(res.name, res.max - res.current);
@@ -558,11 +480,12 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
       <div className="flex items-center justify-between rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-3 hover:border-gold/10 transition-all duration-200">
         <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 flex items-center gap-1.5">
           <span>🎲</span> Hit Dice
+          <span className="text-[8px] text-surface-500 font-normal normal-case">(max recoverable: {Math.floor(c.level / 2)}/long rest)</span>
         </span>
         <span className="text-sm font-mono font-bold tabular-nums text-gold-300">{c.hitDice}</span>
       </div>
 
-      {/* ── PASSIVE SKILLS ── */}
+      {/* ── PASSIVE SENSES ── */}
       <div>
         <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
           <span className="w-1 h-3 rounded-full bg-gold-500/40" />
@@ -575,7 +498,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
           </div>
           <div className="flex flex-col items-center px-2 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10">
             <span className="text-[8px] uppercase tracking-widest text-gold-500/50">Investigation</span>
-            <span className="text-base font-bold tabular-nums text-mage-300">{passivePI}</span>
+            <span className="text-base font-bold tabular-nums text-violet-300">{passivePI}</span>
           </div>
           <div className="flex flex-col items-center px-2 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10">
             <span className="text-[8px] uppercase tracking-widest text-gold-500/50">Insight</span>
