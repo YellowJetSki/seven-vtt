@@ -1,17 +1,20 @@
 /**
- * STᚱ VTT — DM Dashboard (Premium Gold)
+ * STᚱ VTT — DM Dashboard (Duolingo-Grade Premium Redesign)
  *
- * Campaign overview dashboard with gold-accented stat cards,
- * quick actions, recent activity, and status bar.
- * Uses the premium gold/amber design system.
+ * Campaign overview dashboard with:
+ * - Multi-layer CampaignBanner with animated rune + stat clusters
+ * - Spotify-style pill navigation chips
+ * - Vertical timeline activity feed
+ * - Compact system health bar
+ * - Staggered entrance animations throughout
  */
 
 import { useEffect, useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import { useCampaignStore } from "@/stores/campaignStore";
-import Button from "@/components/ui/Button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
+import CampaignBanner from "@/components/dashboard/CampaignBanner";
 import StatCard from "@/components/dashboard/StatCard";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentActivity from "@/components/dashboard/RecentActivity";
@@ -59,12 +62,7 @@ export default function DmDashboard() {
             description="Forge your first campaign or awaken an ancient realm from slumber."
           >
             <div className="flex gap-3 mt-6">
-              <Button variant="gold" size="lg" className="shadow-gold">
-                ✦ New Campaign
-              </Button>
-              <Button variant="secondary" size="lg" className="hover:border-gold/20 hover:text-gold-300">
-                📜 Import Campaign
-              </Button>
+              {/* Buttons handled by EmptyState */}
             </div>
           </EmptyState>
         </div>
@@ -74,53 +72,41 @@ export default function DmDashboard() {
 
   return (
     <AppShell>
-      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
-        {/* Campaign header — Gold fantasy banner */}
-        <div className="glass-gold rounded-2xl p-6 sm:p-8 relative overflow-hidden">
-          <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-          <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
-          <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
-          <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
-          <div className="depth-ring absolute inset-0 opacity-20" />
-          <div className="relative z-10">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              <span className="text-gold drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">{meta.name}</span>
-            </h1>
-            <p className="text-surface-300 mt-1.5 text-sm sm:text-base leading-relaxed max-w-2xl">
-              {meta.description}
-            </p>
-            <div className="flex items-center gap-2 mt-4">
-              <span className="w-10 h-px bg-gradient-to-r from-transparent to-gold-500/30" />
-              <span className="text-[8px] text-gold-500/30 uppercase tracking-[0.2em] font-mono">✦ ᚱ ✦</span>
-              <span className="w-10 h-px bg-gradient-to-l from-transparent to-gold-500/30" />
-            </div>
-          </div>
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-5">
+        {/* Campaign Banner — multi-layer hero */}
+        <div className="animate-slide-in-up" style={{ animationDelay: '50ms' }}>
+          <CampaignBanner meta={meta} stats={statCards} />
         </div>
 
-        {/* Quick Action Bar */}
-        <QuickActions />
+        {/* Quick Actions — Spotify chips */}
+        <div className="animate-slide-in-up" style={{ animationDelay: '150ms' }}>
+          <QuickActions />
+        </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        {/* Stats Grid — staggered data cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
           {statCards.map((stat, idx) => (
-            <div
+            <StatCard
               key={stat.label}
-              className="animate-slide-in-up"
-              style={{ animationDelay: `${idx * 60}ms` }}
-            >
-              <StatCard label={stat.label} value={stat.value} icon={stat.icon} />
-            </div>
+              label={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              index={idx}
+            />
           ))}
         </div>
 
-        {/* Recent Activity */}
-        <div className="animate-slide-in-up" style={{ animationDelay: "300ms" }}>
-          <RecentActivity entries={journal} />
-        </div>
+        {/* Two-column layout for content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+          {/* Recent Activity — vertical timeline */}
+          <div className="animate-slide-in-up" style={{ animationDelay: '300ms' }}>
+            <RecentActivity entries={journal} />
+          </div>
 
-        {/* Status Bar */}
-        <div className="animate-slide-in-up" style={{ animationDelay: "400ms" }}>
-          <StatusBar />
+          {/* Status Bar */}
+          <div className="animate-slide-in-up" style={{ animationDelay: '400ms' }}>
+            <StatusBar />
+          </div>
         </div>
       </div>
     </AppShell>

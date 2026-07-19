@@ -1,14 +1,33 @@
 /**
- * STᚱ VTT — Quick Actions (Premium Gold — Enhanced)
+ * STᚱ VTT — Quick Actions (Spotify Chip Bar)
  *
- * Horizontal bar of quick-navigation buttons with gold accents.
- * Enhanced: richer layout, larger hit targets, gold gradient dividers,
- * improved label legibility.
+ * Horizontal pill-shaped action bar:
+ * - Each action is a compact chip with icon + label
+ * - Hover: gold border + subtle glow lift
+ * - Active: scale feedback
+ * - Divider is a vertical gradient line
  */
 
 import { useNavigate } from "react-router-dom";
-import Button from "@/components/ui/Button";
 import LaunchTheatricButton from "./LaunchTheatricButton";
+
+interface ActionChipProps {
+  icon: string;
+  label: string;
+  onClick: () => void;
+}
+
+function ActionChip({ icon, label, onClick }: ActionChipProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-3.5 rounded-lg bg-white/[0.02] border border-white/[0.04] text-surface-400 hover:text-gold-300 hover:border-gold-500/20 hover:bg-gold-500/5 transition-all duration-200 active:scale-95 text-[11px] sm:text-xs font-semibold whitespace-nowrap"
+    >
+      <span className="text-sm leading-none">{icon}</span>
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  );
+}
 
 const actions = [
   { path: "/campaign/player-cards", label: "Player Cards", icon: "👥" },
@@ -22,31 +41,23 @@ export default function QuickActions() {
   const navigate = useNavigate();
 
   return (
-    <div className="glass-gold rounded-xl px-4 sm:px-5 py-3 sm:py-3.5 flex items-center gap-2 sm:gap-3 flex-wrap shadow-gold">
-      {/* Label with electric bolt icon */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        <span className="text-[11px] text-gold-400/80">⚡</span>
-        <span className="text-[10px] uppercase tracking-widest text-gold-400/70 font-black mr-0.5">
-          Quick:
-        </span>
-      </div>
+    <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap px-1">
+      {/* Label */}
+      <span className="text-[9px] uppercase tracking-[0.15em] text-gold-400/50 font-semibold mr-1 shrink-0">
+        Jump to
+      </span>
 
-      {/* Action buttons */}
-      {actions.map((action, i) => (
-        <Button
+      {actions.map((action) => (
+        <ActionChip
           key={action.path}
-          variant="secondary"
-          size="sm"
+          icon={action.icon}
+          label={action.label}
           onClick={() => navigate(action.path)}
-          className="hover:border-gold/20 hover:text-gold-300 border-gold/5 text-surface-400 text-[11px]"
-        >
-          <span className="mr-1">{action.icon}</span>
-          {action.label}
-        </Button>
+        />
       ))}
 
-      {/* Gold gradient divider */}
-      <div className="h-6 w-px bg-gradient-to-b from-transparent via-gold-500/20 to-transparent mx-1 shrink-0" />
+      {/* Gradient divider */}
+      <div className="h-5 w-px bg-gradient-to-b from-transparent via-white/[0.06] to-transparent mx-1 shrink-0" />
 
       <LaunchTheatricButton />
     </div>

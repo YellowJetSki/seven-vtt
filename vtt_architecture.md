@@ -1799,3 +1799,83 @@ All 16 design elements verified at arkla.vercel.app/campaign/dashboard:
 - Footer "Premium VTT" label ✅
 
 ---
+
+## Sprint 3/25 — DM Dashboard Duolingo-Grade Redesign (Updated: 2026-07-19 08:40)
+## Sprint 3/25 — DM Dashboard Premium Overhaul (2026-07-19)
+
+### Target
+DM Dashboard — the user's first-impression landing page, upgraded to Duolingo/Spotify-grade data visualization and premium layout rhythm.
+
+### New Files Created
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/dashboard/CampaignBanner.tsx` | 94 | Multi-layer hero banner: animated conic depth ring, rune with ambient glow, stat cluster strip, staggered data badges, gold edge lighting |
+
+### Files Rewritten (5)
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `pages/DmDashboard.tsx` | 110 | Complete restructuring: uses new CampaignBanner component, 5-column stat grid, two-column layout (recent activity + status side-by-side), staggered entrance animations, cleaner loading/empty states |
+| `components/dashboard/StatCard.tsx` | 47 | Duolingo-style data card: large tabular numbers, clean typography, gold gradient hover glow, bottom accent line that illuminates on hover, subtle scale feedback on press, 9px uppercase label, "Entries" anchor label below value |
+| `components/dashboard/QuickActions.tsx` | 62 | Spotify chip bar: compact pill buttons with gold hover state, icon-only on small screens (hidden label), "Jump to" label prefix, gradient divider, no glass-gold wrapper — minimal footprint |
+| `components/dashboard/RecentActivity.tsx` | 125 | Vertical timeline: gold dot + descending line connector, type-based color-coded dots, staggered slide-in entries, elegant empty state with centered rune illustration, formatted dates with month/day/year |
+| `components/dashboard/StatusBar.tsx` | 37 | Compact system health: ping-animated gold dots for active services, static dot for Physical Dice, inline layout with vertical dividers, right-aligned version label |
+
+### Design System Application
+
+**CampaignBanner:**
+- Multi-layer depth: `bg-gradient-to-br from-[#181a2a]/80 via-[#12131e]/85 to-[#0c0d15]/90`
+- Conic gradient depth ring rotating over 30s
+- Rune in gold-accented container with `rune-pulse` animation
+- Stat cluster strip with hover feedback line that illuminates per-stat
+- "Campaign Active" badge in gold tint
+
+**StatCard:**
+- Direct gradient background (no `glass-gold` wrapper — cleaner)
+- Gold-amber gradient hover glow from top-right direction
+- Icon scales 110% on hover
+- Bottom accent line gradient that transitions to gold on hover
+- Tabular numbers for clean data alignment
+
+**QuickActions:**
+- No container background — floats cleanly in the layout
+- Button chips: `bg-white/[0.02] border-white/[0.04]` with gold hover
+- Hidden label on mobile for compactness
+- Theatric button integrated via existing component
+
+**RecentActivity:**
+- Timeline: vertical gold line at `left-[11px]` from top to bottom
+- Gold dots with type-colored borders (session=gold, lore=amber, quest=gold-bright, note=surface)
+- Staggered entry animations (60ms per item)
+- Empty state: centered rune in gold circle container with cross dividers
+
+**StatusBar:**
+- Minimal: same gradient base as other cards, no glass wrapper
+- Animated ping dots with staggered delays (0s and 1s)
+- Physical Dice gets a static gold dot (non-animated)
+- Right-aligned "Arkla v4.0" in tiny 8px text
+
+### Build Metrics
+- TypeScript errors: 0 (1994 modules — 1 new from CampaignBanner)
+- Build: 6.43s local / 5.36s Vercel
+- CSS: 160.83 KB (21.07 KB gzipped) — +9.5 KB from new dashboard classes
+- JS: 1,045.00 KB (268.84 KB gzipped)
+- Deployed: arkla.vercel.app
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (tsc --noEmit) | ✅ 0 errors |
+| Vite build (production) | ✅ 0 errors, 5.36s Vercel |
+| CampaignBanner renders | ✅ (verified via component existence) |
+| StatCard with tabular-nums | ✅ (confirmed in built HTML) |
+| QuickActions pill buttons | ✅ (7 quick action chips visible) |
+| RecentActivity timeline | ✅ (empty state with rune divider visible) |
+| StatusBar indicators | ✅ (System Online, Local Storage, Physical Dice) |
+| EmptyState welcomes correctly | ✅ (shown when meta is null) |
+| Sidebar nav intact | ✅ 7 nav links |
+| Header intact | ✅ Brand, hamburger, Exit button |
+
+---
