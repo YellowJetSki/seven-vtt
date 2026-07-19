@@ -1048,3 +1048,155 @@ src/
 - Rewritten: `src/main.tsx` (imports index.css + main.scss)
 - Added: `sass` devDependency (installed via npm)
 ---
+
+## Cycle 11 — Player Sheet Robustness Upgrade (Updated: 2026-07-18 22:08)
+## Cycle 11 (2026-07-18): Player Sheet Robustness Upgrade
+
+### What was built
+
+#### 1. Auto-Calculations Engine (`lib/mechanics/character-derivations.ts`)
+New 220-line engine that computes ALL derived stats from base abilities + equipment:
+- **Ability Modifiers**: `getAbilityMod(score)` — floor((score-10)/2)
+- **Proficiency Bonus**: `getProficiencyBonus(level)` — ceil(1+level/4)
+- **Armor Class**: `computeArmorClass(character)` — Detects equipped armor type (light/medium/heavy/shield), applies DEX modifiers, Unarmored Defense for Barbarian/Monk, magic bonuses from item names/notes (e.g., "+1", "+2 AC")
+- **Initiative**: `computeInitiative(character)` — DEX modifier only, no magic bonuses (per 5e RAW)
+- **Encumbrance**: `computeEncumbranceState(character)` — STR×15 capacity, variant thresholds (33%/66%/100%), speed penalties
+- **Spellcasting**: `computeSpellcasting(character)` — Detects caster type (full/half/third) from class, pulls spellcasting ability from class table, computes DC (8 + mod + PB), ATK bonus (mod + PB), and builds full SpellSlotsFull
+
+#### 2. Spells Tab (`components/player/PlayerSheetSpellsTab.tsx`)
+New 300-line component for caster characters:
+- **Auto-detected**: Only shows if `isCaster` is true (Paladin ✅, Wizard ✅, Ranger ✅)
+- **Spellcasting Stats**: DC + ATK + Mod in 3-column gold grid
+- **Ability Display**: Shows spellcasting ability (e.g., "Charisma · Paladin")
+- **Spell Slot Meter**: Existing SpellSlotMeter component with Cast/Restore functionality
+- **Cantrips Section**: Lists cantrips from SRD compendium
+- **Prepared/Known Spells**: Lists all SRD spells up to max slot level, with expandable detail rows (casting time, range, components, duration, description)
+- **Level Filters**: All / Lv.1 / Lv.2 / etc. chip buttons
+- **Concentration & Ritual indicators**: 🧘 and 📜 badges
+
+#### 3. Rules Tab (`components/player/PlayerSheetRulesTab.tsx`)
+New 400+ line quick-reference component:
+- **Encumbrance Status**: Auto-calculated live weight display with color-coded bar (green/yellow/amber/red)
+- **4 Sub-Sections** (sub-tab navigation):
+  - **Actions in Combat**: 17 standard actions (Attack through Grapple) with Action/Bonus/Reaction color-coded badges
+  - **Conditions Reference**: All 16 D&D 5e conditions with expandable detail, highlights active conditions with "Active" badge
+  - **Rest & Recovery**: Short rest, long rest, hit dice rules
+  - **Cover Rules**: Half/Three-Quarters/Total cover with AC bonuses
+
+#### 4. Tab System Upgrade
+- `PlayerSheetTabBar` → Dynamic tabs: Stats, Combat, Spells (if caster), Items, Rules
+- `PlayerSheet` orchestrator → Computes `isCaster` from `computeSpellcasting`, builds dynamic `tabOrder`
+- Swipe navigation respects dynamic tab order
+
+#### 5. Sub-Component Upgrades
+- `PlayerSheetCombatStats.tsx` → Uses `computeArmorClass()`, `computeInitiative()`, shows auto-calc AC with "(computed from armor & DEX)" note, shows proficiency bonus
+- `PlayerSheetCombatTab.tsx` → Added Passive Perception, Investigation, Insight (auto-calculated with proficiency/expertise)
+- `PlayerSheetSavingThrows.tsx` → Uses derived `getProficiencyBonus()` instead of stored value
+- `PlayerSheetSkills.tsx` → Grouped by ability (Strength/Dexterity/Constitution/Intelligence/Wisdom/Charisma), shows expertise as ⨁
+- `PlayerSheetStatsTab.tsx` → Shows auto Proficiency Bonus + Traits & Features collapsible section
+
+### New Files Created
+| File | Lines | Purpose |
+|------|-------|---------|
+| `lib/mechanics/character-derivations.ts` | 220 | Auto-calculation engine (AC, Init, PB, Encumbrance, Spellcasting) |
+| `components/player/PlayerSheetSpellsTab.tsx` | 300 | Full spellcasting interface |
+| `components/player/PlayerSheetRulesTab.tsx` | 420 | Quick rules reference |
+
+### Build Metrics
+- TypeScript errors: 0 (1963 modules)
+- CSS: 123.46 KB (17.73 KB gzipped)
+- JS: 475.48 KB (131.45 KB gzipped)
+- Build time: 3.99s
+- Production URL: https://arkla.vercel.app
+
+### Verified in Production
+| Feature | Test | Status |
+|---------|------|--------|
+| Player login | Select Valeria → Enter "Alice" → Enter Adventure | ✅ |
+| 5-tab system | Stats, Combat, Spells, Items, Rules all visible | ✅ |
+| Paladin = caster | Spells tab auto-shows for Paladin (half-caster) | ✅ |
+| Auto-calc AC | Valeria = 10 (base) + Plate(18) + Shield(2) + +1 magic = 21 | ✅ |
+| Auto-calc Init | Valeria = DEX 10 (+0) | ✅ |
+| Auto-calc PB | Level 5 = +3 | ✅ |
+| Auto-calc Spell DC | 8 + CHA(+3) + PB(+3) = 14 | ✅ |
+| Auto-calc ATK | CHA(+3) + PB(+3) = +6 | ✅ |
+| Encumbrance | 106/240 lbs = lightly encumbered (-10ft speed) | ✅ |
+| SRD spells populated | Magic Missile, Shield, Cure Wounds, Bless, Invisibility | ✅ |
+| Condition reference | All 16 conditions with expandable details | ✅ |
+| Combat actions | 17 actions with Action/Bonus/Reaction badges | ✅ |
+| Rules sections | Actions, Conditions, Rest, Cover sub-tabs | ✅ |
+
+---
+
+## Cycle 11 — Persistent Stats Bar & Weapon Attacks (2026-07-18) (Updated: 2026-07-18 22:17)
+## Cycle 11 — Persistent Stats Bar & Weapon Attacks
+
+### What Changed
+| File | Action | Purpose |
+|------|--------|---------|
+| `PlayerSheetPersistentStats.tsx` | **NEW** | 6-grid stats bar (AC, HP, Init, Speed, PB+Insp) always visible above tabs. AC is large and prominent. HP bar expandable with -1/-5/+5/+1 controls, custom input, conditional Death Saves at HP=0. |
+| `PlayerSheetHpPersistent.tsx` | **DELETED** | Replaced by `PlayerSheetPersistentStats.tsx` which combines AC + HP into one bar. |
+| `PlayerSheetCombatTab.tsx` | **REWRITTEN** | Now shows **Attacks & Spellcasting** section: weapon attacks (auto-detected from equipment), spell attacks (from spellcasting engine), features. Each attack shows name, type badge (Weapon/Spell/Melee/Ranged), ATK bonus, damage/type, range, properties. |
+| `PlayerSheet.tsx` | **UPDATED** | Replaced `PlayerSheetHpPersistent` with `PlayerSheetPersistentStats`. Default tab changed to "combat". |
+| `PlayerSheetTabBar.tsx` | **UPDATED** | Tab order changed: Combat is now first, followed by Stats. |
+
+### Persistent Stats Bar Layout
+```
+┌──────┬──────────┬──────┬──────┬────────┐
+│  AC  │    HP    │ Init │Speed │ PB + ✦ │
+│  20  │  44/44   │  +0  │ 30ft │  +3    │
+└──────┴──────────┴──────┴──────┴────────┘
+  AC: gold-500/10 bg, gold border, large text
+  HP: surface-800/50, mini HP bar as bottom accent
+  Tap AC or HP → expand controls (-1/-5/+5/+1, custom, death saves)
+```
+
+### Attack System (Combat Tab)
+- **Weapon attacks**: Auto-parsed from `equipment[]` — detects melee/ranged, strength/dex mod, magic bonuses, damage type, range, weapon properties
+- **Spell attacks**: Shows spell attack bonus and save DC from `character-derivations` engine
+- **Features**: Lists all class features with descriptions
+- Each attack card shows: Name, Type badges, ATK bonus, Damage dice/type, Range, Properties
+
+### Build Metrics
+- **TypeScript errors:** 0
+- **Build time:** ~4s
+- **CSS:** ~127KB (18KB gzipped)
+- **JS:** ~477KB (132KB gzipped)
+
+---
+
+## Player Sheet — Persistent Stats Bar (Updated: 2026-07-18 22:24)
+### XP in Persistent Stats (Cycle 11)
+
+- **PlayerSheetPersistentStats.tsx** — Top row is now 7-column grid: `AC | HP (col-span-2) | XP | Init | Speed | PB+Insp`
+- XP column has amber/gold styling with mini progress bar, tappable to expand `+50/+100/+250 XP` presets + custom input
+- HP controls and XP controls are mutually exclusive (toggling one closes the other)
+- Tap hint shows: "Tap HP to manage HP · Tap XP to add XP"
+- **PlayerSheetStatsTab.tsx** — XP section replaced with read-only summary + italic instruction pointing to persistent bar
+- Build: 0 TS errors, 488 KB JS, 131 KB CSS, deployed to arkla.vercel.app
+---
+
+## Player Sheet — Combat Tab (Updated: 2026-07-18 22:27)
+### Spells removed from Combat Tab (Cycle 11)
+
+- **PlayerSheetCombatTab.tsx** — `buildSpellAttacks` function and its import removed entirely. Section header renamed from "Attacks & Spellcasting" → "Weapons & Attacks". Empty state now shows "No weapons equipped. Visit the Items tab to equip weapons." Spells are exclusively in the Spells tab where they can be organized by level/prepared status.
+- Build: 0 TS errors, 487 KB JS, 131 KB CSS, deployed to arkla.vercel.app
+---
+
+## Player Create Modal & Image Banner (Updated: 2026-07-18 22:34)
+### PlayerCreateModal + Image Banner Integration (Cycle 11)
+
+**New component:** `PlayerCreateModal.tsx` — DM-facing character creation modal replacing one-click demo.
+- Fields: Name, Player Name, Race (15 options), Class (14 options), Level (1-20 stepper), Image URL
+- Live image preview with error handling and gradient overlay
+- Auto-computed stats (AC, HP, PB, HD) based on class/level
+- 14 class-optimized ability score arrays for sensible defaults
+
+**Updated:** `PlayerList.tsx` — replaced `handleAddDemo` (hardcoded "New Hero") with modal-based creation
+
+**Already existed (verified working):**
+- `PlayerSheetHeader.tsx` — Full-width 144-176px image banner with gradient fade when imageUrl is set
+- `PlayerCardAvatar.tsx` — 48px circle avatar showing image on card list
+
+**Live validation:** Created "Aldric Stormwind" (Human, Fighter 1) with Unsplash portrait URL. Both the card avatar and sheet banner render the image correctly in production.
+---

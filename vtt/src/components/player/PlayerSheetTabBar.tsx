@@ -10,8 +10,8 @@ export interface TabConfig {
 }
 
 export const TABS: TabConfig[] = [
-  { id: "stats", label: "Stats", icon: Shield, showFor: "all" },
   { id: "combat", label: "Combat", icon: Swords, showFor: "all" },
+  { id: "stats", label: "Stats", icon: Shield, showFor: "all" },
   { id: "spells", label: "Spells", icon: Sparkles, showFor: "caster" },
   { id: "inventory", label: "Items", icon: Backpack, showFor: "all" },
   { id: "rules", label: "Rules", icon: BookOpen, showFor: "all" },

@@ -1,9 +1,11 @@
 /**
  * STᚱ VTT — Player Sheet (Premium Gold — Mobile-First Modal)
  *
- * Orchestrates the mobile-optimized player character sheet view.
+ * Orchestrator with persistent AC, HP, Init, Speed, PB, Inspiration bar visible on ALL tabs.
  * Dynamic tabs: Stats, Combat, Spells (if caster), Items, Rules.
- * Auto-calculates all derived stats (AC, Init, PB, DC, ATK, etc.)
+ * All derived stats auto-calculated (AC, Init, PB, DC, ATK, etc.)
+ * HP management expandable — Death Saves inline when HP = 0.
+ * Combat tab shows all weapon attacks, spell attacks, features.
  * 44px+ touch targets, swipeable tabs, no horizontal overflow.
  */
 
@@ -12,6 +14,7 @@ import type { PlayerCharacter } from "@/types";
 import { computeSpellcasting } from "@/lib/mechanics/character-derivations";
 import PlayerSheetHeader from "./PlayerSheetHeader";
 import PlayerSheetTabBar, { type CoreTabId } from "./PlayerSheetTabBar";
+import PlayerSheetPersistentStats from "./PlayerSheetPersistentStats";
 import PlayerSheetStatsTab from "./PlayerSheetStatsTab";
 import PlayerSheetCombatTab from "./PlayerSheetCombatTab";
 import PlayerSheetSpellsTab from "./PlayerSheetSpellsTab";
@@ -24,7 +27,7 @@ interface PlayerSheetProps {
 }
 
 export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
-  const [activeTab, setActiveTab] = useState<CoreTabId>("stats");
+  const [activeTab, setActiveTab] = useState<CoreTabId>("combat");
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const tabContentRef = useRef<HTMLDivElement>(null);
 
@@ -33,8 +36,8 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
 
   // Build dynamic tab order based on whether character is a caster
   const tabOrder = useMemo((): CoreTabId[] => {
-    const base: CoreTabId[] = ["stats", "combat", "inventory", "rules"];
-    const withSpells: CoreTabId[] = ["stats", "combat", "spells", "inventory", "rules"];
+    const base: CoreTabId[] = ["combat", "stats", "inventory", "rules"];
+    const withSpells: CoreTabId[] = ["combat", "stats", "spells", "inventory", "rules"];
     return isCaster ? withSpells : base;
   }, [isCaster]);
 
@@ -57,10 +60,10 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "stats":
-        return <PlayerSheetStatsTab character={character} />;
       case "combat":
         return <PlayerSheetCombatTab character={character} />;
+      case "stats":
+        return <PlayerSheetStatsTab character={character} />;
       case "spells":
         return <PlayerSheetSpellsTab character={character} />;
       case "inventory":
@@ -75,9 +78,16 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
       {/* Ambient gold gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-gold-500/[0.02] via-transparent to-transparent pointer-events-none" />
       <div className="relative z-10 flex flex-col h-full">
+        {/* Header (with optional banner portrait) */}
         <PlayerSheetHeader character={character} onClose={onClose} />
+
+        {/* PERSISTENT STATS BAR — AC, HP, Init, Speed, PB, Inspiration — Always visible */}
+        <PlayerSheetPersistentStats character={character} />
+
+        {/* Tab navigation */}
         <PlayerSheetTabBar activeTab={activeTab} onTabChange={setActiveTab} isCaster={isCaster} />
 
+        {/* Scrollable tab content */}
         <div
           ref={tabContentRef}
           className="flex-1 overflow-y-auto scrollbar-gold"
@@ -87,6 +97,7 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
           {renderContent()}
         </div>
 
+        {/* Bottom safe-area spacer */}
         <div className="h-4 shrink-0" />
       </div>
     </div>
