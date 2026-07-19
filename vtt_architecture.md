@@ -2979,3 +2979,65 @@ The DM Mechanics Phase (Sprints 6-15) is now **complete** after 10 cycles:
 **Next: Player Mechanics Phase (Sprints 16-25).** Targets: Player sheet enhancements, inventory management, spellcasting improvements.
 
 ---
+
+## Sprint 16/25 — Player Mechanics Phase: Interactive Inventory Overhaul (Updated: 2026-07-19 09:38)
+## Sprint 16/25 — Interactive Inventory Tab (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 1 of 10**
+**Target:** `PlayerSheetInventoryTab.tsx` — Complete interactive rewrite
+
+### What Was Built
+
+#### Complete Rewrite of PlayerSheetInventoryTab (181 lines → 490 lines)
+Replaced the passive read-only display with a full interactive inventory management system.
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Currency** | Static display only | Tap-to-edit with inline +/- and quick-add presets (+5, +10, +25, +50, +100 GP) |
+| **Coin roll-up** | ❌ | Auto-breaks higher denominations when spending low coins (e.g., spending 15cp from 0 breaks 1sp) |
+| **Equip/Unequip** | ❌ | Toggle button on each item (✓ gold / ○ dim), flash confirmation message |
+| **Add Item** | ❌ | Full modal: name, qty, weight, description, equip toggle |
+| **Edit Item** | ❌ | Inline editor row: grid of name/qty/weight inputs + description + equip checkbox |
+| **Delete Item** | ❌ | Two-step delete (🗑 → ✓/✕ confirmation) with flash message |
+| **Use consumable** | ❌ | "Use" button on potions, scrolls, food, poison (auto-decrements qty) |
+| **Weight tracker** | ❌ | Live encumbrance bar: color-coded (green/amber/red), capacity vs total, % marks |
+| **Equipped filter** | ❌ | Toggle checkbox: "Show Equipped Only" |
+| **Equipment slots** | ❌ | Read-only display above inventory with slot names |
+| **Flash messages** | ❌ | Toast notifications for equip/use/add/delete actions (1.5s auto-dismiss) |
+
+#### Interaction Details
+- **Encumbrance Bar**: Shows `weight / capacity lb` with gradient bar (green ≤33%, amber ≤66%, red ≤100%, deep red >100%)
+- **Currency edit**: Tap any coin → inline number input + +/- buttons; Enter to confirm, Escape to cancel
+- **Equip toggle**: ✓ (gold when equipped) / ○ (dim when not); instant store write via `updateCharacter`
+- **Use Consumable**: Auto-detected by name matching ("potion", "scroll", "food", "poison", "oil", "antidote") — decrements quantity, removes if last
+- **Inline edit**: Opens in-row grid inputs; save flips back to read view
+
+### Files Modified (1)
+
+| File | Lines | Changes |
+|------|:-----:|---------|
+| `components/player/PlayerSheetInventoryTab.tsx` | 181→490 | Complete rewrite from passive display to full interactive management |
+
+### New Components (embedded)
+- `ItemFormModal` — Add item modal (inline component)
+- `EditItemRow` — Inline edit row (inline component)
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1965 modules) |
+| Vite Build | ✅ **7.35s** |
+| Vercel Deploy | ✅ **built 5.72s** → arkla.vercel.app |
+| Encumbrance bar renders | ✅ (weighs items against STR×15) |
+| Currency editor opens | ✅ (tap coin → inline +/−) |
+| Add Item modal | ✅ (name, qty, weight, desc, equip) |
+| Equip/Unequip toggle | ✅ (✓ gold button, instant store write) |
+| Use consumable | ✅ (decrements potions/scrolls/food) |
+| Delete with confirm | ✅ (two-step 🗑 → ✓/✕) |
+| Equipped-only filter | ✅ (checkbox in header) |
+
+### Player Mechanics Phase — Cycle 1 Complete
+
+Next: **Sprint 17/25** — Target any remaining untouched Player Sheet section (e.g., Conditions display upgrade, Spells tab enhancements, persistent buff tracking).
+
+---
