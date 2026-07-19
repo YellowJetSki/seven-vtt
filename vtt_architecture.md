@@ -264,3 +264,23 @@ match /campaigns/{campaign}/characters/{charId} {
 | High fantasy purity | ✅ | No occult/undead; vibrant heroism aesthetic |
 | Canvas mandate | ✅ | Canvas rendering (useTheatricCanvas, CanvasMapView) |
 | Living documentation | ✅ | This file + vtt_state_schema.md updated every cycle |
+
+## Cycle 9 — State Schema & Architecture Sync (Complete) (Updated: 2026-07-18 20:17)
+## Cycle 9 (2026-07-18): State Schema & Architecture Sync Complete
+
+### Documentation Updated
+- **vtt_architecture.md** → v9.0.0: Comprehensive rewrite covering 57 components across 9 directories, dual-screen Theatric flow, DM Control Center 3-panel layout, mobile-first PlayerSheet architecture (orchestrator + 11 sub-components), all 6 Zustand stores, monolith refactoring history (2,100 lines eliminated, 21 sub-components created), security architecture, and quality gates.
+- **vtt_state_schema.md** → v2.0.0: Complete schema documentation for all Firestore collections (CampaignMeta, PlayerCharacter, BattleMap, MapToken, AoETemplate, EnemyDoc, Encounter, JournalEntry, CombatEncounter), all 8 AoE preset spells, 13-path access matrix, 10-field player write restrictions, dual-screen data flow diagram.
+
+### Additional Monolith Refactoring (Cycle 8 Follow-up)
+Split PlayerSheetCombatTab (211→70) and PlayerSheetStatsTab (153→80) into 7 new sub-components:
+- PlayerSheetHpSection, PlayerSheetDeathSaves, PlayerSheetConditions, PlayerSheetCombatStats
+- PlayerSheetAbilityScores, PlayerSheetSavingThrows, PlayerSheetSkills
+
+### Final Quality Gates
+- **tsc --noEmit**: 0 errors (1933 modules)
+- **vite build**: 0 errors, 0 warnings, 5.47s
+- **playwright**: 9/9 passing (11.8s)
+- **Git**: 880adf7 pushed to origin/main
+
+---
