@@ -1,9 +1,12 @@
 /**
- * STᚱ VTT — Header (Premium Gold — Enhanced)
+ * STᚱ VTT — Header (Lusion-Grade Premium Refresh)
  *
- * Top navigation bar with gold-accented glassmorphism.
- * Enhanced: brand presence, gold gradient strip at bottom,
- * Campaign label now uses gold accent, improved user badge styling.
+ * Top navigation bar with architectural-level details:
+ * - Multi-layer glass depth with subtle edge lighting
+ * - Sophisticated campaign identity with wordmark hierarchy
+ * - Tactile nav toggle with animated bars
+ * - Premium user badge with glass inset
+ * - Smooth gold-accented micro-interactions throughout
  */
 
 import { useAuthStore } from "@/stores/authStore";
@@ -18,55 +21,73 @@ export default function Header() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
 
   return (
-    <header className="h-14 sm:h-16 glass-gold border-b border-gold flex items-center justify-between px-3 sm:px-4 relative z-10 shrink-0">
-      {/* Gold accent strip at bottom of header */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold-500/30 to-transparent pointer-events-none" />
+    <header className="relative z-10 shrink-0">
+      {/* ── Header Body ── */}
+      <div className="h-14 sm:h-16 flex items-center justify-between px-2 sm:px-3 bg-gradient-to-b from-[#14151f]/[0.92] to-[#0f101a]/[0.95] backdrop-blur-2xl border-b border-white/[0.06] shadow-[0_4px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,215,0,0.03)]">
+        {/* Gold edge light */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none" />
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Hamburger menu — large 44px+ touch target */}
-        <button
-          onClick={toggleSidebar}
-          className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90"
-          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
+        {/* ── LEFT GROUP ── */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {/* Hamburger — tactile animated bars */}
+          <button
+            onClick={toggleSidebar}
+            className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-white/[0.04] text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90 group"
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            <div className="flex flex-col items-center justify-center w-5 h-5 gap-[3px]">
+              <span className={`block w-5 h-px bg-current transition-all duration-300 ease-in-out origin-center ${
+                sidebarOpen ? "rotate-45 translate-y-[3.5px]" : ""
+              }`} />
+              <span className={`block w-5 h-px bg-current transition-all duration-200 ease-in-out ${
+                sidebarOpen ? "opacity-0 scale-x-0" : ""
+              }`} />
+              <span className={`block w-5 h-px bg-current transition-all duration-300 ease-in-out origin-center ${
+                sidebarOpen ? "-rotate-45 -translate-y-[3.5px]" : ""
+              }`} />
+            </div>
+          </button>
 
-        <div className="h-5 w-px bg-gold-500/10 shrink-0" />
+          {/* Vertical divider */}
+          <div className="w-px h-5 bg-white/[0.06] shrink-0" />
 
-        {/* Brand section — enhanced campaign identity */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gold-400 font-bold tracking-wide drop-shadow-[0_0_4px_rgba(234,179,8,0.1)]">
-            Arkla
-          </span>
-          <span className="text-[9px] text-surface-400 uppercase tracking-[0.15em] font-semibold hidden sm:block opacity-60">
-            Campaign
-          </span>
+          {/* Campaign identity — stacked wordmark */}
+          <div className="flex items-center gap-2.5 pl-1">
+            <div className="flex flex-col">
+              <span className="text-[13px] sm:text-sm font-bold text-white/90 tracking-tight leading-tight">
+                Arkla
+              </span>
+              <span className="text-[8px] sm:text-[9px] text-surface-500 uppercase tracking-[0.15em] font-medium leading-tight">
+                Campaign
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        <CompendiumDrawer />
+        {/* ── RIGHT GROUP ── */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <CompendiumDrawer />
 
-        {/* Role badge — enhanced with gold accents */}
-        <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-obsidian-mid/80 to-obsidian-mid/60 border border-gold/10 shadow-sm shadow-gold-500/5">
-          <span className="text-xs">{role === "dm" ? "👑" : "⚔"}</span>
-          <span className="text-[11px] sm:text-xs text-gold-400/70 font-semibold uppercase tracking-wider hidden sm:block">
-            {role === "dm" ? "DM" : "Player"}
-          </span>
-          <div className="h-4 w-px bg-gold-500/10 shrink-0" />
-          <span className="text-xs sm:text-sm text-surface-200 font-semibold truncate max-w-[100px]">{username}</span>
+          {/* Role badge — glass inset */}
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <span className="text-[11px] sm:text-xs leading-none">{role === "dm" ? "👑" : "⚔"}</span>
+            <span className="hidden sm:block text-[10px] font-semibold text-gold-400/70 uppercase tracking-[0.08em] leading-none">
+              {role === "dm" ? "DM" : "Player"}
+            </span>
+            <div className="w-px h-3.5 bg-white/[0.06] shrink-0" />
+            <span className="text-[11px] sm:text-[12px] text-surface-200 font-semibold truncate max-w-[90px] sm:max-w-[120px] leading-none">
+              {username}
+            </span>
+          </div>
+
+          {/* Logout */}
+          <button
+            onClick={logout}
+            className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg text-[11px] sm:text-xs text-surface-400 hover:text-amber-400 hover:bg-amber-500/8 border border-transparent hover:border-amber-500/15 transition-all duration-200 active:scale-95 font-medium"
+          >
+            Exit
+          </button>
         </div>
-
-        {/* Logout */}
-        <button
-          onClick={logout}
-          className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm text-surface-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all duration-200 active:scale-95"
-        >
-          Logout
-        </button>
       </div>
     </header>
   );

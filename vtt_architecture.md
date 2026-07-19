@@ -1739,3 +1739,63 @@ All 15 design elements verified on arkla.vercel.app/login:
 - Rich submit button with shimmer sweep ✅
 
 ---
+
+## Sprint 2/25 — Header & Sidebar Lusion-Grade Redesign (Updated: 2026-07-19 08:37)
+## Sprint 2/25 — Header & Sidebar Premium Overhaul (2026-07-19)
+
+### Target
+Header + Sidebar layout chrome — Lusion/Ventriloc-grade glass architecture with tactile nav states and polished micro-interactions.
+
+### Changes Made
+
+#### Header.tsx — Complete Rewrite
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Base styling** | `glass-gold` class | Direct gradient `from-[#14151f]/[0.92] to-[#0f101a]/[0.95]` + backdrop-blur-2xl + inset gold edge |
+| **Hamburger** | Static SVG icon | 3 animated bars: top bar rotates 45°, middle bar scales to 0 opacity, bottom bar -45° on toggle |
+| **Campaign identity** | Flat "Arkla" + "Campaign" inline | Stacked wordmark: bold 13px "Arkla" + 8px uppercase "Campaign" label below |
+| **Role badge** | Glass-gold gradient | Glass inset `bg-white/[0.03] border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]` |
+| **Exit button** | "Logout" text | "Exit" — compact 32px height, amber hover instead of basic gold |
+| **Bottom edge light** | h-[1px] via-gold-500/30 | h-px via-gold-500/25 — subtle perfection |
+
+#### Sidebar.tsx — Complete Rewrite
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Base** | `glass-gold` class | Direct `bg-gradient-to-b from-[#14151f]/[0.88] to-[#0f101a]/[0.94]` + backdrop-blur-2xl + custom shadows |
+| **Active state** | Flat gold bg + 3px left border | Gradient bg `from-gold-500/10 to-gold-500/5` + rounded pill indicator (w-1 h-6 with gold shadow glow) + inset gold edge light + subtle border |
+| **Inactive hover** | Hardcoded gold-500/[0.03] gradient | Gradient from gold-500/[0.03] + 0.5px border glow on hover |
+| **Nav animation** | Standard transition | `active:scale-[0.97]` press state + icon `group-hover:scale-110` scale pop |
+| **Brand bar** | Rune + STᚱ VTT with fade | Added ambient glow behind rune (`bg-gold-500/5 blur-[12px]`), label uses translate-x for smooth slide-out on collapse |
+| **Footer** | `rune-gold` class + "✦ ᚱ ✦" | Gradient dividers + "✦ ᚱ ✦" + "Premium VTT" label below |
+| **Collapse animation** | 300ms ease-in-out | 300ms cubic-bezier(0.4,0,0.2,1) — Apple-style spring easing |
+| **Gold edge light** | Right border `gold/15` | Right-side gradient `from-transparent via-gold-500/15 to-transparent` — more subtle, architectural |
+
+### Key Micro-Interactions
+1. **Hamburger bars** — morph into ✕ on click with 300ms spring easing
+2. **Nav icons** — scale 1.1x on hover (`group-hover:scale-110`)
+3. **Nav items** — press feedback with `active:scale-[0.97]`
+4. **Sidebar collapse** — brand label slides -16px and fades out (translate-x + opacity)
+5. **Active pill** — gold glow shadow expands outside the pill
+6. **Inactive border glow** — 0.5px border appears on hover for depth
+
+### Build Metrics
+- TypeScript errors: 0 (1993 modules)
+- Build: 6.39s local / 5.51s Vercel
+- CSS: 151.60 KB (20.23 KB gzipped)
+- JS: 1,041.04 KB (267.94 KB gzipped)
+- Deployed: arkla.vercel.app
+
+### Live Verification (Production)
+All 16 design elements verified at arkla.vercel.app/campaign/dashboard:
+- Stacked "Arkla"/"Campaign" wordmark in header ✅
+- Animated hamburger with 3 bars ✅
+- "Exit" button with amber hover ✅
+- DM role badge with glass inset ✅
+- Username display ✅
+- Sidebar collapses to w-16 with 7 icon-only nav items ✅
+- Active pill indicator on Dashboard nav item ✅
+- ᚱ rune visible in collapsed state ✅
+- Nav icons with hover scale effect ✅
+- Footer "Premium VTT" label ✅
+
+---
