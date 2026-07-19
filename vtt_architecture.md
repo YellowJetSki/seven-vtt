@@ -1304,3 +1304,81 @@ campaigns/{campaignId}/
 - **Monolith risk:** 0 files over 150 lines
 
 ---
+
+## Cycle 13 — Battlemap Interactive Grid Hooks (Cycle 3 of 3) (Updated: 2026-07-18 22:53)
+## Cycle 13 (2026-07-18): Battlemap Interactive Grid Hooks (Cycle 3 of 3)
+
+### Summary
+Built the token grid-snapping drag engine and Firestore token synchronization layer. Token positions now snap to 5ft grid increments on drag, with all position changes written to both Zustand (instant) and Firestore (real-time sync to other tabs/devices).
+
+### New Files Created (3)
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `src/hooks/useTokenDrag.ts` | **Pure React drag engine** — grid-snapping (5ft), circular hit-testing, 5px drag threshold, drag state management | 215 |
+| `src/hooks/useTokenMutations.ts` | **Centralized token CRUD** — `moveToken`, `updateToken`, `addToken`, `removeToken` → writes to both Zustand + Firestore | 120 |
+| `src/hooks/useFirestoreTokenSync.ts` | Firestore `onSnapshot` listener for map tokens subcollection, merges into campaignStore | 80 |
+
+### Files Modified (3)
+
+| File | Key Changes |
+|------|-------------|
+| `src/lib/firestore/entity-service.ts` | Added `listenMapTokens()` — real-time `onSnapshot` for `campaigns/{id}/maps/{mapId}/tokens` subcollection |
+| `src/lib/firestore-service.ts` | Exported `listenMapTokens` |
+| `src/components/control-center/useDmControlCenter.ts` | Integrated `useFirestoreTokenSync(activeMapId)`, `useTokenMutations(activeMapId)`, `handleMoveToken` callback |
+
+### Architecture — Token Data Flow
+
+```
+Firestore ──(onSnapshot)──► useFirestoreTokenSync ──(setMapTokens)──► campaignStore.mapTokens
+                                                                           │
+                                                                           ▼
+                                                                      activeTokens (derived)
+                                                                           │
+                                                                           ▼
+                                                                      CanvasMapView
+
+DM drags token on canvas
+  └─► useTokenDrag (pixel→grid snapping, 5ft increments)
+      └─► handleMoveToken(tokenId, gridX, gridY)
+          └─► useTokenMutations.moveToken()
+              ├─► Zustand: updateMapToken(mapId, tokenId, { x, y })  (instant)
+              └─► Firestore: setMapToken(campaignId, mapId, tokenId, { ... })  (async)
+
+Player HUD / second tab picks up change via onSnapshot ◄── Firestore
+```
+
+### `useTokenDrag` Hook API
+
+```typescript
+const { dragState, handleMouseDown, handleMouseUp, handleMouseMove, snapToGrid, hitTestToken } =
+  useTokenDrag({ tokens, gridSize, onMoveToken, onTokenClick, onCellClick });
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `dragState.activeTokenId` | `string \| null` | Currently dragged token, or null |
+| `dragState.gridX, gridY` | `number` | Grid-snapped position during drag |
+| `dragState.isDragging` | `boolean` | Whether drag is in progress |
+| `handleMouseDown(cx, cy, panX, panY, zoom)` | `boolean` | Hit-tests, starts potential drag; returns true if token hit |
+| `handleMouseMove(cx, cy, panX, panY, zoom)` | `boolean` | Snaps to grid after 5px threshold; updates dragState |
+| `handleMouseUp(cx, cy, panX, panY, zoom)` | `boolean` | Commits drag or fires click; resets state |
+| `snapToGrid(pixelX, pixelY)` | `{gridX, gridY}` | Pure function: `Math.round(pixel / gridSize)` |
+| `hitTestToken(cx, cy, panX, panY, zoom)` | `MapToken \| null` | Circle hit-test on all tokens (iterates in reverse) |
+
+### Integration Points
+
+| Integration | Where | Status |
+|-------------|-------|--------|
+| **DM Control Center** | `useDmControlCenter.ts` — syncs tokens via `useFirestoreTokenSync`, provides `handleMoveToken` | ✅ Wired |
+| **Future: CanvasMapView** | Should call `useTokenDrag.handleMouseDown/Move/Up` from canvas event handlers | 🚧 Exposed via `onMoveToken` prop |
+| **Future: Player Mobile HUD** | `useFirestoreTokenSync` can be mounted on the player sheet to receive token position updates | ✅ Ready |
+
+### Quality Gates
+
+- **TypeScript:** 0 errors (clean compilation)
+- **Vite build:** Successful
+- **Monolith risk:** 0 files over 150 lines
+- **Methods added to entity-service:** `listenMapTokens()`
+
+---

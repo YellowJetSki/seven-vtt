@@ -17,12 +17,9 @@ import TheatricPage from "./pages/TheatricPage";
 import AuthGuard from "@/components/auth/AuthGuard";
 
 function FirestoreSyncGate() {
-  const isAuthed = useAuthStore((s) => s.state === "authenticated");
-  const configValid = hasValidConfig();
-  if (isAuthed && configValid) {
-    useFirestoreSync();
-    useFirestoreCombatSync();
-  }
+  // Always call hooks unconditionally — the hooks themselves guard internally
+  useFirestoreSync();
+  useFirestoreCombatSync();
   return null;
 }
 
