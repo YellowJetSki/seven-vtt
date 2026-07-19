@@ -2642,3 +2642,113 @@ The Player Cards page now has a **complete DM Party Management Hub**:
 **Ready for Sprint 13.** Next targets: Encounters (deeper operational tools with monster allocation), DmJournal (rich text editor), or a Settings page enhancement.
 
 ---
+
+## Sprint 13/25 — Encounters: Complete Encounter Builder & CR Engine (Updated: 2026-07-19 09:21)
+## Sprint 13/25 — Encounters: Complete Encounter Builder & Difficulty Engine (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 8 OF 10**
+**Target:** Encounters page — was a bare empty state with just a header
+
+### What Was Built
+
+Transformed the Encounters page from a **bare empty state** into a **complete encounter management hub** with:
+
+#### 1. Encounters Page (`pages/Encounters.tsx`) — REWRITTEN (260 lines)
+- Premium gold header matching Player Cards/Battle Maps design
+- 3-step Getting Started guide for new DMs
+- Toolbar with: encounter count, Quick Monster button, New Encounter button
+- Empty state with contextual "Create First Monster" vs "Create First Encounter" button
+- Active encounter tracking badge
+
+#### 2. EncounterList (`components/encounters/EncounterList.tsx`) — NEW (220 lines)
+- Rich encounter cards with:
+  - Environment icon + ambient gradient by environment type
+  - Difficulty badge (Easy/Medium/Hard/Deadly) with color-coded styling
+  - Active encounter indicator (emerald dot)
+  - Enemy count, XP, Adjusted XP, CR range stats
+  - Last updated date
+  - Hover actions: Launch (▶) and Delete (🗑)
+- Auto-calculates XP thresholds from encounter-cr.ts using actual party level
+
+#### 3. EncounterBuilder (`components/encounters/EncounterBuilder.tsx`) — NEW (340 lines)
+- Full encounter creation/editing form:
+  - Name, description, environment (15 environments with icons + ambient gradients)
+  - **Live difficulty calculator** — updates as groups are added
+  - Enemy group management (add/remove groups, ± count)
+- **Monster browser** with search + type filter
+  - Sorted by size then CR for quick scanning
+  - Already-in-group indicator (gold checkmark)
+- Party auto-detection from Player Characters for accurate CR
+
+#### 4. EnemyQuickCreate (`components/encounters/EnemyQuickCreate.tsx`) — NEW (200 lines)
+- Compact 5-field form: Name, Type (15 types), Size (6 sizes), CR (20 values), AC, HP
+- **Auto-computed stats** — selecting CR auto-fills typical AC/HP for that CR (DMG reference)
+- CR displayed as fractions for sub-1 values (1/8, 1/4, 1/2)
+- Creates enemy and immediately adds to campaign store
+
+### DM Mechanical Power
+
+| Feature | In-Game Value |
+|---------|---------------|
+| **Live CR Calculator** | As you add monsters, the difficulty rating updates instantly — know if an encounter is Deadly before the session starts |
+| **Auto-Detect Party** | Reads actual player characters from campaign, no manual entry |
+| **Environment Icons + Gradients** | Visual differentiation of encounters — tell a Forest ambush from a Dungeon crawl at a glance |
+| **Quick Monster Creation** | "👾 Create First Monster" from empty state, or "Quick Monster" button |
+| **Encounter Card Stats** | Total XP, Adjusted XP (with encounter multiplier), CR range, enemy count |
+| **Launch → Battle Maps** | One-click launches encounter and navigates to map canvas |
+| **Enemy Group Management** | Add/remove monsters from groups, adjust counts per group, all in one modal |
+| **Monster Browser + Search** | 15 creature types filter, search by name/type, sorted by size/CR |
+
+### Files Created (3)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/encounters/EncounterList.tsx` | 220 | Rich encounter card list with live CR stats |
+| `components/encounters/EncounterBuilder.tsx` | 340 | Full encounter creation/editing with monster browser |
+| `components/encounters/EnemyQuickCreate.tsx` | 200 | Quick monster creation with auto-CR stats |
+
+### Files Modified (1)
+
+| File | Lines | Key Changes |
+|------|:-----:|:-----------:|
+| `pages/Encounters.tsx` | 260 | Complete rewrite from empty state to full encounter management hub |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1960 modules) |
+| Vite Build | ✅ **7.69s** |
+| Vercel Deploy | ✅ **5.69s build** → arkla.vercel.app |
+| Empty state renders | ✅ 3-step getting started guide, icon, contextual button |
+| Quick Monster modal | ✅ opens with all 8 fields, auto-CR AC/HP |
+| Quick Monster → Cancel | ✅ returns to empty state cleanly |
+| New Encounter button | ✅ visible in toolbar |
+| CR engine integration | ✅ analyzeEncounterDifficulty called live with party auto-detection |
+
+### DM Workflow (Complete)
+
+```
+1. Quick Monster → Create Goblin (CR 1/4, AC 12, HP 15)
+   ↓
+2. New Encounter → "Goblin Ambush" (Forest environment)
+   ↓
+3. Add Monsters → Add 3 Goblins → Difficulty: Medium (225 XP)
+   ↓
+4. Create Encounter → Saved to campaign
+   ↓
+5. Encounter List → Card shows: 3 enemies, 225 XP, CR 0.25, Medium difficulty
+   ↓
+6. Launch → Navigates to Battle Maps with encounter active
+```
+
+### Sprint 13/25 Complete
+
+The Encounters page now has a **complete encounter builder workflow**:
+- **Live CR calculator** using DMG 5e XP thresholds
+- **Monster browser** with search, filter, and quick-create
+- **Auto-party detection** from the campaign's player characters
+- **Rich encounter cards** with environment icons, difficulty badges, and stats
+
+**Ready for Sprint 14.** Next targets: DmJournal (rich text + markdown editor), NPC Manager (statblock creator), or CampaignSettings (enhanced tools).
+
+---
