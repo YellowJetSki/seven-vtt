@@ -4727,3 +4727,81 @@ CombatFeatCard toggle click
 | No purple tokens | ✅ All 16 condition colors use gold/amber/rose/emerald/cyan/slate/violet system |
 
 ---
+
+## Sprint 15/17 — Spell Slot Engine (2026-07-19) (Updated: 2026-07-19 15:13)
+## Sprint 15/17 — Spell Slot Engine: Full Spell Point & Concentration Tracking System (Deep 5e Systems Phase — Cycle 3 of 5)
+**Date:** 2026-07-19
+**Phase:** Deep 5e Systems Phase
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Files (3)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/mechanics/spell-point-engine.ts` | 280 | DMG page 288 Spell Points variant — full conversion, spending, restoring, and flexible casting |
+| `components/player/SpellcastingManager.tsx` | 350 | DM-facing unified caster grid with slot gauges, DC/ATK display, spell points toggle, Quick Cast/Restore |
+| `components/player/ConcentrationTracker.tsx` | 270 | Concentration tracking with damage-based DC calculator, break/set, incapacitation detection |
+
+### Spell Point Engine API (DMG 288-289)
+
+| Function | Returns | Purpose |
+|----------|---------|---------|
+| `slotsToSpellPoints(slots, level)` | `SpellPointState` | Convert full SpellSlotsFull to unified point pool |
+| `spendSpellPoints(state, level)` | `SpellPointSpendResult` | Spend points to cast a spell — validates level/max/points |
+| `restoreSpellPoints(state, amount?)` | `SpellPointRestoreResult` | Restore points (partial or full) |
+| `getMaxSpellPoints(level)` | `number` | Max points for a caster level (4 @ L1 → 133 @ L20) |
+| `getAvailableSpellLevelsFromPoints(state)` | `{level, canCast, cost}[]` | Which levels are affordable with remaining points |
+| `estimateSpellCasts(state)` | `Record<number, number>` | How many spells of each level can be cast |
+| `createSlotWithPoints(state, level)` | `SpellPointSpendResult` | Flexible casting: create any valid level slot |
+| `getUpcastCost(base, target)` | `number` | Points needed to upcast a spell |
+
+### Spell Point Cost Table (DMG 289)
+| Level | Cost | Level | Cost |
+|:-----:|:----:|:-----:|:----:|
+| 1 | 2 | 6 | 9 |
+| 2 | 3 | 7 | 10 |
+| 3 | 5 | 8 | 11 |
+| 4 | 6 | 9 | 13 |
+| 5 | 7 | — | — |
+
+### SpellcastingManager Component
+
+| Feature | Detail |
+|---------|--------|
+| **Caster cards** | Horizontal scrollable grid, one card per caster character |
+| **Type filter** | All / Full Caster / Half Caster / Third Caster with counts |
+| **Slot gauges** | 5+4 grid layout, click to cast (decrement), color-coded by level tier |
+| **DC/ATK badges** | Spell save DC and attack bonus per caster |
+| **Usage bar** | Gradient bar (green→amber→rose) based on slot usage % |
+| **Spell Points toggle** | Per-caster toggle (♢/SP) switches between slot and point display |
+| **Restore All** | One-click full slot restoration |
+| **Flash feedback** | Toast notifications for cast/restore actions |
+| **Empty state** | "No Spellcasters" when no caster classes exist |
+
+### ConcentrationTracker Component
+
+| Feature | Detail |
+|---------|--------|
+| **Per-caster cards** | Shows concentrating/incapacitated status, CON modifier, save DC |
+| **Set concentration** | Inline form: spell name + level input |
+| **Break concentration** | One-click button (removes "concentration" from conditions) |
+| **Damage calculator** | Input damage amount → auto-computes DC (max 10, half damage) |
+| **Incapacitation detection** | Automatically detects stunned/petrified/paralyzed/unconscious |
+| **Status indicators** | Animated green pulse for concentrating, red for incapacitated |
+| **Rules reference** | Collapsible details section with full 5e concentration rules |
+| **Empty state** | "No spellcasters" guidance |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.81s**, 2001 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 6.25s build |
+| Component isolation | ✅ 3 new files, each < 350 lines |
+| No dice rollers | ✅ Pure state transformation — no RNG |
+| Spell Point costs verified | ✅ DMG 289 table matches PHB reference values |
+| No breaking changes | ✅ All existing spell slot components continue to work |
+
+---
