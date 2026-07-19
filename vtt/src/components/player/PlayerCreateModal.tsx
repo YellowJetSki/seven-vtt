@@ -14,6 +14,8 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { setCharacter } from "@/lib/firestore-service";
 import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
 import Modal from "@/components/ui/Modal";
+import AssetBrowser from "@/components/ui/AssetBrowser";
+import { getAssetById, type AssetEntry } from "@/images/assetCatalog";
 import type { PlayerCharacter } from "@/types";
 
 interface PlayerCreateModalProps {
@@ -80,6 +82,8 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
   const [imageUrl, setImageUrl] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [imagePreviewError, setImagePreviewError] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
 
   const handleReset = useCallback(() => {
     setName("");
@@ -251,44 +255,82 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
           </div>
         </div>
 
-        {/* ── Image URL ── */}
+        {/* ── Image URL / Gallery toggle ── */}
         <div>
-          <label className="block text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-1.5">
-            Character Portrait URL <span className="text-surface-600">(optional)</span>
-          </label>
-          <input
-            value={imageUrl}
-            onChange={(e) => { setImageUrl(e.target.value); setImagePreviewError(false); }}
-            placeholder="https://i.imgur.com/example.jpg"
-            className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3.5 py-2.5 text-sm text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all font-mono text-[11px]"
-          />
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-[10px] uppercase tracking-widest font-black text-gold-500/60">
+              Portrait <span className="text-surface-600">(optional)</span>
+            </label>
+            <button
+              onClick={() => setShowGallery(!showGallery)}
+              className={`px-2 py-1 rounded-lg text-[9px] font-semibold transition-all ${
+                showGallery
+                  ? "bg-gold-500/10 border border-gold-500/20 text-gold-400"
+                  : "bg-white/[0.04] border border-white/[0.06] text-surface-500 hover:text-surface-300"
+              }`}
+            >
+              {showGallery ? "✕ Close Gallery" : "🎨 Browse Art"}
+            </button>
+          </div>
 
-          {/* Live preview */}
-          {imageUrl.trim() && (
-            <div className="mt-2 relative w-full h-32 rounded-xl overflow-hidden border border-surface-700/30">
-              <img
-                src={imageUrl.trim()}
-                alt="Preview"
-                onError={() => setImagePreviewError(true)}
-                onLoad={() => setImagePreviewError(false)}
-                className={`w-full h-full object-cover ${imagePreviewError ? "hidden" : ""}`}
+          {/* Gallery mode */}
+          {showGallery ? (
+            <div className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3">
+              <AssetBrowser
+                category="portrait"
+                currentId={selectedAssetId ?? undefined}
+                onSelect={(asset: AssetEntry) => {
+                  setSelectedAssetId(asset.id);
+                  setImageUrl(asset.svg);
+                  setImagePreviewError(false);
+                  setShowGallery(false);
+                }}
+                showUrlMode
+                onUrlSubmit={(url: string) => {
+                  setImageUrl(url);
+                  setImagePreviewError(false);
+                  setShowGallery(false);
+                }}
               />
-              {imagePreviewError && (
-                <div className="w-full h-full flex items-center justify-center bg-obsidian-mid/60">
-                  <span className="text-[10px] text-rose-400">Could not load image. Check the URL.</span>
-                </div>
-              )}
-              {!imagePreviewError && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-obsidian/80 to-transparent h-12" />
-              )}
-              {!imagePreviewError && (
-                <div className="absolute bottom-1.5 left-2.5">
-                  <span className="text-[8px] text-surface-400 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                    Preview — will appear as banner on character sheet
-                  </span>
-                </div>
-              )}
             </div>
+          ) : (
+            <>
+              <input
+                value={imageUrl}
+                onChange={(e) => { setImageUrl(e.target.value); setImagePreviewError(false); setSelectedAssetId(null); }}
+                placeholder="https://i.imgur.com/example.jpg"
+                className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3.5 py-2.5 text-sm text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all font-mono text-[11px]"
+              />
+
+              {/* Live preview */}
+              {imageUrl.trim() && (
+                <div className="mt-2 relative w-full h-24 rounded-xl overflow-hidden border border-surface-700/30">
+                  {imageUrl.trim().startsWith("<svg") ? (
+                    <div className="w-full h-full flex items-center justify-center bg-obsidian-mid/40">
+                      <div className="w-16 h-16" dangerouslySetInnerHTML={{ __html: imageUrl.trim() }} />
+                    </div>
+                  ) : (
+                    <>
+                      <img
+                        src={imageUrl.trim()}
+                        alt="Preview"
+                        onError={() => setImagePreviewError(true)}
+                        onLoad={() => setImagePreviewError(false)}
+                        className={`w-full h-full object-cover ${imagePreviewError ? "hidden" : ""}`}
+                      />
+                      {imagePreviewError && (
+                        <div className="w-full h-full flex items-center justify-center bg-obsidian-mid/60">
+                          <span className="text-[10px] text-rose-400">Could not load image</span>
+                        </div>
+                      )}
+                      {!imagePreviewError && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-obsidian/80 to-transparent h-8" />
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 

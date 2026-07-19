@@ -27,6 +27,7 @@ const navItems: NavItem[] = [
   { path: "/campaign/enemies", label: "NPC Library", icon: "👾" },
   { path: "/campaign/maps", label: "Battle Maps", icon: "🗺" },
   { path: "/campaign/journal", label: "Journal", icon: "📖" },
+  { path: "/campaign/assets", label: "Asset Gallery", icon: "🎨" },
   { path: "/campaign/settings", label: "Settings", icon: "⚙" },
 ];
 

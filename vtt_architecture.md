@@ -3871,3 +3871,80 @@ Transform the DM Dashboard into a comprehensive operations hub inspired by a phy
 | DM Quick Reference | ✅ "Difficulty Class" / "Light & Vision" / "Cover" / "Key Conditions" / "Exhaustion" all collapsible |
 
 ---
+
+## Sprint 3/17 — Asset Pipeline & Integration (2026-07-19) (Updated: 2026-07-19 13:50)
+## Sprint 3/17 — Asset Pipeline & Integration (Complete)
+**Date:** 2026-07-19
+**Phase:** Core 5e System Integrity Sprint (Cycle 3 of 17)
+**Deployed:** arkla.vercel.app
+
+---
+
+### Mission
+Build a complete asset pipeline for the VTT — 27 premium SVG fantasy assets organized by category, with a gallery page for browsing, and integration into existing forms (PlayerCreateModal, MapCreatorModal).
+
+### Architecture: Asset Pipeline
+
+```
+src/images/
+├── .gitkeep (portraits/)
+├── .gitkeep (tokens/)
+├── .gitkeep (maps/)
+├── .gitkeep (items/)
+└── assetCatalog.ts  ← Central registry of ALL assets
+
+Categories map to suffix convention:
+_portrait → 6 character face avatars
+_token    → 8 battle-map token icons
+_map      → 5 battle-map thumbnails
+_item     → 8 equipment/magic item icons
+```
+
+### Files Created (4)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `src/images/assetCatalog.ts` | 410 | Central asset registry: 27 SVG assets, 4 categories, `AssetEntry` type, helper functions, SVG generation utilities |
+| `src/components/ui/AssetBrowser.tsx` | 250 | Reusable gallery component: search + tag filter + category view + external URL mode. Used in PlayerCreateModal and MapCreatorModal |
+| `src/pages/AssetGallery.tsx` | 230 | Standalone DM-facing page with category tabs, preview modal with "Copy SVG" / "Copy Asset ID" actions |
+| `src/images/portraits/.gitkeep` | — | Directory placeholder for future PNG/JPG portrait additions |
+| `src/images/tokens/.gitkeep` | — | Directory placeholder for future token additions |
+| `src/images/maps/.gitkeep` | — | Directory placeholder for future map additions |
+| `src/images/items/.gitkeep` | — | Directory placeholder for future item additions |
+
+### Files Modified (4)
+
+| File | Changes |
+|------|---------|
+| `src/App.tsx` | Added `AssetGallery` import + `/campaign/assets` route |
+| `src/components/layout/Sidebar.tsx` | Added "Asset Gallery 🎨" nav item between Journal and Settings |
+| `src/components/player/PlayerCreateModal.tsx` | Added "🎨 Browse Art" toggle → integrates AssetBrowser with `category="portrait"`. Supports SVG preview + URL fallback |
+| `src/components/maps/MapCreatorModal.tsx` | Added "🎨 Browse Maps" toggle → integrates AssetBrowser with `category="map"`. SVG preview for built-in maps |
+
+### Visual Asset Inventory (27 total)
+
+**Portraits (6):** Human Warrior, Elven Ranger, Human Wizard, Halfling Rogue, Dwarf Cleric, Half-Elf Bard
+**Tokens (8):** Sword & Shield, Bow, Arcane Star, Holy Cross, Skull (Undead), Wolf (Beast), Dragon, Goblin
+**Maps (5):** Dungeon Corridor, Forest Clearing, Tavern Interior, Cave Entrance, Castle Courtyard
+**Items (8):** Longsword, Shield, Health Potion, Ring of Protection, Arcane Wand, Spell Scroll, Helm of Brilliance, Boots of Speed
+
+### Zero-Latency SVG Architecture
+- All assets are inline SVGs (not external files) — zero network requests
+- Each asset has: id, label, category, type, color (dominant for placeholder bg), tags, SVG string
+- SVG generation utilities: `svgWrap`, `circle`, `path`, `rect` — consistent 64×64 viewBox
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1979 modules) |
+| Vite Build | ✅ **6.82s**, 0 warnings |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 6.12s build |
+| Asset Gallery page loads | ✅ at `/campaign/assets`, all 27 assets visible |
+| Category tabs (4) | ✅ Portraits / Tokens / Maps / Items |
+| Sidebar nav | ✅ "Asset Gallery 🎨" visible |
+| Portrait picker in PlayerCreateModal | ✅ "🎨 Browse Art" toggle → AssetBrowser |
+| Map picker in MapCreatorModal | ✅ "🎨 Browse Maps" toggle → AssetBrowser |
+| Console errors | ✅ **0** (only Firestore deprecation) |
+
+---

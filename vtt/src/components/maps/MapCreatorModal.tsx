@@ -12,6 +12,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { BattleMap } from "@/types";
 import { useCampaignStore } from "@/stores/campaignStore";
+import AssetBrowser from "@/components/ui/AssetBrowser";
+import { type AssetEntry } from "@/images/assetCatalog";
 
 interface MapCreatorModalProps {
   isOpen: boolean;
@@ -33,6 +35,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
   const [imageFit, setImageFit] = useState<"cover" | "contain" | "stretch">("cover");
   const [notes, setNotes] = useState("");
   const [imageError, setImageError] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
 
   const resetForm = useCallback(() => {
     setName("");
@@ -129,33 +132,71 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image URL / Gallery toggle */}
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase tracking-wider text-gold-400/60">Image URL (optional)</label>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => { setImageUrl(e.target.value); setImageError(false); }}
-              placeholder="https://example.com/map.jpg"
-              className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
-            />
-            {/* Live Preview */}
-            {imageHasUrl && (
-              <div className="relative rounded-lg overflow-hidden bg-[#07080d] border border-white/[0.06] h-20 mt-1">
-                {imageError ? (
-                  <div className="flex items-center justify-center h-full text-[10px] text-rose-400/60">
-                    Image failed to load
-                  </div>
-                ) : (
-                  <img
-                    src={imageUrl}
-                    alt="Map preview"
-                    className="w-full h-full object-cover"
-                    onError={() => setImageError(true)}
-                    onLoad={() => setImageError(false)}
-                  />
-                )}
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] uppercase tracking-wider text-gold-400/60">Map Image</label>
+              <button
+                onClick={() => setShowGallery(!showGallery)}
+                className={`px-2 py-0.5 rounded text-[9px] font-medium transition-all ${
+                  showGallery
+                    ? "bg-gold-500/10 border border-gold-500/20 text-gold-400"
+                    : "bg-white/[0.04] border border-white/[0.06] text-surface-500 hover:text-surface-300"
+                }`}
+              >
+                {showGallery ? "✕ Close" : "🎨 Browse Maps"}
+              </button>
+            </div>
+
+            {showGallery ? (
+              <div className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3">
+                <AssetBrowser
+                  category="map"
+                  onSelect={(asset: AssetEntry) => {
+                    setImageUrl(asset.svg);
+                    setImageError(false);
+                    setShowGallery(false);
+                  }}
+                  showUrlMode
+                  onUrlSubmit={(url: string) => {
+                    setImageUrl(url);
+                    setImageError(false);
+                    setShowGallery(false);
+                  }}
+                />
               </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => { setImageUrl(e.target.value); setImageError(false); }}
+                  placeholder="https://example.com/map.jpg"
+                  className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+                />
+                {/* Live Preview */}
+                {imageHasUrl && (
+                  <div className="relative rounded-lg overflow-hidden bg-[#07080d] border border-white/[0.06] h-20 mt-1">
+                    {imageUrl.trim().startsWith("<svg") ? (
+                      <div className="w-full h-full flex items-center justify-center bg-obsidian-mid/40">
+                        <div className="w-16 h-16" dangerouslySetInnerHTML={{ __html: imageUrl.trim() }} />
+                      </div>
+                    ) : imageError ? (
+                      <div className="flex items-center justify-center h-full text-[10px] text-rose-400/60">
+                        Image failed to load
+                      </div>
+                    ) : (
+                      <img
+                        src={imageUrl}
+                        alt="Map preview"
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                        onLoad={() => setImageError(false)}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
