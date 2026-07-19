@@ -3461,3 +3461,97 @@ Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
 **Next:** Sprint 23/25 — Target remaining untouched player components: `PlayerCardCompact.tsx` (DM-facing player hub), `PlayerSheetCombatTab.tsx` sub-components, or `PlayerSheetSkills.tsx`/`PlayerSheetAbilityScores.tsx` for premium data visualization upgrades
 
 ---
+
+## Sprint 23/25 — Player Mechanics Phase: Player Card Compact, Ability Scores & Skills (Updated: 2026-07-19 10:16)
+## Sprint 23/25 — Player Card Compact, Ability Scores & Skills Overhaul (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 8 of 10**
+**Targets:** `PlayerCardCompact.tsx`, `PlayerSheetAbilityScores.tsx`, `PlayerSheetSkills.tsx`
+
+---
+
+### 🃏 PlayerCardCompact.tsx — DM Command Hub Rewrite (170→225 lines)
+
+**Before:** Basic player card with avatar, HP bar, quick actions strip, and conditions. No stat strip, no HP percentage, no condition visualization.
+
+**After:** Premium DM command hub:
+
+| Feature | Detail |
+|---------|--------|
+| **Live HP Section** | Full-width dedicated panel with color-coded label (Healthy/Scratched/Injured/Critical/Down), gradient HP bar with percentage text overlay, temporary HP overlay strip |
+| **HP Quick Row** | -10/-5/-1/+5/+1/↺ (full heal) buttons with color-coded gradient backgrounds, scale feedback, disabled states |
+| **Condition Dots** | Compact color-coded dots (≤4 shown) with +N overflow — uses each condition's own color with glow shadow |
+| **Stat Strip** | AC (large gold with glow), Initiative (+mod), Speed (30ft), PB (+3) — all in compact badge layout |
+| **Player Name / Race/Class** | Multi-line name metadata with player handle (🎮) |
+| **Temp HP Display** | Amber pill when temp HP > 0, overlay bar on HP gauge |
+| **Hover Elevation** | 3D lift (-translate-y-0.5), gold edge sweep, directional light gradient |
+| **Manage Gear** | ⚙ button (opacity-0→100 on hover) opens PlayerCardManager modal |
+| **Active Scale Press** | scale-[0.97] on click for tactile feedback |
+
+**Derived data used:** `getAbilityMod()`, `getProficiencyBonus()`, `CONDITIONS` lookup, `hpColor()` utility for 5-tier HP status.
+
+---
+
+### 📊 PlayerSheetAbilityScores.tsx — Premium Visualization (60→120 lines)
+
+**Before:** Simple 3-column grid with ability name, score, and modifier. No bars, no context, no save proficiency.
+
+**After:** Premium score display:
+
+| Feature | Detail |
+|---------|--------|
+| **Ability Icons** | 💪 STR, 🎯 DEX, ❤️ CON, 🧠 INT, 👁️ WIS, 💬 CHA |
+| **Stat Bar (3–30)** | `barWidth()` converts score to 0-100%, gradient fill from ability color, glow shadow |
+| **Score Description** | Dynamic label: Feeble→Weak→Below Avg→Avg→Above Avg→Exceptional→Heroic→Legendary→Mythic |
+| **Save Proficiency Dot** | Gold dot with glow shadow when proficient in that save |
+| **Range Markers** | 3/10/18/30 reference points on the bar |
+| **6 Distinct Ability Colors** | Rose (STR), Emerald (DEX), Amber (CON), Cyan (INT), Violet (WIS), Pink (CHA) |
+| **Modifier Color** | Gold for positive, rose for negative, neutral for zero |
+| **Hover Elevation** | Gold border glow + shadow on hover |
+
+**2-column on mobile, 3-column on desktop** (`grid-cols-2 sm:grid-cols-3`).
+
+---
+
+### 🏅 PlayerSheetSkills.tsx — Premium Data Viz (180→280 lines)
+
+**Before:** Flat skill list with ability filter, basic proficiency dot, no grouping, no ability colors.
+
+**After:** Rich grouped data visualization:
+
+| Feature | Detail |
+|---------|--------|
+| **Ability-Grouped Headers** | Colored category bars with icon + short name + count per group |
+| **Flat/Grouped Toggle** | Switch between ability-grouped view and flat alphabetized view |
+| **Ability-Synced Colors** | Each ability group gets its own left border color (rose/emerald/amber/cyan/violet/pink) |
+| **Compact Breakdown** | `+3 + PB = +5` inline breakdown with ability mod color + PB indicator |
+| **Total Badge** | Color-coded: gold(≥5), gold(≥2), emerald(>0), rose(<0), neutral |
+| **Proficiency Counts** | Expertise count (✧), proficient count, total — shown in search bar |
+| **Proficiency Cycle** | Click: none→proficient→expertise→none |
+| **Expertise Visual** | Gold dot with extra glow, ⨁ icon, `×2` PB label |
+| **Proficiency Dot States** | Empty circle (none), filled gold dot (proficient), gold glow ⨁ (expertise) |
+| **Ability Shortcut in Rows** | Hidden `STR`/`DEX`/etc hint next to skill name (desktop only) |
+| **Search Filter** | Matches skill name (case-insensitive) |
+| **Adaptive Filter Chips** | Only shows ability groups that have matching skills |
+
+**Zero purple tokens across all three files** — complete migration to gold/amber/rose/emerald/cyan/violet/pink system.
+
+---
+
+### Build Metrics
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **8.69s**, 1,969 modules |
+| Vercel Deploy | ✅ **29s** → arkla.vercel.app |
+| Lines of code written | ~360 (3 files) |
+| Components upgraded | 3 (`PlayerCardCompact`, `PlayerSheetAbilityScores`, `PlayerSheetSkills`) |
+
+### Player Mechanics Phase — Cycle 8 of 10 Complete
+
+**Next:** Sprint 24/25 — Target remaining untouched player components for final polish:
+- `PlayerSheetCombatTab.tsx` — Attack data visualization
+- `PlayerSheetInventoryTab.tsx` — Premium item grid with weight chart
+- `PlayerSheetRulesTab.tsx` — Quick reference panel
+
+---
