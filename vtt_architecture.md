@@ -4649,3 +4649,81 @@ CombatFeatCard toggle click
 | New type field | ✅ `spentHitDice` added to `PlayerCharacter` interface |
 
 ---
+
+## Sprint 14/17 — Conditions Engine (2026-07-19) (Updated: 2026-07-19 15:09)
+## Sprint 14/17 — Conditions Engine: Full D&D 5e Status Effect System (Deep 5e Systems Phase — Cycle 2 of 5)
+**Date:** 2026-07-19
+**Phase:** Deep 5e Systems Phase
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Files (2)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/mechanics/condition-application.ts` | 385 | Condition-to-stats bridge — computes mechanical effects from active conditions and integrates with character-derivations |
+| `components/player/ConditionManager.tsx` | 330 | Interactive condition toggle panel with search, category grouping, mechanical effect summary, and auto-stat application |
+
+#### Files Modified (1)
+| File | Key Changes |
+|------|-------------|
+| `PlayerSheetCombatTab.tsx` | Added "Manage" toggle for ConditionManager, replaces inline PlayerSheetConditions with full manager when open |
+
+### Condition Application Engine API
+
+| Function | Returns | Purpose |
+|----------|---------|---------|
+| `computeConditionModifiers(ids)` | `ConditionModifiers` | Full mechanical impact: speed, attacks, saves, checks, actions, reactions, concentration |
+| `applyConditionSpeed(speed, mods)` | `ModifiedSpeed` | Applies speed halving/overrides to all movement types |
+| `applyConditionsToDerivations(char, base)` | `ConditionAdjustedDerivations` | Full integration with character-derivations engine |
+| `getConditionStyle(name)` | `{bg, text, border, icon}` | Consistent color scheme per condition (16 unique styles) |
+| `getConditionDetails(id)` | `ConditionDetail \| null` | Full detail with mechanical effects list |
+| `getAllConditionDetails()` | `ConditionDetail[]` | All 16 conditions with metadata |
+
+### Condition Mechanical Effects Mapped (5e RAW)
+
+| Condition | Speed | Attacks | Saves | Checks | Actions | Reactions | Concentration | Speech |
+|-----------|:-----:|:-------:|:-----:|:------:|:-------:|:---------:|:-------------:|:------:|
+| Blinded | — | Disadv | — | Disadv | ✅ | ✅ | ✅ | ✅ |
+| Charmed | — | — | — | — | ✅ | ✅ | ✅ | ✅ |
+| Deafened | — | — | — | — | ✅ | ✅ | ✅ | ✅ |
+| Exhaustion | Half | — | — | — | ✅ | ✅ | ✅ | ✅ |
+| Frightened | — | Disadv | — | — | ✅ | ✅ | ✅ | ✅ |
+| Grappled | 0 | — | — | — | ✅ | ✅ | ✅ | ✅ |
+| Incapacitated | — | — | — | — | ❌ | ❌ | ❌ | ✅ |
+| Invisible | — | Adv | — | — | ✅ | ✅ | ✅ | ✅ |
+| Paralyzed | 0 | Auto-fail (melee) | — | — | ❌ | ❌ | ❌ | ✅ |
+| Petrified | 0 | — | Adv | — | ❌ | ❌ | ❌ | ❌ |
+| Poisoned | — | — | Disadv | — | ✅ | ✅ | ✅ | ✅ |
+| Prone | — | Disadv | — | — | ✅ | ✅ | ✅ | ✅ |
+| Restrained | 0 | Disadv | Disadv | — | ✅ | ✅ | ✅ | ✅ |
+| Stunned | 0 | Auto-fail | Auto-fail | — | ❌ | ❌ | ❌ | ❌ |
+| Unconscious | 0 | Auto-fail | Auto-fail | — | ❌ | ❌ | ❌ | ❌ |
+| Concentration | — | — | Auto-fail (CON) | — | ✅ | ✅ | N/A | ✅ |
+
+### ConditionManager Component
+
+| Feature | Detail |
+|---------|--------|
+| **Compact mode** | Inline badges for combat tab, search-free, click-to-remove with ✕ |
+| **Full panel** | Active conditions display + mechanical summary box + searchable browser |
+| **Search** | Matches name, summary, and mechanical effects |
+| **Active-first sorting** | Active conditions appear at top of browser sorted by active state |
+| **Mechanical Effect Summary** | Rose-tinted panel showing all active modifiers (speed, attacks, saves, etc.) |
+| **Clear All** | One-button to remove all conditions |
+| **16 unique color schemes** | Each condition has its own bg/text/border color (Blinded=slate, Charmed=pink, etc.) |
+| **Toggle persistence** | Writes to Zustand → Firestore via `updateCharacter` |
+| **Empty state** | "No active conditions" with instructional hint |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.89s**, 2001 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 6.25s build |
+| Component isolation | ✅ `ConditionManager` = 330 lines, `condition-application` = 385 lines |
+| No dice rollers | ✅ Pure state transformation — no RNG |
+| No purple tokens | ✅ All 16 condition colors use gold/amber/rose/emerald/cyan/slate/violet system |
+
+---

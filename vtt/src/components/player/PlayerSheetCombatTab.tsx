@@ -32,6 +32,7 @@ import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
 import RestBreakdown from "./RestBreakdown";
+import ConditionManager from "./ConditionManager";
 interface AttackEntry {
   name: string;
   atk: string;
@@ -134,6 +135,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const [hpQuickMode, setHpQuickMode] = useState<"damage" | "heal">("damage");
   const [showFeatsManager, setShowFeatsManager] = useState(false);
   const [showRestSheet, setShowRestSheet] = useState(false);
+  const [showConditionManager, setShowConditionManager] = useState(false);
 
   // ── Combat status ──
   const hpRatio = c.hitPoints.max > 0 ? c.hitPoints.current / c.hitPoints.max : 0;
@@ -518,7 +520,26 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
       </div>
 
       {/* ── CONDITIONS ── */}
-      <PlayerSheetConditions character={character} />
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">Conditions</h3>
+          <button
+            onClick={() => setShowConditionManager(!showConditionManager)}
+            className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all duration-150 ${
+              showConditionManager
+                ? "bg-gold-500/10 text-gold-400 border border-gold/20"
+                : "bg-white/[0.03] text-surface-500 border border-surface-700/20 hover:text-surface-300 hover:border-surface-600/30"
+            }`}
+          >
+            {showConditionManager ? "✕ Close" : "⚙ Manage"}
+          </button>
+        </div>
+        {showConditionManager ? (
+          <ConditionManager character={character} showModifiers />
+        ) : (
+          <PlayerSheetConditions character={character} />
+        )}
+      </div>
 
       {/* ── CHARACTER STATS PANEL (PB, Init, AC, HP, Speed, HD, Senses) ── */}
       <div className="pt-3 border-t border-white/[0.04]">
