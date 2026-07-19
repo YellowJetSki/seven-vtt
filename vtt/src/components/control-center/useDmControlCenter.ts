@@ -2,12 +2,19 @@
  * STᚱ VTT — useDmControlCenter
  *
  * Orchestration hook for the DM Control Center.
- * Composes useMapSelection, useTokenManagement, and useViewState
- * sub-hooks for clean separation of concerns.
+ * Composes useMapSelection, useTokenManagement, useViewState, useFirestoreTokenSync,
+ * and useTokenMutations for a unified state surface.
+ *
+ * Cycle 3 Enhancement:
+ *   - useFirestoreTokenSync bridges Firestore tokens ↔ Zustand in real-time
+ *   - useTokenMutations provides centralized add/move/remove/update with Firestore writes
+ *   - onMoveToken handler wires token drag completion to Firestore sync
  */
 
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useCombatStore } from "@/stores/combatStore";
+import { useFirestoreTokenSync } from "@/hooks/useFirestoreTokenSync";
+import { useTokenMutations } from "@/hooks/useTokenMutations";
 import { useMapSelection } from "./useMapSelection";
 import { useTokenManagement } from "./useTokenManagement";
 import { useViewState } from "./useViewState";
@@ -26,6 +33,15 @@ export function useDmControlCenter() {
     handleGoBack,
   } = useMapSelection(canvasRef);
 
+  // ── Cycle 3: Firestore Token Sync ───────────────────────
+  // Subscribes to Firestore onSnapshot for the active map's token subcollection.
+  // Merges incoming token data into Zustand campaignStore.
+  useFirestoreTokenSync(activeMapId);
+
+  // ── Cycle 3: Token Mutations ────────────────────────────
+  // Centralized add/move/update/remove → writes to both Zustand + Firestore.
+  const { moveToken, updateToken, addToken, removeToken } = useTokenMutations(activeMapId);
+
   // Token management
   const {
     selectedTokenId,
@@ -38,6 +54,16 @@ export function useDmControlCenter() {
     handleAddEnemyToken,
     handleAoEPlace,
   } = useTokenManagement(activeMap);
+
+  // ── Cycle 3: Token Drag Handler ─────────────────────────
+  // Called by useTokenDrag when a drag completes with the final snapped position.
+  // Writes the new grid position to both Zustand + Firestore.
+  const handleMoveToken = useCallback(
+    (tokenId: string, gridX: number, gridY: number) => {
+      moveToken(tokenId, gridX, gridY);
+    },
+    [moveToken]
+  );
 
   // View state
   const {
@@ -77,6 +103,12 @@ export function useDmControlCenter() {
     selectedCombatantId,
     battleMaps,
     activeMapId,
+    // Token mutations (exposed for DM UI)
+    updateToken,
+    addToken,
+    removeToken,
+    handleMoveToken,
+    // View setters
     setPlacementMode,
     setShowGrid,
     setIsDmView,
@@ -84,6 +116,7 @@ export function useDmControlCenter() {
     setShowInitiative,
     setShowEncounterPanel,
     setSelectedToken,
+    // Handlers
     handleSelectMap,
     handleTokenClick,
     handleCellClick,

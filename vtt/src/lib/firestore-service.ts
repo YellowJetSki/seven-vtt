@@ -9,6 +9,7 @@ export {
   getEncounters, setEncounter,
   getBattleMaps, setBattleMap, deleteBattleMap,
   getMapTokens, setMapToken, deleteMapToken,
+  listenMapTokens,
   getJournal, setJournalEntry,
   clearSubcollection,
 } from "./firestore/entity-service";

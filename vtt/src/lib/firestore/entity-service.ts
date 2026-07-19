@@ -1,4 +1,7 @@
-import { collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
+import {
+  collection, doc, getDocs, setDoc, deleteDoc, writeBatch, onSnapshot,
+  type Unsubscribe,
+} from "firebase/firestore";
 import { getFirestoreDb } from "../firebase";
 import type { EnemyDoc, Encounter, BattleMap, MapToken, JournalEntry } from "@/types";
 import { toFirestore, fromFirestore, CAMPAIGN_COLLECTION } from "./helpers";
@@ -71,14 +74,50 @@ export async function getMapTokens(campaignId: string, mapId: string): Promise<M
   return snap.docs.map((d) => fromFirestore<MapToken>(d.id, d.data()));
 }
 
-export async function setMapToken(campaignId: string, mapId: string, tokenId: string, token: MapToken): Promise<void> {
+export async function setMapToken(
+  campaignId: string, mapId: string, tokenId: string, token: MapToken
+): Promise<void> {
   const db = await getFirestoreDb();
   await setDoc(doc(db, tokensPath(campaignId, mapId), tokenId), toFirestore(token), { merge: true });
 }
 
-export async function deleteMapToken(campaignId: string, mapId: string, tokenId: string): Promise<void> {
+export async function deleteMapToken(
+  campaignId: string, mapId: string, tokenId: string
+): Promise<void> {
   const db = await getFirestoreDb();
   await deleteDoc(doc(db, tokensPath(campaignId, mapId), tokenId));
+}
+
+/**
+ * Listens for real-time changes to all map tokens for a given map.
+ * Returns an unsubscribe function.
+ */
+export function listenMapTokens(
+  campaignId: string,
+  mapId: string,
+  callback: (tokens: MapToken[]) => void
+): Unsubscribe {
+  let unsub: Unsubscribe | null = null;
+
+  getFirestoreDb().then((db) => {
+    unsub = onSnapshot(
+      collection(db, tokensPath(campaignId, mapId)),
+      (snap) => {
+        const tokens = snap.docs.map((d) =>
+          fromFirestore<MapToken>(d.id, d.data())
+        );
+        callback(tokens);
+      },
+      (err) => {
+        console.warn("[Firestore/Tokens] Listener error:", err);
+        callback([]);
+      }
+    );
+  });
+
+  return () => {
+    if (unsub) unsub();
+  };
 }
 
 // ── Journal ───────────────────────────────────────────────────
