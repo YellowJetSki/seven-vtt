@@ -2072,3 +2072,94 @@ DmControlCenter.tsx (75 lines — orchestrator only)
 The app now has a cohesive, premium visual identity across all major surfaces.
 
 ---
+
+## Sprint 6/25 — DM Dashboard War Room (DM Mechanics Phase) (Updated: 2026-07-19 08:51)
+## Sprint 6/25 — DM Dashboard War Room (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 1 OF 10**  
+**Target:** DM Dashboard — the home screen DMs see when they log in  
+**Goal:** Reduce cognitive load during live game → add real-time combat status, session timer, party health monitor, and purpose-built DM nav
+
+### Problem
+The DM Dashboard was a purely cosmetic stats page (PC count, enemy count, encounter count, etc.) with no **operational value** during a live session. DMs had to navigate away to check:
+- Am I in combat right now? Who's winning?
+- How long have we been playing?
+- What phase are we in (exploration/combat/rest)?
+- What's the party's HP status?
+
+### Solution: The DM War Room
+
+**Before (representational):**
+```
+┌──────────────────────────────────┐
+│        Campaign Banner           │
+│  PC: 2 │ Enemies: 5 │ Maps: 1   │
+├──────────────────────────────────┤
+│  ⚡ Quick Actions (generic)      │
+├──────────────────────────────────┤
+│  Recent Activity (timeline)      │
+│  Status Bar                      │
+└──────────────────────────────────┘
+```
+
+**After (operational):**
+```
+┌───────────────────────────────────────────────┐
+│              Campaign Banner                   │
+│         PC: 2  │  Maps: 1                     │
+├──────────────────────────┬────────────────────┤
+│   ⚡ Quick Nav (6 tiles) │  ⏱ Session Timer   │
+│   🗺 Active Map Card     │  ⚔ Combat Status   │
+│   👥 Party Status (grid) │                     │
+└──────────────────────────┴────────────────────┘
+```
+
+### New Components Created (5)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `QuickNav.tsx` | 110 | Purpose-built DM nav tiles with keyboard shortcuts (B, P, E, H, J, T). 6 tiles: Battle Maps, Player Cards, Encounters, Homebrew, Journal, Theatric Display. Each tile has icon, description, shortcut hint. |
+| `SessionTimer.tsx` | 120 | Live session timer (HH:MM:SS). Start/End buttons. Phase selector with 4 chips: Exploration (emerald), Combat (red), Rest (amber), Social (sky). Reads/writes `combatStore.liveSession`. |
+| `CombatQuickStatus.tsx` | 140 | Real-time combat snapshot. If active: Round, Alive/Dead counts, Current turn with HP bar, Total damage dealt. If inactive: "No active encounter" with "→ Open Battle Maps" button. |
+| `ActiveMapCard.tsx` | 100 | Shows the first battle map with thumbnail, grid dimensions, token count. Quick "Open" and "Launch Theatric" buttons. |
+| `PlayerStatusCard.tsx` | 105 | Compact player card showing name, player name, AC, HP bar with fraction (color-coded: emerald/amber/red), quick ±5 HP adjustment (shown on hover), conditions badges. |
+
+### Files Rewritten
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `DmDashboard.tsx` | 130 | **Complete rewrite**: Replaced 5-column stats grid + RecentActivity + StatusBar with 2-column War Room layout: QuickNav + ActiveMapCard + PartyStatus (left, 2/3) / SessionTimer + CombatStatus (right, 1/3) |
+
+### Removed Components
+
+| Component | Status | Reason |
+|-----------|--------|--------|
+| `StatCard.tsx` import | Removed | 5-column stats grid replaced by operational panels |
+| `RecentActivity.tsx` import | Removed | Timeline replaced by purpose-built tools |
+| `StatusBar.tsx` import | Removed | System status replaced by specific operational panels |
+| `QuickActions.tsx` import | Removed | Generic pills replaced by QuickNav tiles |
+
+### Mechanical Upgrades for DM Live Gameplay
+
+| Feature | Cognitive Load Reduction |
+|---------|-------------------------|
+| **Session Timer** | DM knows session duration at a glance without checking a clock |
+| **Phase Selector** | One-tap phase switching — affects combat/exploration/rest rules |
+| **Combat Quick Status** | DM sees "Round 3, 4 alive, 2 dead, Bob's turn" without opening control center |
+| **Party Status Grid** | At-a-glance HP monitor for all PCs — spot the wounded player instantly |
+| **Quick Nav** | 6 purpose-built tiles with descriptions — no guessing what each page does |
+| **Active Map Card** | See current map + launch theatric from dashboard |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript | ✅ **0 errors** (1998 modules) |
+| Build (production) | ✅ **6.15s Vercel**, 0 warnings |
+| Deploy | ✅ **arkla.vercel.app** |
+| Bundle | 188 KB CSS (23 KB gzipped), 1062 KB JS (273 KB gzipped) |
+
+### Sprint 6/25 Complete
+
+This is the first cycle of the DM Mechanics Phase (Cycles 6-15). The DM Dashboard now surfaces **real operational data** during a live session — session timer, combat status, party HP, and purpose-built navigation — instead of just counting entities.
+
+---

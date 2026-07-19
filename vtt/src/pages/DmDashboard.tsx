@@ -1,12 +1,27 @@
 /**
- * STᚱ VTT — DM Dashboard (Duolingo-Grade Premium Redesign)
+ * STᚱ VTT — DM Dashboard (DM War Room)
  *
- * Campaign overview dashboard with:
- * - Multi-layer CampaignBanner with animated rune + stat clusters
- * - Spotify-style pill navigation chips
- * - Vertical timeline activity feed
- * - Compact system health bar
- * - Staggered entrance animations throughout
+ * The DM's operational home screen — what they see when they log in.
+ * 
+ * Layout (Desktop):
+ * ┌──────────────────────────────────────────────────┐
+ * │                Campaign Banner                    │
+ * ├────────────────────────────┬─────────────────────┤
+ * │   Left Column (wider)     │  Right Column        │
+ * │                           │                      │
+ * │  ⚡ Quick Nav (6 tiles)   │  ⏱ Session Timer     │
+ * │                           │                      │
+ * │  🗺 Active Map Card       │  ⚔ Combat Status     │
+ * │                           │                      │
+ * │  👥 Player Status Grid    │                      │
+ * └────────────────────────────┴─────────────────────┘
+ *
+ * Mechanical upgrades for live DM gameplay:
+ * - SessionTimer: track elapsed time, set phase (explore/combat/rest)
+ * - CombatQuickStatus: see active combat at a glance
+ * - QuickNav: purpose-built DM navigation tiles with shortcuts
+ * - ActiveMapCard: current map with token count
+ * - PlayerStatusGrid: at-a-glance party HP monitor
  */
 
 import { useEffect, useState } from "react";
@@ -15,32 +30,21 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
 import CampaignBanner from "@/components/dashboard/CampaignBanner";
-import StatCard from "@/components/dashboard/StatCard";
-import QuickActions from "@/components/dashboard/QuickActions";
-import RecentActivity from "@/components/dashboard/RecentActivity";
-import StatusBar from "@/components/dashboard/StatusBar";
+import QuickNav from "@/components/dashboard/QuickNav";
+import SessionTimer from "@/components/dashboard/SessionTimer";
+import CombatQuickStatus from "@/components/dashboard/CombatQuickStatus";
+import ActiveMapCard from "@/components/dashboard/ActiveMapCard";
+import PlayerStatusCard from "@/components/dashboard/PlayerStatusCard";
 
 export default function DmDashboard() {
   const meta = useCampaignStore((s) => s.meta);
   const characters = useCampaignStore((s) => s.characters);
-  const enemies = useCampaignStore((s) => s.enemies);
-  const encounters = useCampaignStore((s) => s.encounters);
-  const battleMaps = useCampaignStore((s) => s.battleMaps);
-  const journal = useCampaignStore((s) => s.journal);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, []);
-
-  const statCards = [
-    { label: "Player Characters", value: characters.length, icon: "👥" },
-    { label: "Enemies", value: enemies.length, icon: "👹" },
-    { label: "Encounters", value: encounters.length, icon: "⚔" },
-    { label: "Battle Maps", value: battleMaps.length, icon: "🗺" },
-    { label: "Journal Entries", value: journal.length, icon: "📖" },
-  ];
 
   if (isLoading) {
     return (
@@ -60,15 +64,16 @@ export default function DmDashboard() {
             icon="🏰"
             title="Welcome to the Arkla Campaign"
             description="Forge your first campaign or awaken an ancient realm from slumber."
-          >
-            <div className="flex gap-3 mt-6">
-              {/* Buttons handled by EmptyState */}
-            </div>
-          </EmptyState>
+          />
         </div>
       </AppShell>
     );
   }
+
+  const statCards = [
+    { label: "Player Characters", value: characters.length, icon: "👥" },
+    { label: "Active Maps", value: useCampaignStore.getState().battleMaps.length, icon: "🗺" },
+  ];
 
   return (
     <AppShell>
@@ -78,34 +83,61 @@ export default function DmDashboard() {
           <CampaignBanner meta={meta} stats={statCards} />
         </div>
 
-        {/* Quick Actions — Spotify chips */}
-        <div className="animate-slide-in-up" style={{ animationDelay: '150ms' }}>
-          <QuickActions />
-        </div>
+        {/* Two-column DM War Room layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+          {/* ─── Left Column (2/3 width) ─── */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Quick Nav — purpose-built DM tiles */}
+            <div className="animate-slide-in-up" style={{ animationDelay: '100ms' }}>
+              <QuickNav />
+            </div>
 
-        {/* Stats Grid — staggered data cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-          {statCards.map((stat, idx) => (
-            <StatCard
-              key={stat.label}
-              label={stat.label}
-              value={stat.value}
-              icon={stat.icon}
-              index={idx}
-            />
-          ))}
-        </div>
+            {/* Active Map Card */}
+            <div className="animate-slide-in-up" style={{ animationDelay: '150ms' }}>
+              <ActiveMapCard />
+            </div>
 
-        {/* Two-column layout for content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-          {/* Recent Activity — vertical timeline */}
-          <div className="animate-slide-in-up" style={{ animationDelay: '300ms' }}>
-            <RecentActivity entries={journal} />
+            {/* Player Status Grid */}
+            {characters.length > 0 && (
+              <div className="animate-slide-in-up" style={{ animationDelay: '200ms' }}>
+                <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">👥</span>
+                      <span className="text-xs font-bold text-white/70 uppercase tracking-wider">
+                        Party Status
+                      </span>
+                      <span className="text-[9px] text-surface-500 bg-[#0c0d15] border border-white/[0.04] px-1.5 py-0.5 rounded-full ml-1">
+                        {characters.length}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Player cards grid */}
+                  <div className="p-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {characters.map((char) => (
+                        <PlayerStatusCard key={char.id} character={char} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Status Bar */}
-          <div className="animate-slide-in-up" style={{ animationDelay: '400ms' }}>
-            <StatusBar />
+          {/* ─── Right Column (1/3 width) ─── */}
+          <div className="space-y-4">
+            {/* Session Timer */}
+            <div className="animate-slide-in-up" style={{ animationDelay: '125ms' }}>
+              <SessionTimer />
+            </div>
+
+            {/* Combat Quick Status */}
+            <div className="animate-slide-in-up" style={{ animationDelay: '175ms' }}>
+              <CombatQuickStatus />
+            </div>
           </div>
         </div>
       </div>
