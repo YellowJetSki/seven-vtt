@@ -26,6 +26,8 @@ export interface CampaignEntityActions {
   removeMapToken: (mapId: string, tokenId: string) => void;
   setJournal: (entries: JournalEntry[]) => void;
   addJournalEntry: (entry: JournalEntry) => void;
+  updateJournalEntry: (entryId: string, updates: Partial<JournalEntry>) => void;
+  removeJournalEntry: (entryId: string) => void;
 }
 
 export type CampaignEntitySlice = CampaignEntityState & CampaignEntityActions;
@@ -134,5 +136,11 @@ export function createEntitySlice(set: SetPartial, get?: GetState): CampaignEnti
 
     addJournalEntry: (entry) =>
       set({ journal: [...g().journal, entry] }),
+
+    updateJournalEntry: (entryId, updates) =>
+      set({ journal: g().journal.map((e) => (e.id === entryId ? { ...e, ...updates, updatedAt: Date.now() } : e)) }),
+
+    removeJournalEntry: (entryId) =>
+      set({ journal: g().journal.filter((e) => e.id !== entryId) }),
   };
 }

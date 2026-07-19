@@ -2283,3 +2283,79 @@ The Encounter Panel now has **full operational status** for DM combat prep:
 **Ready for Sprint 9.** Next in DM Mechanics Phase: DmJournal (session notes and quest tracking), CanvasMapView (interactive drag engine wiring), or HomebrewPanel (enemy builder integration).
 
 ---
+
+## Sprint 9/25 — DmJournal: Session & Quest Tracker Overhaul (Updated: 2026-07-19 09:02)
+## Sprint 9/25 — DmJournal: Session & Quest Tracker Overhaul (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 4 OF 10**
+**Target:** DmJournal — completely untouched before this sprint
+**Goal:** Transform the static "No Journal Entries" page into an operational DM session/quest tracking tool with full CRUD, type filtering, tag system, and session-numbered organization.
+
+### Architecture: Three-Panel Layout
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Glass Gold Header: "Journal" + stats row + "✦ New Entry"   │
+├──────────┬──────────────────────────────────────────────────┤
+│ Sidebar  │  Editor / Reader                                   │
+│ (w-64)   │                                                    │
+│          │  Type: 🎲 Session │ ⚔ Quest │ 📜 Lore │ ...       │
+│ All 📋   │  Session #: [3]                                    │
+│ Sessions │  Title: [Session 3: The Sunless Citadel]            │
+│ 📜 Lore  │  Content textarea (full editor)                    │
+│ 📝 Notes │  Tags: #dungeon #boss #treasure                    │
+│          │                                                    │
+│ 8 entries│  [💾 Save Entry] [Cancel]                          │
+│ 3 sess.  │                                                    │
+│ 2 quests │                                                    │
+└──────────┴──────────────────────────────────────────────────┘
+```
+
+### New Files Created
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/journal/JournalSidebar.tsx` | 175 | Left sidebar: type filters (All/Sessions/Quests/Lore/Notes/Handouts), search across title+content+tags, grouped entry list by session number or date, type-colored badges, entry preview text, stats footer |
+| `components/journal/JournalEditor.tsx` | 330 | Full editor/reader: type selector with 5 types, session number input, title field, content textarea, tag system with quick-add suggestions (13 presets), save/cancel/delete actions. Read-only mode shows full formatted view with metadata |
+
+### Files Modified
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `pages/DmJournal.tsx` | 195 | Full rewrite from 50-line EmptyState page to operational journal: integrates sidebar + editor, manages active entry state, provides create/save/delete callbacks, stats bar with counts by type, live session number tracking |
+| `stores/campaign/entitySlice.ts` | +6 lines | Added `updateJournalEntry()` and `removeJournalEntry()` to the entity slice for full CRUD |
+
+### DM Features Delivered
+
+| Feature | Description |
+|---------|-------------|
+| **Type System** | 5 entry types with distinct icons and colors: 🎲 Session, ⚔ Quest, 📜 Lore, 📝 Note, 📄 Handout |
+| **Session Tracking** | Entries can be session-numbered. Sidebar groups entries by session. Header shows current session number. |
+| **Tag System** | Add/remove tags with inline input + 13 preset quick-add tags (combat, roleplay, dungeon, boss, etc.) |
+| **Search** | Live search across title, content, and tags |
+| **Type Filtering** | 6 filter buttons (All / Sessions / Quests / Lore / Notes / Handouts) |
+| **Full CRUD** | Create, Read (expandable), Update (edit mode), Delete with confirmation-like immediate action |
+| **Stats Bar** | Live counts: total entries, sessions, quests, lore, notes, handouts |
+| **Entry Previews** | Sidebar shows truncated content preview + date + tags for each entry |
+| **Read/Edit Toggle** | Entries open in read mode with "Edit" button; edit mode shows full form with "Save" and "Cancel" |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (tsc --noEmit) | ✅ **0 errors** (1993 modules) |
+| Vite Build | ✅ **7.74s**, 0 warnings |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 5.97s build |
+| Production URL | ✅ Journal page renders: header, sidebar with filters, editor area with type selector, title input, textarea, tag system |
+| New Entry button | ✅ Two visible — header bar + empty state; clicking opens editor in create mode |
+| Element verification | ✅ 1 title input, 1 textarea, 5 type selector buttons, 5 filter buttons, 1 Save button, 1 tag input |
+
+### Sprint 9/25 Complete
+
+The DmJournal is now an **operational session and quest tracking tool**:
+- **Pre-session**: Create quest entries, lore documents, and handouts for player distribution
+- **During session**: Take live session notes with session number tracking
+- **Post-session**: Review, organize, and tag entries for future reference
+- **Full CRUD**: Create → Edit → Save → Read flow is smooth with visual transitions
+
+**Ready for Sprint 10.** Next in DM Mechanics Phase: CampaignSettings (XP system, allowed races/classes, currency config), PlayerList (DM-facing player card management), or BattleMaps (map creation + grid configuration).
+
+---
