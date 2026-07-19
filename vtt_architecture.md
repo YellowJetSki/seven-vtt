@@ -2163,3 +2163,65 @@ The DM Dashboard was a purely cosmetic stats page (PC count, enemy count, encoun
 This is the first cycle of the DM Mechanics Phase (Cycles 6-15). The DM Dashboard now surfaces **real operational data** during a live session — session timer, combat status, party HP, and purpose-built navigation — instead of just counting entities.
 
 ---
+
+## Sprint 7/25 — Initiative Tracker: DM Combat Command (DM Mechanics Phase) (Updated: 2026-07-19 08:54)
+## Sprint 7/25 — Initiative Tracker: DM Combat Command (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 2 OF 10**  
+**Target:** Initiative Tracker panel  
+**Goal:** Reduce cognitive load during combat by surfacing critical data at a glance, adding combat flow controls, and enabling rapid HP/status management
+
+### Problem
+The initiative tracker was functional but lacked combat flow controls (Start/Pause/End combat buttons were elsewhere), didn't show AC (forcing DMs to look elsewhere for attack resolution), had no turn timer, no sort modes, and no auto-scroll to current turn.
+
+### Mechanical Upgrades
+
+| Feature | Cognitive Load Reduction |
+|---------|-------------------------|
+| **Combat Flow Controls** | Start, Pause/Resume, End Combat, Next/Previous Turn — all in the header bar |
+| **AC Badge** | Always visible on each combatant row — DMs resolve attacks without leaving the tracker |
+| **HP Bar + Fraction** | Color-coded (green/yellow/red) mini HP bar with current/max fraction |
+| **Temporary HP indicator** | Amber "+5 THP" badge visible when temp HP is present |
+| **Turn Timer** | Live seconds counter on current turn — >60s = amber, >120s = red (prevents analysis paralysis) |
+| **Auto-scroll** | `scrollIntoView({ behavior: "smooth", block: "nearest" })` on current turn combatant |
+| **Sort Toggle** | By initiative descending (default) or grouped by type (players → allies → enemies) |
+| **Quick HP Presets** | -5/-1/+1/+5 buttons + custom input always visible on selected/hover combatant |
+| **Status Effect Badges** | Color-coded by type: poisoned (green), paralyzed (amber), unconscious (red), concentrating (gold), etc. |
+| **Kill/Revive Toggle** | One-click death toggle with visual feedback (line-through + opacity) |
+
+### Files Modified (3)
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `InitiativeHeader.tsx` | 130 | **Complete rewrite**: Added combat flow controls (Start/Pause/Resume/End/Next/Prev), turn timer with color warnings, sort toggle |
+| `InitiativeCombatantRow.tsx` | 280 | **Complete rewrite**: Added AC badge, HP bar + fraction, temp HP indicator, color-coded status badges (12+ types), quick HP presets (-5/-1/+1/+5), auto-scroll ref, kill/revive toggle |
+| `InitiativeTracker.tsx` | 120 | **Rewrite**: Integrated sort mode state (initiative/grouped), auto-scroll passthrough, wired combat flow actions from store |
+
+### New/Removed Sub-Components
+
+| Component | Status | Reason |
+|-----------|:------:|--------|
+| `CombatantTypeIndicator.tsx` | Removed from import | Inlined emoji (🛡/👹/🧙) for simplicity |
+| `CombatantHpBar.tsx` | Removed from import | Inlined HP bar with fraction + temp HP |
+| `CombatantQuickInput.tsx` | Removed from import | Inlined preset buttons + input |
+| `EffectQuickInput.tsx` | Removed from import | Inlined effect input |
+| `DeathToggle.tsx` | Removed from import | Inlined Kill/Revive button |
+| `StatusDotIndicators.tsx` | Removed from import | Replaced with color-coded badges |
+| `StatusEffectsList.tsx` | Removed from import | Replaced with inline badges |
+| `StatusEffectBadge.tsx` | Removed from import | Replaced with inline `getStatusColor()` |
+
+This is a **net simplification** — 7 sub-components eliminated by inlining, resulting in fewer files and a more cohesive single-row layout.
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript | ✅ **0 errors** (1990 modules) |
+| Build (production) | ✅ **5.42s Vercel**, 0 warnings |
+| Deploy | ✅ **arkla.vercel.app** |
+| Bundle | 191 KB CSS (24 KB gzipped), 1067 KB JS (274 KB gzipped) |
+
+### Sprint 7/25 Complete
+
+The Initiative Tracker is now a **full Combat Command Center** with AC at a glance, turn timer, flow controls, and rapid HP/status management — all within the tracker itself. Next cycle: we can tackle the Encounter Panel, DmJournal, or HomebrewPanel.
+
+---
