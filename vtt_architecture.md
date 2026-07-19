@@ -3263,3 +3263,80 @@ Player taps save proficiency
 **Next:** Sprint 20/25 — Remaining untouched sections: `PlayerSheetInventoryTab.tsx` or `PlayerSheetHeader.tsx` or `PlayerCardCompact.tsx` enhancements.
 
 ---
+
+## Sprint 20/25 — Player Mechanics Phase: Inventory & Equipment Overhaul (Updated: 2026-07-19 09:59)
+## Sprint 20/25 — Inventory & Equipment Overhaul (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 5 of 10**
+**Target:** `PlayerSheetInventoryTab.tsx` — Refactored monolithic 30K file into 5 sub-components with 8 mechanical upgrades
+
+### Architecture: Monolith → 5 Sub-Components
+
+| File | Before | After | Key Changes |
+|------|:------:|:-----:|-------------|
+| `PlayerSheetInventoryTab.tsx` | **30,036 chars / 1 file** | **3,900 chars / orchestrator** | Orchestrator pattern — state, filtering, mutations. Exports `detectCategory()` and `categoryIcon()` utilities for sub-components |
+| `InventoryCurrencyBar.tsx` | **NEW** | 120 lines | Interactive 5-coin grid, tap-to-edit, quick-add presets (+1/+5/+10/+25/+50/+100 GP, +1/+10/+100 SP), roll-up denominations, total GP estimate |
+| `InventoryWeightBar.tsx` | **NEW** | 105 lines | Gradient progress bar, 33/66/100% markers, speed penalty display, item count, color-coded status text |
+| `InventoryItemRow.tsx` | **NEW** | 200 lines | Equip toggle with gold glow, category icon, quantity badge, consumable "Use" button, edit/sell/delete hover actions, inline edit mode |
+| `ItemFormModal.tsx` | **NEW** | 115 lines | Add item modal with auto-detect category preview, weight preview, equip checkbox, gold glass styling |
+| `SellConfirmModal.tsx` | **NEW** | 70 lines | Quick-sell confirmation with estimated value (5gp × weight lb), item detail display |
+
+### Mechanical Upgrades
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Item category auto-detect** | ❌ None | ✅ 9 categories (weapon/armor/potion/scroll/ring/wand/food/tool/other) with icon + keyword engine |
+| **Category filter chips** | ❌ None | ✅ Clickable filter chips with count badges — All/Weapons/Armor/Potions/Scrolls/Rings/Wands/Food/Tools |
+| **Search filter** | ❌ None | ✅ Real-time search by item name |
+| **Quick-sell** | ❌ None | ✅ Tap 💰 → confirm modal → auto-remove + add GP (50% estimated value) |
+| **Consumable quick-use** | ⚠️ Basic | ✅ Enhanced with auto-detect (potion/scroll/food/poison/oil/antidote), green "Use" button, quantity decrement |
+| **Weight bar** | ⚠️ Simple bar | ✅ Gradient bar (green→amber→red), 33/66/100% markers, speed penalty display |
+| **Currency presets** | ⚠️ 5 buttons | ✅ 6 GP presets (1,5,10,25,50,100) + 3 SP presets (1,10,100) + roll-up + total estimate |
+| **Equipped-only filter** | ⚠️ Basic | ✅ With search + category filter combination |
+
+### Visual Design
+- **Equipment slots**: Gold background with `bg-gold-500/5`, `border-gold/10`
+- **Equipped items**: Gold glow (`shadow-[0_0_4px_rgba(234,179,8,0.1)]`), `text-gold-400 font-semibold`
+- **Consumable button**: Emerald theme (`bg-emerald-500/10`, `border-emerald-500/15`)
+- **Sell button**: Amber theme (`bg-amber-500/10`, `border-amber-500/20`)
+- **Weight bar**: Gradient (`#34d399→#10b981`, `#fbbf24→#f59e0b`, `#f87171→#ef4444`)
+- **Category chips**: Gold active, surface hover otherwise
+
+### Data Flow
+```
+Add item → ItemFormModal → PlayerSheetInventoryTab.addItem()
+  ├─► campaignStore.updateCharacter(id, { inventory })
+  └─► Flash toast "📦 Added {name}"
+
+Toggle equip → InventoryItemRow → PlayerSheetInventoryTab.toggleEquip()
+  ├─► Toggle isEquipped on item
+  ├─► campaignStore.updateCharacter(id, { inventory })
+  └─► Flash toast "⚔️ Equipped {name}" or "📦 Unequipped {name}"
+
+Quick sell → InventoryItemRow → SellConfirmModal → PlayerSheetInventoryTab.quickSell()
+  ├─► Add value GP to currency
+  ├─► Remove item from inventory
+  ├─► campaignStore.updateCharacter(id, { inventory, currency })
+  └─► Flash toast "💰 Sold {name} for {value} GP"
+
+Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
+  ├─► Decrement quantity or remove item
+  ├─► campaignStore.updateCharacter(id, { inventory })
+  └─► Flash toast "🧪 Used 1 {name}"
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **9.58s**, 1972 modules |
+| Vercel Deploy | ✅ **6.03s build** → arkla.vercel.app |
+| Monolith refactoring | ✅ **30,036 chars → 5 files × <120 lines avg** |
+| Zero purple accent tokens | ✅ All gold/amber/emerald |
+| Touch targets | ✅ 44px+ for all interactive elements |
+
+### Player Mechanics Phase — Cycle 5 Complete
+
+**Next:** Sprint 21/25 — Remaining untouched sections: `PlayerSheetHeader.tsx`, `SpellSlotMeter.tsx`, `EncumbranceDisplay.tsx`, `ConditionBanner.tsx`, `PlayerCardCompact.tsx`
+
+---
