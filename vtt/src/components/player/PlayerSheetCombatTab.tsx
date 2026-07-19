@@ -21,6 +21,7 @@ import type { PlayerCharacter, ClassResource } from "@/types";
 import { computeAllDerivations, getAbilityMod } from "@/lib/mechanics/character-derivations";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
+import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
 import { useHpMutations } from "@/hooks/useCharacterMutations";
 
 interface AttackEntry {
@@ -203,9 +204,6 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const wisMod = derived.abilityMods.wisdom;
   const intMod = derived.abilityMods.intelligence;
   const pb = derived.proficiencyBonus;
-  const passivePP = 10 + wisMod + (c.skills?.perception === "proficient" ? pb : c.skills?.perception === "expertise" ? pb * 2 : 0);
-  const passivePI = 10 + intMod + (c.skills?.investigation === "proficient" ? pb : c.skills?.investigation === "expertise" ? pb * 2 : 0);
-  const passivePS = 10 + wisMod + (c.skills?.insight === "proficient" ? pb : c.skills?.insight === "expertise" ? pb * 2 : 0);
 
   const rechargeLabel = (r: "short_rest" | "long_rest" | "dawn") =>
     r === "short_rest" ? "Short Rest" : r === "long_rest" ? "Long Rest" : "Dawn";
@@ -476,35 +474,9 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
       {/* ── CONDITIONS ── */}
       <PlayerSheetConditions character={character} />
 
-      {/* ── HIT DICE ── */}
-      <div className="flex items-center justify-between rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-3 hover:border-gold/10 transition-all duration-200">
-        <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 flex items-center gap-1.5">
-          <span>🎲</span> Hit Dice
-          <span className="text-[8px] text-surface-500 font-normal normal-case">(max recoverable: {Math.floor(c.level / 2)}/long rest)</span>
-        </span>
-        <span className="text-sm font-mono font-bold tabular-nums text-gold-300">{c.hitDice}</span>
-      </div>
-
-      {/* ── PASSIVE SENSES ── */}
-      <div>
-        <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
-          <span className="w-1 h-3 rounded-full bg-gold-500/40" />
-          Passive Senses
-        </h3>
-        <div className="grid grid-cols-3 gap-1.5">
-          <div className="flex flex-col items-center px-2 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10">
-            <span className="text-[8px] uppercase tracking-widest text-gold-500/50">Perception</span>
-            <span className="text-base font-bold tabular-nums text-cyan-300">{passivePP}</span>
-          </div>
-          <div className="flex flex-col items-center px-2 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10">
-            <span className="text-[8px] uppercase tracking-widest text-gold-500/50">Investigation</span>
-            <span className="text-base font-bold tabular-nums text-violet-300">{passivePI}</span>
-          </div>
-          <div className="flex flex-col items-center px-2 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10">
-            <span className="text-[8px] uppercase tracking-widest text-gold-500/50">Insight</span>
-            <span className="text-base font-bold tabular-nums text-gold-300">{passivePS}</span>
-          </div>
-        </div>
+      {/* ── CHARACTER STATS PANEL (PB, Init, AC, HP, Speed, HD, Senses) ── */}
+      <div className="pt-3 border-t border-white/[0.04]">
+        <PlayerSheetCharacterStats character={c} />
       </div>
     </div>
   );

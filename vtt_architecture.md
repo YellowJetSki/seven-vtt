@@ -4020,3 +4020,90 @@ Player clicks ability score
 | No console errors | ✅ (only Firestore deprecation, benign) |
 
 ---
+
+## Sprint 5/17 — Character Foundation: Speed, Proficiency, Initiative & Hit Dice State Management (2026-07-19) (Updated: 2026-07-19 13:59)
+## Sprint 5/17 — Character Foundation: Speed, Proficiency, Initiative & Hit Dice State Management (Complete)
+**Date:** 2026-07-19
+**Phase:** Character Foundation Phase (Cycle 5 of 17)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Architect robust state management for Speed, Proficiency, Initiative, and Hit Dice — with premium interactive components for managing these derived stats on the character sheet.
+
+### New Components Created (4)
+
+#### 1. `CharacterStatsPanel.tsx` (280 lines)
+Premium unified stat overview component replacing scattered displays:
+- **Core Stat Cards** — 4-card grid: Proficiency (+PB), Initiative (DEX mod), Armor Class (computed), Max HP (HD + CON)
+- **Ability Modifier Strip** — 6-column grid showing STR→CHA scores and modifiers
+- **Speed Section** — All movement types (walk/fly/swim/climb/burrow) with icons and color coding
+- **Hit Dice Section** — Visual HD display with die type, spend/recover buttons, progress bar
+- **Passive Senses** — 3-grid Perception, Investigation, Insight auto-calculated
+- **Hover animations** — Bottom accent glow lines on each stat card
+
+#### 2. `HitDiceTracker.tsx` (230 lines)
+Visual Hit Dice management component:
+- **Dice icon grid** — Individual die icons for each HD (remaining = color, spent = dimmed + ✕)
+- **Spend button** — Decrement HD count
+- **Recover button** — Recover up to maxRecover per long rest
+- **Full Rest button** — Recover all HD
+- **Progress bar** — Gradient gold/amber bar showing remaining percentage
+- **Compact mode** — Single-row layout for sidebar use
+- **Die type colors** — 1d6=sky, 1d8=emerald, 1d10=amber, 1d12=rose with unique icons
+- **Animation** — Pulse animation on recently spent dice
+
+#### 3. `SpeedConfigurator.tsx` (170 lines)
+Interactive speed display component:
+- **All movement types** — Walk (👟), Fly (🪽), Swim (🏊), Climb (🧗), Burrow (⛏️)
+- **Encumbrance penalty** — Shows reduced walk speed with rose-colored warning when encumbered
+- **Class/race bonuses** — Shows +N bonus badges on speed types
+- **Hover indicator** — Special display for creatures that can hover
+- **Compact mode** — Horizontal strip for sidebar use
+
+#### 4. `PlayerSheetCharacterStats.tsx` (90 lines)
+Integration orchestrator wiring all three stat components into the Player Sheet Combat Tab:
+- Combines CharacterStatsPanel + HitDiceTracker + SpeedConfigurator
+- Provides Hit Dice spend/recover mutation handlers
+- Gradient card backgrounds matching the premium design system
+
+### Files Modified (1)
+
+| File | Changes |
+|------|---------|
+| `PlayerSheetCombatTab.tsx` | Replaced old single-row HD display + passive senses grid with full `PlayerSheetCharacterStats` component. Removed dead `passivePP/PI/PS` variables. |
+
+### Data Flow (Stat Management)
+
+```
+Character Stats Panel
+├── Proficiency Bonus → getProficiencyBonus(level)
+├── Initiative → getAbilityMod(character.dexterity)
+├── Armor Class → computeArmorClass(character)
+├── Max HP → character.hitPoints.max
+├── Speed → character.speed (walk/fly/swim/climb/burrow)
+└── Passive Senses → 10 + abilityMod + proficiency(when proficient)
+
+HitDiceTracker
+├── hitDie → character.hitDice || class lookup
+├── total → character.level
+├── spent → tracked via UI state
+└── onSpend → updateCharacter (heal HP)
+    onRecover → reset spent count
+
+SpeedConfigurator
+├── speeds → character.speed
+├── encumbrancePenalty → computed from encumbrance engine
+└── bonuses → race/class speed modifiers
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.19s**, 1985 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| ESLint | ✅ All 259 errors are TS/JSX parser config, not code issues |
+| Console errors | ✅ 0 (only Firestore deprecation, benign) |
+
+---
