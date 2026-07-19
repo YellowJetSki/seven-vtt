@@ -4107,3 +4107,82 @@ SpeedConfigurator
 | Console errors | ✅ 0 (only Firestore deprecation, benign) |
 
 ---
+
+## Sprint 6/17 — Character Foundation: Homebrew Race/Class Integration & Stat Persistence (2026-07-19) (Updated: 2026-07-19 14:17)
+## Sprint 6/17 — Homebrew Race/Class Integration & Stat Persistence (Complete)
+**Date:** 2026-07-19
+**Phase:** Character Foundation Phase (Cycle 6 of 17)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Build a Homebrew Race/Class Manager that allows DMs to create custom races with full 5e mechanical integration, AND build a Stat Persistence Layer ensuring all derived stats are correctly computed when using any content — official or homebrew.
+
+### Architecture
+
+#### New Types (1)
+```
+types/race-class.ts (4,900 bytes)
+├── RaceDefinition       — Full 5e race schema (size, speed, ASI, traits, proficiencies, languages, darkvision, subraces)
+├── ClassDefinition      — Full 5e class schema (hitDie, casterType, proficiencies, features, skillChoices)
+├── SubraceDefinition    — Subrace data (bonuses, traits)
+├── AbilityBonus         — Typed ability bonus (ability key + numeric bonus)
+├── RaceProficiency      — Proficiency type + name + options
+├── ClassFeature         — Feature with level, shortRest, limitedUse
+├── HomebrewRaceEntry    — Wrapper with timestamps
+├── HomebrewClassEntry   — Wrapper with timestamps
+├── AppliedRaceStats     — Computed stat results
+└── AppliedClassStats    — Computed stat results
+```
+
+#### New SRD Data (2)
+| File | Size | Contents |
+|------|:----:|----------|
+| `data/srd-races.ts` | 23.5 KB | **16 canonical races** with full ability bonuses, traits, subraces, speeds, darkvision, languages |
+| `data/srd-classes.ts` | 50 bytes | Placeholder for future class definitions |
+
+#### New Components (1)
+| Component | Lines | Purpose |
+|-----------|:-----:|---------|
+| `HomebrewRaceForm.tsx` | 510 | DM-facing race creator with 3 tabs (Main/Traits/Subraces), ability bonus picker, speed config, trait editor, proficiency builder, subrace manager, live preview |
+
+#### New Service (1)
+| Service | Lines | Purpose |
+|---------|:-----:|---------|
+| `lib/mechanics/stat-persistence.ts` | 200 | Stat persistence layer: `applyRaceToCharacter()`, `applyClassToCharacter()`, `recalculateAllStats()`, `buildCharacterFromRaceAndClass()`, `getAllRaces()` |
+
+#### Files Modified (1)
+| File | Key Changes |
+|------|-------------|
+| `components/player/PlayerCreateModal.tsx` | Replaced hardcoded RACES with `SRD_RACES` library; added subrace selector; race info card with icon/size/speed/darkvision; auto-applies ability bonuses from race; proper `Feature[]` type for traits |
+
+### Data Flow
+```
+PlayerCreateModal
+├── All Races = SRD_RACES + homebrewRaces (merged by name, deduplicated)
+├── Race selector shows {icon} {name} ({HB} for homebrew)
+├── Subrace selector appears when race has subraces
+├── Race info card shows size, speed, darkvision, trait count
+├── Ability scores auto-adjusted when race changes
+├── Character built with: correct speed, darkvision traits, languages, feature objects
+└── HomebrewRaceForm
+    ├── Main tab: name, size, speed, darkvision, ASI builder, languages, preview
+    ├── Traits tab: trait editor, proficiency builder
+    └── Subraces tab: add/remove subraces
+
+Stat Persistence Layer (lib/mechanics/stat-persistence.ts)
+├── applyRaceToCharacter() — speed, ASI, darkvision, traits, proficiencies, languages
+├── applyClassToCharacter() — hit dice, class features, save proficiencies
+├── recalculateAllStats() — PB, initiative, min HP floor
+└── buildCharacterFromRaceAndClass() — complete pipeline
+```
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.56s**, 1986 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| SRD race data available | ✅ 16 races in dropdown (Dragonborn through Firbolg) |
+| Subrace selector renders | ✅ Selects appear for Dwarf, Elf, Gnome, etc. |
+
+---

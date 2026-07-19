@@ -9,7 +9,7 @@
  * Image URL renders a live preview so the DM can confirm the art.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { setCharacter } from "@/lib/firestore-service";
 import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
@@ -19,17 +19,15 @@ import { type AssetEntry } from "@/images/assetCatalog";
 import AbilityScoreRoller from "@/components/player/AbilityScoreRoller";
 import DerivedStatsPreview from "@/components/player/DerivedStatsPreview";
 import type { PlayerCharacter } from "@/types";
+import { SRD_RACES, getRaceByName } from "@/data/srd-races";
+import type { RaceDefinition, SubraceDefinition } from "@/types/race-class";
 
 interface PlayerCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Homebrew races from the compendium store */
+  homebrewRaces?: RaceDefinition[];
 }
-
-const RACES = [
-  "Dragonborn", "Dwarf", "Elf", "Gnome", "Half-Elf",
-  "Half-Orc", "Halfling", "Human", "Tiefling", "Aasimar",
-  "Firbolg", "Goliath", "Kenku", "Tabaxi", "Tortle",
-];
 
 const CLASSES = [
   "Barbarian", "Bard", "Cleric", "Druid", "Fighter",
@@ -74,11 +72,25 @@ function calcAc(className: string, dex: number): number {
   return 10 + Math.floor((dex - 10) / 2);
 }
 
-export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModalProps) {
+export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] }: PlayerCreateModalProps) {
   const addCharacter = useCampaignStore((s) => s.addCharacter);
 
+  // Merge SRD races + homebrew races
+  const allRaces = useMemo(() => {
+    const names = new Set<string>();
+    const merged: { name: string; race: RaceDefinition }[] = [];
+    for (const r of [...SRD_RACES, ...homebrewRaces]) {
+      if (!names.has(r.name)) {
+        names.add(r.name);
+        merged.push({ name: r.name, race: r });
+      }
+    }
+    return merged;
+  }, [homebrewRaces]);
+
   const [name, setName] = useState("");
-  const [race, setRace] = useState("Human");
+  const [raceName, setRaceName] = useState("Human");
+  const [subraceIndex, setSubraceIndex] = useState<number | undefined>(undefined);
   const [className, setClassName] = useState("Fighter");
   const [level, setLevel] = useState(1);
   const [imageUrl, setImageUrl] = useState("");
@@ -99,7 +111,8 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
 
   const handleReset = useCallback(() => {
     setName("");
-    setRace("Human");
+    setRaceName("Human");
+    setSubraceIndex(undefined);
     setClassName("Fighter");
     setLevel(1);
     setImageUrl("");
@@ -132,11 +145,21 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
     const pb = Math.ceil(level / 4) + 1;
     const hitDie = HIT_DIE_BY_CLASS[className] || "1d8";
 
+    // Get race data for speed/darkvision
+    const raceDef = allRaces.find(r => r.name === raceName)?.race;
+    const walkSpeed = raceDef?.baseSpeed || 30;
+    const raceIcon = raceDef?.icon || "✦";
+    const darkvision = raceDef?.darkvision || 0;
+    const raceTraits = raceDef?.traits || [];
+    const subraceTraits = (subraceIndex !== undefined && raceDef?.subraces?.[subraceIndex])
+      ? raceDef.subraces[subraceIndex].traits
+      : [];
+
     const newChar: PlayerCharacter = {
       id: `pc_${Date.now()}`,
       name: name.trim(),
       playerName: playerName.trim() || "Player",
-      race,
+      race: raceName,
       class: className,
       level,
       classes: [{ name: className, level }],
@@ -162,16 +185,16 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
       hitPoints: { current: hp, max: hp, temporary: 0 },
       armorClass: ac,
       initiative: Math.floor((abilityScores.dexterity - 10) / 2),
-      speed: { walk: 30 },
+      speed: { walk: walkSpeed },
       hitDice: hitDie,
       proficiencyBonus: pb,
       conditions: [],
       deathSaves: { successes: 0, failures: 0 },
       temporaryHitPoints: 0,
-      traits: [],
+      traits: [...raceTraits.map(t => ({ name: t.split(":")[0].trim(), description: t, source: "Racial Trait" })), ...subraceTraits.map(t => ({ name: t.split(":")[0].trim(), description: t, source: "Subrace" }))],
       proficiencies: [],
-      languages: ["Common"],
-      features: [],
+      languages: ["Common", ...(raceDef?.languages.filter(l => l !== "Common") || [])],
+      features: [...raceTraits.map(t => ({ name: t.split(":")[0].trim(), description: t, source: "Racial Trait" })), ...subraceTraits.map(t => ({ name: t.split(":")[0].trim(), description: t, source: "Subrace" }))],
       equipment: [],
       inventory: [],
       currency: { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 },
@@ -191,7 +214,7 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
       console.warn("[Firestore] Failed to write new character:", err);
     });
     handleClose();
-  }, [name, playerName, race, className, level, imageUrl, abilityScores, addCharacter, handleClose]);
+  }, [name, playerName, raceName, className, level, imageUrl, abilityScores, addCharacter, handleClose, allRaces, subraceIndex]);
 
   const isValid = name.trim().length > 0;
 
@@ -233,14 +256,76 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
               Race
             </label>
             <select
-              value={race}
-              onChange={(e) => setRace(e.target.value)}
+              value={raceName}
+              onChange={(e) => {
+                setRaceName(e.target.value);
+                setSubraceIndex(undefined);
+                // Default ability scores for this race
+                const rd = allRaces.find(r => r.name === e.target.value)?.race;
+                if (rd && rd.abilityBonuses.length > 0) {
+                  setAbilityScores(prev => {
+                    const next = { ...prev };
+                    for (const b of rd.abilityBonuses) {
+                      const key = b.ability as keyof typeof prev;
+                      next[key] = Math.min(20, Math.max(3, next[key] + b.bonus));
+                    }
+                    return next;
+                  });
+                }
+              }}
               className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3 py-2.5 text-sm text-surface-200 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all appearance-none cursor-pointer"
             >
-              {RACES.map((r) => (
-                <option key={r} value={r} className="bg-obsidian text-surface-200">{r}</option>
+              {allRaces.map(({ name, race: rd }) => (
+                <option key={rd.id} value={name} className="bg-obsidian text-surface-200">
+                  {rd.icon} {name}{rd.isHomebrew ? " (HB)" : ""}
+                </option>
               ))}
             </select>
+            {/* Race info badge */}
+            {(() => {
+              const rd = allRaces.find(r => r.name === raceName)?.race;
+              if (!rd) return null;
+              return (
+                <div className="mt-1 flex items-center gap-1.5 text-[8px] text-surface-500">
+                  <span>{rd.size}</span>
+                  <span className="text-surface-600">·</span>
+                  <span>{rd.baseSpeed}ft</span>
+                  {rd.darkvision > 0 && (
+                    <><span className="text-surface-600">·</span><span className="text-cyan-400">DV {rd.darkvision}ft</span></>
+                  )}
+                  {rd.isHomebrew && <span className="text-gold-400">✦ HB</span>}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Subrace (conditional) */}
+          <div>
+            {(() => {
+              const rd = allRaces.find(r => r.name === raceName)?.race;
+              if (!rd?.subraces || rd.subraces.length === 0) return null;
+              return (
+                <>
+                  <label className="block text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-1.5">
+                    Subrace
+                  </label>
+                  <select
+                    value={subraceIndex ?? 0}
+                    onChange={(e) => setSubraceIndex(parseInt(e.target.value))}
+                    className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3 py-2.5 text-sm text-surface-200 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all appearance-none cursor-pointer"
+                  >
+                    {rd.subraces.map((sub: SubraceDefinition, i: number) => (
+                      <option key={i} value={i} className="bg-obsidian text-surface-200">{sub.name}</option>
+                    ))}
+                  </select>
+                  {subraceIndex !== undefined && rd.subraces[subraceIndex] && (
+                    <p className="mt-1 text-[8px] text-surface-500 leading-tight">
+                      {rd.subraces[subraceIndex].description.substring(0, 60)}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* Class */}
@@ -303,6 +388,36 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
             />
           </div>
         </div>
+
+        {/* ── RACE INFO CARD (when available) ── */}
+        {(() => {
+          const rd = allRaces.find(r => r.name === raceName)?.race;
+          if (!rd) return null;
+          return (
+            <div className="bg-gradient-to-br from-[#14151f]/60 to-[#0c0d15]/80 border border-white/[0.04] rounded-xl p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{rd.icon}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-surface-400">
+                  Race Features
+                </span>
+                {rd.isHomebrew && (
+                  <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-gold-500/10 text-gold-400 border border-gold/15">Homebrew</span>
+                )}
+              </div>
+              <p className="text-[10px] text-surface-500 mb-2">{rd.description}</p>
+              <div className="flex flex-wrap gap-1">
+                {rd.traits.slice(0, 2).map((t, i) => (
+                  <span key={i} className="px-1.5 py-0.5 rounded text-[8px] bg-cyan-500/8 text-cyan-400 border border-cyan-500/10">
+                    {t.split(":")[0]}
+                  </span>
+                ))}
+                {rd.traits.length > 2 && (
+                  <span className="text-[8px] text-surface-600">+{rd.traits.length - 2} more</span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Image URL / Gallery toggle ── */}
         <div>
