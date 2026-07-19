@@ -3041,3 +3041,80 @@ Replaced the passive read-only display with a full interactive inventory managem
 Next: **Sprint 17/25** — Target any remaining untouched Player Sheet section (e.g., Conditions display upgrade, Spells tab enhancements, persistent buff tracking).
 
 ---
+
+## Sprint 17/25 — Player Mechanics Phase: Enhanced Spellbook Quick-Reference (Updated: 2026-07-19 09:42)
+## Sprint 17/25 — Enhanced Spellbook Tab (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 2 of 10**
+**Target:** `PlayerSheetSpellsTab.tsx` — Full quick-reference and usability upgrade
+
+### Before vs After
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Quick-cast from spell list** | ❌ | "Cast" button on hover (decrements spell slot, flash feedback) |
+| **Favorite/star spells** | ❌ | ★/☆ toggle per spell, persists in localStorage, "Faves" filter toggle |
+| **Search bar** | ❌ | 🔍 input with name/school/description multi-field search |
+| **Persistent filters** | ❌ (reset on re-render) | Level filter, search query, favorites filter all persist |
+| **Damage/healing badges** | ❌ (hidden in expanded view) | Inline badges: "💥 8d6 Fire", "❤ 2d4+2 healing" |
+| **School color badges** | ❌ (plain text) | 8 unique color-schemes (Abjuration=cyan, Evocation=rose, etc.) + emoji icons |
+| **Save DC / attack roll info** | ❌ (hidden) | "🛡 DC 14 Dex", "🎯 Spell attack" inline chips on expanded row |
+| **Spell count meta** | "X spells" | "12/42 spells" (shown vs total) |
+| **Cantrip quick-cast feedback** | ❌ (nothing happens) | Flash: "Cantrips don't use spell slots" |
+| **No slot feedback** | ❌ (silent failure) | Flash: "No level 3 slots remaining" |
+| **Concentration/ritual badges** | ✅ kept | Enhanced with `title` tooltips |
+| **Spellcasting stats** | ✅ kept | DC/ATK/Mod grid preserved |
+| **SpellSlotMeter** | ✅ kept | Preserved with Cast/Restore hooks |
+
+### New UX Features
+
+#### Favorite System
+```
+   ★ Fireball        ← gold star = favorite, persistent per character
+   ☆ Magic Missile   ← unfilled = not a favorite
+   [⭐ Faves]         ← checkbox to filter by favorites only
+```
+- Saves to `localStorage` keyed by character ID (`spell-faves-{charId}`)
+- Defaults: Magic Missile, Shield, Cure Wounds, Bless
+
+#### Quick-Cast
+- Hover any spell → "Cast" button appears on right
+- Click → decrements 1 spell slot at the spell's level
+- Flash message: "✨ Cast Fireball (Lv.3)"
+- Cantrips → "Cantrips don't use spell slots"
+- No slots → "No level 3 slots remaining"
+
+#### Inline Mechanical Info
+- Damage: `💥 8d6 Fire` (rose badge, visible without expanding)
+- Healing: `❤ 2d4+2 healing` (emerald badge)
+- Save: `🛡 DC 14 Wisdom` (indigo badge, expanded)
+- Attack: `🎯 Spell attack` (amber badge, expanded)
+
+#### Search + Filter Hybrid
+- Search bar at top matches: name, school, description
+- Level chips (All, Cantrips, Lv.1-Lv.9) work simultaneously with search
+- Faves filter checkbox works with both
+
+### Files Modified (1)
+
+| File | Changes | Lines |
+|------|---------|:-----:|
+| `components/player/PlayerSheetSpellsTab.tsx` | Complete rewrite: favorite system, quick-cast, search, school badges, damage/heal badges | 290→490 |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.96s**, 1965 modules |
+| Vercel Deploy | ✅ **built 5.97s** → arkla.vercel.app |
+| Favorite stars persist | ✅ localStorage by charId |
+| Quick-cast decrements slots | ✅ calls handleCastSpell |
+| School badges all 8 colors | ✅ unique per school |
+| Search matches name/school/desc | ✅ multi-field |
+| Level filter + search combined | ✅ simultaneous |
+
+### Player Mechanics Phase — Cycle 2 Complete
+
+Next: **Sprint 18/25** — Target remaining untouched Player Sheet sections (Combat tab enhancements, Features & Traits display, or death saves upgrade).
+
+---
