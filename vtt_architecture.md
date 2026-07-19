@@ -4521,3 +4521,61 @@ useCompendiumBridge:
 | Modified files | 4 (unified-entities.ts, entity-injector.ts, CombatWeaponCard.tsx, useCompendiumBridge.ts) |
 
 ---
+
+## Sprint 12/17 — Feat Toggle Pipeline & Source Badges (2026-07-19) (Updated: 2026-07-19 14:57)
+## Sprint 12/17 — Feat Toggle Pipeline & Source Badges (Complete)
+**Date:** 2026-07-19
+**Phase:** Unified Entities & Combat Hooks Phase (Cycle 12 of 17 - FINAL CYCLE)
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### Files Modified (3)
+| File | Key Changes |
+|------|-------------|
+| `PlayerSheetCombatTab.tsx` | Added `handleFeatToggle` callback that writes to `character.activeFeats` via `updateCharacter`. Wired `onToggle` to `CombatFeatCard`. Added `showSource` prop to `CombatSpellCard`. |
+| `CombatFeatCard.tsx` | Added optional `showSource` prop. When enabled, renders colored source badge (📖 SRD / ⚒️ Homebrew / 🔮 Inferred) next to feat name. |
+| `CombatSpellCard.tsx` | Added optional `showSource` prop. When enabled, renders colored source badge next to spell name. |
+
+### Interactive Pipeline (COMPLETE)
+
+```
+CombatFeatCard toggle click
+  └─► onToggle(featId, newActive)
+      └─► PlayerSheetCombatTab.handleFeatToggle()
+          └─► updateCharacter(c.id, { activeFeats: [...] })
+              ├─► Zustand state update (instant)
+              ├─► Firestore sync (async)
+              └─► useMemo re-runs → injectCombatEntities()
+                  └─► Combat Tab re-renders with new feat state
+```
+
+### Source Badge Coverage
+
+| Card Type | showSource Support | Badge Types |
+|-----------|:-----------------:|-------------|
+| `CombatWeaponCard` | ✅ (Sprint 11) | 📖 SRD / ⚒️ Homebrew / 👤 Character / 🔮 Inferred |
+| `CombatFeatCard` | ✅ (Sprint 12) | Same 4 types |
+| `CombatSpellCard` | ✅ (Sprint 12) | Same 4 types |
+
+### Unified Entities Phase Complete (Cycles 8-12)
+
+| Sprint | Feature | Deliverable |
+|:------:|---------|-------------|
+| 8 | Entity types | `unified-entities.ts` — `CombatEntity` interface with weapons/spells/feats |
+| 9 | Injection pipeline | `entity-injector.ts` — `injectCombatEntities()` with weapon/spell/feat resolution |
+| 10 | Equipment slots | Weapon injection from character equipment, synergy with armor/spellcasting |
+| 11 | Homebrew Bridge | `compendium-bridge.ts` — fuzzy matching, source detection, fallback synthesis |
+| 12 | Feat toggle + source badges | End-to-end feat toggle (UI → Zustand → re-inject → re-render), source badges on all 3 card types |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.79s**, 1997 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| Source badges on all cards | ✅ Weapon / Spell / Feat — all optional `showSource` |
+| Feat toggle pipeline | ✅ `handleFeatToggle` → `updateCharacter` → re-injection → re-render |
+
+---

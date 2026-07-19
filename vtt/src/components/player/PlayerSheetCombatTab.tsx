@@ -170,6 +170,25 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
     [c, handleSetTempHp]
   );
 
+  // ── Feat toggle handler ──
+  const handleFeatToggle = useCallback(
+    (featId: string, newActive: boolean) => {
+      const current: Array<{ featId: string; featName: string; isActive: boolean }> =
+        (c as any).activeFeats || [];
+      const existing = current.findIndex((a) => a.featId === featId);
+      let next: Array<{ featId: string; featName: string; isActive: boolean }>;
+      if (existing >= 0) {
+        next = [...current];
+        next[existing] = { ...next[existing], isActive: newActive };
+      } else {
+        const feat = combatEntities.feats.find((f) => f.sourceId === featId || f.id === featId);
+        next = [...current, { featId, featName: feat?.name || featId, isActive: newActive }];
+      }
+      updateCharacter(c.id, { activeFeats: next } as any);
+    },
+    [c, combatEntities.feats, updateCharacter]
+  );
+
   // ── Class resource tracking ──
   const resources: ClassResource[] = useMemo(() => {
     const derivedResources: ClassResource[] = [];
@@ -313,7 +332,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
           </h3>
           <div className="space-y-1">
             {combatEntities.spells.map((spell) => (
-              <CombatSpellCard key={spell.id} entity={spell} />
+              <CombatSpellCard key={spell.id} entity={spell} showSource />
             ))}
           </div>
         </div>
@@ -342,7 +361,12 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         ) : combatEntities.feats.length > 0 ? (
           <div className="space-y-1">
             {combatEntities.feats.map((feat) => (
-              <CombatFeatCard key={feat.id} entity={feat} />
+              <CombatFeatCard
+                key={feat.id}
+                entity={feat}
+                onToggle={handleFeatToggle}
+                showSource
+              />
             ))}
           </div>
         ) : (

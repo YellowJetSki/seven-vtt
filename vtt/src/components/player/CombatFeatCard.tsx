@@ -3,20 +3,23 @@
  *
  * Reusable feat/feature card for the Combat Tab.
  * Renders a single feat's effect including:
- *   - Name with feat icon
+ *   - Name with feat icon, source badge (SRD/Homebrew/Inferred)
  *   - Effect description / benefits
  *   - Activation requirement indicator
  *   - Toggle state for active/inactive
+ *   - Source badge when showSource is enabled
  */
 
 import type { CombatEntity } from "@/types/unified-entities";
+import { getSourceBadge } from "@/lib/combat/compendium-bridge";
 
 interface CombatFeatCardProps {
   entity: CombatEntity;
   onToggle?: (id: string, active: boolean) => void;
+  showSource?: boolean;
 }
 
-export default function CombatFeatCard({ entity, onToggle }: CombatFeatCardProps) {
+export default function CombatFeatCard({ entity, onToggle, showSource = false }: CombatFeatCardProps) {
   const {
     id,
     name,
@@ -25,6 +28,7 @@ export default function CombatFeatCard({ entity, onToggle }: CombatFeatCardProps
     requiresActivation,
     isActive,
     colorClass = "text-violet-400",
+    sourceType,
   } = entity;
 
   return (
@@ -41,13 +45,18 @@ export default function CombatFeatCard({ entity, onToggle }: CombatFeatCardProps
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Name + badges */}
+          {/* Name + Source badge + badges */}
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
-            <span className={`text-sm font-semibold truncate max-w-[160px] ${
+            <span className={`text-sm font-semibold truncate max-w-[120px] ${
               isActive ? "text-surface-200" : "text-surface-400"
             }`}>
               {name}
             </span>
+            {showSource && sourceType && (
+              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as any).className}`}>
+                {getSourceBadge(sourceType as any).icon} {getSourceBadge(sourceType as any).label}
+              </span>
+            )}
             {requiresActivation && (
               <span className="px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 Requires Action

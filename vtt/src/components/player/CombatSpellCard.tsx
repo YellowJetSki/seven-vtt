@@ -3,7 +3,7 @@
  *
  * Reusable spell attack card for the Combat Tab.
  * Renders a single spell's information including:
- *   - Name with school icon
+ *   - Name with school icon, source badge (SRD/Homebrew/Inferred)
  *   - Level/school badge
  *   - Attack bonus or save DC
  *   - Damage or healing expression
@@ -12,12 +12,14 @@
  */
 
 import type { CombatEntity } from "@/types/unified-entities";
+import { getSourceBadge } from "@/lib/combat/compendium-bridge";
 
 interface CombatSpellCardProps {
   entity: CombatEntity;
+  showSource?: boolean;
 }
 
-export default function CombatSpellCard({ entity }: CombatSpellCardProps) {
+export default function CombatSpellCard({ entity, showSource = false }: CombatSpellCardProps) {
   const {
     name,
     icon,
@@ -31,6 +33,7 @@ export default function CombatSpellCard({ entity }: CombatSpellCardProps) {
     saveDC,
     saveAbility,
     colorClass = "text-amber-400",
+    sourceType,
   } = entity;
 
   const isCantrip = spellLevel === 0;
@@ -45,11 +48,16 @@ export default function CombatSpellCard({ entity }: CombatSpellCardProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Name + Level/School */}
+          {/* Name + Source badge + Level/School */}
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
-            <span className="text-sm font-semibold text-surface-200 truncate max-w-[150px]">
+            <span className="text-sm font-semibold text-surface-200 truncate max-w-[120px]">
               {name}
             </span>
+            {showSource && sourceType && (
+              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as any).className}`}>
+                {getSourceBadge(sourceType as any).icon} {getSourceBadge(sourceType as any).label}
+              </span>
+            )}
             <span className={`px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
               isCantrip
                 ? "bg-surface-700/30 text-surface-400 border border-surface-700/20"
