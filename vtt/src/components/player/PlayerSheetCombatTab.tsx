@@ -17,8 +17,13 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useCompendiumStore } from "@/stores/compendium/compendiumStore";
 import type { PlayerCharacter, ClassResource } from "@/types";
 import { computeAllDerivations, getAbilityMod } from "@/lib/mechanics/character-derivations";
+import { injectCombatEntities } from "@/lib/combat/entity-injector";
+import CombatWeaponCard from "./CombatWeaponCard";
+import CombatSpellCard from "./CombatSpellCard";
+import CombatFeatCard from "./CombatFeatCard";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
@@ -102,7 +107,25 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const { handleHpChange, handleSetTempHp } = useHpMutations();
   const derived = useMemo(() => computeAllDerivations(c), [c]);
 
-  const weaponAttacks = useMemo(() => buildWeaponAttacks(c, derived), [c, derived]);
+  // ── Unified Entity Injection ──
+  const compendiumState = useCompendiumStore();
+  const itemCatalog = compendiumState.items;
+  const spellCatalog = compendiumState.spells;
+  const featCatalog = compendiumState.feats;
+
+  const combatEntities = useMemo(() => injectCombatEntities({
+    character: c,
+    derived: {
+      proficiencyBonus: derived.proficiencyBonus,
+      abilityMods: derived.abilityMods,
+      spellSaveDC: derived.spellcasting.spellSaveDC,
+      spellAttackBonus: derived.spellcasting.spellAttackBonus,
+      spellcastingAbility: derived.spellcasting.spellcastingAbility,
+    },
+    itemCatalog,
+    spellCatalog,
+    featCatalog,
+  }), [c, derived, itemCatalog, spellCatalog, featCatalog]);
   const [hpInput, setHpInput] = useState("");
   const [hpQuickMode, setHpQuickMode] = useState<"damage" | "heal">("damage");
 
@@ -253,62 +276,19 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
           <span className="w-1 h-3 rounded-full bg-gold-500/40" />
           Weapons & Attacks
-          {weaponAttacks.length > 0 && (
-            <span className="text-[9px] font-normal text-surface-500">({weaponAttacks.length})</span>
+          {combatEntities.weapons.length > 0 && (
+            <span className="text-[9px] font-normal text-surface-500">({combatEntities.weapons.length})</span>
           )}
         </h3>
 
-        {weaponAttacks.length === 0 ? (
+        {combatEntities.weapons.length === 0 ? (
           <div className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-4 text-center text-surface-500 text-xs">
             No weapons equipped. Visit the Items tab to equip weapons.
           </div>
         ) : (
           <div className="space-y-1">
-            {weaponAttacks.map((attack, idx) => (
-              <div
-                key={`${attack.name}-${idx}`}
-                className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-3 hover:border-gold/10 transition-all duration-200 group"
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="text-sm font-bold text-surface-200 truncate">{attack.name}</span>
-                    <span className="shrink-0 text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/15 text-red-400 font-semibold">Weapon</span>
-                    {attack.isMelee && (
-                      <span className="shrink-0 text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/15 text-orange-400 font-semibold">Melee</span>
-                    )}
-                    {attack.isRanged && (
-                      <span className="shrink-0 text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/15 text-cyan-400 font-semibold">Ranged</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] uppercase tracking-wider text-surface-500 font-semibold">ATK</span>
-                    <span className="text-base font-black tabular-nums font-mono text-gold-300">{attack.atk}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <span className="text-[9px] uppercase tracking-wider text-surface-500 font-semibold">DMG</span>
-                    <span className="text-sm font-bold tabular-nums font-mono text-surface-200 truncate">{attack.damage}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap mt-1.5">
-                  {attack.range && (
-                    <span className="text-[9px] text-surface-500">Range: {attack.range}</span>
-                  )}
-                  {attack.properties && attack.properties.length > 0 && (
-                    <div className="flex gap-1 flex-wrap">
-                      {attack.properties.map((prop) => (
-                        <span key={prop} className="text-[8px] px-1 py-0.5 rounded bg-surface-700/30 text-surface-400 uppercase tracking-wider">{prop}</span>
-                      ))}
-                    </div>
-                  )}
-                  {attack.notes && (
-                    <span className="text-[9px] text-surface-500 italic">{attack.notes}</span>
-                  )}
-                </div>
-              </div>
+            {combatEntities.weapons.map((weapon) => (
+              <CombatWeaponCard key={weapon.id} entity={weapon} />
             ))}
           </div>
         )}
@@ -355,6 +335,38 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ── SPELLS (COMBAT QUICK-REFERENCE) ── */}
+      {combatEntities.spells.length > 0 && (
+        <div>
+          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
+            <span className="w-1 h-3 rounded-full bg-amber-500/40" />
+            Prepared Spells
+            <span className="text-[9px] font-normal text-surface-500">({combatEntities.spells.length})</span>
+          </h3>
+          <div className="space-y-1">
+            {combatEntities.spells.map((spell) => (
+              <CombatSpellCard key={spell.id} entity={spell} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── FEATS & ACTIVE EFFECTS ── */}
+      {combatEntities.feats.length > 0 && (
+        <div>
+          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
+            <span className="w-1 h-3 rounded-full bg-violet-500/40" />
+            Feats & Effects
+            <span className="text-[9px] font-normal text-surface-500">({combatEntities.feats.length})</span>
+          </h3>
+          <div className="space-y-1">
+            {combatEntities.feats.map((feat) => (
+              <CombatFeatCard key={feat.id} entity={feat} />
+            ))}
           </div>
         </div>
       )}

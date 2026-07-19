@@ -4267,3 +4267,79 @@ SRD_CLASSES[].features
 | Derivation integration | ✅ DerivedStatsPreview uses `isCaster`, `getCasterType`, `getSpellcastingAbility`, `getClassHitDie` from SRD library |
 
 ---
+
+## Sprint 8/17 — Unified Entity System & Combat Hooks Injection (2026-07-19) (Updated: 2026-07-19 14:33)
+## Sprint 8/17 — Unified Entity System & Combat Hooks Injection (Complete)
+**Date:** 2026-07-19
+**Phase:** Unified Entities & Combat Hooks Phase (Cycle 8 of 17)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Establish a strict, unified object structure for Items, Spells, and Feats that makes Homebrew support native and seamless. Build interactive logic so equipping a weapon, preparing a spell, or toggling a feat automatically injects its data into the Combat Tab.
+
+### Architecture
+
+#### New Files Created (5)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `types/unified-entities.ts` | 126 | Bridge types (`CombatEntity`, `CharacterCombatData`) that unify HomebrewItem/HomebrewSpell/HomebrewFeat with character inventory for Combat Tab injection. Includes weapon/spell/feat icon helpers. |
+| `lib/combat/entity-injector.ts` | 310 | Pure-function Combat Entity Injector. Takes character data + SRD catalogs → returns structured `CombatEntity[]` for weapons, spells, feats. Full weapon stat resolution (damage dice, type, attack bonus, properties), spell resolution (save DC, attack bonus, school, concentration), and feat resolution (activation type, effect description). |
+| `components/player/CombatWeaponCard.tsx` | 110 | Reusable weapon card component. Displays: icon, name, Melee/Ranged/Weapon badges, ATK bonus (color-coded by threshold), DMG expression, Range, and Property chips. |
+| `components/player/CombatSpellCard.tsx` | 120 | Reusable spell card component. Displays: icon, name, level/cantrip badge, school badge, Concentration badge, ATK/Save DC info, Effect expression, Range. |
+| `components/player/CombatFeatCard.tsx` | 105 | Reusable feat card component. Displays: icon, name, Requires Action badge, effect description, toggle ON/OFF indicator. |
+
+#### Files Modified (2)
+
+| File | Key Changes |
+|------|-------------|
+| `components/player/PlayerSheetCombatTab.tsx` | Replaced inline `buildWeaponAttacks()` function with new `injectCombatEntities()` from entity-injector. Replaced 70 lines of inline weapon card JSX with `<CombatWeaponCard>`. Added **Prepared Spells** section using `<CombatSpellCard>`. Added **Feats & Effects** section using `<CombatFeatCard>`. All data resolves against full SRD compendium catalog. |
+| `stores/compendium/compendiumStore.ts` | Updated to seed initial state with SRD_ITEMS, SRD_SPELLS, SRD_FEATS (previously empty arrays). Added `resetToSRD()` action. |
+
+### Data Flow
+
+```
+Character Equipment (slot-based, plain strings)
+  │
+  ▼
+injectCombatEntities()
+  │  ├─ Resolves each equipped item against SRD/homebrew catalog (by name)
+  │  ├─ Synthesizes HomebrewItem for unmatched items
+  │  ├─ Resolves prepared spells against catalog
+  │  ├─ Resolves feats/features against catalog
+  │  └─ Computes all derived stats (ATK mod, DMG dice, save DC, etc.)
+  │
+  ▼
+CombatEntity[] (weapons, spells, feats)
+  │
+  ├─► CombatWeaponCard (reusable, typed)
+  ├─► CombatSpellCard (reusable, typed)
+  └─► CombatFeatCard (reusable, typed)
+```
+
+### Unified Schema (All Entities)
+
+HomebrewItem, HomebrewSpell, and HomebrewFeat ALL share the CombatEntity bridge:
+```typescript
+CombatEntity {
+  id, name, sourceType, sourceId, isActive,
+  attackBonus?, damageExpression?, isMelee?, isRanged?,
+  range?, properties?,
+  spellLevel?, spellSchool?, requiresConcentration?,
+  hasSave?, saveDC?, saveAbility?,
+  effectDescription?, requiresActivation?,
+  icon?, colorClass?, tags?
+}
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **8.51s**, 1992 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| New components | 5 (CombatWeaponCard, CombatSpellCard, CombatFeatCard, unified-entities types, entity-injector) |
+| SRD data seeded | ✅ Compendium store now loads SRD items/spells/feats on init |
+
+---

@@ -8,6 +8,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat } from "@/types/homebrew";
+import { SRD_ITEMS, SRD_SPELLS, SRD_FEATS } from "./compendiumData";
 
 export type CompendiumTab = "items" | "spells" | "feats";
 export type DraggedEntry = {
@@ -40,14 +41,15 @@ export interface CompendiumState {
   removeItem: (id: string) => void;
   removeSpell: (id: string) => void;
   removeFeat: (id: string) => void;
+  resetToSRD: () => void;
 }
 
 export const useCompendiumStore = create<CompendiumState>()(
   persist(
     (set) => ({
-      items: [],
-      spells: [],
-      feats: [],
+      items: SRD_ITEMS,
+      spells: SRD_SPELLS,
+      feats: SRD_FEATS,
       searchQuery: "",
       activeTab: "items",
       categoryFilter: null,
@@ -69,6 +71,7 @@ export const useCompendiumStore = create<CompendiumState>()(
       removeItem: (id) => set((p) => ({ items: p.items.filter((x) => x.id !== id) })),
       removeSpell: (id) => set((p) => ({ spells: p.spells.filter((x) => x.id !== id) })),
       removeFeat: (id) => set((p) => ({ feats: p.feats.filter((x) => x.id !== id) })),
+      resetToSRD: () => set({ items: SRD_ITEMS, spells: SRD_SPELLS, feats: SRD_FEATS }),
     }),
     { name: "str-vtt-compendium" }
   )
