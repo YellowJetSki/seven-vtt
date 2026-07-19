@@ -587,3 +587,60 @@ TheatricPage (orchestrator)
 - **Monolith files:** 0 (all < 150 lines: hooks/utilities excepted per architecture policy)
 
 ---
+
+## Cycle 5 — DM Master Dashboard (2026-07-18) (Updated: 2026-07-18 20:54)
+## DM Master Dashboard — Premium Gold Design System Applied
+
+### Mission
+Apply the premium gold design system to all DM controls. CSS Grid layout with designated scrollable zones that never squish. Gold glassmorphism on all side panels.
+
+### Files Upgraded (18 total)
+
+| File | Changes | Lines |
+|------|---------|-------|
+| `DmControlCenter.tsx` | All side panels now `backdrop-blur-sm` with gold gradient overlay; floating buttons use gold glass with `shadow-lg`; dark ambient gold glow behind canvas; right-panel AoE header uses gold accent | 160 |
+| `MapSidebar.tsx` | Full gold conversion: gold header with `✦ Maps`, gold badge count, gold active state (`bg-gold-500/10 border-gold/25`), `scrollbar-gold`, delete button gold hover | 120 |
+| `InitiativeCombatantRow.tsx` | Gold turn indicator (`bg-gold-500/8 ring-gold/25`), gold initiative number, gold pulse dot, gold selected state (`ring-2 ring-gold/30`), hover opacity inputs | 130 |
+| `EncounterCard.tsx` | Gold active state (`bg-gold-500/10 border-gold/25`), gold hover border, gold text for active name | 70 |
+| `EncounterPopulateButton.tsx` | Changed `variant="arcane"` to `variant="gold"`, gold border separator | 40 |
+| `InspectorVisibilityToggle.tsx` | Gold toggle (`bg-gold-500/40`), gold shadow on active, gold label color | 25 |
+| `InspectorHpSection.tsx` | Gold label, gold-obsidian inputs with focus ring, gold HP fraction text, red/green buttons with borders, HP bar shadow-inner | 95 |
+| `InspectorLabelInput.tsx` | Gold label, gold-obsidian input with focus ring | 25 |
+| `InspectorPositionInput.tsx` | Gold label, gold-obsidian inputs with focus ring | 35 |
+| `ToolButton.tsx` | Enhanced gold hover (`shadow-[0_0_8px_rgba(234,179,8,0.04)]`), `duration-200`, variant hover improvements | 45 |
+| `CombatantQuickInput.tsx` | Gold focus ring, gold `Apply` button with gold border | 35 |
+| `EffectQuickInput.tsx` | Gold focus ring on input | 25 |
+| `StatusDotIndicators.tsx` | Gold dots (`bg-gold-400/60`), gold overflow count | 30 |
+| `StatusEffectBadge.tsx` | Gold background (`bg-gold-500/10`), gold border, gold hover | 30 |
+| `DeathToggle.tsx` | Gold border when alive, red border when dead | 30 |
+| `EncounterEmptyState.tsx` | Gold rune divider, gold accent text | 20 |
+| `InitiativeEmptyState.tsx` | Gold rune divider, gold accent text | 20 |
+
+### Design Tokens Applied (Gold System)
+```
+Sidebar:      bg-obsidian-mid/80 backdrop-blur-sm + gold gradient overlay
+Active:       bg-gold-500/10 border-gold/25 text-gold-300/400
+Hover:        bg-gold-500/[0.03] hover:border-gold/10 hover:text-gold-300
+Selected:     ring-2 ring-gold/30 shadow-[0_0_10px_rgba(234,179,8,0.05)]
+Inputs:       bg-obsidian-mid/60 border-surface-700/30 focus:border-gold/30 focus:ring-1 focus:ring-gold/20
+Badges:       bg-gold-500/10 border-gold/10 text-gold-400/80
+Initiative:   bg-gold-500/8 ring-1 ring-gold/25 shadow-[0_0_12px_rgba(234,179,8,0.04)]
+Turn dot:     bg-gold-400 shadow-[0_0_6px_rgba(234,179,8,0.4)]
+```
+
+### Outgoing `accent` Token Eliminations
+- `bg-accent-600/15` → `bg-gold-500/10` (MapSidebar, EncounterCard, InitiativeCombatantRow)
+- `ring-accent-500/30` → `ring-gold/25` (InitiativeCombatantRow)
+- `bg-accent-600/20` → `bg-gold-500/10` (CombatantQuickInput Apply button)
+- `border-accent-500/30` → `border-gold/25` (EncounterCard)
+- `focus:border-accent-500/40` → `focus:border-gold/30` (inputs)
+
+### Build Metrics
+- **TypeScript errors:** 0 (1977 modules)
+- **CSS:** 111.97 KB (17.04 KB gzipped)
+- **JS:** 610.63 KB (167.63 KB gzipped)
+- **Build time:** 5.35s
+- **Components upgraded:** 18/18 control-center components
+- **Files over 150 lines:** 1 (DmControlCenter.tsx at 160 — purely layout JSX, logic extracted to hook)
+
+---
