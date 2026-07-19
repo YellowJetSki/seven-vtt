@@ -22,6 +22,7 @@
 
 import { useMemo } from "react";
 import { getAbilityMod, getProficiencyBonus } from "@/lib/mechanics/character-derivations";
+import { getClassByName, getClassHitDie, getCasterType, getSpellcastingAbility, isCaster } from "@/data/srd-classes";
 
 interface DerivedStatsPreviewProps {
   strength: number;
@@ -44,18 +45,6 @@ interface DerivedStatsPreviewProps {
   /** Class name for spellcasting ability detection */
   primaryClass?: string;
 }
-
-const SPELLCASTING_ABILITY: Record<string, "intelligence" | "wisdom" | "charisma"> = {
-  wizard: "intelligence",
-  artificer: "intelligence",
-  cleric: "wisdom",
-  druid: "wisdom",
-  ranger: "wisdom",
-  paladin: "charisma",
-  sorcerer: "charisma",
-  bard: "charisma",
-  warlock: "charisma",
-};
 
 const HIT_DIE_MAX: Record<string, number> = {
   "1d6": 6, "1d8": 8, "1d10": 10, "1d12": 12,
@@ -95,11 +84,14 @@ export default function DerivedStatsPreview({
   const initiative = mods.dexterity;
   const estHp = estimateHp(hitDie, mods.constitution, level);
 
-  // Spellcasting
-  const scAbility = showSpellcasting ? (SPELLCASTING_ABILITY[primaryClass.toLowerCase()] || "intelligence") : null;
+  // Spellcasting — using SRD class data
+  const isCasterClass = showSpellcasting ? isCaster(primaryClass) : false;
+  const scAbilityName = isCasterClass ? getSpellcastingAbility(primaryClass) || "intelligence" : null;
+  const scAbility = scAbilityName ? scAbilityName as "intelligence" | "wisdom" | "charisma" : null;
   const scMod = scAbility ? mods[scAbility] : 0;
-  const spellDC = showSpellcasting && scAbility ? 8 + scMod + pb : 0;
-  const spellATK = showSpellcasting && scAbility ? scMod + pb : 0;
+  const spellDC = scAbility ? 8 + scMod + pb : 0;
+  const spellATK = scAbility ? scMod + pb : 0;
+  const casterType = isCasterClass ? getCasterType(primaryClass) : null;
 
   // Passive Perception
   const passivePerception = 10 + mods.wisdom;
@@ -143,7 +135,7 @@ export default function DerivedStatsPreview({
     },
   ];
 
-  if (showSpellcasting && scAbility && scMod > 0) {
+  if (isCasterClass && scAbility) {
     statEntries.push({
       label: "Spell DC",
       value: spellDC,
@@ -220,6 +212,25 @@ export default function DerivedStatsPreview({
           ))}
         </div>
       </div>
+
+      {/* Caster Info */}
+      {isCasterClass && (
+        <div className="flex items-center gap-2">
+          {casterType && (
+            <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+              casterType === "full" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+              casterType === "half" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" :
+              casterType === "pact" ? "bg-violet-500/10 text-violet-400 border border-violet-500/20" :
+              "bg-surface-700/30 text-surface-400"
+            }`}>
+              {casterType === "full" ? "✦ Full Caster" : casterType === "half" ? "◐ Half Caster" : casterType === "pact" ? "🌀 Pact Magic" : "▸ Third Caster"}
+            </span>
+          )}
+          <span className="text-[8px] text-surface-500">
+            {scAbilityName ? `${scAbilityName.toUpperCase()} spellcasting · DC ${spellDC} · ATK +${spellATK}` : ""}
+          </span>
+        </div>
+      )}
 
       {/* Hit Points Note */}
       <p className="text-[8px] text-surface-600 italic">

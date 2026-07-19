@@ -4186,3 +4186,84 @@ Stat Persistence Layer (lib/mechanics/stat-persistence.ts)
 | Subrace selector renders | ✅ Selects appear for Dwarf, Elf, Gnome, etc. |
 
 ---
+
+## Sprint 7/17 — SRD Class Definition Library & Derived Stats Integration (2026-07-19) (Updated: 2026-07-19 14:26)
+## Sprint 7/17 — SRD Class Definition Library & Derived Stats Integration (Complete)
+**Date:** 2026-07-19
+**Phase:** Character Foundation Phase (Cycle 7 of 17)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Build the complete SRD class definition library with all 14 D&D 5e classes, each with full feature progressions, hit dice, proficiencies, spellcasting data, and multiclass requirements. Integrate this into the Derived Stats Preview so the creation flow shows correct class-specific stats.
+
+### Architecture
+
+#### New Canonical Data (1)
+| File | Size | Contents |
+|------|:----:|----------|
+| `data/srd-classes.ts` | 644 lines | **14 canonical classes** — Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard, Artificer, Blood Hunter. Each with: hit die, save/armor/weapon/tool proficiencies, full feature progression (1-20), spellcasting ability & caster type (full/half/pact/none), skill choices & options, multiclass requirements, source attribution. |
+
+#### Helper Functions Added (7 exports)
+| Function | Purpose |
+|----------|---------|
+| `getClassById(id)` | Lookup class by string ID |
+| `getClassByName(name)` | Case-insensitive name lookup |
+| `getClassNames()` | Returns all 14 class names |
+| `getCasterType(className)` | Returns full/half/pact/none |
+| `getSpellcastingAbility(className)` | Returns INT/WIS/CHA or undefined |
+| `isCaster(className)` | Boolean: does this class cast spells? |
+| `getClassHitDie(className)` | Returns hit die string (1d6-1d12) |
+
+#### Files Modified (1)
+| File | Key Changes |
+|------|-------------|
+| `components/player/DerivedStatsPreview.tsx` | Replaced hardcoded `SPELLCASTING_ABILITY` map with SRD class data lookup. Replaced `HIT_DIE_MAX` fallback with `getClassHitDie()`. Added **Caster Type badge** showing Full Caster (amber), Half Caster (cyan), Pact Magic (violet). Added spellcasting info line showing ability + DC + ATK. |
+
+### Data Flow
+```
+PlayerCreateModal
+├── Class dropdown → 14 SRD classes + homebrew
+├── Selecting class auto-fills hitDie, casterType
+└── DerivedStatsPreview
+    ├── Uses isCaster(className) → shows spell stats
+    ├── Uses getCasterType(className) → shows Full/Half/Pact badge
+    ├── Uses getSpellcastingAbility(className) → shows ability score
+    ├── Uses getClassHitDie(className) → shows correct HD
+    └── Uses getProficiencyBonus(level) → auto PB
+
+SRD_CLASSES[].features
+├── Each feature has name, description, level
+├── Optional shortRest flag for short-rest-recharge features
+├── Optional limitedUse for features with max uses
+└── Can drive UI for class resource trackers
+```
+
+### Class Feature Count per Class
+| Class | Features | Caster Type | HD | Spellcasting |
+|-------|:--------:|:-----------:|:--:|:-----------:|
+| Barbarian | 14 | None | 1d12 | — |
+| Bard | 12 | Full | 1d8 | CHA |
+| Cleric | 13 | Full | 1d8 | WIS |
+| Druid | 10 | Full | 1d8 | WIS |
+| Fighter | 16 | None | 1d10 | — |
+| Monk | 19 | None | 1d8 | — |
+| Paladin | 12 | Half | 1d10 | CHA |
+| Ranger | 13 | Half | 1d10 | WIS |
+| Rogue | 14 | None | 1d8 | — |
+| Sorcerer | 5 | Full | 1d6 | CHA |
+| Warlock | 7 | Pact | 1d8 | CHA |
+| Wizard | 6 | Full | 1d6 | INT |
+| Artificer | 12 | Half | 1d8 | INT |
+| Blood Hunter | 12 | None | 1d10 | — |
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.69s**, 1987 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| SRD class data accessible | ✅ 14 classes imported by DerivedStatsPreview |
+| Caster type detection | ✅ Full caster (Cleric), Half (Paladin), Pact (Warlock), None (Fighter) |
+| Derivation integration | ✅ DerivedStatsPreview uses `isCaster`, `getCasterType`, `getSpellcastingAbility`, `getClassHitDie` from SRD library |
+
+---
