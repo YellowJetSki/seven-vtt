@@ -520,3 +520,70 @@ Body overflow, squished layouts, canvas area collapsing, sidebars without bounda
 - **Monolith files:** 0
 
 ---
+
+## Cycle 4 — Theatric Monitor Display (2026-07-18) (Updated: 2026-07-18 20:51)
+## Theatric Monitor Display — Premium Cinematic Overhaul
+
+### Mission
+Finalize the isolated, player-facing external monitor tab. Zero UI chrome by default — only atmospheric canvas with auto-hide gold HUD.
+
+### Files Created
+| File | Purpose | Lines |
+|------|---------|-------|
+| `TheatricConnectionIndicator.tsx` | Subtle always-visible connection dot (bottom-left) | 30 |
+| `canvasTokens.ts` | Pure token drawing function (split from canvasUtils) | 97 |
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `TheatricPage.tsx` | Added keyboard arrow panning, grid/label toggles, ambient gradient background, instruction hint, touch support, `TheatricConnectionIndicator` component |
+| `TheatricDisplay.tsx` | Added `showGrid` prop propagation, premium gold backdrop |
+| `useTheatricCanvas.ts` | Added grid rendering (gold-tinted dashed), ambient gold particle field (60 particles), cinematic radial background, smooth RAF loop, particle physics |
+| `canvasUtils.ts` | Refactored: removed `drawToken` (moved to canvasTokens.ts), kept vignette/letterbox/grid/particles [(97 lines)] |
+| `TheatricStatusBar.tsx` | Premium gold glassmorphism with backdrop blur, grid toggle (▦ Grid), label toggle (Aa Labels), fullscreen button with SVG icon, gold accent line, animated translate fade |
+| `TheatricWaitingState.tsx` | Cinematic gold loading with expanding glow, spinning gold ring, gold-accented error state, rune dividers, pulse-glow ᚱ rune |
+
+### Theatric Display Architecture (Final)
+
+```
+TheatricPage (orchestrator)
+├── fixed inset-0 container
+│   ├── Ambient gradient background layer
+│   ├── TheatricDisplay (Canvas + useTheatricCanvas hook)
+│   │   ├── Canvas (HiDPI, ResizeObserver, 60fps RAF)
+│   │   ├── Camera transform (pan/zoom/rotation)
+│   │   ├── Map image rendering
+│   │   ├── Gold-tinted grid overlay (hidden by default)
+│   │   ├── Token rendering (shadow, glow, icon, label, HP bar)
+│   │   ├── Gold ambient particle field (60 floating particles)
+│   │   ├── Cinematic vignette overlay
+│   │   └── Letterbox bars (5% top/bottom)
+│   ├── TheatricStatusBar (auto-hide, gold glass, 3s timeout)
+│   │   ├── Map name + connection indicator
+│   │   ├── Grid toggle button
+│   │   ├── Labels toggle button
+│   │   └── Fullscreen button
+│   ├── TheatricConnectionIndicator (permanent bottom-left)
+│   └── Instruction hint (fades after first interaction)
+└── TheatricWaitingState (loading/error, gold cinematic)
+```
+
+### Key Design Decisions
+- **Grid hidden by default** — pure cinematic map; optional toggle via HUD
+- **Keyboard arrows pan** — intuitive for large displays
+- **No DM chrome** — no fog-of-war, no token editor, no sidebar
+- **Auto-hide HUD** — fades after 3s of inactivity, reappears on mouse/touch
+- **Gold ambient particles** — subtle atmospheric depth (60 particles, upward drift)
+- **60fps RAF loop** — smooth rendering on any display
+- **4K HiDPI** — devicePixelRatio-aware canvas scaling
+- **Token HP bars** — color-coded (green > 50%, yellow > 25%, red ≤ 25%)
+
+### Build Metrics
+- **TypeScript errors:** 0 (1977 modules)
+- **CSS size:** 105.92 KB (16.56 KB gzipped)
+- **JS size:** 606.86 KB (167.32 KB gzipped)
+- **Build time:** 5.42s
+- **Theatric components:** 6 (TheatricPage, TheatricDisplay, TheatricStatusBar, TheatricWaitingState, TheatricConnectionIndicator, canvasTokens + useTheatricCanvas + canvasUtils)
+- **Monolith files:** 0 (all < 150 lines: hooks/utilities excepted per architecture policy)
+
+---
