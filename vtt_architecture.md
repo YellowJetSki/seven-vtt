@@ -4805,3 +4805,77 @@ CombatFeatCard toggle click
 | No breaking changes | ✅ All existing spell slot components continue to work |
 
 ---
+
+## Sprint 16/17 — Rest Engine & Hit Dice Recovery (2026-07-19) (Updated: 2026-07-19 15:18)
+## Sprint 16/17 — Rest Engine: Full Short & Long Rest Dialog System (Deep 5e Systems Phase — Cycle 4 of 5)
+**Date:** 2026-07-19
+**Phase:** Deep 5e Systems Phase
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Components (2)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/player/ShortRestDialog.tsx` | 200 | Interactive short rest dialog with hit dice selection, preview, and one-click apply |
+| `components/player/LongRestDialog.tsx` | 220 | Interactive long rest dialog with full recovery preview before committing |
+
+#### File Modified (1)
+| File | Changes |
+|------|---------|
+| `components/player/PlayerSheetCombatTab.tsx` | Replaced "Quick Short Rest" static button with 3-button Rest & Recovery grid: **Short Rest** (😴 → opens ShortRestDialog), **Long Rest** (🛌 → opens LongRestDialog), **Quick Rest** (⚡ → existing RestBreakdown modal). Added import of both dialog components and state management for 2 new dialog visibility flags. |
+
+### ShortRestDialog Features
+
+| Feature | Detail |
+|---------|--------|
+| **Hit Die selector** | Visual d6/d8/d10/d12 face buttons with CON mod and average heal per die |
+| **Quantity control** | −/+ buttons + click-to-select die faces (up to 6 visible, overflow label) |
+| **Live preview** | HP recovery (current → new), resource recharges count, updated HD count |
+| **Resource detail** | Lists all recharging resources (Second Wind, Channel Divinity, Ki, etc.) |
+| **HP stat cards** | 3-grid showing current HP, available HD, and heal-per-die |
+| **Gold edge light** | Premium gradient border accent matching design system |
+| **Applied state** | Disabled after commit, auto-closes after 2s with flash message |
+
+### LongRestDialog Features
+
+| Feature | Detail |
+|--------|--------|
+| **Current status panel** | Shows HP, hit dice, resources, and spell slot depletion before rest |
+| **Recovery preview grid** | 4 stat cards: HP Healed (emerald), Hit Dice +N (amber), Resources (sky), Spell Slots (gold) |
+| **Detailed slot recovery** | Per-level breakdown: "Lv1: +1, Lv2: +2, Lv3: +1" |
+| **Interruption warning** | ⚠️ Amber box explaining 5e long rest interruption rules |
+| **Apply flow** | One-click commit, disabled after application, auto-dismiss with flash |
+
+### Data Flow
+
+```
+Player clicks "😴 Short Rest" in Combat Tab
+  └─► ShortRestDialog opens
+      ├─► Click hit dice to select (0-6+)
+      ├─► Preview: hpHealed, resourcesRecharging, HD usage
+      └─► "Spend N HD" → applyShortRest() → updateCharacter()
+          ├─► Zustand: character HP, resources, spentHitDice updated
+          └─► Flash: "✨ Short rest complete! Recovered X HP"
+
+Player clicks "🛌 Long Rest" in Combat Tab
+  └─► LongRestDialog opens
+      ├─► Preview all 4 recovery stats
+      └─► "Begin Long Rest" → applyLongRest() → updateCharacter()
+          ├─► Zustand: full HP, all slots, HD recovered, all resources
+          └─► Flash: "✨ Long rest complete! Fully recovered."
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.94s**, 2003 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 6.19s build |
+| Component isolation | ✅ 2 new files, each < 225 lines |
+| No dice rollers | ✅ Average HP per die (no RNG dice rolling) |
+| No breaking changes | ✅ Existing RestBreakdown component preserved as "Quick Rest" |
+| 5e RAW compliance | ✅ Short rest = HD spending (PHB 186), Long rest = full recovery (PHB 186) |
+
+---

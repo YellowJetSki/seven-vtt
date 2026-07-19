@@ -32,6 +32,8 @@ import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
 import RestBreakdown from "./RestBreakdown";
+import ShortRestDialog from "./ShortRestDialog";
+import LongRestDialog from "./LongRestDialog";
 import ConditionManager from "./ConditionManager";
 interface AttackEntry {
   name: string;
@@ -135,6 +137,8 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const [hpQuickMode, setHpQuickMode] = useState<"damage" | "heal">("damage");
   const [showFeatsManager, setShowFeatsManager] = useState(false);
   const [showRestSheet, setShowRestSheet] = useState(false);
+  const [showShortRestDialog, setShowShortRestDialog] = useState(false);
+  const [showLongRestDialog, setShowLongRestDialog] = useState(false);
   const [showConditionManager, setShowConditionManager] = useState(false);
 
   // ── Combat status ──
@@ -495,26 +499,24 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         </div>
 
         {/* Rest & Recovery */}
-        <div className="grid grid-cols-2 gap-1.5 mt-2">
+        <div className="grid grid-cols-3 gap-1.5 mt-2">
           <button
-            onClick={() => setShowRestSheet(true)}
-            className="py-2.5 rounded-xl bg-gold-500/8 border border-gold/15 text-gold-400 text-xs font-semibold active:scale-95 transition-all duration-150 hover:bg-gold-500/12"
+            onClick={() => setShowShortRestDialog(true)}
+            className="py-2 rounded-xl bg-gold-500/8 border border-gold/15 text-gold-400 text-[10px] font-bold active:scale-95 transition-all duration-150 hover:bg-gold-500/12"
           >
-            🛏 Rest &amp; Recovery
+            😴 Short Rest
           </button>
           <button
-            onClick={() => {
-              const halfMax = Math.floor(c.hitPoints.max / 2);
-              onHpChange(halfMax);
-              for (const res of resources) {
-                if (res.recharge === "short_rest") {
-                  handleResourceChange(res.name, res.max - res.current);
-                }
-              }
-            }}
-            className="py-2.5 rounded-xl bg-amber-500/8 border border-amber-500/15 text-amber-400 text-xs font-semibold active:scale-95 transition-all duration-150 hover:bg-amber-500/12"
+            onClick={() => setShowLongRestDialog(true)}
+            className="py-2 rounded-xl bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 text-[10px] font-bold active:scale-95 transition-all duration-150 hover:bg-emerald-500/12"
           >
-            ⚡ Quick Short Rest
+            🛌 Long Rest
+          </button>
+          <button
+            onClick={() => setShowRestSheet(true)}
+            className="py-2 rounded-xl bg-amber-500/8 border border-amber-500/15 text-amber-400 text-[10px] font-bold active:scale-95 transition-all duration-150 hover:bg-amber-500/12"
+          >
+            ⚡ Quick Rest
           </button>
         </div>
       </div>
@@ -545,6 +547,22 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
       <div className="pt-3 border-t border-white/[0.04]">
         <PlayerSheetCharacterStats character={c} />
       </div>
+
+      {/* ── SHORT REST DIALOG ── */}
+      {showShortRestDialog && (
+        <ShortRestDialog
+          character={character}
+          onClose={() => setShowShortRestDialog(false)}
+        />
+      )}
+
+      {/* ── LONG REST DIALOG ── */}
+      {showLongRestDialog && (
+        <LongRestDialog
+          character={character}
+          onClose={() => setShowLongRestDialog(false)}
+        />
+      )}
 
       {/* ── REST BREAKDOWN MODAL ── */}
       {showRestSheet && (
