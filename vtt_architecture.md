@@ -4579,3 +4579,73 @@ CombatFeatCard toggle click
 | Feat toggle pipeline | ✅ `handleFeatToggle` → `updateCharacter` → re-injection → re-render |
 
 ---
+
+## Sprint 13/17 — Rest & Recovery Engine (2026-07-19) (Updated: 2026-07-19 15:04)
+## Sprint 13/17 — Rest & Recovery Engine (Deep 5e Systems Phase — Cycle 1 of 5)
+**Date:** 2026-07-19
+**Phase:** Deep 5e Systems Phase
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Files (2)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/mechanics/rest-engine.ts` | 320 | Pure 5e rest functions: Short Rest, Long Rest, hit dice, resource recharge, slot recovery |
+| `components/player/RestBreakdown.tsx` | 390 | Interactive bottom-sheet modal with hit dice selector, recovery preview, long rest confirmation |
+
+#### Files Modified (3)
+| File | Key Changes |
+|------|-------------|
+| `types/character.ts` | Added `spentHitDice?: number` field for tracking HD usage |
+| `PlayerSheetCombatTab.tsx` | Added `showRestSheet` state, Rest & Recovery button, RestBreakdown modal import/render. Kept Quick Short Rest as instant fallback. |
+| `PlayerSheetHpSection.tsx` | Short Rest button preserved (for backward compat) |
+
+### Rest Engine API
+
+#### Core Functions
+| Function | Returns | Purpose |
+|----------|---------|---------|
+| `computeHitDiceTotal(c)` | `number` | Total HD from level |
+| `computeAvailableHitDice(c)` | `number` | Total - spent |
+| `computeHitDieType(c)` | `6\|8\|10\|12` | d6/d8/d10/d12 from class |
+| `computeShortRestSummary(c, opts)` | `RestSummary` | Preview before committing |
+| `applyShortRest(c, opts, slots?)` | `Partial<PlayerCharacter>` | Apply short rest (HP, resources, slots) |
+| `computeLongRestSummary(c)` | `LongRestSummary` | Preview before committing |
+| `applyLongRest(c)` | `Partial<PlayerCharacter>` | Apply long rest (full HP, slots, HD recovery) |
+
+#### RestBreakdown Component
+| Feature | Detail |
+|---------|--------|
+| **Mode toggle** | Short Rest / Long Rest with gold/emerald color coding |
+| **Hit dice selector** | +/- buttons + Max, live HP preview |
+| **HD math preview** | Shows avg heal per die, CON mod, die type |
+| **Recovery list** | Resources recharged, HP healed, slots restored |
+| **Long Rest confirmation** | Prevents accidental full rest — requires confirm click |
+| **5e rules text** | Inline info cards with RAW rest rules |
+| **Temp HP cleared** | Shows cleared status when THP > 0 |
+| **Disabled states** | Buttons disabled when no HD or resources to restore |
+
+### 5e Rest Rules Implemented
+| Rule | Short Rest | Long Rest |
+|------|:----------:|:---------:|
+| Heal via hit dice | ✅ (spend dice) | ✅ (full HP) |
+| Hit die recovery | ❌ | ✅ (half level, min 1) |
+| Short-rest resources | ✅ (recharge all) | ✅ (recharge all) |
+| Long-rest resources | ❌ | ✅ (recharge all) |
+| Spell slots | ❌ (Arcane Recovery only) | ✅ (all slots) |
+| Temp HP | ✅ (cleared) | ✅ (cleared) |
+| Spent HD tracking | ✅ (+spent) | ✅ (-recovered) |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.80s**, 1999 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 5.73s build |
+| Component isolation | ✅ `RestBreakdown` = 390 lines, `rest-engine` = 320 lines |
+| No dice rollers | ✅ Pure computation — no RNG, uses average HD healing |
+| New type field | ✅ `spentHitDice` added to `PlayerCharacter` interface |
+
+---

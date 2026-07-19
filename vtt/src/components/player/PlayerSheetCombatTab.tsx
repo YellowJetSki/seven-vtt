@@ -31,6 +31,7 @@ import SpellSlotStatus from "./SpellSlotStatus";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
+import RestBreakdown from "./RestBreakdown";
 interface AttackEntry {
   name: string;
   atk: string;
@@ -132,6 +133,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const [hpInput, setHpInput] = useState("");
   const [hpQuickMode, setHpQuickMode] = useState<"damage" | "heal">("damage");
   const [showFeatsManager, setShowFeatsManager] = useState(false);
+  const [showRestSheet, setShowRestSheet] = useState(false);
 
   // ── Combat status ──
   const hpRatio = c.hitPoints.max > 0 ? c.hitPoints.current / c.hitPoints.max : 0;
@@ -490,21 +492,29 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
           </div>
         </div>
 
-        {/* Short Rest */}
-        <button
-          onClick={() => {
-            const halfMax = Math.floor(c.hitPoints.max / 2);
-            onHpChange(halfMax);
-            for (const res of resources) {
-              if (res.recharge === "short_rest") {
-                handleResourceChange(res.name, res.max - res.current);
+        {/* Rest & Recovery */}
+        <div className="grid grid-cols-2 gap-1.5 mt-2">
+          <button
+            onClick={() => setShowRestSheet(true)}
+            className="py-2.5 rounded-xl bg-gold-500/8 border border-gold/15 text-gold-400 text-xs font-semibold active:scale-95 transition-all duration-150 hover:bg-gold-500/12"
+          >
+            🛏 Rest &amp; Recovery
+          </button>
+          <button
+            onClick={() => {
+              const halfMax = Math.floor(c.hitPoints.max / 2);
+              onHpChange(halfMax);
+              for (const res of resources) {
+                if (res.recharge === "short_rest") {
+                  handleResourceChange(res.name, res.max - res.current);
+                }
               }
-            }
-          }}
-          className="w-full mt-2 py-2.5 rounded-xl bg-gold-500/8 border border-gold/15 text-gold-400 text-xs font-semibold active:scale-95 transition-all duration-150 hover:bg-gold-500/12"
-        >
-          🛏 Short Rest (heal ½ max HP + recharge short-rest resources)
-        </button>
+            }}
+            className="py-2.5 rounded-xl bg-amber-500/8 border border-amber-500/15 text-amber-400 text-xs font-semibold active:scale-95 transition-all duration-150 hover:bg-amber-500/12"
+          >
+            ⚡ Quick Short Rest
+          </button>
+        </div>
       </div>
 
       {/* ── CONDITIONS ── */}
@@ -514,6 +524,15 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
       <div className="pt-3 border-t border-white/[0.04]">
         <PlayerSheetCharacterStats character={c} />
       </div>
+
+      {/* ── REST BREAKDOWN MODAL ── */}
+      {showRestSheet && (
+        <RestBreakdown
+          character={character}
+          onClose={() => setShowRestSheet(false)}
+          initialMode="short"
+        />
+      )}
     </div>
   );
 }

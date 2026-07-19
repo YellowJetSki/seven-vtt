@@ -73,6 +73,8 @@ export interface PlayerCharacter {
   activeFeats: ActiveFeatRef[];
   spellSlots?: SpellSlots;
   resources?: ClassResource[];
+  /** Number of hit dice spent since last long rest */
+  spentHitDice?: number;
   tempBuffs?: TempBuff[];
   createdAt: number;
   updatedAt: number;
