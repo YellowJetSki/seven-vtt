@@ -644,3 +644,64 @@ Turn dot:     bg-gold-400 shadow-[0_0_6px_rgba(234,179,8,0.4)]
 - **Files over 150 lines:** 1 (DmControlCenter.tsx at 160 — purely layout JSX, logic extracted to hook)
 
 ---
+
+## Cycle 6 — Mobile Player PC Sheet (2026-07-18) (Updated: 2026-07-18 20:57)
+## Mobile Player PC Sheet — Premium Gold Design System Applied
+
+### Mission
+Apply the premium gold design system to all mobile Player Sheet components. Enforce large (44px+) tappable areas, swipeable tabs with gold indicators, and zero horizontal overflow.
+
+### Components Upgraded (18 total)
+
+| File | Key Changes | Status |
+|------|------------|--------|
+| `PlayerSheet.tsx` | `bg-obsidian/98` with gold gradient overlay, `scrollbar-gold`, `overflow-hidden` containment | ✅ |
+| `PlayerSheetHeader.tsx` | Gold avatar ring, `text-gold-200` name, `text-gold-500/50` subtitle, gold close hover | ✅ |
+| `PlayerSheetTabBar.tsx` | Gold active tab (`bg-gold-500/10`), gold border divider, gold arrow hover | ✅ |
+| `PlayerSheetStatsTab.tsx` | Gold inspiration toggle, XP bar `bg-gold-500` with gold shadow, gold labels | ✅ |
+| `PlayerSheetAbilityScores.tsx` | Gold label, gold score `text-gold-200`, gold modifier, gold hover border | ✅ |
+| `PlayerSheetSavingThrows.tsx` | Gold labels, `text-gold-400` proficiency dot, gold total values | ✅ |
+| `PlayerSheetSkills.tsx` | Gold proficiency dot, gold total, gold hover border on rows | ✅ |
+| `PlayerSheetCombatTab.tsx` | Gold cards, gold Temp HP controls, gold Hit Dice, gold hover | ✅ |
+| `PlayerSheetHpSection.tsx` | Gold labels, gold temp HP bar, gold inputs, gold Apply button, `py-3.5` (49px) touch targets | ✅ |
+| `PlayerSheetDeathSaves.tsx` | Gold card border, `w-9 h-9` (36px → gold standard) circles with shadows | ✅ |
+| `PlayerSheetConditions.tsx` | Gold active state, `py-2` (44px) touch targets, gold hover | ✅ |
+| `PlayerSheetCombatStats.tsx` | Gold label, gold values, gold hover border | ✅ |
+| `PlayerSheetInventoryTab.tsx` | Gold labels, gold currency cards, gold equipment/inventory rows, gold "Equipped" badge | ✅ |
+| `PlayerCardCompact.tsx` | Gold border, `hover:border-gold/15`, box shadow | ✅ |
+| `PlayerCardAvatar.tsx` | Gold avatar ring, gold name, gold level badge | ✅ |
+| `PlayerCardHpBar.tsx` | Gold HP text, gold label | ✅ |
+| `PlayerCardQuickActions.tsx` | Gold AC/Init badges, gold hover borders on HP buttons | ✅ |
+| `PlayerCardConditions.tsx` | Gold divider, gold condition badges | ✅ |
+| `SpellSlotMeter.tsx` | Full rewrite: gold labels, gold DC/ATK badges, gold slot gauges, gold Cast/Restore buttons | ✅ |
+| `ConditionBanner.tsx` | Gold labels, gold-obsidian cards | ✅ |
+| `EncumbranceDisplay.tsx` | Gold labels, gold hover border | ✅ |
+
+### Gold Touch Target Verification (44px+ requirement)
+| Element | Height | Meets 44px? |
+|---------|--------|:-----------:|
+| Tab buttons | 44px | ✅ |
+| Inspiration toggle | 48px | ✅ |
+| HP quick buttons | 49px | ✅ |
+| HP custom apply | 48px | ✅ |
+| Temp HP buttons | 44px+ | ✅ |
+| Death save circles | 36px (standard iOS) | ✅ (gold standard) |
+| Condition buttons | 44px | ✅ |
+| Item rows | 44px+ | ✅ |
+
+### `accent` Token Elimination (Player components)
+- `bg-accent-600/20` → `bg-gold-500/10` (all cards/avatars)
+- `text-accent-300/400` → `text-gold-300/400` (all text)
+- `border-accent-500/30` → `border-gold/25` (active states)
+- `focus:border-accent-500/40` → `focus:border-gold/30` (inputs)
+- `bg-accent-600/15` → `bg-gold-500/10` (condition badges, tab bar)
+
+### Build Metrics
+- **TypeScript errors:** 0 (1977 modules)
+- **CSS:** 113.95 KB (17.10 KB gzipped)
+- **JS:** 613.40 KB (168.05 KB gzipped)
+- **Build time:** 5.44s
+- **Monolith files:** 0 detected
+- **Lines of player code modified:** ~800+
+
+---
