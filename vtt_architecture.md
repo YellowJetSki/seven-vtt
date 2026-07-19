@@ -3340,3 +3340,75 @@ Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
 **Next:** Sprint 21/25 — Remaining untouched sections: `PlayerSheetHeader.tsx`, `SpellSlotMeter.tsx`, `EncumbranceDisplay.tsx`, `ConditionBanner.tsx`, `PlayerCardCompact.tsx`
 
 ---
+
+## Sprint 21/25 — Player Mechanics Phase: Header & Encumbrance Upgrade (Updated: 2026-07-19 10:03)
+## Sprint 21/25 — Header & Encumbrance Upgrade (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 6 of 10**
+**Targets:** `PlayerSheetHeader.tsx` (80 lines → complete rewrite) + `EncumbranceDisplay.tsx` (purple tokens → gold system)
+
+### PlayerSheetHeader.tsx — Premium Immersive Header
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Portrait banner** | Basic 144-176px image + gradient | 160-192px hero image with multi-layer gradient + hover scale (105%) + error fallback |
+| **Placeholder mode** | Static rune initial | Animated gradient `bg-gradient-to-br` with shimmer sweep (`animate-[shimmer_3s_ease-in-out_infinite]`) + pulsing initial ring |
+| **HP status pill** | ❌ None | ✅ Color-coded pill: Healthy (emerald) / Scratched (yellow) / Injured (amber) / Critical (rose) / Down (red) |
+| **Conditions badge** | ❌ None | ✅ Count badge with tap-to-expand — shows active condition icons/colors in floating popover |
+| **Level badge** | ❌ None | ✅ Gold Lv. badge on desktop (hidden on mobile) |
+| **Stat summary strip** | ❌ None | ✅ **NEW persistent strip below header:** AC (amber), HP (color-coded, with max), Initiative (gold), Speed (surface), XP (right side) |
+| **Close button** | Standard | Enhanced with gold hover/backdrop-blur glass effect |
+| **Color tokens** | Gold mixed | All gold/amber/emerald/rose — zero legacy purple |
+| **Animation** | Static | Shimmer placeholder, staggered fade-in, hover scale on portrait |
+
+### Header Layout (No Image Mode)
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  [✨A]  Player Name [Healthy]         [Lv.5] [2 cond.] [✕]   │
+│         Human · Paladin 5 · Oath of Devotion                     │
+├──────────────────────────────────────────────────────────────────┤
+│  AC 20 │ HP 44/44 │ Init +2 │ Speed 30ft              XP 6,500  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Header Layout (Image Banner Mode)
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳ Character Portrait Image ╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳  │
+│  ╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳╳  │
+│  ┌───────────────────────────────────────── [2 cond.] [✕] ─┐  │
+│  │  Player Name [Healthy]                                    │  │
+│  │  Human · Paladin 5 · Oath of Devotion                     │  │
+│  └──────────────────────────────────────────────────────────┘  │
+├──────────────────────────────────────────────────────────────────┤
+│  AC 20 │ HP 44/44 │ Init +2 │ Speed 30ft              XP 6,500  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### EncumbranceDisplay.tsx — Premium Overhaul
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Color tokens** | Purple `rogue/mage/warrior` | ✅ Gold/amber/emerald/rose gradient system with `LEVEL_STYLES` map |
+| **Progress bar** | 8px flat bar with `bg-*` | ✅ 12px premium bar with gradient `linear-gradient(90deg, ...)`, marker lines at 33/66/100%, center percentage label |
+| **Weight display** | Single row text | ✅ 2-column grid (Load + Capacity) with gold/amber numeric styling |
+| **Speed penalty** | Small text | ✅ Full alert row with rose border, running icon, speed difference |
+| **Breakdown** | Native `<details>` tag | ✅ Custom toggle button with chevron animation + remaining capacity display |
+| **Item count** | ❌ None | ✅ Shows total item count next to header |
+| **Hover glow** | Basic | ✅ Shadow ring matching encumbrance level (emerald/amber/rose/red) |
+| **Animations** | None | ✅ 500ms ease-out bar transition, slide-in breakdown |
+
+### Build Metrics
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **9.22s**, 1,972 modules |
+| Vercel Deploy | ✅ **6.00s build** → arkla.vercel.app |
+| Purple tokens eliminated | ✅ `rogue-*`, `mage-*`, `warrior-*` completely purged from both files |
+| Mobile touch targets | ✅ All interactive elements ≥ 44px |
+
+### Player Mechanics Phase — Cycle 6 of 10 Complete
+
+**Next:** Sprint 22/25 — Remaining untouched sections: `SpellSlotMeter.tsx`, `ConditionBanner.tsx`, `PlayerCardCompact.tsx`
+
+---
