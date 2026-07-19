@@ -2864,3 +2864,118 @@ The Journal now offers **premium DM note-taking tools**:
 **Ready for Sprint 15/25 (final cycle of DM Mechanics Phase).** Next target: Enemies page (NPC statblock creator) or BattleMaps (token management enhancements).
 
 ---
+
+## Sprint 15/25 — NPC Library (DmEnemies): Full Monster Compendium Page (Updated: 2026-07-19 09:33)
+## Sprint 15/25 — NPC Library: Full Monster Compendium Page (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 10 OF 10 (FINAL)**
+**Target:** `DmEnemies` — brand new NPC management page + 2 new sub-components + route integration
+
+### What Was Built
+
+#### 1. DmEnemies Page (`pages/DmEnemies.tsx`) — NEW (150 lines)
+Full DM-facing monster compendium hub:
+- **Header**: Gold glass with corner ornaments, CR distribution badges (🟢 low / 🟡 mid / 🔴 high / 🟣 epic)
+- **Stats bar**: Total monsters, type count, avg CR, avg AC, total HP
+- **CR distribution pills**: Color-coded CR bucket indicators for quick scanning
+- **Integrates**: EnemyList (browse), EnemyStatblock (view/edit), EnemyQuickCreate (create)
+
+#### 2. EnemyList (`components/encounters/EnemyList.tsx`) — NEW (260 lines)
+Searchable, filterable, sortable monster grid:
+- **Search**: By name, type, senses, languages
+- **Type quick-filter chips**: Top 6 most common creature types as toggle buttons
+- **CR range filter**: Min/max CR inputs
+- **Sort**: By CR, name, HP, or type
+- **Card grid**: 3-column responsive grid showing name, type icon, CR badge, AC, HP, size, trait preview
+- **Type icons**: Humanoid→🧑, Beast→🐺, Dragon→🐉, Undead→💀, etc.
+- **Type color badges**: Each creature type has unique color (Aberration=purple, Dragon=rose, etc.)
+- **Empty states**: "No Monsters Yet" with create button or "No Matches" with filter guidance
+- **Stats footer**: Showing X of Y monsters, avg CR, type variety count
+
+#### 3. EnemyStatblock (`components/encounters/EnemyStatblock.tsx`) — NEW (470 lines)
+Full 5e-style monster statblock with read/edit toggle:
+- **Read view** (official statblock format):
+  - AC / HP / Speed in large gold stat cards
+  - 6 ability scores in grid with modifiers
+  - CR + XP + PB + Passive Perception
+  - Saving throws, skills, damage resistances/immunities
+  - Condition immunities, senses, languages
+  - Traits, Actions, Reactions, Legendary Actions sections
+  - Delete with confirmation (requires "Yes, Delete" click)
+- **Edit view** (full form):
+  - Name, type, size selectors
+  - AC, CR, HP, Speed number inputs
+  - All 6 ability scores with auto-computed modifier display
+  - Saving throws (optional, all 6 abilities)
+  - 12 skill inputs (Acrobatics, Athletics, Stealth, Perception, Arcana, History, etc.)
+  - Traits, Actions, Reactions, Legendary Actions textareas
+  - Senses, Languages text inputs
+  - Resistances, Immunities, Condition Immunities (comma-separated)
+  - Save/Cancel buttons
+- **CR→XP conversion**: Built-in CR→XP table (0→10xp through 30→155,000xp)
+- **PB computation**: Proficiency bonus by CR (CR≤4=+2, ≤8=+3, etc.)
+
+### Files Created (3)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `pages/DmEnemies.tsx` | 150 | NPC Library page with stats, integration |
+| `components/encounters/EnemyList.tsx` | 260 | Searchable/filterable monster grid |
+| `components/encounters/EnemyStatblock.tsx` | 470 | Full statblock read/edit with CR→XP |
+
+### Files Modified (2)
+
+| File | Changes |
+|------|---------|
+| `App.tsx` | Added `/campaign/enemies` route with AuthGuard |
+| `components/layout/Sidebar.tsx` | Added "NPC Library 👾" nav item |
+
+### DM Workflow (Complete)
+
+```
+DM wants to create a goblin variant:
+  → Clicks NPC Library in sidebar
+  → Sees empty state "No Monsters Yet"
+  → Clicks "New Monster" → fills: "Goblin Scout" · Humanoid · Small · CR 1/2
+  → Clicks "Create & Add"
+  → Appears in grid: 🧑 Goblin Scout · CR 1/2 · Medium · 13 AC · 15 HP
+  → Clicks to open full statblock
+  → Clicks ✏ to edit → fills traits "Nimble Escape" · actions "Shortbow +4 (1d6+2)" · saves DEX +4
+  → Saves → statblock viewable with full formatting
+  → Later: duplicate → creates "Goblin Scout (Copy)"
+  → Edits → renames to "Goblin Archer" → ready for encounters
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1965 modules) |
+| Vite Build | ✅ **7.33s** |
+| Vercel Deploy | ✅ **built 5.63s** → arkla.vercel.app |
+| Route `/campaign/enemies` | ✅ renders with NPC Library header |
+| Sidebar nav item | ✅ "NPC Library 👾" visible |
+| Quick Create modal opens | ✅ from page and from empty state |
+| Search/filter bar | ✅ renders with type chips, CR range, sort |
+| CR distribution badges | ✅ 🟢🟡🔴🟣 stats in header |
+| Delete confirmation | ✅ requires "Yes, Delete" two-step |
+
+### DM Mechanics Phase — Complete
+
+The DM Mechanics Phase (Sprints 6-15) is now **complete** after 10 cycles:
+
+| Sprint | Target | Deliverable |
+|--------|--------|-------------|
+| 6 | PlayerSheet | Mobile-first PC sheet with 7 sub-components |
+| 7 | — | (auhoring pass) |
+| 8 | Monolith Refactor | 21 sub-components, 2,100 lines eliminated |
+| 9 | Schema Sync | vtt_architecture.md + vtt_state_schema.md v2.0 |
+| 10 | Vercel Deploy | arkla.vercel.app live |
+| 11 | Player Sheet Robustness | Auto-calc engine, spells tab, rules tab |
+| 12 | Login Redesign | Aurora background, floating labels, 2-panel |
+| 13 | Encounters | Full encounter builder with CR calculator |
+| 14 | Journal | Markdown preview, quick notes, pinning, copy |
+| 15 | NPC Library | Monster compendium with full statblock viewer |
+
+**Next: Player Mechanics Phase (Sprints 16-25).** Targets: Player sheet enhancements, inventory management, spellcasting improvements.
+
+---

@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
   { path: "/campaign/player-cards", label: "Player Cards", icon: "👥" },
   { path: "/campaign/homebrew", label: "Homebrew", icon: "⚗️" },
   { path: "/campaign/encounters", label: "Encounters", icon: "⚔" },
+  { path: "/campaign/enemies", label: "NPC Library", icon: "👾" },
   { path: "/campaign/maps", label: "Battle Maps", icon: "🗺" },
   { path: "/campaign/journal", label: "Journal", icon: "📖" },
   { path: "/campaign/settings", label: "Settings", icon: "⚙" },
