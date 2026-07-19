@@ -829,3 +829,20 @@ Fully integrated the Gold/Amber fantasy design system across the ENTIRE applicat
 - Total files modified: **20+** (9 pages, 5 CSS/component files, 6 sub-components)
 
 ---
+
+## Cycle 12 — Complete Login Redesign (Premium Professional) (Updated: 2026-07-18 21:16)
+## Cycle 12 — Complete Login Redesign (Premium Professional)
+**Date:** 2026-07-18
+
+### Mission
+Complete redesign of the login experience to match premium VTT standards (Foundry, Roll20, D&D Beyond). Single unified form, two-panel layout, animated aurora background, floating label inputs, smooth transitions.
+
+### Design Decisions
+1. **Single unified form** — No multi-step role selection. DM login directly with credentials. Player mode available via a toggle.
+2. **Two-panel layout** (desktop) — Left: Brand hero panel with ᚱ logo, campaign name, atmospheric art. Right: Login form card.
+3. **Mobile** — Single column stack: brand on top, form below.
+4. **Animated aurora background** — CSS-only animated gradient waves for premium feel without JS overhead.
+5. **Floating label inputs** — Labels animate up on focus/input. Icon prefixes for username and password.
+6. **Smooth staggered animations** — Elements fade in sequentially with `animation-delay`.
+7. **Credentials**: MikeJello / Jello1 works for DM login.
+---

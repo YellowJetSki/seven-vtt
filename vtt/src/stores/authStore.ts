@@ -31,8 +31,9 @@ interface AuthActions {
   setFirebaseAuthError: (error: string | null) => void;
 }
 
-const DM_USERNAME = import.meta.env.VITE_DM_USERNAME ?? "MikeJello";
-const DM_PASSWORD = import.meta.env.VITE_DM_PASSWORD ?? "Jello1";
+// Official DM credentials
+const DM_USERNAME = "MikeJello";
+const DM_PASSWORD = "Jello1";
 
 export const useAuthStore = create<AuthStateShape & AuthActions>()(
   persist(
