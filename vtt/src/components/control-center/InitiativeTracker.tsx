@@ -5,15 +5,21 @@
  * inline HP/condition editing, and quick damage/heal controls.
  * Composed of InitiativeHeader, InitiativeCombatantRow, and InitiativeEmptyState.
  *
- * All changes instantly reflect on the Theatric Display via shared Zustand store.
+ * Refactored Cycle 2: All mutations route through useCombatMutations hooks,
+ * which write to BOTH Zustand (instant) and Firestore (real-time sync).
+ * This ensures cross-device turn-by-turn consistency.
  */
 
 import { useState, useRef, useCallback } from "react";
-import { useCombatStore } from "@/stores/combatStore";
+import type { CombatEncounter } from "@/types";
+import {
+  useCombatHpMutations,
+  useCombatEffectMutations,
+  useCombatEncounterMutations,
+} from "@/hooks/useCombatMutations";
 import InitiativeHeader from "./InitiativeHeader";
 import InitiativeCombatantRow from "./InitiativeCombatantRow";
 import InitiativeEmptyState from "./InitiativeEmptyState";
-import type { CombatEncounter } from "@/types";
 
 interface InitiativeTrackerProps {
   encounter: CombatEncounter;
@@ -26,12 +32,10 @@ export default function InitiativeTracker({
   onSelectCombatant,
   selectedCombatantId,
 }: InitiativeTrackerProps) {
-  const damageCombatant = useCombatStore((s) => s.damageCombatant);
-  const healCombatant = useCombatStore((s) => s.healCombatant);
-  const toggleDead = useCombatStore((s) => s.toggleDead);
-  const addStatusEffect = useCombatStore((s) => s.addStatusEffect);
-  const removeStatusEffect = useCombatStore((s) => s.removeStatusEffect);
-  const reorderCombatants = useCombatStore((s) => s.reorderCombatants);
+  // Centralized mutation hooks — writes to Zustand + Firestore
+  const { damageCombatant, healCombatant } = useCombatHpMutations();
+  const { addStatusEffect, removeStatusEffect, toggleDead } = useCombatEffectMutations();
+  const { reorderCombatants } = useCombatEncounterMutations();
 
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const dragOverIdx = useRef<number | null>(null);

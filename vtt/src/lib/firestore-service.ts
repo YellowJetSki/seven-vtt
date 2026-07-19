@@ -12,3 +12,8 @@ export {
   getJournal, setJournalEntry,
   clearSubcollection,
 } from "./firestore/entity-service";
+export {
+  getActiveEncounter, setActiveEncounter, deleteActiveEncounter,
+  listenActiveEncounter,
+  addLogEntry, getRecentLogEntries, listenCombatLog, clearCombatLog,
+} from "./firestore/combat-service";

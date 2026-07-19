@@ -1244,3 +1244,63 @@ User taps "−5 HP" ──► PlayerSheetPersistentStats
 - **Firestore writes:** All mutation paths tested (HP ±1/±5/±10, temp HP set/clear, death saves, XP add, spell cast/restore, inspiration toggle)
 
 ---
+
+## Cycle 12 — DM Screen Real-Time Combat Sync (Cycle 2 of 3) (Updated: 2026-07-18 22:50)
+## Cycle 12 (2026-07-18): DM Screen Real-Time Combat Sync (Cycle 2 of 3)
+
+### Summary
+Built a complete real-time combat synchronization layer for the DM Screen. All combat state — initiative tracker, monster HP, status conditions, turn flow — now syncs directly to a shared Firestore combat collection for instantaneous cross-device updates.
+
+### New Files Created
+| File | Purpose | Lines |
+|------|---------|-------|
+| `src/lib/firestore/combat-service.ts` | Firestore CRUD + real-time listeners for active combat encounter (`campaigns/{id}/combat/active`) and combat log (`campaigns/{id}/combat/log/{logId}`) | 150 |
+| `src/hooks/useFirestoreCombatSync.ts` | Subscribes to Firestore `onSnapshot` for active combat encounter, merges into combatStore | 62 |
+| `src/hooks/useCombatMutations.ts` | **Centralized combat mutation engine** — all combat mutations (damage, heal, status effects, turn flow, encounter CRUD) write to BOTH Zustand + Firestore | 340 |
+
+### Files Refactored
+| File | Key Changes |
+|------|-------------|
+| `src/lib/firestore-service.ts` | Exported combat service functions (getActiveEncounter, setActiveEncounter, listenActiveEncounter, addLogEntry, etc.) |
+| `src/App.tsx` | Mounted `useFirestoreCombatSync()` alongside `useFirestoreSync()` in the `FirestoreSyncGate` component |
+| `src/components/control-center/InitiativeTracker.tsx` | Refactored to use centralized `useCombatHpMutations`, `useCombatEffectMutations`, `useCombatEncounterMutations` instead of direct combatStore calls |
+| `src/components/control-center/EncounterPanel.tsx` | Refactored to use `useCombatEncounterMutations` for encounter creation and combatant population |
+
+### Architecture
+```
+Firestore Combat ──(onSnapshot)──► useFirestoreCombatSync ──(setEncounter)──► combatStore
+
+DM clicks "Apply 14 damage"
+  └─► InitiativeCombatantRow
+      └─► useCombatHpMutations().damageCombatant(id, 14)
+          ├─► Zustand: combatStore.setEncounter(updatedEncounter)  (instant UI)
+          └─► Firestore: setActiveEncounter(updatedEncounter)      (async, other tabs sync)
+
+Other tabs pick up change via onSnapshot ◄── Firestore
+```
+
+### Firestore Document Structure
+```
+campaigns/{campaignId}/
+├── combat/
+│   ├── active (single document: full CombatEncounter)
+│   │   ├── id, name, round, currentCombatantIndex, phase
+│   │   ├── combatants[] (sorted by initiative)
+│   │   │   └── { id, name, type, initiative, ac, hitPoints, statusEffects[], isDead, ... }
+│   │   └── startedAt, completedAt, isPaused, ...
+│   └── log/{logId} (subcollection for each action)
+│       └── { type, actorId, actorName, value?, timestamp, ... }
+```
+
+### Key Design Decisions
+- **writeCombat helper:** Uses a `mutator` pattern that reads the current encounter, applies a transformation, then writes to both Zustand and Firestore
+- **50ms debounce:** Prevents rapid duplicate Firestore writes during quick damage/heal clicks
+- **Turn flow is atomic:** `startCombat`, `nextTurn`, `prevTurn`, `endCombat` each produce a single Firestore write that includes the full encounter state
+- **No breaking changes:** All existing DM components continue to work; the mutation layer is transparent
+
+### Quality Gates
+- **TypeScript:** 0 errors (clean compilation)
+- **Vite build:** 998 KB JS (+4 KB from Cycle 1), 132 KB CSS (successful)
+- **Monolith risk:** 0 files over 150 lines
+
+---
