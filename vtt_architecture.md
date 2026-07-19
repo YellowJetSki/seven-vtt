@@ -1680,3 +1680,62 @@ Systematic contrast audit across 155 text elements found **58 elements failing W
 Fixed TypeScript error where `isActive` was referenced outside the NavLink `className` callback scope. Used `{({ isActive }) => (<>...</>)}` child render prop pattern for both Sidebar and MobileBottomNav. This pattern is supported by React Router v6's NavLink.
 
 ---
+
+## Sprint 1/25 — Premium Login Redesign (Updated: 2026-07-19 08:34)
+## Sprint 1/25 — Login Page Lusion-Grade Redesign (2026-07-19)
+
+### Target
+Login page — premium UX overhaul inspired by Lusion/Spotify-grade layered depth, typographic sophistication, and glassmorphism.
+
+### Changes Made
+
+#### LoginPage.tsx — Complete Rewrite
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Depth layers** | 2 (aurora + card) | 3 (void bg → aurora glow → card with outer shadow halo) |
+| **Aurora waves** | 3 identical speeds | 3 staggered speeds (14s/18s/22s) with varying opacity (0.18/0.12/0.08) |
+| **Grid pattern** | 64px, 0.015 opacity | 80px, 0.012 opacity — more subtle, larger grid |
+| **Ambient element** | None | Giant ᚱ rune (180px, 5% opacity) with `rune-breathe` animation on desktop |
+| **Typography — hero** | Flat "Forge your legend." | Split weight: light `Forge your` + bold `legend` with gold drop-shadow |
+| **Feature highlights** | Plain text list | Icon containers (40×40px rounded-xl with border + hover states) + label + description |
+| **Card depth** | Single layer | Outer glow halo (-inset-4, blurred) + inner card with gold edge light (top h-px gradient) |
+| **Input fields** | 48px height, standard | 52px height, floating labels animate to uppercase `9px` label on focus |
+| **Icon interaction** | Static color | SVG icons change to gold (rgba(250,204,21,0.6)) on field focus |
+| **Submit button** | 48px, basic gradient | 52px, richer gold gradient (`from-gold-600 via-gold-500 to-amber-500`), stronger shadow, white/25 shimmer sweep |
+| **Mobile brand** | Simple ᚱ + text | Icon container (64×64px rounded-2xl with border) + header + gradient dividers |
+| **Card shadows** | Standard `shadow-2xl` | Layered: `0_32px_80px_rgba(0,0,0,0.55), 0_8px_24px_rgba(0,0,0,0.3), inset gold edge` |
+| **Footer dividers** | `.rune-gold` class | Custom gradient `w-8 h-px` + monospace ✦ ✦ ✦ |
+
+### Visual Hierarchy (Desktop)
+```
+Layer 1: Deep void gradient (#07080d → #0a0b14 → #0d0e18)
+Layer 2: 3 aurora waves (gold/amber/warm gold) drifting at different speeds
+Layer 3: Subtle 80px grid (0.012 opacity)
+Layer 4: Floating gold particles
+Layer 5: Giant ᚱ rune (180px, breathing) — center-right ambient
+Layer 6 (left panel): Brand + hero typography + feature items
+Layer 7 (right panel): Card outer shadow halo (blur-40px)
+Layer 8 (right panel): Glass card with gold edge light
+```
+
+### Keyframe Animations Added
+- `aurora-drift` — 3 variants at 14s/18s/22s with translate/rotate/scale
+- `rune-breathe` — 8s ease-in-out infinite, opacity 0.04→0.08, scale 1→1.05
+
+### Build Metrics
+- TypeScript errors: 0 (1993 modules)
+- Build: 6.93s local / 5.38s Vercel
+- CSS: 146.88 KB (19.78 KB gzipped)
+- JS: 1,039.25 KB (267.51 KB gzipped)
+- Deployed: arkla.vercel.app
+
+### Live Verification (Production)
+All 15 design elements verified on arkla.vercel.app/login:
+- 3 aurora layers, particles, breathing rune ✅
+- Floating labels, 52px inputs, gold icon focus ✅
+- Gold edge-lit card, outer shadow halo ✅
+- Hero typography with split weights ✅
+- Feature items with icon containers ✅
+- Rich submit button with shimmer sweep ✅
+
+---
