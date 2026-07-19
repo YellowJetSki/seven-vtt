@@ -1,6 +1,11 @@
-@import "tailwindcss";
+/* ═══════════════════════════════════════════════════════════════
+   STᚱ VTT — Tailwind Entry Point
+   @import "tailwindcss" MUST be in a plain CSS file for the Vite plugin.
+   @theme and @source MUST be in the same file as @import "tailwindcss".
+   SCSS custom classes are imported separately in main.tsx.
+   ═══════════════════════════════════════════════════════════════ */
 
-/* Tell Tailwind v4 where to scan for class names */
+@import "tailwindcss";
 @source "../src";
 
 @theme {
@@ -12,6 +17,7 @@
   --color-surface-700: #303244;
   --color-surface-600: #3d3f54;
   --color-surface-500: #505270;
+
   --color-accent-950: #1a0a30;
   --color-accent-900: #2e1050;
   --color-accent-800: #481a78;
@@ -20,6 +26,7 @@
   --color-accent-500: #9b4dff;
   --color-accent-400: #b070ff;
   --color-accent-300: #c99aff;
+
   --color-warrior-950: #1f0a12;
   --color-warrior-900: #3a0f1f;
   --color-warrior-800: #5c162d;
@@ -28,6 +35,7 @@
   --color-warrior-500: #d92b5a;
   --color-warrior-400: #e85a7c;
   --color-warrior-300: #f08da3;
+
   --color-mage-950: #0a1428;
   --color-mage-900: #0f1f40;
   --color-mage-800: #162e60;
@@ -36,6 +44,7 @@
   --color-mage-500: #2e68d4;
   --color-mage-400: #5a89e0;
   --color-mage-300: #8aadef;
+
   --color-rogue-950: #0f1a0f;
   --color-rogue-900: #1a2e1a;
   --color-rogue-800: #264726;
@@ -44,6 +53,7 @@
   --color-rogue-500: #4fa04f;
   --color-rogue-400: #72b872;
   --color-rogue-300: #9ad09a;
+
   --color-divine-950: #1a1208;
   --color-divine-900: #2e1f0a;
   --color-divine-800: #4a3010;
@@ -52,17 +62,21 @@
   --color-divine-500: #a87028;
   --color-divine-400: #c9944a;
   --color-divine-300: #e0b878;
+
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
+
   --color-gold-500: #eab308;
   --color-gold-400: #facc15;
   --color-gold-300: #fde047;
   --color-gold-200: #fef08a;
+
   --color-amber-500: #f59e0b;
   --color-amber-400: #fbbf24;
   --color-amber-300: #fcd34d;
+
   --color-obsidian: #0a0b12;
 }
 
@@ -72,201 +86,8 @@
   }
   body {
     @apply bg-obsidian text-[#e4e5f0];
-  }
-}
-
-html {
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background-color: var(--color-surface-950);
-  color: #e4e5f0;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
-}
-
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slide-in-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes float-drift {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-10px) rotate(1deg); }
-  66% { transform: translateY(5px) rotate(-1deg); }
-}
-
-@keyframes card-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(155, 77, 255, 0.05); }
-  50% { box-shadow: 0 0 30px rgba(155, 77, 255, 0.12); }
-}
-
-@keyframes arcane-sweep {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.3s ease-out;
-}
-
-.animate-slide-in-up {
-  animation: slide-in-up 0.3s ease-out;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.2s ease-out;
-}
-
-.animate-card-glow {
-  animation: card-glow 4s ease-in-out infinite;
-}
-
-/* Premium Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-surface-600);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-surface-500);
-}
-
-/* Glassmorphism utilities */
-.glass {
-  background: rgba(24, 25, 34, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(48, 50, 68, 0.4);
-}
-
-.glass-strong {
-  background: rgba(24, 25, 34, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(48, 50, 68, 0.5);
-}
-
-.glass-card {
-  background: rgba(30, 31, 43, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(48, 50, 68, 0.3);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-}
-
-.premium-card {
-  background: linear-gradient(135deg, rgba(30, 31, 43, 0.8), rgba(24, 25, 34, 0.9));
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(48, 50, 68, 0.3);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
-}
-
-.premium-card:hover {
-  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-color: rgba(155, 77, 255, 0.2);
-}
-
-.premium-stat {
-  background: rgba(24, 25, 34, 0.6);
-  border: 1px solid rgba(48, 50, 68, 0.3);
-  border-radius: 8px;
-  padding: 8px 12px;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.premium-stat:hover {
-  border-color: rgba(155, 77, 255, 0.3);
-  background: rgba(155, 77, 255, 0.05);
-}
-
-.premium-btn {
-  background: linear-gradient(135deg, rgba(155, 77, 255, 0.15), rgba(155, 77, 255, 0.05));
-  border: 1px solid rgba(155, 77, 255, 0.3);
-  border-radius: 8px;
-  color: var(--color-accent-300);
-  padding: 8px 16px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.premium-btn:hover {
-  background: linear-gradient(135deg, rgba(155, 77, 255, 0.25), rgba(155, 77, 255, 0.1));
-  border-color: rgba(155, 77, 255, 0.5);
-  box-shadow: 0 4px 16px rgba(155, 77, 255, 0.15);
-  transform: translateY(-1px);
-}
-
-.premium-btn:active {
-  transform: translateY(0px);
-}
-
-/* ── Mobile Safe Area ────────────────────────────────── */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* ── Mobile Responsive Tweaks ────────────────────────── */
-@media (max-width: 640px) {
-  .rune-divider {
-    font-size: 0.625rem;
-  }
-
-  .glass-arcane {
-    --glass-blur: 8px;
-  }
-
-  .premium-surface {
-    padding: 0.75rem;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

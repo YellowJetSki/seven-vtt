@@ -1,0 +1,15 @@
+// ═══════════════════════════════════════════════════════════════
+//  STᚱ VTT — SCSS Custom Styles (using @use, not deprecated @import)
+//  All custom utility classes (glass, buttons, animations, etc.)
+//  Tailwind is imported separately via index.css.
+// ═══════════════════════════════════════════════════════════════
+
+@use "theme";
+@use "base";
+@use "animations";
+@use "glass";
+@use "buttons";
+@use "forms";
+@use "utilities";
+@use "scrollbar";
+@use "responsive";

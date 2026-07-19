@@ -1,0 +1,98 @@
+// ═══════════════════════════════════════════════════════════════
+//  STᚱ VTT — Animations & Keyframes
+// ═══════════════════════════════════════════════════════════════
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float-drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(1deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
+}
+
+@keyframes card-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(155, 77, 255, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(155, 77, 255, 0.12); }
+}
+
+@keyframes depth-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes float-arcane {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    filter: drop-shadow(0 4px 8px rgba(234, 179, 8, 0.1));
+  }
+  33% {
+    transform: translateY(-10px) rotate(0.5deg);
+    filter: drop-shadow(0 12px 24px rgba(234, 179, 8, 0.2));
+  }
+  66% {
+    transform: translateY(5px) rotate(-0.5deg);
+    filter: drop-shadow(0 4px 8px rgba(234, 179, 8, 0.1));
+  }
+}
+
+@keyframes rune-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.2));
+  }
+  50% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.4));
+  }
+}
+
+@keyframes arcane-sweep-line {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+@keyframes crystal-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// ── Animation Utility Classes ─────────────────────────────────
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+.animate-slide-in-right { animation: slide-in-right 0.3s ease-out; }
+.animate-slide-in-up { animation: slide-in-up 0.3s ease-out; }
+.animate-scale-in { animation: scale-in 0.2s ease-out; }
+.animate-card-glow { animation: card-glow 4s ease-in-out infinite; }
+.float-arcane { animation: float-arcane 6s ease-in-out infinite; will-change: transform; }
+.float-delayed { animation: float-arcane 6s ease-in-out 2s infinite; }
+.float-slow { animation: float-arcane 8s ease-in-out 1s infinite; }
+.float-fast { animation: float-arcane 4s ease-in-out infinite; }
+.rune-pulse { animation: rune-pulse 2s ease-in-out infinite; }

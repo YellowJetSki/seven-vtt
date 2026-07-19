@@ -963,3 +963,42 @@ All critical spacing/padding/layout Tailwind classes were replaced with equivale
 ### Tailwind v4 Recommendation
 For future investigation: the `@tailwindcss/vite` plugin may need a clean reinstall (delete `node_modules`, `package-lock.json`, reinstall) or a project scaffold from scratch. The issue is not version-related — 4.3.3 is the latest stable release as of July 2026.
 ---
+
+## Cycle 15 — Tailwind v4 Root Fix + All Inline Styles Reverted (Updated: 2026-07-18 21:42)
+## Cycle 15 — Tailwind v4 Root Cause Fix & Layout Cleanup (Complete)
+**Date:** 2026-07-18
+
+### Root Cause Discovered
+The manual CSS reset rule `*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }` was added in `index.css` AFTER Tailwind's `@layer` rules. Since it had the **same specificity** as Tailwind's base layer reset AND came later in the stylesheet, it **overrode ALL Tailwind spacing/padding/margin utility classes** (`px-3`, `py-3`, `p-4`, `mx-auto`, etc.)
+
+This caused `px-3` to compute as `0px` while other utilities like `gap-2`, `flex-1`, `justify-between`, `items-center`, `border-gold`, `bg-gold-500` all worked fine (they weren't overridden by the reset).
+
+### Fix
+- **Removed** → `*, *::before, *::after { ... padding: 0; }` from `index.css`
+- Tailwind v4 already provides this reset in `@layer base` — no manual reset needed
+- CSS file size reduced from 118,114 → 118,294 bytes (minor increase from more utility generation)
+
+### Inline Styles Reverted (Now using proper Tailwind classes)
+
+| Component | Previous Inline Hack | Now | Status |
+|-----------|--------------------|-----|--------|
+| Header | `style={{ padding: '0 0.75rem' }}` | `px-3 sm:px-4` | ✅ Working (16px padding) |
+| Header left group | `style={{ gap: '0.5rem' }}` | `gap-2 sm:gap-3` | ✅ Working (12px gap) |
+| Header right group | `style={{ gap: '0.5rem' }}` | `gap-2 sm:gap-3` | ✅ Working |
+| Role badge | `style={{ padding, gap }}` | `px-2.5 sm:px-3 py-1.5 gap-2` | ✅ Working |
+| Logout button | `style={{ padding }}` | `px-2.5 sm:px-3 py-1.5` | ✅ Working |
+| Sidebar brand bar | `style={{ padding, gap }}` | `px-4 gap-3` | ✅ Working (16px) |
+| Sidebar footer | `style={{ padding }}` | `px-4 py-3` | ✅ Working |
+| AppShell main | `style={{ padding }}` | `p-4 sm:p-6 pb-20 sm:pb-6` | ✅ Working (24px) |
+
+### Verified in Production
+- `px-3` → **12px** ✅
+- `sm:px-4` → **16px** (responsive override working) ✅
+- `py-3` → **12px** ✅
+- `p-4` → **16px** ✅
+- `gap-2` → **8px** ✅
+- `sm:gap-3` → **12px** ✅
+- Rune offset → **16px from edge** ✅
+- Header padding → **16px** ✅
+- Main content → **24px** ✅
+---

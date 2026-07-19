@@ -1,0 +1,76 @@
+// ═══════════════════════════════════════════════════════════════
+//  STᚱ VTT — Form Inputs
+//  input-arcane, input-gold, and form utility classes.
+// ═══════════════════════════════════════════════════════════════
+
+.input-arcane {
+  background: rgba(24, 25, 34, 0.8);
+  border: 1px solid rgba(48, 50, 68, 0.35);
+  border-radius: 10px;
+  color: #e4e5f0;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  width: 100%;
+  caret-color: var(--color-gold-500, #eab308);
+
+  &::placeholder {
+    color: rgba(80, 82, 112, 0.6);
+    font-weight: 400;
+  }
+
+  &:focus {
+    border-color: rgba(155, 77, 255, 0.45);
+    box-shadow:
+      0 0 0 3px rgba(155, 77, 255, 0.1),
+      0 0 20px rgba(155, 77, 255, 0.05),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(30, 31, 43, 0.95);
+  }
+
+  &:hover:not(:focus) {
+    border-color: rgba(48, 50, 68, 0.6);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.input-gold {
+  background: rgba(15, 16, 22, 0.85);
+  border: 1px solid rgba(48, 50, 68, 0.3);
+  border-radius: 10px;
+  color: #e4e5f0;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  width: 100%;
+  caret-color: #eab308;
+
+  &::placeholder {
+    color: rgba(80, 82, 112, 0.6);
+  }
+
+  &:focus {
+    border-color: rgba(234, 179, 8, 0.4);
+    box-shadow:
+      0 0 0 3px rgba(234, 179, 8, 0.08),
+      0 0 20px rgba(234, 179, 8, 0.04),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(20, 21, 30, 0.95);
+  }
+
+  &:hover:not(:focus) {
+    border-color: rgba(48, 50, 68, 0.5);
+  }
+}
+
+.input-premium-sm {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}

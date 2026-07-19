@@ -1,0 +1,33 @@
+// ═══════════════════════════════════════════════════════════════
+//  STᚱ VTT — Responsive Overrides
+//  ONLY for things that can't be handled by Tailwind responsive
+//  utilities (sm:, md:, lg:, xl:).
+// ═══════════════════════════════════════════════════════════════
+
+@media (max-width: 640px) {
+  .rune-divider {
+    font-size: 0.625rem;
+  }
+
+  .glass-arcane {
+    --glass-blur: 8px;
+  }
+
+  .glass-premium,
+  .glass-gold,
+  .glass-dark {
+    backdrop-filter: blur(12px);
+  }
+
+  .premium-surface {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .glass-crystal,
+  .glass-arcane,
+  .glass-obsidian {
+    backdrop-filter: blur(12px);
+  }
+}

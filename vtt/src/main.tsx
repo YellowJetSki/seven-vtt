@@ -3,8 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
-import "./styles/premium.css";
-import "./styles/vtt-design-system.css";
+import "./styles/main.scss";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
