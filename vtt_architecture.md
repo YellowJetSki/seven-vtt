@@ -4458,3 +4458,66 @@ character.spellSlots (from derived.computeAllDerivations)
 | Monolith risk | 0 files > 150 lines (both new files lean and focused) |
 
 ---
+
+## Sprint 11/17 — Homebrew Entity Bridge & Compendium Integration (2026-07-19) (Updated: 2026-07-19 14:53)
+## Sprint 11/17 — Homebrew Entity Bridge & Compendium Integration (Complete)
+**Date:** 2026-07-19
+**Phase:** Unified Entities & Combat Hooks Phase (Cycle 11 of 17)
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Files (2)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/combat/compendium-bridge.ts` | 230 | Pure utility functions for resolving character weapon/spell/feat names against the compendium catalog. Includes `normalizeName()`, `isExactMatch()`, `isFuzzyMatch()`, `resolveWeapon()`, `resolveWeaponWithFallback()`, `resolveSpell()`, `resolveFeat()`, `detectSource()`, `getSourceBadge()`. Fuzzy matching handles edge cases like "Longsword +1" matching "Longsword". |
+| `hooks/useCompendiumBridge.ts` | 265 | React hook that bridges a character's equipment/preparedSpells/activeFeats with the compendium store (SRD + homebrew). Provides resolved entities with source tracking, and mutation helpers: `equipItem()`, `unequipItem()`, `prepareSpell()`, `unprepareSpell()`, `toggleFeat()`. |
+
+#### Files Modified (4)
+| File | Key Changes |
+|------|-------------|
+| `types/unified-entities.ts` | Added `sourceType?: string` field to `CombatEntity` interface. Renamed the old `sourceType` (category) to `entityType` for clarity. |
+| `lib/combat/entity-injector.ts` | Added `detectSource()` call to all three injector functions (`injectWeapon`, `injectSpell`, `injectFeat`) — each entity now carries a `sourceType` field ("srd" / "homebrew" / "character" / "synthetic"). |
+| `components/player/CombatWeaponCard.tsx` | Added optional `showSource` prop. When enabled, displays a colored source badge (📖 SRD / ⚒️ Homebrew / 🔮 Inferred) next to the weapon name. |
+
+### Architecture Improvements
+
+| Before | After |
+|--------|-------|
+| Weapons resolved by name == name only — fragile matching | Fuzzy matching with word-splitting, normalization, and description fallback |
+| No source tracking on CombatEntity | `sourceType` field populated on every weapon/spell/feat entity |
+| No UI indicator of SRD vs Homebrew | Optional source badge on CombatWeaponCard |
+| No bridge hook for equipping from compendium | `useCompendiumBridge` with equip/unequip/prepare/unprepare/toggle mutations |
+| `ActiveFeatRef` requires `featId` but new feats might not have one | Hook provides `featId` fallback from `featName` |
+
+### Data Flow
+
+```
+character.equipment → resolveWeaponWithFallback(name, catalog)
+  ├─ Exact match → SRD/Homebrew entity with source badge
+  ├─ Fuzzy match → SRD/Homebrew entity with "fuzzy" confidence
+  └─ No match → Synthetic entity with inferred damage/type
+
+character.preparedSpells → resolveSpell(name, catalog)
+  └─ Same resolution pipeline → entity + source badge
+
+character.activeFeats → resolveFeat(name, catalog)
+  └─ Same resolution pipeline → entity + source badge
+
+useCompendiumBridge:
+  equipItem(name) → resolves + writes to character.equipment via updateCharacter
+  prepareSpell(name) → resolves + writes to character.preparedSpells
+  toggleFeat(name) → toggles isActive on character.activeFeats
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.85s**, 1997 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| New files | 2 (compendium-bridge.ts, useCompendiumBridge.ts) |
+| Modified files | 4 (unified-entities.ts, entity-injector.ts, CombatWeaponCard.tsx, useCompendiumBridge.ts) |
+
+---

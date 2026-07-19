@@ -25,8 +25,8 @@ export interface CombatEntity {
   id: string;
   /** Display name */
   name: string;
-  /** Source category */
-  sourceType: EntitySourceType;
+  /** Source category (weapon/spell/feat/feature/item) */
+  entityType: EntitySourceType;
   /** Underlying data source */
   sourceId?: string;
   /** Whether this entity is active/enabled */
@@ -73,6 +73,9 @@ export interface CombatEntity {
   colorClass?: string;
   /** Tags for filtering */
   tags?: string[];
+  
+  /** Source of this entity: "srd" | "homebrew" | "character" | "synthetic" */
+  sourceType?: string;
 }
 
 // ── Input types for the injector ──

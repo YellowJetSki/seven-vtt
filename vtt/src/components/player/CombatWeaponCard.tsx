@@ -3,7 +3,7 @@
  *
  * Reusable weapon attack card for the Combat Tab.
  * Renders a single weapon's attack information including:
- *   - Name with weapon type icon
+ *   - Name with weapon type icon, source badge (SRD/Homebrew/Inferred)
  *   - Attack bonus (color-coded)
  *   - Damage expression with type
  *   - Range display
@@ -12,15 +12,19 @@
  *
  * Usage:
  *   <CombatWeaponCard entity={weaponEntity} />
+ *   <CombatWeaponCard entity={weaponEntity} showSource />
  */
 
 import type { CombatEntity } from "@/types/unified-entities";
+import { getSourceBadge, type EntitySource } from "@/lib/combat/compendium-bridge";
 
 interface CombatWeaponCardProps {
   entity: CombatEntity;
+  /** If true, shows an SRD/Homebrew/Inferred source badge */
+  showSource?: boolean;
 }
 
-export default function CombatWeaponCard({ entity }: CombatWeaponCardProps) {
+export default function CombatWeaponCard({ entity, showSource = false }: CombatWeaponCardProps) {
   const {
     name,
     icon,
@@ -31,6 +35,7 @@ export default function CombatWeaponCard({ entity }: CombatWeaponCardProps) {
     range,
     properties,
     colorClass = "text-rose-400",
+    sourceType,
   } = entity;
 
   const atkNum = attackBonus ? parseInt(attackBonus.replace(/[+\-]/g, ""), 10) : 0;
@@ -45,11 +50,16 @@ export default function CombatWeaponCard({ entity }: CombatWeaponCardProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Name + Type badges */}
+          {/* Name + Source badge + Type badges */}
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
-            <span className="text-sm font-semibold text-surface-200 truncate max-w-[140px]">
+            <span className="text-sm font-semibold text-surface-200 truncate max-w-[120px]">
               {name}
             </span>
+            {showSource && sourceType && (
+              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as any).className}`}>
+                {getSourceBadge(sourceType as any).icon} {getSourceBadge(sourceType as any).label}
+              </span>
+            )}
             {isMelee && (
               <span className="px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">
                 Melee

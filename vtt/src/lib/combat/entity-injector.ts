@@ -18,6 +18,7 @@ import type { PlayerCharacter } from "@/types";
 import type { CombatEntity, CharacterCombatData } from "@/types/unified-entities";
 import { getWeaponIcon, getSpellIcon, getFeatIcon } from "@/types/unified-entities";
 import { getClassByName } from "@/data/srd-classes";
+import { detectSource } from "./compendium-bridge";
 
 // ── Inject Weapons ───────────────────────────────────────────
 
@@ -99,7 +100,7 @@ function injectWeapon(item: HomebrewItem, data: CharacterCombatData, slot: strin
   return {
     id: `weapon-${item.id || name.toLowerCase().replace(/\s+/g, "-")}`,
     name,
-    sourceType: "weapon",
+    entityType: "weapon",
     sourceId: item.id,
     isActive: true,
     attackBonus: atkStr,
@@ -111,6 +112,7 @@ function injectWeapon(item: HomebrewItem, data: CharacterCombatData, slot: strin
     icon: getWeaponIcon(name),
     colorClass: "text-rose-400",
     tags: ["weapon", item.category],
+    sourceType: detectSource(item),
   };
 }
 
@@ -127,7 +129,7 @@ function injectSpell(spell: HomebrewSpell, data: CharacterCombatData): CombatEnt
   return {
     id: `spell-${spell.id || spell.name.toLowerCase().replace(/\s+/g, "-")}`,
     name: spell.name,
-    sourceType: "spell",
+    entityType: "spell",
     sourceId: spell.id,
     isActive: true,
     spellLevel: spell.level,
@@ -148,6 +150,7 @@ function injectSpell(spell: HomebrewSpell, data: CharacterCombatData): CombatEnt
     icon: getSpellIcon(spell.school),
     colorClass: hasAttack ? "text-amber-400" : hasSave ? "text-indigo-400" : "text-cyan-400",
     tags: ["spell", spell.school.toLowerCase(), `level-${spell.level}`],
+    sourceType: detectSource(spell),
   };
 }
 
@@ -166,7 +169,7 @@ function injectFeat(feat: HomebrewFeat): CombatEntity {
   return {
     id: `feat-${feat.id || feat.name.toLowerCase().replace(/\s+/g, "-")}`,
     name: feat.name,
-    sourceType: "feat",
+    entityType: "feat",
     sourceId: feat.id,
     isActive: true,
     effectDescription: feat.benefits?.join(", ") || feat.description,
@@ -174,6 +177,7 @@ function injectFeat(feat: HomebrewFeat): CombatEntity {
     icon: getFeatIcon(feat.name),
     colorClass: hasAttackBonus ? "text-gold-400" : "text-violet-400",
     tags: ["feat", ...feat.tags],
+    sourceType: detectSource(feat),
   };
 }
 
