@@ -1,7 +1,7 @@
 /**
- * STᚱ VTT — Inspector Footer
+ * STᚱ VTT — Inspector Footer (Premium Gold)
  *
- * Footer with save and delete actions for the token inspector.
+ * Gold-accented footer with save and delete actions for the token inspector.
  */
 
 import Button from "@/components/ui/Button";
@@ -18,9 +18,9 @@ export default function InspectorFooter({
   onDelete,
 }: InspectorFooterProps) {
   return (
-    <div className="shrink-0 border-t border-surface-700/20 px-4 py-3 space-y-2">
+    <div className="shrink-0 border-t border-gold/10 px-4 py-3 space-y-2">
       <Button
-        variant="arcane"
+        variant="gold"
         size="sm"
         className="w-full"
         onClick={onSave}

@@ -1,16 +1,8 @@
 /**
- * STᚱ VTT — Launch Theatric Display Button
+ * STᚱ VTT — Launch Theatric Display Button (Premium Gold)
  *
- * Opens the cinematic Theatric View in a new browser tab/window.
- * The new tab auto-syncs via Firebase, showing a pure canvas display
- * with no grid, no HUD, no UI elements.
- *
- * Architecture:
- *   1. Sets the active map ID in theatricStore
- *   2. Opens a new tab at /theatric?map=<activeMapId>
- *   3. The new tab reads from Firestore via onSnapshot
- *
- * Designed for the DM dashboard Quick Actions bar.
+ * Gold-accented button that opens the cinematic Theatric View
+ * in a new browser tab. All changes sync in real-time.
  */
 
 import { useState, useCallback } from "react";
@@ -25,29 +17,17 @@ export default function LaunchTheatricButton() {
 
   const handleLaunch = useCallback(() => {
     if (battleMaps.length === 0) return;
-
     setIsLaunching(true);
-
-    // Use the first available map, or let the DM select
     const targetMap = battleMaps[0];
     setActiveMap(targetMap.id);
-
-    // Open theatric display in a new tab
     const url = `${window.location.origin}/theatric?map=${targetMap.id}`;
     window.open(url, "st-theatric-display", "noopener,noreferrer");
-
-    // Reset launch state after a moment
     setTimeout(() => setIsLaunching(false), 1000);
   }, [battleMaps, setActiveMap]);
 
   if (battleMaps.length === 0) {
     return (
-      <Button
-        variant="secondary"
-        size="sm"
-        disabled
-        title="Create a battle map first"
-      >
+      <Button variant="secondary" size="sm" disabled title="Create a battle map first">
         🎬 Launch Theatric
       </Button>
     );
@@ -55,7 +35,7 @@ export default function LaunchTheatricButton() {
 
   return (
     <Button
-      variant="arcane"
+      variant="gold"
       size="sm"
       onClick={handleLaunch}
       isLoading={isLaunching}
@@ -63,7 +43,7 @@ export default function LaunchTheatricButton() {
     >
       <span className="mr-1">🎬</span>
       <span>Launch Theatric</span>
-      <span className="ml-1 text-accent-500/50 group-hover:text-accent-300 transition-colors">↗</span>
+      <span className="ml-1 text-gold-500/50 group-hover:text-gold-300 transition-colors">↗</span>
     </Button>
   );
 }

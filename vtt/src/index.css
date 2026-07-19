@@ -53,6 +53,20 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
+  --color-gold-500: #eab308;
+  --color-gold-400: #facc15;
+  --color-gold-300: #fde047;
+  --color-gold-200: #fef08a;
+  --color-amber-500: #f59e0b;
+  --color-amber-400: #fbbf24;
+  --color-amber-300: #fcd34d;
+  --color-obsidian: #0a0b12;
+}
+
+@layer base {
+  body {
+    @apply bg-obsidian text-[#e4e5f0];
+  }
 }
 
 *,

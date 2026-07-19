@@ -1,11 +1,13 @@
 /**
- * STᚱ VTT — Toolbar Divider
+ * STᚱ VTT — Toolbar Divider (Premium Gold)
  *
- * Thin vertical divider for use in toolbars to separate logical groups.
+ * Thin vertical divider for toolbars with gold tint.
  */
 
-export default function ToolbarDivider({ className = "" }: { className?: string }) {
-  return (
-    <div className={`h-5 w-px bg-surface-600/20 mx-0.5 ${className}`} />
-  );
+interface ToolbarDividerProps {
+  className?: string;
+}
+
+export default function ToolbarDivider({ className = "" }: ToolbarDividerProps) {
+  return <div className={`h-5 w-px bg-gold-500/10 mx-0.5 ${className}`} />;
 }

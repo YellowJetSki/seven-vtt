@@ -1,7 +1,7 @@
 /**
- * STᚱ VTT — Encounter Panel Header
+ * STᚱ VTT — Encounter Panel Header (Premium Gold)
  *
- * Title bar for the encounter panel with count display.
+ * Gold-accented title bar for the encounter panel.
  */
 
 interface EncounterPanelHeaderProps {
@@ -12,11 +12,9 @@ export default function EncounterPanelHeader({
   encounterCount,
 }: EncounterPanelHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 border-b border-surface-700/20 shrink-0">
-      <span className="text-sm font-bold text-gradient-arcane">Encounters</span>
-      <span className="text-[10px] text-surface-500">
-        {encounterCount} saved
-      </span>
+    <div className="panel-header flex items-center justify-between px-3 py-2 shrink-0">
+      <span className="panel-header-title">Encounters</span>
+      <span className="text-[10px] text-gold-400/50">{encounterCount} saved</span>
     </div>
   );
 }

@@ -1,3 +1,9 @@
+/**
+ * STᚱ VTT — DM Login Form (Premium Gold)
+ *
+ * Gold-accented login form with premium inputs and error banner.
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
@@ -28,8 +34,6 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
       setError("Invalid credentials.");
       return;
     }
-
-    // Attempt Firebase Auth (non-blocking — app works fully offline without it)
     const fbEmail = import.meta.env.VITE_FIREBASE_AUTH_EMAIL;
     const fbPassword = import.meta.env.VITE_FIREBASE_AUTH_PASSWORD;
     if (hasValidConfig() && fbEmail && fbPassword) {
@@ -42,7 +46,6 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
       }
       setIsFirebaseAuth(false);
     }
-
     navigate("/campaign/dashboard", { replace: true });
   };
 
@@ -51,7 +54,7 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
       <button
         type="button"
         onClick={onBack}
-        className="text-sm text-surface-500 hover:text-accent-300 transition-all duration-200 flex items-center gap-1.5 group"
+        className="text-sm text-surface-500 hover:text-gold-400 transition-all duration-200 flex items-center gap-1.5 group"
       >
         <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -60,35 +63,35 @@ export default function DmLoginForm({ onBack }: DmLoginFormProps) {
       </button>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-surface-400">Username</label>
+        <label className="block text-xs font-semibold uppercase tracking-wider text-gold-400/70">Username</label>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Enter DM username"
-          className="input-arcane"
+          className="input-gold"
         />
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-surface-400">Password</label>
+        <label className="block text-xs font-semibold uppercase tracking-wider text-gold-400/70">Password</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter password"
-          className="input-arcane"
+          className="input-gold"
         />
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-warrior-400 text-sm bg-warrior-500/10 border border-warrior-500/15 rounded-xl px-4 py-3">
+        <div className="flex items-center gap-2 text-amber-400 text-sm bg-amber-500/10 border border-amber-500/15 rounded-xl px-4 py-3">
           <span>⚠</span>
           <span>{error}</span>
         </div>
       )}
 
-      <Button type="submit" variant="arcane" size="lg" className="w-full">
+      <Button type="submit" variant="gold" size="lg" className="w-full" isLoading={isFirebaseAuth}>
         ✦ Sign In as Dungeon Master
       </Button>
     </form>

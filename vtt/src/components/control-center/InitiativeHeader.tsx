@@ -1,7 +1,7 @@
 /**
- * STᚱ VTT — Initiative Header
+ * STᚱ VTT — Initiative Header (Premium Gold)
  *
- * Title bar for the initiative tracker with combatant count and round number.
+ * Gold-accented title bar for the initiative tracker.
  */
 
 interface InitiativeHeaderProps {
@@ -14,14 +14,14 @@ export default function InitiativeHeader({
   round,
 }: InitiativeHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 border-b border-surface-700/20 shrink-0">
+    <div className="panel-header flex items-center justify-between px-3 py-2 shrink-0">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-bold text-gradient-arcane">Initiative</span>
-        <span className="text-[10px] text-surface-500 bg-surface-800/50 px-1.5 py-0.5 rounded-full">
+        <span className="panel-header-title">Initiative</span>
+        <span className="text-[10px] text-gold-400 bg-gold-500/10 border border-gold/15 px-1.5 py-0.5 rounded-full">
           {combatantCount}
         </span>
       </div>
-      <span className="text-[10px] text-surface-500 uppercase tracking-wider">
+      <span className="text-[10px] text-gold-400/60 uppercase tracking-wider">
         Round {round || 1}
       </span>
     </div>

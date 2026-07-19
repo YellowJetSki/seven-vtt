@@ -1,8 +1,8 @@
 /**
- * STᚱ VTT — Tool Button
+ * STᚱ VTT — Tool Button (Premium Gold)
  *
  * Reusable toggle/tool button for the DM toolbar.
- * Supports active state, custom styling, and optional dimension props.
+ * Supports active state with gold accent glow.
  */
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
@@ -16,7 +16,7 @@ interface ToolButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<string, string> = {
   default:
-    "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-surface-700/40 hover:text-surface-200 hover:border-surface-600/30",
+    "bg-obsidian-mid/50 border-surface-700/20 text-surface-400 hover:bg-gold-500/8 hover:text-gold-300 hover:border-gold/20",
   fog: "bg-mage-600/20 border-mage-500/30 text-mage-300",
   dm: "bg-warrior-600/20 border-warrior-500/30 text-warrior-300",
 };
@@ -33,15 +33,11 @@ export default function ToolButton({
     "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border";
 
   const activeStyle = active
-    ? "bg-accent-600/20 border-accent-500/30 text-accent-300 shadow-sm shadow-accent-500/10"
+    ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-sm shadow-gold-500/10"
     : variantStyles[variant] ?? variantStyles.default;
 
   return (
-    <button
-      className={`${baseStyle} ${activeStyle} ${className}`}
-      title={tooltip}
-      {...props}
-    >
+    <button className={`${baseStyle} ${activeStyle} ${className}`} title={tooltip} {...props}>
       {children}
     </button>
   );

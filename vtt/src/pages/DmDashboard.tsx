@@ -1,3 +1,11 @@
+/**
+ * STᚱ VTT — DM Dashboard (Premium Gold)
+ *
+ * Campaign overview dashboard with gold-accented stat cards,
+ * quick actions, recent activity, and status bar.
+ * Uses the premium gold/amber design system.
+ */
+
 import { useEffect, useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import { useCampaignStore } from "@/stores/campaignStore";
@@ -51,7 +59,7 @@ export default function DmDashboard() {
             description="Forge your first campaign or awaken an ancient realm from slumber."
           >
             <div className="flex gap-3 mt-6">
-              <Button variant="arcane" size="lg">
+              <Button variant="gold" size="lg">
                 ✦ New Campaign
               </Button>
               <Button variant="secondary" size="lg">
@@ -66,24 +74,30 @@ export default function DmDashboard() {
 
   return (
     <AppShell>
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Campaign header — Premium fantasy banner */}
-        <div className="glass-crystal rounded-2xl p-6 relative overflow-hidden crystal-shimmer">
-          <div className="corner-ornament corner-tl corner-ornament-glow" />
-          <div className="corner-ornament corner-tr corner-ornament-glow" />
-          <div className="corner-ornament corner-bl corner-ornament-glow" />
-          <div className="corner-ornament corner-br corner-ornament-glow" />
-          <div className="depth-ring absolute inset-0 opacity-30" />
-          <h1 className="text-2xl font-black text-gradient-arcane tracking-tight">{meta.name}</h1>
-          <p className="text-surface-400 mt-1 text-sm">{meta.description}</p>
-          <div className="rune-divider mt-3">✦ ᚱ ✦</div>
+      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+        {/* Campaign header — Gold fantasy banner */}
+        <div className="glass-gold rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+          <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
+          <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
+          <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
+          <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
+          <div className="depth-ring absolute inset-0 opacity-20" />
+          <div className="relative z-10">
+            <h1 className="text-2xl sm:text-3xl font-black text-gold tracking-tight drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">
+              {meta.name}
+            </h1>
+            <p className="text-surface-400 mt-1.5 text-sm sm:text-base leading-relaxed max-w-2xl">
+              {meta.description}
+            </p>
+            <div className="rune-gold mt-4 w-full max-w-md">✦ ᚱ ✦</div>
+          </div>
         </div>
 
         {/* Quick Action Bar */}
         <QuickActions />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {statCards.map((stat, idx) => (
             <div
               key={stat.label}
