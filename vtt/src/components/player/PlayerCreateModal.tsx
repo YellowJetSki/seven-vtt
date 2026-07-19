@@ -11,6 +11,8 @@
 
 import { useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { setCharacter } from "@/lib/firestore-service";
+import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
 import Modal from "@/components/ui/Modal";
 import type { PlayerCharacter } from "@/types";
 
@@ -156,7 +158,11 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
       updatedAt: Date.now(),
     };
 
+    // Write to both Zustand (instant) and Firestore (real-time sync)
     addCharacter(newChar);
+    setCharacter(FALLBACK_CAMPAIGN_ID, newChar.id, newChar).catch((err) => {
+      console.warn("[Firestore] Failed to write new character:", err);
+    });
     handleClose();
   }, [name, playerName, race, className, level, imageUrl, addCharacter, handleClose]);
 

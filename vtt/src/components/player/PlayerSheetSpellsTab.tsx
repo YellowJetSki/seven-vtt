@@ -8,14 +8,17 @@
  * - Known/prepared spells list (from SRD compendium)
  * - Cantrips section
  * - Concentration indicator
+ *
+ * Refactored Cycle 1: All spell slot mutations route through
+ * useCharacterMutations hook → Zustand + Firestore.
  */
 
-import { useState, useCallback, useMemo } from "react";
-import type { PlayerCharacter, SpellLevel, SpellSlotsFull, CasterType } from "@/types";
-import { useCampaignStore } from "@/stores/campaignStore";
+import { useState, useMemo } from "react";
+import type { PlayerCharacter, SpellLevel } from "@/types";
 import { useCompendiumStore, getCompendiumSpells } from "@/stores/compendium";
 import { computeSpellcasting } from "@/lib/mechanics/character-derivations";
-import { castSpell, restoreSlots } from "@/lib/mechanics/spell-slot-engine";
+import { useSpellSlotMutations } from "@/hooks/useCharacterMutations";
+import { restoreSlots } from "@/lib/mechanics/spell-slot-engine";
 import SpellSlotMeter from "./SpellSlotMeter";
 
 interface PlayerSheetSpellsTabProps {
@@ -37,10 +40,10 @@ interface KnownSpell {
 
 export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTabProps) {
   const c = character;
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const compendiumStore = useCompendiumStore();
 
   const spellcasting = useMemo(() => computeSpellcasting(c), [c]);
+  const { handleCastSpell, handleRestoreSlots } = useSpellSlotMutations();
   const [expandedSpell, setExpandedSpell] = useState<string | null>(null);
   const [filterLevel, setFilterLevel] = useState<number | null>(null);
 
@@ -56,7 +59,7 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
     );
   }
 
-  // Get known spells from compendium by level
+  // Get known spells from compendium
   const allCompendiumSpells = useMemo(() => {
     return getCompendiumSpells(compendiumStore.spells, {
       searchQuery: "",
@@ -66,14 +69,8 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
     });
   }, [compendiumStore.spells]);
 
-  // Build known spell list — for demo, use SRD spells appropriate for class level
-  // In production, this would come from the character's prepared/known spells
+  // Build known spell list
   const knownSpells: KnownSpell[] = useMemo(() => {
-    const primaryClass = c.classes[0]?.name?.toLowerCase() || "";
-    // Filter spells for this class level
-    const level = c.level;
-
-    // Get all SRD spells, group by level
     const spellsByLevel: Record<number, KnownSpell[]> = {};
     for (let i = 0; i <= 9; i++) spellsByLevel[i] = [];
 
@@ -95,8 +92,6 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
       }
     }
 
-    // Return all spells the character could possibly know at this level
-    // For simplicity and demo purposes, show all spells up to the max slot level
     const maxSlotLevel = spellcasting.spellSlots
       ? Object.entries(spellcasting.spellSlots)
           .filter(([, v]) => (v as any).max > 0)
@@ -109,54 +104,29 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
       all.push(...(spellsByLevel[lvl] || []));
     }
 
-    // Deduplicate by name
     const seen = new Set<string>();
     return all.filter(s => {
       const key = s.name.toLowerCase();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    }).slice(0, 50); // Limit to 50 for UI sanity
-  }, [allCompendiumSpells, c.classes, c.level, spellcasting.spellSlots]);
+    }).slice(0, 50);
+  }, [allCompendiumSpells, spellcasting.spellSlots]);
 
-  // Handle casting a spell
-  const handleCast = useCallback((level: SpellLevel) => {
-    if (!spellcasting.spellSlots) return;
-    const result = castSpell(spellcasting.spellSlots, level);
-    if (result.success && character.spellSlots) {
-      // Update the stored spell slots
-      const newSlots = { ...character.spellSlots };
-      const key = `level${level}` as keyof typeof newSlots;
-      const stored = newSlots[key];
-      if (stored) {
-        (newSlots as any)[key] = { ...stored, current: Math.max(0, stored.current - 1) };
-        updateCharacter(c.id, { spellSlots: newSlots });
-      }
-    }
-  }, [spellcasting.spellSlots, character.spellSlots, updateCharacter, c.id]);
+  // Handle casting a spell — uses centralized mutation hook
+  const handleCast = (level: SpellLevel) => {
+    handleCastSpell(c, level);
+  };
 
-  const handleRestore = useCallback((level?: SpellLevel) => {
-    if (!spellcasting.spellSlots) return;
-    const newSlots = level
-      ? { ...spellcasting.spellSlots, [`level${level}`]: { ...spellcasting.spellSlots[`level${level}` as keyof SpellSlotsFull], current: spellcasting.spellSlots[`level${level}` as keyof SpellSlotsFull].max } }
-      : restoreSlots(spellcasting.spellSlots);
-    // Map back to character format
-    const mappedSlots: any = {};
-    for (let lvl = 1 as SpellLevel; lvl <= 9; lvl++) {
-      const key = `level${lvl}` as keyof SpellSlotsFull;
-      const pool = newSlots[key];
-      if (pool) {
-        mappedSlots[key] = { current: pool.current, max: pool.max };
-      }
-    }
-    updateCharacter(c.id, { spellSlots: mappedSlots });
-  }, [spellcasting.spellSlots, updateCharacter, c.id]);
+  const handleRestore = (level?: SpellLevel) => {
+    handleRestoreSlots(c, level);
+  };
 
-  // Convert SpellSlotsFull to legacy SpellSlots format for SpellSlotMeter
+  // Convert slots to legacy format for SpellSlotMeter
   const legacySlots: any = {};
   if (spellcasting.spellSlots) {
     for (let lvl = 1 as SpellLevel; lvl <= 9; lvl++) {
-      const key = `level${lvl}` as keyof SpellSlotsFull;
+      const key = `level${lvl}` as keyof typeof spellcasting.spellSlots;
       const pool = spellcasting.spellSlots[key];
       if (pool) {
         legacySlots[key] = { current: pool.current, max: pool.max };
@@ -164,7 +134,7 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
     }
   }
 
-  // Group known spells by level
+  // Group spells by level
   const spellsByLevel: Record<number, KnownSpell[]> = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [] };
   for (const spell of knownSpells) {
     const lvl = spell.level;
@@ -242,7 +212,7 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
         </div>
       </div>
 
-      {/* Known/Prepared Spells Section */}
+      {/* Known/Prepared Spells */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">

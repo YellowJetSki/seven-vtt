@@ -4,12 +4,14 @@
  * Shows all character stats and tracking elements.
  * XP controls live in the persistent stats bar (visible on all tabs).
  * This tab focuses on: Inspiration, ability scores, saving throws, skills, traits & features.
+ *
+ * Refactored Cycle 1: Inspiration mutation uses centralized hook → Zustand + Firestore.
  */
 
 import { useMemo, useState, useCallback } from "react";
-import { useCampaignStore } from "@/stores/campaignStore";
 import type { PlayerCharacter } from "@/types";
 import { getProficiencyBonus } from "@/lib/mechanics/character-derivations";
+import { useInspirationMutation } from "@/hooks/useCharacterMutations";
 import PlayerSheetAbilityScores from "./PlayerSheetAbilityScores";
 import PlayerSheetSavingThrows from "./PlayerSheetSavingThrows";
 import PlayerSheetSkills from "./PlayerSheetSkills";
@@ -20,19 +22,21 @@ interface PlayerSheetStatsTabProps {
 
 export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabProps) {
   const c = character;
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const pb = useMemo(() => getProficiencyBonus(c.level), [c.level]);
   const [showTraits, setShowTraits] = useState(false);
 
-  const handleInspirationToggle = useCallback(() => {
-    updateCharacter(c.id, { inspiration: !c.inspiration });
-  }, [c, updateCharacter]);
+  const { handleToggleInspiration } = useInspirationMutation();
+
+  const onInspirationToggle = useCallback(
+    () => handleToggleInspiration(c),
+    [c, handleToggleInspiration]
+  );
 
   return (
     <div className="space-y-4 px-3 py-3">
       {/* Inspiration Toggle */}
       <button
-        onClick={handleInspirationToggle}
+        onClick={onInspirationToggle}
         className={`w-full py-3 rounded-xl text-center text-xs font-semibold border active:scale-[0.98] transition-all duration-200 ${
           c.inspiration
             ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-[0_0_10px_rgba(234,179,8,0.06)]"
@@ -42,7 +46,7 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
         {c.inspiration ? "✦ Inspiration (Active)" : "✦ No Inspiration"}
       </button>
 
-      {/* XP Summary — read-only reference (controls live in persistent bar above) */}
+      {/* XP Summary — read-only reference */}
       <div className="rounded-xl bg-obsidian-mid/30 border border-surface-700/15 p-2.5">
         <div className="flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-widest font-black text-amber-500/60">Experience Points</span>

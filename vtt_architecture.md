@@ -1200,3 +1200,47 @@ New 400+ line quick-reference component:
 
 **Live validation:** Created "Aldric Stormwind" (Human, Fighter 1) with Unsplash portrait URL. Both the card avatar and sheet banner render the image correctly in production.
 ---
+
+## Cycle 11 — Firebase Real-Time Sync Layer (Cycle 1 of 3) (Updated: 2026-07-18 22:46)
+## Cycle 11 (2026-07-18): Firebase Real-Time Sync Layer — PC Card & Firebase Sync (Cycle 1 of 3)
+
+### Summary
+Implemented a centralized real-time synchronization layer that bridges Zustand (local state) with Firebase Firestore, enabling cross-device real-time combat updates.
+
+### New Files Created
+| File | Purpose | Lines |
+|------|---------|-------|
+| `src/hooks/useFirestoreSync.ts` | Subscribes to Firestore `onSnapshot` for characters collection, merges into Zustand campaignStore, manages connection state | 82 |
+| `src/hooks/useCharacterMutations.ts` | All character mutation logic centralized: HP, XP, death saves, spell slots, ability scores, inspiration. Every mutation writes to BOTH Zustand (instant) and Firestore (real-time) | 280 |
+
+### Files Refactored (6 files)
+| File | Key Changes |
+|------|-------------|
+| `src/App.tsx` | Added `<FirestoreSyncGate>` component that conditionally mounts `useFirestoreSync` when authenticated + valid Firebase config |
+| `src/components/player/PlayerSheetPersistentStats.tsx` | Refactored HP, XP, inspiration mutations to use centralized hooks (instead of inline `updateCharacter`) |
+| `src/components/player/PlayerSheetHpSection.tsx` | Refactored HP ±1/±5/±10, temp HP, death saves, short rest to use centralized hooks. Added Temp HP section with `+1/+5/+10 THP` and clear button. |
+| `src/components/player/PlayerSheetHpPersistent.tsx` | Refactored HP mutations to use centralized hooks |
+| `src/components/player/PlayerSheetSpellsTab.tsx` | Refactored Cast/Restore to use `useSpellSlotMutations` hook instead of inline `updateCharacter` |
+| `src/components/player/PlayerSheetStatsTab.tsx` | Refactored inspiration toggle to use `useInspirationMutation` hook |
+| `src/components/player/PlayerCreateModal.tsx` | Added Firestore write on character creation (`setCharacter`) alongside Zustand `addCharacter` |
+
+### Architecture
+```
+Firestore ──(onSnapshot)──► useFirestoreSync ──(setCharacters)──► Zustand campaignStore
+User taps "−5 HP" ──► PlayerSheetPersistentStats
+  └─► useHpMutations().handleHpChange()
+      ├─► Zustand: updateCharacter()  (instant UI)
+      └─► Firestore: setCharacter()   (async, other tabs sync via onSnapshot)
+```
+
+### Key Design Decisions
+- **Debounced writes:** `useWriteCharacter()` has a 50ms debounce per character ID to prevent rapid duplicate Firestore writes during quick HP adjustments
+- **Firestore is source of truth:** `onSnapshot` listener calls `setCharacters()` which replaces the full array, ensuring tabs reconcile on reconnection
+- **Conditional mount:** `FirestoreSyncGate` only mounts the listener when authenticated + valid Firebase config exists, preventing unauthenticated Firestore reads
+- **No breaking changes:** All existing components still receive `character` as a prop — the mutation logic is transparently upgraded
+
+### Quality Gates
+- **TypeScript:** Verified during build
+- **Firestore writes:** All mutation paths tested (HP ±1/±5/±10, temp HP set/clear, death saves, XP add, spell cast/restore, inspiration toggle)
+
+---

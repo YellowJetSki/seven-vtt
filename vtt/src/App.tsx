@@ -1,4 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useFirestoreSync } from "@/hooks/useFirestoreSync";
+import { useAuthStore } from "@/stores/authStore";
+import { hasValidConfig } from "@/lib/firebase";
 import LoginPage from "./pages/LoginPage";
 import PlayerLoginPage from "./pages/PlayerLoginPage";
 import PlayerSheetPage from "./pages/PlayerSheetPage";
@@ -12,8 +15,20 @@ import CampaignSettings from "./pages/CampaignSettings";
 import TheatricPage from "./pages/TheatricPage";
 import AuthGuard from "@/components/auth/AuthGuard";
 
+function FirestoreSyncGate() {
+  const isAuthed = useAuthStore((s) => s.state === "authenticated");
+  const configValid = hasValidConfig();
+  if (isAuthed && configValid) {
+    useFirestoreSync();
+  }
+  return null;
+}
+
 export default function App() {
   return (
+    <>
+      <FirestoreSyncGate />
+
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
@@ -42,5 +57,6 @@ export default function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </>
   );
 }

@@ -5,14 +5,18 @@
  * Shows core resources that matter every session regardless of tab:
  *   AC · HP (expandable → DMG/HEAL controls + death saves) · XP · Init · Speed · PB+Insp
  *
+ * Refactored for Cycle 1: ALL mutations now route through useCharacterMutations hook,
+ * which writes to BOTH Zustand (instant) and Firestore (real-time sync).
+ *
  * XP is here because players track XP advancement across sessions,
  * no matter what tab they're on — it's a persistent character resource.
+ * 44px+ touch targets, swipeable tabs, no horizontal overflow.
  */
 
 import { useState, useCallback } from "react";
-import { useCampaignStore } from "@/stores/campaignStore";
 import type { PlayerCharacter } from "@/types";
 import { computeAllDerivations } from "@/lib/mechanics/character-derivations";
+import { useHpMutations, useXpMutations, useInspirationMutation } from "@/hooks/useCharacterMutations";
 
 function modStr(mod: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
@@ -24,13 +28,20 @@ interface PlayerSheetPersistentStatsProps {
 
 export default function PlayerSheetPersistentStats({ character }: PlayerSheetPersistentStatsProps) {
   const c = character;
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const derived = computeAllDerivations(c);
+
+  // ── State ──
   const [hpInput, setHpInput] = useState("");
   const [showHpControls, setShowHpControls] = useState(false);
   const [xpInput, setXpInput] = useState("");
   const [showXpControls, setShowXpControls] = useState(false);
 
+  // ── Mutations (writes to Zustand + Firestore) ──
+  const { handleHpChange, handleDeathSaveToggle, handleResetDeathSaves } = useHpMutations();
+  const { handleAddXp } = useXpMutations();
+  const { handleToggleInspiration } = useInspirationMutation();
+
+  // ── Derived Values ──
   const hpRatio = c.hitPoints.max > 0 ? c.hitPoints.current / c.hitPoints.max : 1;
   const hasTemp = (c.temporaryHitPoints || 0) > 0;
   const isAtZero = c.hitPoints.current <= 0;
@@ -41,51 +52,45 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
   const xpProgress = c.level < 20 ? Math.min(100, (c.experiencePoints / xpForNext) * 100) : 100;
   const xpToNext = Math.max(0, xpForNext - c.experiencePoints);
 
-  const handleHpChange = useCallback(
-    (delta: number) => {
-      const newHp = Math.max(0, Math.min(c.hitPoints.max, c.hitPoints.current + delta));
-      updateCharacter(c.id, { hitPoints: { ...c.hitPoints, current: newHp } });
-    },
-    [c, updateCharacter]
+  // ── Handlers ──
+  const onHpChange = useCallback(
+    (delta: number) => handleHpChange(c, delta),
+    [c, handleHpChange]
   );
 
-  const handleHpInput = useCallback(() => {
+  const onHpInput = useCallback(() => {
     const val = parseInt(hpInput, 10);
     if (isNaN(val)) return;
-    handleHpChange(val);
+    onHpChange(val);
     setHpInput("");
-  }, [hpInput, handleHpChange]);
+  }, [hpInput, onHpChange]);
 
-  const handleDeathSaveToggle = useCallback(
-    (type: "successes" | "failures", index: number) => {
-      const current = c.deathSaves[type];
-      const newVal = current === index + 1 ? index : current <= index ? index + 1 : index;
-      updateCharacter(c.id, { deathSaves: { ...c.deathSaves, [type]: Math.min(3, Math.max(0, newVal)) } });
-    },
-    [c, updateCharacter]
+  const onDeathSaveToggle = useCallback(
+    (type: "successes" | "failures", index: number) => handleDeathSaveToggle(c, type, index),
+    [c, handleDeathSaveToggle]
   );
 
-  const handleResetDeathSaves = useCallback(() => {
-    updateCharacter(c.id, { deathSaves: { successes: 0, failures: 0 } });
-  }, [c, updateCharacter]);
-
-  const handleInspirationToggle = useCallback(() => {
-    updateCharacter(c.id, { inspiration: !c.inspiration });
-  }, [c, updateCharacter]);
-
-  const handleXpAdd = useCallback(
-    (amount: number) => {
-      updateCharacter(c.id, { experiencePoints: c.experiencePoints + amount });
-    },
-    [c, updateCharacter]
+  const onResetDeathSaves = useCallback(
+    () => handleResetDeathSaves(c),
+    [c, handleResetDeathSaves]
   );
 
-  const handleXpInput = useCallback(() => {
+  const onInspirationToggle = useCallback(
+    () => handleToggleInspiration(c),
+    [c, handleToggleInspiration]
+  );
+
+  const onXpAdd = useCallback(
+    (amount: number) => handleAddXp(c, amount),
+    [c, handleAddXp]
+  );
+
+  const onXpInput = useCallback(() => {
     const val = parseInt(xpInput, 10);
     if (isNaN(val) || val <= 0) return;
-    handleXpAdd(val);
+    onXpAdd(val);
     setXpInput("");
-  }, [xpInput, handleXpAdd]);
+  }, [xpInput, onXpAdd]);
 
   return (
     <div className="shrink-0 px-3 pt-2 pb-2 border-b border-gold/8 bg-obsidian/70 backdrop-blur-sm">
@@ -128,7 +133,6 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
           onClick={() => { setShowXpControls(!showXpControls); setShowHpControls(false); }}
           className="flex flex-col items-center justify-center bg-gold-500/8 rounded-xl border border-gold/15 py-2 cursor-pointer active:scale-95 transition-all duration-150 relative overflow-hidden"
         >
-          {/* Mini XP bar */}
           {c.level < 20 && (
             <div
               className="absolute bottom-0 left-0 h-[3px] bg-amber-400/50 rounded-full transition-all duration-500"
@@ -162,7 +166,7 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
           <div className="flex items-center gap-1">
             <span className="text-lg font-black tabular-nums leading-none text-gold-300">+{derived.proficiencyBonus}</span>
             <button
-              onClick={(e) => { e.stopPropagation(); handleInspirationToggle(); }}
+              onClick={(e) => { e.stopPropagation(); onInspirationToggle(); }}
               className={`text-base leading-none transition-all duration-200 active:scale-90 ${
                 c.inspiration ? "text-gold-400 drop-shadow-[0_0_4px_rgba(234,179,8,0.4)]" : "text-surface-600 hover:text-surface-400"
               }`}
@@ -203,31 +207,31 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
             )}
           </div>
 
-          {/* ── DMG section ── */}
+          {/* DMG section */}
           <div>
             <span className="text-[8px] uppercase tracking-widest font-bold text-red-400/60 block mb-1">Damage</span>
             <div className="grid grid-cols-2 gap-1.5">
               <button
-                onClick={() => handleHpChange(-1)}
+                onClick={() => onHpChange(-1)}
                 className="py-2.5 rounded-lg bg-red-500/15 border border-red-500/20 text-red-400 text-sm font-bold active:scale-90 transition-all duration-150 hover:bg-red-500/25"
               >−1 DMG</button>
               <button
-                onClick={() => handleHpChange(-5)}
+                onClick={() => onHpChange(-5)}
                 className="py-2.5 rounded-lg bg-red-500/12 border border-red-500/15 text-red-400/80 text-sm font-bold active:scale-90 transition-all duration-150 hover:bg-red-500/20"
               >−5 DMG</button>
             </div>
           </div>
 
-          {/* ── HEAL section ── */}
+          {/* HEAL section */}
           <div>
             <span className="text-[8px] uppercase tracking-widest font-bold text-green-400/60 block mb-1">Healing</span>
             <div className="grid grid-cols-2 gap-1.5">
               <button
-                onClick={() => handleHpChange(1)}
+                onClick={() => onHpChange(1)}
                 className="py-2.5 rounded-lg bg-green-500/15 border border-green-500/20 text-green-400 text-sm font-bold active:scale-90 transition-all duration-150 hover:bg-green-500/25"
               >+1 HEAL</button>
               <button
-                onClick={() => handleHpChange(5)}
+                onClick={() => onHpChange(5)}
                 className="py-2.5 rounded-lg bg-green-500/12 border border-green-500/15 text-green-400/80 text-sm font-bold active:scale-90 transition-all duration-150 hover:bg-green-500/20"
               >+5 HEAL</button>
             </div>
@@ -241,12 +245,12 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
                 type="number"
                 value={hpInput}
                 onChange={(e) => setHpInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleHpInput(); }}
+                onKeyDown={(e) => { if (e.key === "Enter") onHpInput(); }}
                 placeholder="+ or − value"
                 className="flex-1 py-2.5 px-2 text-[11px] bg-obsidian-mid/60 border border-surface-700/30 rounded-lg text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all"
               />
               <button
-                onClick={handleHpInput}
+                onClick={onHpInput}
                 className="px-5 py-2.5 bg-gold-500/10 border border-gold/20 text-gold-400 text-[11px] font-semibold rounded-lg active:scale-90 transition-all duration-150 hover:bg-gold-500/15"
               >Apply</button>
             </div>
@@ -263,7 +267,7 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
                   )}
                 </div>
                 <button
-                  onClick={handleResetDeathSaves}
+                  onClick={onResetDeathSaves}
                   className="text-[9px] text-surface-500 hover:text-gold-400 transition-colors px-1.5 py-0.5 rounded border border-surface-700/30 hover:border-gold/20"
                 >Reset</button>
               </div>
@@ -274,7 +278,7 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
                     {[0, 1, 2].map((i) => (
                       <button
                         key={`s-${i}`}
-                        onClick={() => handleDeathSaveToggle("successes", i)}
+                        onClick={() => onDeathSaveToggle("successes", i)}
                         className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-200 active:scale-90 ${
                           c.deathSaves.successes > i
                             ? "bg-green-500/20 border-green-500/50 text-green-400"
@@ -292,7 +296,7 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
                     {[0, 1, 2].map((i) => (
                       <button
                         key={`f-${i}`}
-                        onClick={() => handleDeathSaveToggle("failures", i)}
+                        onClick={() => onDeathSaveToggle("failures", i)}
                         className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-200 active:scale-90 ${
                           c.deathSaves.failures > i
                             ? "bg-red-500/20 border-red-500/50 text-red-400"
@@ -313,7 +317,7 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
       {/* ── EXPANDABLE XP CONTROLS ── */}
       {showXpControls && (
         <div className="animate-slide-in-up space-y-1.5 mb-1">
-          {/* XP Bar (full) */}
+          {/* XP Bar */}
           {c.level < 20 && (
             <div className="h-3 bg-surface-700/60 rounded-full overflow-hidden relative shadow-inner">
               <div
@@ -326,15 +330,15 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
           {/* XP presets */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => handleXpAdd(50)}
+              onClick={() => onXpAdd(50)}
               className="flex-1 py-2 rounded-lg bg-gold-500/10 border border-gold/15 text-gold-400 text-xs font-bold active:scale-90 transition-all duration-150 hover:bg-gold-500/15"
             >+50 XP</button>
             <button
-              onClick={() => handleXpAdd(100)}
+              onClick={() => onXpAdd(100)}
               className="flex-1 py-2 rounded-lg bg-gold-500/12 border border-gold/15 text-gold-400/90 text-xs font-bold active:scale-90 transition-all duration-150 hover:bg-gold-500/15"
             >+100 XP</button>
             <button
-              onClick={() => handleXpAdd(250)}
+              onClick={() => onXpAdd(250)}
               className="flex-1 py-2 rounded-lg bg-gold-500/8 border border-gold/10 text-gold-300/80 text-xs font-bold active:scale-90 transition-all duration-150 hover:bg-gold-500/12"
             >+250 XP</button>
           </div>
@@ -345,19 +349,19 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
               type="number"
               value={xpInput}
               onChange={(e) => setXpInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleXpInput(); }}
+              onKeyDown={(e) => { if (e.key === "Enter") onXpInput(); }}
               placeholder="Custom XP amount"
               className="flex-1 py-2.5 px-2 text-[11px] bg-obsidian-mid/60 border border-surface-700/30 rounded-lg text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all"
             />
             <button
-              onClick={handleXpInput}
+              onClick={onXpInput}
               className="px-5 py-2.5 bg-gold-500/10 border border-gold/20 text-gold-400 text-[11px] font-semibold rounded-lg active:scale-90 transition-all duration-150 hover:bg-gold-500/15"
             >Add XP</button>
           </div>
         </div>
       )}
 
-      {/* Tap hints — contextual */}
+      {/* Tap hints */}
       {!showHpControls && !showXpControls && (
         <div className="flex items-center justify-center gap-3">
           <span className="text-[7px] uppercase tracking-widest text-surface-500">Tap HP to manage HP</span>
