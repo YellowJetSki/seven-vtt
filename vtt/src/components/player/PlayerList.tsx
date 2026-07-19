@@ -1,17 +1,12 @@
 /**
- * STᚱ VTT — Player List
+ * ST R VTT - Player List (DM Management Hub)
  *
- * Displays all player characters in a mobile-first layout with
- * a DM-facing creation modal that supports name, race, class, level,
- * and image URL (full-width banner on the character sheet).
- * Composed of PlayerListHeader, PlayerListEmptyState, PlayerListGrid,
- * PlayerCardCompact, and PlayerCreateModal sub-components.
- *
- * - Mobile: Single column card list
- * - Tablet: 2-column grid
- * - Desktop: 3-column grid
- *
- * Each card shows key stats at a glance. Tapping opens full PlayerSheet modal.
+ * Complete DM-facing party management with:
+ * - Party Power Matrix — at-a-glance tactical stats overview
+ * - Character creation modal
+ * - Per-card manage overlay (edit, duplicate, level up, delete)
+ * - Mobile-first card grid
+ * - Full PlayerSheet on tap
  */
 
 import { useState, useCallback } from "react";
@@ -21,14 +16,15 @@ import PlayerListHeader from "./PlayerListHeader";
 import PlayerListEmptyState from "./PlayerListEmptyState";
 import PlayerListGrid from "./PlayerListGrid";
 import PlayerCardCompact from "./PlayerCardCompact";
+import PartyPowerMatrix from "./PartyPowerMatrix";
 import PlayerSheet from "./PlayerSheet";
 import type { PlayerCharacter } from "@/types";
 
 export default function PlayerList() {
   const characters = useCampaignStore((s) => s.characters);
-  const [activeSheetChar, setActiveSheetChar] =
-    useState<PlayerCharacter | null>(null);
+  const [activeSheetChar, setActiveSheetChar] = useState<PlayerCharacter | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMatrix, setShowMatrix] = useState(false);
 
   const handleOpenSheet = useCallback((char: PlayerCharacter) => {
     setActiveSheetChar(char);
@@ -43,7 +39,16 @@ export default function PlayerList() {
       <PlayerListHeader
         characterCount={characters.length}
         onAdd={() => setShowCreateModal(true)}
+        onToggleMatrix={() => setShowMatrix((s) => !s)}
+        showMatrix={showMatrix}
       />
+
+      {/* Party Power Matrix — collapsible */}
+      {showMatrix && characters.length > 0 && (
+        <div className="mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+          <PartyPowerMatrix characters={characters} />
+        </div>
+      )}
 
       {characters.length === 0 ? (
         <PlayerListEmptyState onCreateFirst={() => setShowCreateModal(true)} />

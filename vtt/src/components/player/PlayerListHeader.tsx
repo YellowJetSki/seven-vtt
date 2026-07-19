@@ -1,18 +1,22 @@
 /**
- * STᚱ VTT — Player List Header (Premium)
+ * ST R VTT - Player List Header (DM Management)
  *
- * Compact toolbar with character count badge, action button,
- * and gold accents. "Add PC" button with floating icon animation.
+ * Premium toolbar with character count, Power Matrix toggle,
+ * and "Add PC" button with floating icon animation.
  */
 
 interface PlayerListHeaderProps {
   characterCount: number;
   onAdd: () => void;
+  onToggleMatrix: () => void;
+  showMatrix: boolean;
 }
 
 export default function PlayerListHeader({
   characterCount,
   onAdd,
+  onToggleMatrix,
+  showMatrix,
 }: PlayerListHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -23,6 +27,21 @@ export default function PlayerListHeader({
         <span className="text-[9px] text-surface-500 bg-surface-800/40 border border-white/[0.04] px-2 py-0.5 rounded-full font-medium tabular-nums">
           {characterCount}
         </span>
+
+        {/* Power Matrix toggle — only show when there are characters */}
+        {characterCount > 0 && (
+          <button
+            onClick={onToggleMatrix}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-semibold transition-all duration-200 active:scale-95 ${
+              showMatrix
+                ? "bg-gold-500/10 border border-gold/15 text-gold-400"
+                : "text-surface-500 border border-transparent hover:text-surface-300 hover:bg-white/[0.03]"
+            }`}
+          >
+            <span>📊</span>
+            <span>Matrix</span>
+          </button>
+        )}
       </div>
       <button
         onClick={onAdd}

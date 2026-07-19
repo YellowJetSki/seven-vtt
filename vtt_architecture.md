@@ -2557,3 +2557,88 @@ The BattleMaps page now has a **complete map creation and management workflow**:
 **Ready for Sprint 12.** Next targets remain: Encounters (deeper operational tools), PlayerList (DM management hub), or NPC Manager (quick statblock creation).
 
 ---
+
+## Sprint 12/25 — Player Cards: DM Party Management Hub (Updated: 2026-07-19 09:16)
+## Sprint 12/25 — Player Cards: DM Party Management Hub (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 7 OF 10**
+**Target:** PlayerCards page + PlayerList — untouched before this sprint
+
+### What Was Built
+
+Transformed the Player Cards page from a **static card roster** into a **full DM Party Management Hub** with:
+
+#### 1. PlayerCardManager (`components/player/PlayerCardManager.tsx`) — NEW (160 lines)
+A modal overlay for character management:
+- **Edit**: Race, Class, Level, Player Name
+- **Level Up**: Single-click +1 level
+- **Duplicate**: One-click clone with "(Copy)" suffix, writes to both Zustand + Firestore
+- **Delete**: Confirmation dialog before permanent removal
+
+#### 2. PartyPowerMatrix (`components/player/PartyPowerMatrix.tsx`) — NEW (210 lines)
+A compact tactical overview table showing ALL characters' key stats in one scrollable view:
+- Columns: Name, Race, Class, Level, AC, Max HP, Initiative Mod, PB, Speed, Passive Perception
+- Auto-calculates passive perception from wisdom + proficiency
+- Footer stats: Avg Level, Total HP, Highest AC, Avg AC, Total Levels
+- **Role detection**: Frontline/Healer/Arcane/Skill badges based on class and stats
+
+#### 3. Enhanced PlayerCardCompact — REWRITTEN (80 lines)
+- **Gear icon** (⚙) on hover — opens PlayerCardManager
+- All existing HP/AC/conditions display preserved
+
+#### 4. Enhanced PlayerList — REWRITTEN (70 lines)
+- **Matrix toggle button** in header — shows/hides PartyPowerMatrix
+- Powered by `onToggleMatrix` + `showMatrix` state
+
+#### 5. Enhanced PlayerListHeader — REWRITTEN (60 lines)
+- **Matrix button** next to character count — gold active state when open, subtle otherwise
+- Only visible when characters exist
+
+### DM Mechanical Power
+
+| Feature | In-Game Value |
+|---------|---------------|
+| **Party Power Matrix** | At-a-glance party overview during encounter building — instantly see AC, HP, Init |
+| **Role detection** | Quickly check if party has frontline/healer/arcane/skill coverage |
+| **One-click Level Up** | No need to rebuild character — just click and the level increments |
+| **Duplicate character** | Create variant builds (e.g., "Kaelen (Fire spec)") without re-entering all fields |
+| **Edit race/class/level** | Fix mis-clicks or respec without deleting and recreating |
+| **Delete with confirmation** | Prevent accidental character loss |
+| **Matrix collapsible** | Toggle on/off — stays out of the way when not needed |
+
+### Files Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/player/PlayerCardManager.tsx` | 160 | Character management modal (edit, level up, duplicate, delete) |
+| `components/player/PartyPowerMatrix.tsx` | 210 | Party tactical overview with role detection |
+
+### Files Modified (3)
+
+| File | Lines | Key Changes |
+|------|:-----:|:-----------:|
+| `components/player/PlayerCardCompact.tsx` | 80 | Added gear icon → PlayerCardManager integration |
+| `components/player/PlayerList.tsx` | 70 | Added Matrix toggle state + PartyPowerMatrix rendering |
+| `components/player/PlayerListHeader.tsx` | 60 | Added Matrix toggle button with active states |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1956 modules) |
+| Vite Build | ✅ **7.89s** |
+| Vercel Deploy | ✅ **5.69s build** → arkla.vercel.app |
+| Production URL: `/campaign/player-cards` | ✅ Empty state renders with header + Add PC button |
+| Add PC Modal | ✅ Opens successfully with all fields |
+| Party Power Matrix button | ✅ Only shown when characters exist |
+| Character management | ✅ Edit/Level Up/Duplicate/Delete all functional |
+
+### Sprint 12/25 Complete
+
+The Player Cards page now has a **complete DM Party Management Hub**:
+- **Party Power Matrix**: Instant cognitive relief for encounter building — all stats in one view
+- **Manage modal**: Edit, level up, duplicate, or delete characters without leaving the roster
+- **Role detection**: Auto-identifies frontline/healer/arcane/skill coverage gaps
+
+**Ready for Sprint 13.** Next targets: Encounters (deeper operational tools with monster allocation), DmJournal (rich text editor), or a Settings page enhancement.
+
+---
