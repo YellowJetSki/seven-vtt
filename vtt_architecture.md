@@ -3412,3 +3412,52 @@ Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
 **Next:** Sprint 22/25 — Remaining untouched sections: `SpellSlotMeter.tsx`, `ConditionBanner.tsx`, `PlayerCardCompact.tsx`
 
 ---
+
+## Sprint 22/25 — Player Mechanics Phase: Condition Banner & Spell Slot Meter (Updated: 2026-07-19 10:10)
+## Sprint 22/25 — Condition Banner & Spell Slot Meter Upgrade (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 7 of 10**
+**Targets:** `ConditionBanner.tsx` + `SpellSlotMeter.tsx` — premium gold re-theme + mechanical effect panel
+
+### ConditionBanner.tsx — Complete Rewrite (50→230 lines)
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Layout** | Simple flat badge row | Premium badge row with Effects + All Conditions toggle buttons |
+| **Mechanical effects** | Exported `ConditionEffectSummary` — basic 6-badge text | **New `ConditionEffectSummaryPanel`** — expandable, all 10 effect types: Incapacitated, No Actions, No Bonus, No Reactions, No Movement, ⬆/⬇ Attacks, ⬇ Saves, ⬇ Checks, Speed penalty, Auto-fail saves, Auto-fail checks |
+| **All conditions reference** | ❌ None | ✅ "All (16)" toggle shows all D&D conditions with active/inactive state, color-coded, clickable to toggle |
+| **Hover remove indicator** | ❌ None | ✅ ✕ indicator appears on hover (editable mode) |
+| **Color tokens** | `bg-warrior-500/20` purple | ✅ `bg-rose-500/15`, `bg-emerald-500/15`, `bg-amber-500/10`, `bg-red-500/15` — zero purple |
+| **`computeConditionEffects()`** | Inline in component | ✅ Extracted pure function (50 lines) for reuse |
+| **`ConditionEffectSummary`** | Purple tokens inline | ✅ Kept for API compat, updated to gold/rose/emerald/amber |
+| **Animations** | None | ✅ `slide-in-from-top-1` on panels, hover scale on badges |
+
+### SpellSlotMeter.tsx — Premium Gold Conversion (150→225 lines)
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Usage bar** | ❌ None (hidden in collapsed header) | ✅ **Always-visible mini bar** under header — gradient green→gold→red based on usage %, 500ms animated |
+| **Slot gauges** | 8px flat gold bar | ✅ 8px premium bar with gradient fill (gold→amber when low, amber→red when critical), percentage label inside bar, `shadow-[0_0_4px_rgba(234,179,8,0.15)]` |
+| **Usage pill** | `used/total` only | ✅ `used/total (75%)` — color-coded: gold (<50%), amber (50-75%), rose (>75%) |
+| **Caster type label** | ❌ None | ✅ `Full Caster`/`Half Caster`/`Third Caster` badge next to header (hidden mobile) |
+| **Empty state** | Simple "No slots" | ✅ Shows `DC` and `ATK` badges + caster type label |
+| **Concentration badge** | `bg-gold-500/10` | ✅ `bg-emerald-500/10 text-emerald-400` with pulse animation |
+| **Restore all button** | Static "🔄 Restore All" | ✅ Animated rotation on click, disabled during animation |
+| **Compact mode** | ❌ None | ✅ `compact` prop — reduced padding, hides usage % and caster label |
+| **Slot breakdown** | ❌ None | ✅ New `<details>` element with per-level status (✅ full / ◐ partial / ❌ exhausted) |
+| **Skill progression** | ❌ None | ✅ Staggered entrance animation (40ms delay per slot level) |
+| **Color tokens** | Implicitly gold | ✅ Explicit gold/amber/rose/emerald — zero purple `rogue/mage/warrior` |
+
+### Build Metrics
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **9.48s**, 1,972 modules |
+| Vercel Deploy | ✅ **24s** → arkla.vercel.app |
+| Purple tokens eliminated | ✅ `warrior-*`, `rogue-*`, `mage-*` completely purged from ConditionBanner.tsx + SpellSlotMeter.tsx |
+
+### Player Mechanics Phase — Cycle 7 of 10 Complete
+
+**Next:** Sprint 23/25 — Target remaining untouched player components: `PlayerCardCompact.tsx` (DM-facing player hub), `PlayerSheetCombatTab.tsx` sub-components, or `PlayerSheetSkills.tsx`/`PlayerSheetAbilityScores.tsx` for premium data visualization upgrades
+
+---
