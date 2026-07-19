@@ -1879,3 +1879,71 @@ DM Dashboard — the user's first-impression landing page, upgraded to Duolingo/
 | Header intact | ✅ Brand, hamburger, Exit button |
 
 ---
+
+## Sprint 4/25 — Player Cards Lusion-Grade Premium Redesign (Updated: 2026-07-19 08:43)
+## Sprint 4/25 — Player Cards Lusion-Grade Premium Redesign (2026-07-19)
+
+### Target
+Player Cards page — the DM's character roster view, upgraded to Lusion/Overrrides-grade spatial card design with soul-like glow effects and tactile depth.
+
+### Files Rewritten (8)
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `pages/PlayerCards.tsx` | 79 | Replaced glass-gold banner with cinematic multi-layer hero header matching dashboard CampaignBanner pattern: depth ring, gold edge lighting, ambient glow pocket, rune-pulse icon, meta badge, gradient border system |
+| `components/player/PlayerCardCompact.tsx` | 72 | Complete rewrite: gradient background `from-[#191b2b]/70 to-[#12131e]/85`, hover gold edge glow, directional sweep on hover, active scale feedback, shadow depth `4px→8px` on hover, top gold line that illuminates via `group-hover:via-gold-500/15` |
+| `components/player/PlayerCardAvatar.tsx` | 67 | Soul-like glow: absolute `-inset-1.5` gold blur circle behind avatar, larger 52-56px avatar, cinematic image overlay gradient, inspiration star with `float-arcane` animation, gold level badge, subClass display |
+| `components/player/PlayerCardHpBar.tsx` | 82 | Data-rich: gradient HP bar (emerald→amber→red based on ratio), temp HP overlay bar with amber tint, shimmer animation on bar, label color coding per state (emerald/amber/red), "THP" label when temp HP present |
+| `components/player/PlayerCardQuickActions.tsx` | 62 | Gradient HP buttons (`from-red-500/15 to-red-600/10`), 44px+ touch targets, hidden active press glow layer, stat badges with `bg-[#151729]/70` dark surface, gold shield/zap icons at 70% opacity group hover |
+| `components/player/PlayerCardConditions.tsx` | 67 | Color-coded condition badges per type (poison=emerald, paralyzed=amber, unconscious=red, invisible=violet, etc.), 14 condition colors, hover brightness enhancement, border with 20% opacity |
+| `components/player/PlayerListHeader.tsx` | 44 | Gradient toolbar button (`from-gold-500/12 to-amber-500/8`), gold border ring, uppercase "Party Roster" title, count badge with border, hover shadow glow |
+| `components/player/PlayerListEmptyState.tsx` | 59 | Rich empty state: floating icon in gradient container, centered title/description, gold rune divider with ✦ ᚱ ✦, gradient CTA button with hover shadow glow |
+
+### Design System Application
+
+**PlayerCardCompact (Card Token Layout):**
+```
+┌─────────────────────────────────────┐
+│  [avatar]  Character Name      Lv5  │  ← PlayerCardAvatar
+│            Race · Class              │     (gold glow aura + overlay)
+│                                     │
+│  ♥ Bloodied          32/44          │  ← PlayerCardHpBar
+│  ▓▓▓▓▓▓▓▓▓░░░░░                    │     (gradient bar + THP overlay)
+│                                     │
+│  [-5] [+5]        🛡 18  ⚡ +2     │  ← PlayerCardQuickActions
+│                                     │     (gradient buttons + stat badges)
+│  ─────────────────────────────────  │
+│  Poisoned  Prone                    │  ← PlayerCardConditions
+└─────────────────────────────────────┘
+     border: white/[0.04]
+     hover: border-gold-500/12 + -translate-y-0.5
+     glow: gold gradient directional sweep
+```
+
+**EmptyState Page (when no characters):**
+```
+         ┌──────────┐
+         │    👥    │  ← float-arcane animation
+         └──────────┘
+     No characters yet
+     Add a character to get started...
+       ✦ ᚱ ✦
+    [Create First Character]  ← gradient gold button
+```
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (tsc --noEmit) | ✅ 0 errors (1994 modules) |
+| Vite build (production) | ✅ 0 errors, 5.61s Vercel |
+| Deploy | ✅ arkla.vercel.app |
+| Player Cards page loads | ✅ "Player Characters" title, "Party Roster" header |
+| EmptyState renders | ✅ "No characters yet" + "Create First Character" |
+| Cinematic header | ✅ depth ring, gradient, rune-pulse icon |
+| Premium gradients | ✅ `from-[#...]` patterns present in DOM |
+| Group hover effects | ✅ `group-hover` classes present |
+| Sidebar intact | ✅ 7 nav links |
+| Header intact | ✅ brand, hamburger, Exit |
+
+---

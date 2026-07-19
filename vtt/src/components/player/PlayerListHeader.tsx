@@ -1,7 +1,8 @@
 /**
- * STᚱ VTT — Player List Header
+ * STᚱ VTT — Player List Header (Premium)
  *
- * Header for the player list with character count and add button.
+ * Compact toolbar with character count badge, action button,
+ * and gold accents. "Add PC" button with floating icon animation.
  */
 
 interface PlayerListHeaderProps {
@@ -14,18 +15,18 @@ export default function PlayerListHeader({
   onAdd,
 }: PlayerListHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-bold text-gold drop-shadow-[0_0_8px_rgba(234,179,8,0.1)]">
-          Player Characters
-        </span>
-        <span className="text-[10px] text-surface-500 bg-surface-800/50 px-1.5 py-0.5 rounded-full">
+    <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <div className="flex items-center gap-2.5">
+        <h2 className="text-sm font-bold text-white/80 uppercase tracking-[0.05em]">
+          Party Roster
+        </h2>
+        <span className="text-[9px] text-surface-500 bg-surface-800/40 border border-white/[0.04] px-2 py-0.5 rounded-full font-medium tabular-nums">
           {characterCount}
         </span>
       </div>
       <button
         onClick={onAdd}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold-500/10 border border-gold/25 text-gold-400 text-xs font-semibold active:scale-95 transition-all duration-200 hover:bg-gold-500/15"
+        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 text-[11px] font-semibold active:scale-95 transition-all duration-200 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 hover:shadow-[0_0_12px_rgba(234,179,8,0.06)]"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
