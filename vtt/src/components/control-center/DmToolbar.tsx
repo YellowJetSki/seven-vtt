@@ -1,8 +1,9 @@
 /**
- * STᚱ VTT — DM Toolbar (Premium Gold)
+ * STᚱ VTT — DM Toolbar (Floating Glass — Premium)
  *
- * Primary toolbar for the DM's master battle map view.
- * Gold-accented glassmorphism with ToolButton and ToolbarDivider sub-components.
+ * Floating toolbar that overlays the canvas (like Spotify's player bar).
+ * Uses glass-blur with gold edge lighting and premium button styling.
+ * Composed of ToolButton and ToolbarDivider sub-components.
  */
 
 import LaunchTheatricButton from "@/components/dashboard/LaunchTheatricButton";
@@ -45,23 +46,26 @@ export default function DmToolbar({
   const isActive = (mode: PlacementMode) => placementMode === mode;
 
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 glass-gold border-b border-gold/10 shrink-0">
-      {/* Left: Map info + back */}
-      <div className="flex items-center gap-3 min-w-0">
+    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#12131e]/85 backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.03)]">
+      {/* Top gold edge */}
+      <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-gold-500/10 to-transparent pointer-events-none" />
+
+      {/* Left: Back + Map name */}
+      <div className="flex items-center gap-2 min-w-0">
         <button
           onClick={onBack}
-          className="text-surface-400 hover:text-gold-400 text-xs transition-colors shrink-0"
+          className="text-[10px] text-surface-400 hover:text-gold-400 transition-colors font-medium px-1.5 py-1 rounded hover:bg-gold-500/5"
         >
           ← Back
         </button>
         <ToolbarDivider />
-        <h2 className="text-sm font-bold text-gold-300 truncate drop-shadow-[0_0_4px_rgba(234,179,8,0.08)]">
+        <h2 className="text-xs font-bold text-white/80 truncate drop-shadow-[0_0_4px_rgba(255,215,0,0.06)] max-w-[120px]">
           {mapName}
         </h2>
       </div>
 
       {/* Center: Tools */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         {/* Grid toggle */}
         <ToolButton
           onClick={onToggleGrid}
@@ -74,56 +78,51 @@ export default function DmToolbar({
         {/* Fog of War */}
         <ToolButton
           onClick={onToggleFog}
-          variant={showFog ? "fog" : "default"}
+          active={showFog}
           tooltip="Toggle fog of war"
+          variant="fog"
         >
-          🌫️ Fog
+          🌫️
         </ToolButton>
 
-        {/* DM Vision toggle */}
+        {/* DM Vision */}
         <ToolButton
           onClick={onToggleDmView}
-          variant={isDmView ? "dm" : "default"}
+          active={isDmView}
           tooltip="Toggle DM vision override"
+          variant="dm"
         >
-          👁 DM
+          👁
+        </ToolButton>
+
+        <ToolbarDivider />
+
+        {/* Token tools */}
+        <ToolButton onClick={onAddPlayerToken} tooltip="Add player token">
+          🛡️
+        </ToolButton>
+        <ToolButton onClick={onAddEnemyToken} tooltip="Add enemy token">
+          👹
         </ToolButton>
 
         <ToolbarDivider />
 
         {/* Placement tools */}
-        <ToolButton onClick={onAddPlayerToken} tooltip="Add player token">
-          🛡️ PC
-        </ToolButton>
-        <ToolButton onClick={onAddEnemyToken} tooltip="Add enemy token">
-          👹 Enemy
-        </ToolButton>
-
-        <ToolButton
-          onClick={() => onSetPlacementMode(isActive("light") ? "none" : "light")}
-          active={isActive("light")}
-          tooltip="Place light source"
-        >
-          💡 Light
-        </ToolButton>
-
         <ToolButton
           onClick={() => onSetPlacementMode(isActive("aoe") ? "none" : "aoe")}
           active={isActive("aoe")}
-          tooltip="Place spell area-of-effect template"
+          tooltip="Place spell AoE template"
         >
-          ✦ AoE
+          ✦
         </ToolButton>
 
-        <ToolbarDivider />
-
-        {/* Recenter — gold accent */}
+        {/* Recenter */}
         <button
           onClick={onRecenter}
-          className="px-2 py-1.5 rounded-lg text-xs bg-obsidian-mid/60 border border-gold/10 text-surface-400 hover:text-gold-400 hover:border-gold/20 hover:bg-gold-500/5 transition-all duration-150"
+          className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-gold-400 hover:border-gold-500/15 hover:bg-gold-500/5 transition-all duration-150 font-medium"
           title="Recenter view"
         >
-          ⌖ Center
+          ⌖
         </button>
       </div>
 

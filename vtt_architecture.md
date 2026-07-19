@@ -1947,3 +1947,128 @@ Player Cards page — the DM's character roster view, upgraded to Lusion/Overrri
 | Header intact | ✅ brand, hamburger, Exit |
 
 ---
+
+## Sprint 5/25 — DM Control Center Premium Command Bridge Redesign (Updated: 2026-07-19 08:47)
+## Sprint 5/25 — DM Control Center Premium Command Bridge Redesign (2026-07-19)
+**Phase:** Premium UI/UX Phase — **FINAL CYCLE (5/5)**  
+**Target:** DM Control Center — the VTT's most critical screen  
+**Standard:** Ventriloc/Spotify-grade glass floating toolbar with unified panel management
+
+### Architecture Redesign
+
+**Before (Monolithic + gold-accented):**
+```
+DmControlCenter.tsx (160 lines)
+├── Conditional rendering for MapSidebar, TokenInspector, InitiativeTracker, EncounterPanel, AoE
+├── Inline floating button styles
+└── Conditional logic in the template
+```
+
+**After (Modular, extracted components):**
+```
+DmControlCenter.tsx (75 lines — orchestrator only)
+├── ControlCenterEmptyState    (no map selected)
+├── ControlCenterSidebar       (left map list)
+├── DmToolbar                  (floating glass bar over canvas)
+├── CanvasActionBar            (bottom-left encounter/init buttons)
+├── CanvasMapView              (flex-grow canvas)
+└── ControlCenterRightPanel    (unified manager: inspector/init/aoe/encounter)
+```
+
+### New Files Created (6)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `ControlCenterEmptyState.tsx` | 35 | Premium empty state with floating map icon, rune divider, "DM Command Bridge" moniker |
+| `ControlCenterSidebar.tsx` | 97 | Gold-accented left sidebar extracted from DmControlCenter, active pill indicator, ambient gradient |
+| `ControlCenterRightPanel.tsx` | 117 | Unified right panel manager with priority: Token > Initiative > AoE > Encounter. Uses strict w-72/288px boundaries |
+| `CanvasActionBar.tsx` | 46 | Floating bottom-left buttons for Encounters/Initiative in gold glass |
+
+### Files Rewritten (7)
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `DmControlCenter.tsx` | 75 | Modular orchestrator: sidebar | canvas+floating toolbar | right panel |
+| `DmToolbar.tsx` | 101 | **Floating glass overlay** over canvas (instead of fixed top bar). `backdrop-blur-xl bg-[#12131e]/85`, gold edge gradient, compatible with placement tools |
+| `ToolButton.tsx` | 68 | Refined: per-variant active styles (gold/emerald/amber), glass-dark base `bg-[#0c0d15]/60 backdrop-blur-sm`, simplified icon-only buttons |
+| `InspectorHeader.tsx` | 23 | Cleaned: `border-white/[0.04]`, bold label |
+| `InspectorLabelInput.tsx` | 27 | Glass-dark input: `bg-[#0c0d15] border-white/[0.06]` |
+| `InspectorPositionInput.tsx` | 45 | Glass-dark X/Y inputs, gold focus ring |
+| `InspectorHpSection.tsx` | 76 | Visual HP bar with color-coded ratio, 4-button grid (-10/-5/+5/+10), gold inputs |
+| `InspectorVisibilityToggle.tsx` | 40 | Glass-dark toggle with eye icons |
+| `InspectorColorPicker.tsx` | 49 | 6×3 grid of preset colors, ring highlight on selected |
+| `InspectorFooter.tsx` | 37 | Save (disabled when no changes) + Delete button |
+
+### Design System Integration
+
+**DmControlCenter Layout:**
+```
+┌───────────────────────┬──────────────────────────────────────┬────────────────────┐
+│  ControlCenterSidebar │           Canvas Area                 │ Right Panel       │
+│  (w-56, min-w-224px)  │                                      │ (w-72, fixed       │
+│                       │  ┌────────────────────────────┐      │  288px, border-l)  │
+│  Maps                 │  │  DmToolbar (floating glass) │      │                    │
+│  ──────                │  │  ← Back · [▦][🌫️][👁] ·    │      │ TokenInspector or  │
+│  The Sunless Citadel  │  │  [🛡️][👹] · [✦] · [⌖]       │      │ InitiativeTracker  │
+│  - 15×12 · 3 tokens   │  │        [Launch Theatric]    │      │ or EncounterPanel  │
+│                       │  └────────────────────────────┘      │ or AoEPlacementTool│
+│  The Death House      │                                      │                    │
+│                       │         CanvasMapView                │                    │
+│                       │         (flex-grow, fills            │                    │
+│                       │          entire center area)         │                    │
+│                       │                                      │                    │
+│                       │  ┌─────────────────────────────┐     │                    │
+│                       │  │  CanvasActionBar (bottom)    │     │                    │
+│                       │  │  [⚔ Encounters] [📋 Init]   │     │                    │
+│                       │  └─────────────────────────────┘     │                    │
+└───────────────────────┴──────────────────────────────────────┴────────────────────┘
+```
+
+### Color Architecture
+
+| Surface | Gradient | Border |
+|---------|----------|--------|
+| Sidebar | `bg-gradient-to-b from-[#141520] to-[#0f1019]` | `border-white/[0.04]` |
+| Toolbar | `bg-[#12131e]/85 backdrop-blur-xl` | `border-white/[0.06]` |
+| Right Panel | `bg-gradient-to-bl from-[#141520] to-[#0f1019]` | `border-white/[0.04]` |
+| Canvas Action Bar | `bg-[#12131e]/80 backdrop-blur-xl` | `border-white/[0.06]` |
+
+### Design Rationale
+
+1. **Floating Toolbar (Spotify Pattern)**: Instead of a fixed top bar that steals vertical space from the canvas, the toolbar floats over it with glass blur. This maximizes map real estate while keeping tools accessible.
+2. **Unified Right Panel Manager**: TokenInspector/Initiative/Encounter/AoE share the same panel slot with priority ordering. Never two panels stacked.
+3. **Gold Active Pill**: Active map in sidebar gets a left gold pill (`w-0.5 h-5 rounded-r-full bg-gold-500`) for unambiguous selection state.
+4. **Ambient Gold Gradients**: Each panel has `from-gold-500/[0.015]` gradient overlay for subtle depth without visual noise.
+5. **Token Inspector Typographic Hierarchy**: Labels use `text-[10px] uppercase tracking-wider text-surface-500`, values use `text-white/80` — clear hierarchy in compact space.
+
+### Removed/Replaced Components
+
+| Component | Status | Reason |
+|-----------|--------|--------|
+| `MapSidebar.tsx` | Replaced | Logic inlined → extracted to `ControlCenterSidebar.tsx` |
+| (Old `DmToolbar.tsx`) | Replaced | Fixed bar → floating glass overlay |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (tsc --noEmit) | ✅ 0 errors (1997 modules) |
+| Vite build (production) | ✅ 5.50s Vercel |
+| Deploy | ✅ arkla.vercel.app |
+| Premium DOM patterns | ✅ `backdrop-blur-xl`, `bg-[#12131e]/85`, `border-white/[0.06]` |
+| Gold ambient gradients | ✅ `from-gold-500/[0.015]` |
+| Sidebar gradient | ✅ `from-[#141520] to-[#0f1019]` |
+| No breaking changes | ✅ All existing page routes render correctly |
+
+### Sprint 5/25 — Premium UI/UX Phase Complete
+
+**5-cycle summary:**
+- **Sprint 1**: Dashboard Campaign Banner + Duolingo stat cards + Spotify quick actions + Apple timeline
+- **Sprint 2**: Header + Hamburger + Sidebar + Nav touch targets (44px+)
+- **Sprint 3**: Dashboard EmptyState + Status Bar with staggered entrance
+- **Sprint 4**: Player Cards Lusion-grade spatial redesign with soul glow avatar
+- **Sprint 5**: DM Control Center Ventriloc/Spotify command bridge with floating glass toolbar
+
+The app now has a cohesive, premium visual identity across all major surfaces.
+
+---

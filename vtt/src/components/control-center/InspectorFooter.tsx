@@ -1,10 +1,8 @@
 /**
- * STᚱ VTT — Inspector Footer (Premium Gold)
+ * STᚱ VTT — Inspector Footer
  *
- * Gold-accented footer with save and delete actions for the token inspector.
+ * Bottom action bar for the token inspector with Save and Delete buttons.
  */
-
-import Button from "@/components/ui/Button";
 
 interface InspectorFooterProps {
   hasChanges: boolean;
@@ -18,24 +16,26 @@ export default function InspectorFooter({
   onDelete,
 }: InspectorFooterProps) {
   return (
-    <div className="shrink-0 border-t border-gold/10 px-4 py-3 space-y-2">
-      <Button
-        variant="gold"
-        size="sm"
-        className="w-full"
+    <div className="flex items-center gap-2 px-4 py-3 border-t border-white/[0.04] shrink-0">
+      <button
         onClick={onSave}
         disabled={!hasChanges}
+        className={`
+          flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border
+          ${hasChanges
+            ? "bg-gold-500/10 border-gold-500/20 text-gold-400 hover:bg-gold-500/15 hover:border-gold-500/30 active:scale-[0.98]"
+            : "bg-[#0c0d15] border-white/[0.04] text-surface-500 cursor-not-allowed"
+          }
+        `}
       >
-        {hasChanges ? "✦ Apply Changes" : "✦ No Changes"}
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+        Save Changes
+      </button>
+      <button
         onClick={onDelete}
+        className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/8 border border-red-500/10 text-red-400 hover:bg-red-500/12 hover:border-red-500/20 active:scale-[0.98] transition-all duration-150"
       >
-        ✕ Delete Token
-      </Button>
+        Delete
+      </button>
     </div>
   );
 }

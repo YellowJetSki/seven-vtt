@@ -1,39 +1,44 @@
 /**
  * STᚱ VTT — Inspector Color Picker
  *
- * Color preset selector for the token inspector.
+ * Token color selector with a grid of preset colors.
  */
-
-const COLOR_PRESETS = [
-  "#4a9eff", "#22c55e", "#ef4444", "#f59e0b",
-  "#8b5cf6", "#ec4899", "#06b6d4", "#f97316",
-  "#84cc16", "#14b8a6", "#d946ef", "#0ea5e9",
-];
 
 interface InspectorColorPickerProps {
   value: string;
   onChange: (color: string) => void;
 }
 
+const COLORS = [
+  "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef",
+  "#ec4899", "#f43f5e", "#ef4444", "#f97316", "#f59e0b",
+  "#eab308", "#84cc16", "#22c55e", "#14b8a6", "#06b6d4",
+  "#0ea5e9", "#64748b", "#ffffff",
+];
+
 export default function InspectorColorPicker({
   value,
   onChange,
 }: InspectorColorPickerProps) {
   return (
-    <div>
-      <label className="text-[10px] uppercase tracking-widest text-surface-500 font-black mb-1 block">
+    <div className="space-y-1.5">
+      <label className="text-[10px] uppercase tracking-wider text-surface-500 font-medium">
         Token Color
       </label>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {COLOR_PRESETS.map((c) => (
+      <div className="grid grid-cols-6 gap-1.5">
+        {COLORS.map((color) => (
           <button
-            key={c}
-            onClick={() => onChange(c)}
-            className={`w-6 h-6 rounded-full border-2 transition-all ${
-              value === c ? "border-white scale-110" : "border-transparent hover:scale-110"
-            }`}
-            style={{ backgroundColor: c }}
-            aria-label={`Select color ${c}`}
+            key={color}
+            onClick={() => onChange(color)}
+            className={`
+              w-8 h-8 rounded-lg transition-all duration-150 border
+              ${value === color
+                ? "ring-2 ring-gold-500/30 scale-110 border-transparent"
+                : "border-white/[0.06] hover:scale-105"
+              }
+            `}
+            style={{ backgroundColor: color }}
+            title={color}
           />
         ))}
       </div>

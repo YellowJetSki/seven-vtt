@@ -1,7 +1,7 @@
 /**
- * STᚱ VTT — Inspector Header (Premium Gold)
+ * STᚱ VTT — Inspector Header (Premium)
  *
- * Gold-accented title bar for the token inspector.
+ * Header for the token inspector panel with icon, title, and close button.
  */
 
 interface InspectorHeaderProps {
@@ -11,19 +11,18 @@ interface InspectorHeaderProps {
 
 export default function InspectorHeader({ icon, onClose }: InspectorHeaderProps) {
   return (
-    <div className="panel-header flex items-center justify-between px-4 py-3 shrink-0">
-      <div className="flex items-center gap-2">
-        <span className="text-lg">{icon || "⬤"}</span>
-        <span className="text-sm font-bold text-gold-300">Token Inspector</span>
+    <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.04] shrink-0">
+      <div className="flex items-center gap-2.5">
+        <span className="text-base">{icon || "📌"}</span>
+        <span className="text-sm font-bold text-white/80 tracking-wide">
+          Token Inspector
+        </span>
       </div>
       <button
         onClick={onClose}
-        className="p-1 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-colors"
-        aria-label="Close inspector"
+        className="w-7 h-7 rounded-lg flex items-center justify-center text-surface-500 hover:text-white/80 hover:bg-white/[0.04] transition-all duration-150 text-xs"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        ✕
       </button>
     </div>
   );

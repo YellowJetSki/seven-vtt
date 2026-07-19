@@ -1,14 +1,15 @@
 /**
- * STᚱ VTT — Inspector Position Input (Premium Gold)
+ * STᚱ VTT — Inspector Position Input
  *
- * Gold-accented X/Y grid coordinate inputs for the token inspector.
+ * Grid coordinate inputs for token position (X/Y).
+ * Gold-accented focus states.
  */
 
 interface InspectorPositionInputProps {
   x: number;
   y: number;
-  onXChange: (x: number) => void;
-  onYChange: (y: number) => void;
+  onXChange: (value: number) => void;
+  onYChange: (value: number) => void;
 }
 
 export default function InspectorPositionInput({
@@ -18,29 +19,27 @@ export default function InspectorPositionInput({
   onYChange,
 }: InspectorPositionInputProps) {
   return (
-    <div>
-      <label className="text-[10px] uppercase tracking-widest text-gold-500/60 font-black mb-1.5 block">
-        Position (Grid)
+    <div className="space-y-1.5">
+      <label className="text-[10px] uppercase tracking-wider text-surface-500 font-medium">
+        Position (grid)
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex gap-2">
         <div className="flex-1">
-          <span className="text-[10px] text-surface-500">X</span>
+          <span className="text-[9px] text-surface-500 block mb-0.5">X</span>
           <input
             type="number"
             value={x}
-            onChange={(e) => onXChange(parseInt(e.target.value) || 0)}
-            className="w-full py-1 px-2 text-xs bg-obsidian-mid/60 border border-surface-700/30 rounded-lg text-surface-200 focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all outline-none"
-            min={0}
+            onChange={(e) => onXChange(Number(e.target.value))}
+            className="w-full px-2.5 py-1.5 rounded-lg text-xs bg-[#0c0d15] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all duration-200"
           />
         </div>
         <div className="flex-1">
-          <span className="text-[10px] text-surface-500">Y</span>
+          <span className="text-[9px] text-surface-500 block mb-0.5">Y</span>
           <input
             type="number"
             value={y}
-            onChange={(e) => onYChange(parseInt(e.target.value) || 0)}
-            className="w-full py-1 px-2 text-xs bg-obsidian-mid/60 border border-surface-700/30 rounded-lg text-surface-200 focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all outline-none"
-            min={0}
+            onChange={(e) => onYChange(Number(e.target.value))}
+            className="w-full px-2.5 py-1.5 rounded-lg text-xs bg-[#0c0d15] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all duration-200"
           />
         </div>
       </div>

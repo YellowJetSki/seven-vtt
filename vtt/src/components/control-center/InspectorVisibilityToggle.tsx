@@ -1,7 +1,8 @@
 /**
- * STᚱ VTT — Inspector Visibility Toggle (Premium Gold)
+ * STᚱ VTT — Inspector Visibility Toggle
  *
- * Gold-accented toggle switch for token visibility to players.
+ * Toggle switch for token visibility on the canvas.
+ * Gold accent when visible, dim when hidden.
  */
 
 interface InspectorVisibilityToggleProps {
@@ -14,24 +15,25 @@ export default function InspectorVisibilityToggle({
   onChange,
 }: InspectorVisibilityToggleProps) {
   return (
-    <div className="flex items-center justify-between">
-      <label className="text-[10px] uppercase tracking-widest text-gold-500/60 font-black">
-        Visible to Players
+    <div className="space-y-1.5">
+      <label className="text-[10px] uppercase tracking-wider text-surface-500 font-medium">
+        Visibility
       </label>
       <button
         onClick={() => onChange(!visible)}
-        className={`relative w-10 h-5 rounded-full transition-all duration-200 ${
-          visible
-            ? "bg-gold-500/40 shadow-[0_0_6px_rgba(234,179,8,0.15)]"
-            : "bg-surface-600/40"
-        }`}
-        aria-label={visible ? "Visible to players" : "Hidden from players"}
+        className={`
+          flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium
+          transition-all duration-200 border
+          ${visible
+            ? "bg-gold-500/8 border-gold-500/15 text-gold-400"
+            : "bg-[#0c0d15] border-white/[0.04] text-surface-500 hover:text-surface-300"
+          }
+        `}
       >
-        <span
-          className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${
-            visible ? "translate-x-5 shadow-gold-500/30" : "translate-x-0.5"
-          }`}
-        />
+        <span className={`text-sm ${visible ? "" : "opacity-40"}`}>
+          {visible ? "👁" : "👁‍🗨"}
+        </span>
+        <span>{visible ? "Visible to Players" : "Hidden from Players"}</span>
       </button>
     </div>
   );
