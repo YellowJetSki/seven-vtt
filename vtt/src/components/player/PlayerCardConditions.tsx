@@ -23,7 +23,7 @@ const conditionColors: Record<string, string> = {
   invisible: "border-violet-500/20 text-violet-400 bg-violet-500/8",
   blinded: "border-surface-500/20 text-surface-400 bg-surface-500/8",
   deafened: "border-surface-500/20 text-surface-400 bg-surface-500/8",
-  frightened: "border-purple-500/20 text-purple-400 bg-purple-500/8",
+  frightened: "border-violet-500/20 text-violet-400 bg-violet-500/8",
   charmed: "border-pink-500/20 text-pink-400 bg-pink-500/8",
   exhausted: "border-amber-500/20 text-amber-400 bg-amber-500/8",
   concentrating: "border-gold-500/20 text-gold-400 bg-gold-500/8",

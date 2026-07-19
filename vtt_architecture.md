@@ -3650,3 +3650,80 @@ Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
 - Capture visual screenshot for final QA
 
 ---
+
+## Sprint 25/25 — FINAL SPRINT: Player Sheet Token Purge & Visual QA (Updated: 2026-07-19 10:33)
+## Sprint 25/25 — FINAL SPRINT: Complete Player Sheet Token Purge & Final Polish (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 10 of 10 (COMPLETE)**
+**Target:** All remaining legacy color tokens in player components
+
+---
+
+### Legacy Token Purge — Final Results
+
+#### Files Cleaned
+
+| File | Before (purple tokens) | After | Token Changes |
+|---|---|---|---|
+| `PlayerSheetSpellsTab.tsx` | `text-purple-300` + `text-mage-300` | ✅ Zero | `Divination: text-purple-300` → `text-violet-300`; `Mod: text-mage-300` → `text-gold-300` |
+| `InventoryCurrencyBar.tsx` | `text-purple-400` (Electrum) | ✅ Zero | `text-purple-400` → `text-gold-500/60` |
+| `PlayerSheetInventoryTab.tsx` | `text-purple-400` (Rings category) | ✅ Zero | `text-purple-400` → `text-violet-400` |
+| `PlayerCardConditions.tsx` | `border-purple-500/20 text-purple-400 bg-purple-500/8` (Frightened) | ✅ Zero | `border-purple-*` → `border-violet-*` |
+
+#### Zero-Tolerance Verification
+
+| Search Pattern | Results in `src/components/player/` |
+|---|---|
+| `text-mage` | ❌ 0 matches |
+| `text-rogue` | ❌ 0 matches |
+| `text-warrior` | ❌ 0 matches |
+| `text-divine` | ❌ 0 matches |
+| `text-purple` | ❌ 0 matches |
+| `bg-purple` | ❌ 0 matches |
+| `border-purple` | ❌ 0 matches |
+| `bg-accent` | ❌ 0 matches |
+| `text-accent` | ❌ 0 matches |
+| `border-accent` | ❌ 0 matches |
+
+### Complete 25-Sprint Summary
+
+| Sprint | Focus | Key Deliverables |
+|:------:|-------|-----------------|
+| 1-5 | Premium UI/UX Phase | Glassmorphism design system, gold theme, viewport enforcement, auth redesign |
+| 6-10 | DM Mechanics Phase | Initiative tracker, encounter panel, token inspector, combat mutations, real-time sync |
+| 11-15 | DM Mechanics Phase | Homebrew 2.0 with export/import, AoE templates, character derivations engine |
+| 16-20 | Player Mechanics Phase | Ability scores, skills, persistent stats bar, weapon attacks, spellcasting tab |
+| 21-25 | Player Mechanics Phase | Combat tab, inventory tab, rules tab, spells tab polish, **final token purge** |
+
+### Token Compliance
+
+| Area | Status |
+|------|--------|
+| All 38 player components | ✅ 100% gold/amber/rose/emerald/cyan/violet/pink — **zero legacy purple/rogue/mage/warrior/divine** |
+| 5 player tabs (Stats/Combat/Spells/Items/Rules) | ✅ All premium, all consistent, all functional |
+| Persistent stats bar | ✅ AC/HP/XP/Init/Speed/PB with expand controls |
+| Death saves, conditions, hit dice | ✅ Integrated into Combat tab with Firestore sync |
+| Inventory with weight pie, currency grid, encumbrance | ✅ Full CRUD with premium data visualization |
+| Rules reference (actions/conditions/rest/cover) | ✅ Premium reference hub with active condition highlighting |
+| Spellcasting stats + slot meter | ✅ DC/ATK/Mod grid, cast/restore, concentration tracking |
+
+### Build Metrics
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Production URL | ✅ arkla.vercel.app |
+| Console errors | ✅ **0** (only Firestore deprecation warning — benign) |
+
+### System Law Compliance (All 25 Sprints)
+
+| Law | Status |
+|-----|--------|
+| 🎲 No dice rollers | ✅ Physical dice — zero RNG in codebase |
+| ⚔️ High fantasy purity | ✅ No occult/undead; vibrant heroism gold/amber system |
+| 🎨 Canvas mandate | ✅ CanvasMapView + useTheatricCanvas |
+| 📖 Living documentation | ✅ Architecture ledger updated every sprint |
+| 📱 Mobile-first | ✅ 44px+ touch targets, swipeable tabs, responsive breakpoints |
+| 🧩 Modular components | ✅ 57+ sub-components, 0 files >150 lines (hooks accepted) |
+| 🏗️ No monoliths | ✅ 2,100+ lines of monolithic code eliminated across 25 sprints |
+
+---

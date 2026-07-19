@@ -58,7 +58,7 @@ const CATEGORY_META: Record<string, { label: string; color: string; barColor: st
   armor: { label: "Armor", color: "text-cyan-400", barColor: "bg-cyan-500" },
   potion: { label: "Potions", color: "text-emerald-400", barColor: "bg-emerald-500" },
   scroll: { label: "Scrolls", color: "text-amber-400", barColor: "bg-amber-500" },
-  ring: { label: "Rings", color: "text-purple-400", barColor: "bg-purple-500" },
+  ring: { label: "Rings", color: "text-violet-400", barColor: "bg-violet-500" },
   wand: { label: "Wands", color: "text-pink-400", barColor: "bg-pink-500" },
   food: { label: "Food", color: "text-orange-400", barColor: "bg-orange-500" },
   tool: { label: "Tools", color: "text-slate-400", barColor: "bg-slate-500" },

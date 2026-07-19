@@ -50,7 +50,7 @@ interface KnownSpell {
 const SCHOOL_COLORS: Record<string, string> = {
   Abjuration: "text-cyan-300 bg-cyan-500/10 border-cyan-500/20",
   Conjuration: "text-amber-300 bg-amber-500/10 border-amber-500/20",
-  Divination: "text-purple-300 bg-purple-500/10 border-purple-500/20",
+  Divination: "text-violet-300 bg-violet-500/10 border-violet-500/20",
   Enchantment: "text-pink-300 bg-pink-500/10 border-pink-500/20",
   Evocation: "text-rose-300 bg-rose-500/10 border-rose-500/20",
   Illusion: "text-indigo-300 bg-indigo-500/10 border-indigo-500/20",
@@ -280,7 +280,7 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
         </div>
         <div className="flex flex-col items-center bg-obsidian-mid/40 rounded-xl border border-surface-700/20 py-3 hover:border-gold/10 transition-all duration-200">
           <span className="text-[9px] uppercase tracking-widest font-black text-gold-500/60">Mod</span>
-          <span className="text-2xl font-bold tabular-nums mt-0.5 text-mage-300 drop-shadow-[0_0_4px_rgba(99,102,241,0.06)]">
+          <span className="text-2xl font-bold tabular-nums mt-0.5 text-gold-300 drop-shadow-[0_0_4px_rgba(234,179,8,0.06)]">
             {spellcasting.spellcastingMod > 0 ? "+" : ""}{spellcasting.spellcastingMod}
           </span>
         </div>

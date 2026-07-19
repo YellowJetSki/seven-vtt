@@ -25,7 +25,7 @@ interface CoinDef {
 const COINS: CoinDef[] = [
   { label: "PP", key: "platinum",   color: "text-cyan-300",  icon: "💎", valueToNext: 0,  nextKey: null,            sortOrder: 5 },
   { label: "GP", key: "gold",       color: "text-amber-400", icon: "🪙", valueToNext: 10, nextKey: "platinum",      sortOrder: 4 },
-  { label: "EP", key: "electrum",   color: "text-purple-400",icon: "💠", valueToNext: 2,  nextKey: "gold",          sortOrder: 3 },
+  { label: "EP", key: "electrum",   color: "text-gold-500/60",icon: "💠", valueToNext: 2,  nextKey: "gold",          sortOrder: 3 },
   { label: "SP", key: "silver",     color: "text-surface-300",icon: "🥈", valueToNext: 10, nextKey: "electrum",      sortOrder: 2 },
   { label: "CP", key: "copper",     color: "text-amber-600", icon: "🟤", valueToNext: 10, nextKey: "silver",         sortOrder: 1 },
 ];
