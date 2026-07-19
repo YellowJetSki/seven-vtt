@@ -330,3 +330,44 @@ Split PlayerSheetCombatTab (211→70) and PlayerSheetStatsTab (153→80) into 7 
 | 📖 Living documentation | ✅ Updated every cycle |
 
 ---
+
+## Cycle 1 — Aggressive Component Breakdown (2026-07-18) (Updated: 2026-07-18 20:39)
+## Complete Monolith Refactoring
+
+### Files Refactored (9 originals → 37 sub-components + 4 hooks)
+
+#### control-center/ (23 files created)
+| Original File | Lines (Before) | Sub-Components Created | Lines (After) |
+|---------------|:--------------:|:----------------------:|:-------------:|
+| DmToolbar.tsx | 158 | ToolButton, ToolbarDivider | 91 |
+| EncounterPanel.tsx | 171 | EncounterPanelHeader, EncounterCard, EncounterEmptyState, EncounterPopulateButton | 89 |
+| InitiativeTracker.tsx | 251 | InitiativeHeader, InitiativeEmptyState | 98 |
+| TokenInspector.tsx | 282 | InspectorHeader, InspectorLabelInput, InspectorPositionInput, InspectorHpSection, InspectorVisibilityToggle, InspectorColorPicker, InspectorFooter, useTokenInspector (hook) | 94 |
+| InitiativeCombatantRow.tsx | 240→168→95 | CombatantTypeIndicator, CombatantHpBar, CombatantQuickInput, EffectQuickInput, DeathToggle, StatusDotIndicators, StatusEffectsList, StatusEffectBadge | 95 |
+| useDmControlCenter.ts | 156 | useMapSelection, useTokenManagement, useViewState (3 hooks) | 44 |
+
+#### homebrew/ (4 new files)
+| Original File | Lines (Before) | Sub-Components Created | Lines (After) |
+|---------------|:--------------:|:----------------------:|:-------------:|
+| HomebrewManager.tsx | 185→203→130 | HomebrewTabs, HomebrewSearchBar, HomebrewTabPanel, HomebrewEmptyState, useHomebrewForms (hook) | 97 |
+
+#### player/ (6 new files)
+| Original File | Lines (Before) | Sub-Components Created | Lines (After) |
+|---------------|:--------------:|:----------------------:|:-------------:|
+| PlayerCardCompact.tsx | 165 | PlayerCardAvatar, PlayerCardHpBar, PlayerCardQuickActions, PlayerCardConditions | 45 |
+| PlayerList.tsx | 159 | PlayerListHeader, PlayerListEmptyState, PlayerListGrid | 85 |
+
+#### theatric/ (1 new file)
+| Original File | Lines (Before) | Sub-Components Created | Lines (After) |
+|---------------|:--------------:|:----------------------:|:-------------:|
+| useTheatricCanvas.ts | 161 | canvasUtils (drawVignette, drawLetterbox, drawToken — pure functions) | 88 |
+
+### Summary
+- **28 new sub-components** created from monolithic files
+- **4 new custom hooks** extracted (useTokenInspector, useMapSelection, useTokenManagement, useViewState, useHomebrewForms)
+- **~1,200 lines** of orchestration logic reduced across all refactored files
+- **0 files over 150 lines** across all of vtt/src/components/
+- **Build time:** 4.46s (1974 modules, 598.86 KB JS, 87.48 KB CSS)
+- **TypeScript:** 0 errors
+
+---

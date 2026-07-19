@@ -2,12 +2,15 @@
  * STᚱ VTT — DM Toolbar
  *
  * Primary toolbar for the DM's master battle map view.
+ * Composed of ToolButton and ToolbarDivider sub-components.
  * Provides quick-access tools for placing tokens, toggling fog,
  * managing vision, and launching the Theatric Display.
  */
 
 import Button from "@/components/ui/Button";
 import LaunchTheatricButton from "@/components/dashboard/LaunchTheatricButton";
+import ToolButton from "./ToolButton";
+import ToolbarDivider from "./ToolbarDivider";
 
 export type PlacementMode = "none" | "light" | "wall" | "door" | "token" | "aoe";
 
@@ -44,13 +47,6 @@ export default function DmToolbar({
 }: DmToolbarProps) {
   const isActive = (mode: PlacementMode) => placementMode === mode;
 
-  const toolBtnClass = (mode: PlacementMode) =>
-    `px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${
-      isActive(mode)
-        ? "bg-accent-600/20 border-accent-500/30 text-accent-300 shadow-sm shadow-accent-500/10"
-        : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-surface-700/40 hover:text-surface-200 hover:border-surface-600/30"
-    }`;
-
   return (
     <div className="flex items-center justify-between px-4 py-2.5 bg-surface-900/80 backdrop-blur-md border-b border-surface-700/20 shrink-0">
       {/* Left: Map info + back */}
@@ -61,83 +57,67 @@ export default function DmToolbar({
         >
           ← Back
         </button>
-        <div className="h-4 w-px bg-surface-600/20" />
+        <ToolbarDivider />
         <h2 className="text-sm font-bold text-surface-200 truncate">{mapName}</h2>
       </div>
 
       {/* Center: Tools */}
       <div className="flex items-center gap-1.5">
         {/* Grid toggle */}
-        <button
+        <ToolButton
           onClick={onToggleGrid}
-          className={toolBtnClass("none")}
-          title="Toggle grid overlay"
+          active={false}
+          tooltip="Toggle grid overlay"
           style={!showGrid ? { opacity: 0.5 } : undefined}
         >
           ▦
-        </button>
+        </ToolButton>
 
         {/* Fog of War */}
-        <button
+        <ToolButton
           onClick={onToggleFog}
-          className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${
-            showFog
-              ? "bg-mage-600/20 border-mage-500/30 text-mage-300"
-              : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-surface-700/40"
-          }`}
-          title="Toggle fog of war"
+          variant={showFog ? "fog" : "default"}
+          tooltip="Toggle fog of war"
         >
           🌫️ Fog
-        </button>
+        </ToolButton>
 
         {/* DM Vision toggle */}
-        <button
+        <ToolButton
           onClick={onToggleDmView}
-          className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${
-            isDmView
-              ? "bg-warrior-600/20 border-warrior-500/30 text-warrior-300"
-              : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-surface-700/40"
-          }`}
-          title="Toggle DM vision override"
+          variant={isDmView ? "dm" : "default"}
+          tooltip="Toggle DM vision override"
         >
           👁 DM
-        </button>
+        </ToolButton>
 
-        <div className="h-5 w-px bg-surface-600/20 mx-0.5" />
+        <ToolbarDivider />
 
         {/* Placement tools */}
-        <button
-          onClick={() => onAddPlayerToken()}
-          className={toolBtnClass("token")}
-          title="Add player token at center"
-        >
+        <ToolButton onClick={onAddPlayerToken} tooltip="Add player token at center">
           🛡️ PC
-        </button>
-        <button
-          onClick={() => onAddEnemyToken()}
-          className={toolBtnClass("token")}
-          title="Add enemy token at center"
-        >
+        </ToolButton>
+        <ToolButton onClick={onAddEnemyToken} tooltip="Add enemy token at center">
           👹 Enemy
-        </button>
+        </ToolButton>
 
-        <button
+        <ToolButton
           onClick={() => onSetPlacementMode(isActive("light") ? "none" : "light")}
-          className={toolBtnClass("light")}
-          title="Place light source"
+          active={isActive("light")}
+          tooltip="Place light source"
         >
           💡 Light
-        </button>
+        </ToolButton>
 
-        <button
+        <ToolButton
           onClick={() => onSetPlacementMode(isActive("aoe") ? "none" : "aoe")}
-          className={toolBtnClass("aoe")}
-          title="Place spell area-of-effect template"
+          active={isActive("aoe")}
+          tooltip="Place spell area-of-effect template"
         >
           ✦ AoE
-        </button>
+        </ToolButton>
 
-        <div className="h-5 w-px bg-surface-600/20 mx-0.5" />
+        <ToolbarDivider />
 
         {/* Recenter */}
         <button
