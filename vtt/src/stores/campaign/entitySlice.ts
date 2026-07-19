@@ -16,6 +16,7 @@ export interface CampaignEntityActions {
   updateEncounter: (encounterId: string, updates: Partial<Encounter>) => void;
   setBattleMaps: (maps: BattleMap[]) => void;
   addBattleMap: (map: BattleMap) => void;
+  updateBattleMap: (mapId: string, updates: Partial<BattleMap>) => void;
   removeBattleMap: (mapId: string) => void;
   addAoETemplate: (mapId: string, template: AoETemplate) => void;
   updateAoETemplate: (mapId: string, templateId: string, updates: Partial<AoETemplate>) => void;
@@ -97,6 +98,9 @@ export function createEntitySlice(set: SetPartial, get?: GetState): CampaignEnti
 
     addBattleMap: (map) =>
       set({ battleMaps: [...g().battleMaps, map] }),
+
+    updateBattleMap: (mapId, updates) =>
+      set({ battleMaps: g().battleMaps.map((m) => (m.id === mapId ? { ...m, ...updates, updatedAt: Date.now() } : m)) }),
 
     removeBattleMap: (mapId) =>
       set({

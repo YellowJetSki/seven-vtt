@@ -2462,3 +2462,98 @@ The CampaignSettings page is now a **complete campaign configuration dashboard**
 **Ready for Sprint 11.** Next in DM Mechanics Phase remaining: BattleMaps (map creation workflow with grid config), PlayerList (DM-facing player card list + quick actions), or Encounters (more encounter operational tools).
 
 ---
+
+## Sprint 11/25 — BattleMaps: Map Creation Workflow (Updated: 2026-07-19 09:12)
+## Sprint 11/25 — BattleMaps: Map Creation Workflow (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 6 OF 10**
+**Target:** BattleMaps page + MapCreatorModal — completely untouched before this sprint
+
+### What Was Built
+Transformed the BattleMaps page from a **static empty state** into a **full map creation and management workflow** with:
+1. Map creation modal with live image preview, grid configuration, and notes
+2. Map list management with rename, delete (with confirmation), and grid overview
+3. Getting Started guide for new DMs
+
+### Architecture
+
+```
+BattleMaps Page (orchestrator)
+├── Empty State (no maps)
+│   ├── Header: glass-gold with corner ornaments
+│   ├── 🗺 EmptyState: "No Battle Maps"
+│   ├── [✦ Create Map] button → opens MapCreatorModal
+│   └── Getting Started guide (3-step: Create → Place → Run)
+│
+├── Map List (maps exist, DmControlCenter not yet open)
+│   ├── Top bar: "Battle Maps" + count badge + [+ New Map]
+│   └── Grid map cards:
+│       ├── Image preview (or "No preview" placeholder)
+│       ├── Map name (editable inline: [input] [Save] [X])
+│       ├── Grid info: "200ft x 150ft · 1200 cells"
+│       ├── Stats: "50px cells · Has notes · Created Jan 3"
+│       └── Actions: [Open Map] [Rename] [Delete → confirm]
+│
+└── DmControlCenter (maps exist + user opened a map)
+    └── Full tactical control center (existing component)
+```
+
+### New Files
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/maps/MapCreatorModal.tsx` | 210 | Full map creation form with live image preview, grid config, image fit selector, notes |
+
+### Files Modified
+
+| File | Lines | Key Changes |
+|------|:-----:|:-----------:|
+| `pages/BattleMaps.tsx` | 280 | Complete rewrite: empty state + getting started guide + map list grid + inline rename + delete confirmation + MapCreatorModal integration |
+| `stores/campaign/entitySlice.ts` | +5 | Added `updateBattleMap(mapId, updates)` to entity slice actions |
+
+### MapCreatorModal Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| Map Name | text | — | Required. Campaign-specific encounter name |
+| Image URL | text | — | Optional. Live preview with error handling |
+| Image Fit | toggle (3) | cover | cover/contain/stretch for background image |
+| Grid Width | number | 40 | Cells horizontally (1-200) |
+| Grid Height | number | 30 | Cells vertically (1-200) |
+| Cell Size | number | 50px | Pixels per cell (10-200) |
+| Notes | textarea | — | Terrain notes, encounter layout, lighting |
+
+### DM Mechanical Value
+
+| Feature | In-Game Value |
+|---------|---------------|
+| **Map creation modal** with live image preview | DMs can test URLs and see how the map will look before committing |
+| **Grid config** (width/height/size) | Full control over encounter dimensions — standard 5e grid (5ft cells) |
+| **Image fit selector** (cover/contain/stretch) | Handle different aspect ratios from various map art sources |
+| **Inline rename** | No need to delete/recreate for a typo — click Rename, edit, Save |
+| **Delete confirmation** | Prevents accidental deletion of a configured map |
+| **Getting Started guide** | New DMs see the workflow: Create → Place Tokens → Run Encounters |
+| **Map list grid** with previews | Quick visual scan to pick the right map for the current encounter |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript (tsc --noEmit) | ✅ **0 errors** (1954 modules) |
+| Vite Build | ✅ **7.50s** |
+| Vercel Deploy | ✅ **7.14s build** → arkla.vercel.app |
+| Production URL: `/campaign/maps` | ✅ Empty state renders with header + getting started + Create Map button |
+| Map Creator Modal | ✅ Opens with all fields: Name, Image URL preview, Image Fit, Grid W/H/Size, Notes |
+| Modal interaction | ✅ Close, Cancel, Create all functional |
+| `updateBattleMap` on store | ✅ Entity slice now supports incremental map updates |
+
+### Sprint 11/25 Complete
+
+The BattleMaps page now has a **complete map creation and management workflow**:
+- **Empty state**: First-time DM guidance with getting started guide
+- **Create modal**: Full form with live preview, grid config, notes
+- **Map list**: Grid cards with image preview, inline rename, delete with confirmation
+- **Path into Control Center**: [Open Map] transitions to the full DmControlCenter
+
+**Ready for Sprint 12.** Next targets remain: Encounters (deeper operational tools), PlayerList (DM management hub), or NPC Manager (quick statblock creation).
+
+---
