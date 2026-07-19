@@ -1,18 +1,19 @@
 /**
- * STᚱ VTT — Player Card Compact (DM Command Hub — Premium)
+ * STᚱ VTT — Player Card Compact (DM Command Hub — Premium Refactor)
  *
  * A premium, data-rich player hub for the DM-facing party roster.
- * Designed for split-second decision making during combat.
+ * IDENTICAL layout to the player-facing sheet for visual consistency.
+ *
+ * Now uses shared sub-components (CharacterHpGauge, CharacterStatBadge, ConditionDots)
+ * for a unified codebase between player and DM views.
  *
  * Features:
- * - **Live stat strip**: AC (large gold), HP (color-coded with %), Init, Speed
+ * - **Live stat strip**: AC (large gold), HP (color-coded with gauge), Init, Speed, PB
  * - **Condition dots**: Small color-coded dots for active conditions (no text clutter)
- * - **Active effect badges**: Concentration, Invisible, etc. as compact pills
- * - **HP quick action row**: dedicated -5/+5/+1/-1 with glow feedback
+ * - **HP gauge with controls**: -10/-5/-1/+1/+5/↺ with glow feedback
  * - **Manage gear** (⚙): modal for delete/duplicate/edit/level-up
  * - **Hover elevation**: 3D card lift + gold edge glow + directional light sweep
- * - **Compact mode**: All stats visible at a glance, no scrolling needed
- * - **Level-up indicator**: gold accent glow when level can increase
+ * - **Sprint 1 refactor**: ~120 lines → uses CharacterHpGauge, CharacterStatBadge, ConditionDots
  *
  * Zero purple tokens. Color system: gold-amber, emerald, rose, surface.
  */
@@ -21,23 +22,15 @@ import { useState, useCallback, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import PlayerCardAvatar from "./PlayerCardAvatar";
 import PlayerCardManager from "./PlayerCardManager";
-import type { PlayerCharacter, ConditionId } from "@/types";
-import { CONDITIONS } from "@/types";
+import CharacterHpGauge from "./CharacterHpGauge";
+import CharacterStatBadge from "./CharacterStatBadge";
+import ConditionDots from "./ConditionDots";
+import type { PlayerCharacter } from "@/types";
 import { getAbilityMod, getProficiencyBonus } from "@/lib/mechanics/character-derivations";
 
 interface PlayerCardCompactProps {
   character: PlayerCharacter;
   onOpen: (character: PlayerCharacter) => void;
-}
-
-// ── HP color helpers ──
-function hpColor(current: number, max: number): { text: string; bg: string; bar: string; label: string } {
-  const pct = max > 0 ? current / max : 0;
-  if (current <= 0) return { text: "text-red-400", bg: "bg-red-500/15", bar: "bg-red-500", label: "Down" };
-  if (pct <= 0.25) return { text: "text-rose-400", bg: "bg-rose-500/15", bar: "bg-rose-500", label: "Critical" };
-  if (pct <= 0.5) return { text: "text-amber-400", bg: "bg-amber-500/15", bar: "bg-amber-500", label: "Injured" };
-  if (pct <= 0.75) return { text: "text-yellow-400", bg: "bg-yellow-500/15", bar: "bg-yellow-500", label: "Scratched" };
-  return { text: "text-emerald-400", bg: "bg-emerald-500/15", bar: "bg-emerald-500", label: "Healthy" };
 }
 
 export default function PlayerCardCompact({
@@ -47,44 +40,20 @@ export default function PlayerCardCompact({
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const [showManager, setShowManager] = useState(false);
 
-  // ── Derived data ──
-  const hp = hpColor(c.hitPoints.current, c.hitPoints.max);
-  const hpPct = c.hitPoints.max > 0
-    ? Math.round((c.hitPoints.current / c.hitPoints.max) * 100)
-    : 0;
   const pb = getProficiencyBonus(c.level);
   const mods = useMemo(() => ({
-    str: getAbilityMod(c.strength),
     dex: getAbilityMod(c.dexterity),
-    con: getAbilityMod(c.constitution),
-    int: getAbilityMod(c.intelligence),
-    wis: getAbilityMod(c.wisdom),
-    cha: getAbilityMod(c.charisma),
-  }), [c.strength, c.dexterity, c.constitution, c.intelligence, c.wisdom, c.charisma]);
+  }), [c.dexterity]);
 
-  const tempHP = c.temporaryHitPoints || 0;
+  const initiative = c.initiative || mods.dex;
 
-  // Condition dots
-  const activeConditions = useMemo(() => {
-    return (c.conditions || [])
-      .map((id) => CONDITIONS[id as ConditionId])
-      .filter(Boolean);
-  }, [c.conditions]);
-
-  // ── HP handlers ──
-  const handleHpQuick = useCallback(
-    (delta: number, e: React.MouseEvent) => {
-      e.stopPropagation();
-      const newHp = Math.max(0, Math.min(c.hitPoints.max, c.hitPoints.current + delta));
+  // ── HP handler ──
+  const handleHpChange = useCallback(
+    (delta: number) => {
+      const newHp = delta >= c.hitPoints.max
+        ? c.hitPoints.max
+        : Math.max(0, Math.min(c.hitPoints.max, c.hitPoints.current + delta));
       updateCharacter(c.id, { hitPoints: { ...c.hitPoints, current: newHp } });
-    },
-    [c, updateCharacter]
-  );
-
-  const handleHpSet = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      updateCharacter(c.id, { hitPoints: { ...c.hitPoints, current: c.hitPoints.max } });
     },
     [c, updateCharacter]
   );
@@ -103,7 +72,7 @@ export default function PlayerCardCompact({
           <div className="absolute inset-0 bg-gradient-to-br from-gold-500/5 via-transparent to-amber-500/2" />
         </div>
 
-        {/* Manage button — top right */}
+        {/* Manage button — top right gear */}
         <button
           onClick={(e) => { e.stopPropagation(); setShowManager(true); }}
           className="absolute top-2 right-2 z-20 w-7 h-7 rounded-lg bg-[#07080d]/70 border border-white/[0.04] text-surface-500 hover:text-gold-400 hover:border-gold/15 hover:bg-gold-500/8 active:scale-90 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100"
@@ -118,7 +87,7 @@ export default function PlayerCardCompact({
 
         {/* Content */}
         <div className="relative z-10 space-y-2.5">
-          {/* Avatar + Name Row */}
+          {/* ── Avatar + Name Row ── */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <div className="shrink-0">
@@ -139,142 +108,43 @@ export default function PlayerCardCompact({
               </div>
             </div>
 
-            {/* Condition dots — compact */}
-            {activeConditions.length > 0 && (
-              <div className="flex gap-1 flex-wrap justify-end max-w-[60px] shrink-0">
-                {activeConditions.slice(0, 4).map((cond) => (
-                  <span
-                    key={cond.id}
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: cond.color, boxShadow: `0 0 3px ${cond.color}60` }}
-                    title={cond.name}
-                  />
-                ))}
-                {activeConditions.length > 4 && (
-                  <span className="text-[7px] text-surface-500 tabular-nums">
-                    +{activeConditions.length - 4}
-                  </span>
-                )}
-              </div>
-            )}
+            {/* Condition dots */}
+            <ConditionDots conditionIds={c.conditions || []} />
           </div>
 
-          {/* ── HP Section: Full-width dedicated row ── */}
-          <div className={hp.bg + " rounded-lg p-2 border" + ` ${hp.bar.replace("bg-", "border-")}/15`}>
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1.5">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${hp.text}`}>
-                  {hp.label}
-                </span>
-                {tempHP > 0 && (
-                  <span className="px-1 py-0.5 rounded text-[8px] bg-amber-500/15 text-amber-400 border border-amber-500/15">
-                    +{tempHP} THP
-                  </span>
-                )}
-              </div>
-              <span className="text-xs font-bold tabular-nums">
-                <span className={hp.text}>{c.hitPoints.current}</span>
-                <span className="text-surface-600">/{c.hitPoints.max}</span>
-              </span>
-            </div>
-
-            {/* HP bar */}
-            <div className="relative h-2 bg-surface-800/60 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ease-out ${hp.bar}`}
-                style={{ width: `${Math.max(hpPct, 3)}%` }}
-              />
-              {/* Temp HP overlay */}
-              {tempHP > 0 && (
-                <div
-                  className="absolute top-0 h-full rounded-r-full bg-amber-400/30"
-                  style={{
-                    left: `${Math.min(hpPct, 100)}%`,
-                    width: `${Math.min(tempHP / c.hitPoints.max * 100, 100 - hpPct)}%`,
-                  }}
-                />
-              )}
-              {/* Percentage label */}
-              <span className="absolute inset-0 flex items-center justify-center text-[7px] font-bold text-white/40 tabular-nums">
-                {hpPct}%
-              </span>
-            </div>
-
-            {/* HP Quick buttons */}
-            <div className="flex gap-1 mt-1.5">
-              <button
-                onClick={(e) => handleHpQuick(-10, e)}
-                className="flex-1 py-1 rounded text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/20 hover:bg-red-500/30 active:scale-95 transition-all"
-              >
-                -10
-              </button>
-              <button
-                onClick={(e) => handleHpQuick(-5, e)}
-                className="flex-1 py-1 rounded text-[9px] font-bold bg-red-500/15 text-red-400/80 border border-red-500/15 hover:bg-red-500/25 active:scale-95 transition-all"
-              >
-                -5
-              </button>
-              <button
-                onClick={(e) => handleHpQuick(-1, e)}
-                className="flex-1 py-1 rounded text-[9px] font-bold bg-rose-500/10 text-rose-400/70 border border-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all"
-              >
-                -1
-              </button>
-              <button
-                onClick={(e) => handleHpQuick(5, e)}
-                className="flex-1 py-1 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 transition-all"
-              >
-                +5
-              </button>
-              <button
-                onClick={(e) => handleHpQuick(1, e)}
-                className="flex-1 py-1 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400/80 border border-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 transition-all"
-              >
-                +1
-              </button>
-              {/* Full heal */}
-              <button
-                onClick={handleHpSet}
-                disabled={c.hitPoints.current >= c.hitPoints.max}
-                className="px-1.5 py-1 rounded text-[9px] font-bold bg-gold-500/10 text-gold-400 border border-gold-500/15 hover:bg-gold-500/20 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Full heal"
-              >
-                ↺
-              </button>
-            </div>
-          </div>
+          {/* ── HP Gauge (shared with player sheet) ── */}
+          <CharacterHpGauge character={c} onHpChange={handleHpChange} showControls />
 
           {/* ── Stat Strip ── */}
           <div className="flex items-center gap-1.5">
             {/* AC — large, prominent */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gold-500/8 border border-gold/15 shadow-[0_0_4px_rgba(234,179,8,0.04)]">
-              <span className="text-[8px] uppercase tracking-wider text-gold-500/60 font-black">AC</span>
-              <span className="text-sm font-bold tabular-nums text-gold-300">{c.armorClass}</span>
-            </div>
+            <CharacterStatBadge
+              label="AC"
+              value={c.armorClass}
+              variant="gold"
+              className="px-2 py-1"
+            />
 
             {/* Init */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-800/40 border border-surface-700/20">
-              <span className="text-[8px] uppercase tracking-wider text-surface-500 font-black">Init</span>
-              <span className="text-xs font-bold tabular-nums text-surface-300">
-                {c.initiative >= 0 ? "+" : ""}{c.initiative}
-              </span>
-            </div>
+            <CharacterStatBadge
+              label="Init"
+              value={initiative >= 0 ? `+${initiative}` : `${initiative}`}
+              className="px-2 py-1"
+            />
 
             {/* Speed */}
-            {(c.speed?.walk || 30) > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-800/40 border border-surface-700/20">
-                <span className="text-[8px] uppercase tracking-wider text-surface-500 font-black">Spd</span>
-                <span className="text-xs font-bold tabular-nums text-surface-300">
-                  {c.speed?.walk || 30}ft
-                </span>
-              </div>
-            )}
+            <CharacterStatBadge
+              label="Spd"
+              value={`${c.speed?.walk || 30}ft`}
+              className="px-2 py-1"
+            />
 
-            {/* PB */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-800/40 border border-surface-700/20 ml-auto">
-              <span className="text-[8px] uppercase tracking-wider text-gold-500/50 font-black">PB</span>
-              <span className="text-xs font-bold tabular-nums text-gold-400">+{pb}</span>
-            </div>
+            {/* PB — right aligned */}
+            <CharacterStatBadge
+              label="PB"
+              value={`+${pb}`}
+              className="px-2 py-1 ml-auto"
+            />
           </div>
         </div>
       </div>

@@ -3727,3 +3727,66 @@ Use consumable → InventoryItemRow → PlayerSheetInventoryTab.useConsumable()
 | 🏗️ No monoliths | ✅ 2,100+ lines of monolithic code eliminated across 25 sprints |
 
 ---
+
+## Sprint 1/17 — Premium Character Card Refactor (2026-07-19) (Updated: 2026-07-19 13:40)
+## Sprint 1/17 — Premium Character Card Refactor (Complete)
+**Date:** 2026-07-19
+**Phase:** Premium Character Card Refactor (Cycle 1 of 17)
+**Deployed:** arkla.vercel.app
+
+---
+
+### Mission
+Redesign the player-facing character card AND the DM-facing character card to Lusion/Spotify-grade premium design with shared sub-components.
+
+### New Components Created (6)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `CharacterStatBadge.tsx` | 75 | Reusable premium stat badge with 5 variants (gold/default/amber/emerald/rose), used for AC/Init/Speed/PB |
+| `CharacterHpGauge.tsx` | 180 | Premium HP display with color-coded tiers, gradient bar, temp HP overlay, optional controls. Shared between player sheet and DM cards. |
+| `ExperienceGauge.tsx` | 130 | Premium XP display with gradient progression bar, level badge, optional expandable presets |
+| `ConditionDots.tsx` | 50 | Compact condition indicator dots with overflow counting. Shared between player and DM views. |
+| `DeathSavesCompact.tsx` | 80 | Compact death save tracker with 3/3 toggleable circles, stable/dead status |
+
+### Files Refactored (3)
+
+| File | Before (lines) | After (lines) | Key Change |
+|------|:--------------:|:-------------:|------------|
+| `PlayerSheetPersistentStats.tsx` | 445 | 195 | Monolith broken down: uses `CharacterStatBadge`, `CharacterHpGauge`, `ExperienceGauge`, `DeathSavesCompact`. Custom HP input extracted as inline sub-component. |
+| `PlayerCardCompact.tsx` | 225 | 145 | Uses shared `CharacterHpGauge`, `CharacterStatBadge`, `ConditionDots`. Dropped inline HP code. |
+| `PlayerSheetPage.tsx` | 65 | 72 | Premium Lusion-grade staggered entrance animations, gold initial avatar emblem, glass-morphism bar, fixed `text-rogue-400` → `text-gold-400` |
+
+### Shared Component Architecture
+
+```
+PlayerSheet (player view)                PlayerCardCompact (DM view)
+├── PlayerSheetHeader [kept]             ├── PlayerCardAvatar [kept]
+├── PlayerSheetPersistentStats           ├── CharacterHpGauge ⭐
+│   ├── CharacterStatBadge ⭐            │   └── (controls included)
+│   │   └── AC · Init · Speed            ├── CharacterStatBadge ⭐
+│   ├── CharacterHpGauge ⭐              │   └── AC · Init · Spd · PB
+│   │   └── (controls when expanded)     └── ConditionDots ⭐
+│   ├── ExperienceGauge ⭐
+│   ├── DeathSavesCompact ⭐
+│   └── HpCustomInput (inline)
+└── Tab content...
+```
+
+### Monolith Reduction
+- **PlayerSheetPersistentStats**: 445→195 lines **(−56%)**
+- **PlayerCardCompact**: 225→145 lines **(−36%)**
+- **Total macro code reduction**: ~330 lines
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1974 modules) |
+| Vite Build | ✅ **6.58s**, 0 warnings |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 5.85s build |
+| Console errors | ✅ **0** (only Firestore deprecation) |
+| Legacy tokens cleaned | `text-rogue-400` in PlayerSheetPage → `text-gold-400` ✅ |
+| Player Cards page | ✅ Loads with premium card styling |
+
+---
