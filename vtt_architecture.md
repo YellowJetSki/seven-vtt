@@ -2225,3 +2225,61 @@ This is a **net simplification** — 7 sub-components eliminated by inlining, re
 The Initiative Tracker is now a **full Combat Command Center** with AC at a glance, turn timer, flow controls, and rapid HP/status management — all within the tracker itself. Next cycle: we can tackle the Encounter Panel, DmJournal, or HomebrewPanel.
 
 ---
+
+## Sprint 8/25 — Encounter Panel: DM Combat Command Center (Updated: 2026-07-19 08:58)
+## Sprint 8/25 — Encounter Panel: DM Combat Command Center (2026-07-19)
+**Phase:** DM Mechanics Phase — **CYCLE 3 OF 10**  
+**Target:** Encounter Panel  
+**Goal:** Transform the encounter builder into an operational tool with difficulty rating, party context, full encounter summary, and CRUD operations
+
+### Mechanical Upgrades
+
+| Feature | Cognitive Load Reduction |
+|---------|-------------------------|
+| **Difficulty Badge** | Auto-calculated using D&D 5e DMG XP thresholds (Trivial/Easy/Medium/Hard/Deadly/Impossible) with color-coded badges |
+| **Party Config Popover** | DM sets party size (1-10) + avg level (1-20), stored as reactive state. Difficulty scales with the party |
+| **XP Display** | Total base XP + adjusted XP (accounting for encounter multiplier from DMG pg. 83) |
+| **CR Range** | Displays min→max CR of all monsters in the encounter |
+| **HP Totals** | Per-group and total HP for the encounter |
+| **Type Icons** | Creature type icons on each enemy group (🧑Humanoid, 🐺Beast, 🐉Dragon, 💀Undead, etc.) |
+| **Create Encounter** | Inline form to name and create a new encounter |
+| **Duplicate Action** | One-click clone with "(Copy)" suffix |
+| **Delete Action** | Removes encounter from store; clears selection if deleted was selected |
+| **Enhanced Populate Footer** | Shows unit count, difficulty badge, total HP, and XP before populating the map |
+
+### New File
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/mechanics/encounter-cr.ts` | 175 | Encounter difficulty calculator: XP thresholds (1-20), encounter multiplier (DMG pg. 83), party size adjustment, CR→XP lookup (0-30), `analyzeEncounterDifficulty()`, `getDifficultyLabel()`, `getDifficultyColor()` |
+
+### Files Modified
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `EncounterPanel.tsx` | 220 | Full rewrite: party config state, create/duplicate/delete actions, difficulty data computation, enhanced populate flow |
+| `EncounterCard.tsx` | 170 | Full rewrite: difficulty badge, CR range, XP totals, HP totals, creature type icons, duplicate/delete actions |
+| `EncounterPanelHeader.tsx` | 110 | Full rewrite: party config popover with +/- steppers, create encounter button, encounter count badge |
+| `EncounterPopulateButton.tsx` | 70 | Full rewrite: stats summary row with difficulty badge, unit count, HP, XP |
+| `entitySlice.ts` | +4 lines | Added `removeEncounter()` and `updateEncounter()` actions |
+
+### Quality Gates
+
+| Gate | Result |
+|------|:------:|
+| TypeScript | ✅ **0 errors** (1991 modules) |
+| Build (production) | ✅ **5.65s Vercel**, 0 warnings |
+| Deploy | ✅ **arkla.vercel.app** |
+| Bundle | 192 KB CSS (24 KB gzipped), 1078 KB JS (276 KB gzipped) |
+
+### Sprint 8/25 Complete
+
+The Encounter Panel now has **full operational status** for DM combat prep:
+- **At a glance**: difficulty rating, XP, CR range, HP totals — all calculated from the actual monsters
+- **One-click actions**: Create, Duplicate, Delete, Populate
+- **Party-aware**: Set party size and average level, difficulty adjusts dynamically
+- **Real-time sync**: Mutations write to both Zustand + Firestore via existing hooks
+
+**Ready for Sprint 9.** Next in DM Mechanics Phase: DmJournal (session notes and quest tracking), CanvasMapView (interactive drag engine wiring), or HomebrewPanel (enemy builder integration).
+
+---

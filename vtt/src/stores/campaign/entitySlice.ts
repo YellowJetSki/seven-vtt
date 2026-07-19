@@ -12,6 +12,8 @@ export interface CampaignEntityActions {
   setEnemies: (enemies: EnemyDoc[]) => void;
   setEncounters: (encounters: Encounter[]) => void;
   addEncounter: (encounter: Encounter) => void;
+  removeEncounter: (encounterId: string) => void;
+  updateEncounter: (encounterId: string, updates: Partial<Encounter>) => void;
   setBattleMaps: (maps: BattleMap[]) => void;
   addBattleMap: (map: BattleMap) => void;
   removeBattleMap: (mapId: string) => void;
@@ -82,6 +84,12 @@ export function createEntitySlice(set: SetPartial, get?: GetState): CampaignEnti
 
     addEncounter: (encounter) =>
       set({ encounters: [...g().encounters, encounter] }),
+
+    removeEncounter: (encounterId) =>
+      set({ encounters: g().encounters.filter((e) => e.id !== encounterId) }),
+
+    updateEncounter: (encounterId, updates) =>
+      set({ encounters: g().encounters.map((e) => (e.id === encounterId ? { ...e, ...updates } : e)) }),
 
     setBattleMaps: (maps) => set({ battleMaps: maps }),
 
