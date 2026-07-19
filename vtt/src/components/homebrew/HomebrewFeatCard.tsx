@@ -28,7 +28,7 @@ export default function HomebrewFeatCard({ feat, onEdit, onDelete }: HomebrewFea
           )}
         </div>
         <div className="flex items-center gap-1 ml-2 shrink-0">
-          <button onClick={() => onEdit(feat)} className="p-1.5 rounded-lg hover:bg-surface-700/50 text-surface-400 hover:text-accent-300 transition-all active:scale-90">
+          <button onClick={() => onEdit(feat)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onDelete(feat.id)} className="p-1.5 rounded-lg hover:bg-red-500/15 text-surface-400 hover:text-red-400 transition-all active:scale-90">

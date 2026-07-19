@@ -36,20 +36,20 @@ export default function LightingControls({ lights, onAddLight, onRemoveLight }: 
         <div className="space-y-3 p-3 rounded-lg bg-surface-800/40 border border-surface-700/30">
           <div>
             <label className="text-[10px] uppercase tracking-widest text-surface-500 font-black">Bright Radius</label>
-            <input type="range" min={1} max={30} value={radius} onChange={e => setRadius(Number(e.target.value))} className="w-full accent-accent-500" />
+            <input type="range" min={1} max={30} value={radius} onChange={e => setRadius(Number(e.target.value))} className="w-full accent-gold-500" />
             <span className="text-xs text-surface-400">{radius} units</span>
           </div>
           <div>
             <label className="text-[10px] uppercase tracking-widest text-surface-500 font-black">Dim Radius</label>
-            <input type="range" min={1} max={60} value={dimRadius} onChange={e => setDimRadius(Number(e.target.value))} className="w-full accent-accent-500" />
+            <input type="range" min={1} max={60} value={dimRadius} onChange={e => setDimRadius(Number(e.target.value))} className="w-full accent-gold-500" />
             <span className="text-xs text-surface-400">{dimRadius} units</span>
           </div>
           <LightColorPicker value={color} onChange={setColor} />
           <div>
             <label className="text-[10px] uppercase tracking-widest text-surface-500 font-black">Intensity: {Math.round(intensity * 100)}%</label>
-            <input type="range" min={0.1} max={1} step={0.1} value={intensity} onChange={e => setIntensity(Number(e.target.value))} className="w-full accent-accent-500" />
+            <input type="range" min={0.1} max={1} step={0.1} value={intensity} onChange={e => setIntensity(Number(e.target.value))} className="w-full accent-gold-500" />
           </div>
-          <button onClick={handleAdd} className="w-full py-2 rounded-lg bg-accent-600/40 text-accent-200 text-xs font-medium border border-accent-500/30 hover:bg-accent-600/60 transition-colors">+ Add Ambient Light</button>
+          <button onClick={handleAdd} className="w-full py-2 rounded-lg bg-gold-500/10 text-gold-400 text-xs font-medium border border-gold/25 hover:bg-gold-500/20 transition-all duration-200 active:scale-[0.97]">+ Add Ambient Light</button>
           <ActiveLightsList lights={lights} onRemove={onRemoveLight} />
         </div>
       )}

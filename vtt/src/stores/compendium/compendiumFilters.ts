@@ -19,7 +19,7 @@ export function rarityColor(rarity: string): string {
     common: "text-surface-400",
     uncommon: "text-rogue-400",
     rare: "text-mage-400",
-    very_rare: "text-accent-400",
+    very_rare: "text-gold-400",
     legendary: "text-divine-400",
     artifact: "text-warrior-400",
   };

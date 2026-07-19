@@ -30,7 +30,7 @@ export default function AoEPlacementTool({ mapId, onPlace }: AoEPlacementToolPro
       <div className="flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-widest font-black text-surface-400">Spell Templates</span>
         <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent-600/15 border border-accent-500/20 text-accent-300 text-[10px] font-semibold active:scale-95 transition-all">
+          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gold-500/10 border border-gold/25 text-gold-400 text-[10px] font-semibold active:scale-95 transition-all duration-200 hover:bg-gold-500/15">
           <Plus className="w-3 h-3" />
           <span>Add AoE</span>
         </button>

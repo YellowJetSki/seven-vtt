@@ -53,10 +53,10 @@ export default function WallEditor({
               <button
                 key={item.value}
                 onClick={() => setMode(item.value)}
-                className={`p-2 rounded-lg text-[10px] transition-all ${
+                className={`p-2 rounded-lg text-[10px] transition-all duration-200 active:scale-95 ${
                   mode === item.value
-                    ? "bg-accent-600/30 border border-accent-500/30 text-accent-200"
-                    : "bg-surface-800/60 text-surface-400 hover:bg-surface-700"
+                    ? "bg-gold-500/10 border border-gold/25 text-gold-400"
+                    : "bg-surface-800/60 text-surface-400 hover:bg-gold-500/[0.03] hover:border-gold/15"
                 }`}
               >
                 <div className="font-medium">{item.label}</div>

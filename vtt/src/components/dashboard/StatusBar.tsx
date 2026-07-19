@@ -19,8 +19,8 @@ export default function StatusBar() {
 
       <div className="flex items-center gap-2">
         <span className="relative flex w-2.5 h-2.5">
-          <span className="animate-ping absolute inset-0 rounded-full bg-accent-500/40" style={{ animationDelay: "1s" }} />
-          <span className="relative rounded-full w-2.5 h-2.5 bg-accent-500" />
+          <span className="animate-ping absolute inset-0 rounded-full bg-gold-500/40" style={{ animationDelay: "1s" }} />
+          <span className="relative rounded-full w-2.5 h-2.5 bg-gold-500" />
         </span>
         <span className="text-xs text-surface-400 font-medium">Local Storage Active</span>
       </div>

@@ -18,9 +18,9 @@ const categoryIcons: Record<string, string> = {
 };
 
 const schoolColors: Record<string, string> = {
-  Abjuration: "text-mage-400", Conjuration: "text-accent-400",
+  Abjuration: "text-mage-400", Conjuration: "text-gold-400",
   Divination: "text-divine-400", Enchantment: "text-warrior-400",
-  Evocation: "text-warrior-300", Illusion: "text-accent-300",
+  Evocation: "text-warrior-300", Illusion: "text-gold-300",
   Necromancy: "text-surface-400", Transmutation: "text-rogue-400",
 };
 
@@ -39,7 +39,7 @@ export default function CompendiumCard({ entry, onDragStart }: CompendiumCardPro
       <div
         draggable={!!onDragStart}
         onDragStart={handleDragStart}
-        className="premium-surface rounded-xl p-3 cursor-default hover-lift group"
+        className="bg-obsidian-mid/50 border border-surface-700/20 rounded-xl p-3 cursor-default hover:border-gold/15 transition-all duration-200 active:scale-[0.99] group"
       >
         <div className="flex items-start gap-3">
           <span className="text-lg mt-0.5" aria-hidden="true">{icon}</span>
@@ -56,7 +56,7 @@ export default function CompendiumCard({ entry, onDragStart }: CompendiumCardPro
                 {item.category}
               </span>
               {item.requiresAttunement && (
-                <span className="text-[10px] text-accent-400 font-medium">⚡ Attunement</span>
+                <span className="text-[10px] text-gold-400 font-medium">⚡ Attunement</span>
               )}
               <span className="text-[10px] text-surface-500">{item.weight} lb</span>
               <span className="text-[10px] text-divine-400">{item.value} gp</span>
@@ -74,7 +74,7 @@ export default function CompendiumCard({ entry, onDragStart }: CompendiumCardPro
       <div
         draggable={!!onDragStart}
         onDragStart={handleDragStart}
-        className="premium-surface rounded-xl p-3 cursor-default hover-lift group"
+        className="bg-obsidian-mid/50 border border-surface-700/20 rounded-xl p-3 cursor-default hover:border-gold/15 transition-all duration-200 active:scale-[0.99] group"
       >
         <div className="flex items-start gap-3">
           <span className="text-lg mt-0.5 text-mage-400" aria-hidden="true">🔮</span>
@@ -92,7 +92,7 @@ export default function CompendiumCard({ entry, onDragStart }: CompendiumCardPro
               </span>
               <span className="text-[10px] text-surface-500">{spell.castingTime}</span>
               <span className="text-[10px] text-surface-500">{spell.range}</span>
-              {spell.concentration && <span className="text-[10px] text-accent-400">⟐ Concentration</span>}
+              {spell.concentration && <span className="text-[10px] text-gold-400">⟐ Concentration</span>}
               {spell.ritual && <span className="text-[10px] text-rogue-400">◎ Ritual</span>}
               <span className="text-[10px] text-surface-400">{spell.components.join("")}</span>
             </div>
@@ -107,7 +107,7 @@ export default function CompendiumCard({ entry, onDragStart }: CompendiumCardPro
     <div
       draggable={!!onDragStart}
       onDragStart={handleDragStart}
-      className="premium-surface rounded-xl p-3 cursor-default hover-lift group"
+      className="bg-obsidian-mid/50 border border-surface-700/20 rounded-xl p-3 cursor-default hover:border-gold/15 transition-all duration-200 active:scale-[0.99] group"
     >
       <div className="flex items-start gap-3">
         <span className="text-lg mt-0.5 text-divine-400" aria-hidden="true">🏅</span>

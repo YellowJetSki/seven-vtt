@@ -10,16 +10,16 @@ const navItems = [
 
 export default function MobileBottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-obsidian border-t border-accent-500/10 sm:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-obsidian border-t border-gold/10 sm:hidden safe-area-bottom">
       <div className="flex items-center justify-around px-2 py-1">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+              `flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200 active:scale-95 ${
                 isActive
-                  ? "text-accent-300"
+                  ? "text-gold-400 drop-shadow-[0_0_6px_rgba(234,179,8,0.08)]"
                   : "text-surface-500 hover:text-surface-300"
               }`
             }

@@ -29,17 +29,26 @@ export default function BattleMaps() {
     return (
       <AppShell>
         <div className="max-w-6xl mx-auto space-y-8">
-          <div className="glass-crystal rounded-2xl p-6">
-            <h1 className="text-2xl font-black text-gradient-arcane">Battle Maps</h1>
-            <p className="text-surface-400 text-sm mt-1">Tactical command center for your encounters</p>
-            <div className="rune-divider mt-2">✦ ✦ ✦</div>
+          <div className="glass-gold rounded-2xl p-6 relative overflow-hidden">
+            <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
+            <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
+            <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
+            <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
+            <div className="depth-ring absolute inset-0 opacity-20" />
+            <div className="relative z-10">
+              <h1 className="text-2xl font-black text-gold tracking-tight drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">
+                Battle Maps
+              </h1>
+              <p className="text-surface-400 text-sm mt-1">Tactical command center for your encounters</p>
+              <div className="rune-gold mt-3 w-full max-w-md">✦ ✦ ✦</div>
+            </div>
           </div>
           <EmptyState
             icon="🗺"
             title="No Battle Maps"
             description="Create your first tactical map to unlock the DM Control Center."
           >
-            <Button variant="arcane" size="lg" className="mt-4">✦ Create Map</Button>
+            <Button variant="gold" size="lg" className="mt-4">✦ Create Map</Button>
           </EmptyState>
         </div>
       </AppShell>

@@ -54,13 +54,13 @@ export default function CompendiumDropTarget({
       onDrop={handleDrop}
       className={`relative transition-all duration-200 ${
         isDraggingOver
-          ? "ring-2 ring-accent-500/50 ring-offset-2 ring-offset-surface-950 rounded-xl bg-accent-500/5"
+          ? "ring-2 ring-gold-500/50 ring-offset-2 ring-offset-obsidian rounded-xl bg-gold-500/5"
           : ""
       }`}
     >
       {isDraggingOver && (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-          <div className="glass-arcane rounded-xl px-4 py-2 text-sm text-accent-300 font-semibold shadow-lg">
+          <div className="glass-gold rounded-xl px-4 py-2 text-sm text-gold-300 font-semibold shadow-lg shadow-gold/10">
             ✦ Drop to add
           </div>
         </div>

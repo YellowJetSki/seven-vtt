@@ -66,10 +66,10 @@ export default function AoEPresetSelector({ gridWidth, gridHeight, onPlace }: Ao
           <button
             key={spell.name}
             onClick={() => setSelectedPreset(spell.name)}
-            className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all ${
+            className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all duration-150 active:scale-95 ${
               selectedPreset === spell.name
-                ? "bg-accent-600/20 border-accent-500/30 text-accent-300"
-                : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-surface-700/40"
+                ? "bg-gold-500/10 border-gold/25 text-gold-400"
+                : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:bg-gold-500/[0.03] hover:border-gold/15"
             }`}
           >
             {spell.name}
@@ -78,7 +78,7 @@ export default function AoEPresetSelector({ gridWidth, gridHeight, onPlace }: Ao
       </div>
       {selectedPreset && (
         <button onClick={applyPreset}
-          className="w-full py-2 rounded-lg bg-accent-600/20 border border-accent-500/20 text-accent-300 text-xs font-semibold active:scale-95 transition-all">
+          className="w-full py-2 rounded-lg bg-gold-500/10 border border-gold/25 text-gold-400 text-xs font-semibold active:scale-95 transition-all duration-200 hover:bg-gold-500/15">
           ✦ Place {selectedPreset}
         </button>
       )}

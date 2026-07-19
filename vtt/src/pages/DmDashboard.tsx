@@ -59,10 +59,10 @@ export default function DmDashboard() {
             description="Forge your first campaign or awaken an ancient realm from slumber."
           >
             <div className="flex gap-3 mt-6">
-              <Button variant="gold" size="lg">
+              <Button variant="gold" size="lg" className="shadow-gold">
                 ✦ New Campaign
               </Button>
-              <Button variant="secondary" size="lg">
+              <Button variant="secondary" size="lg" className="hover:border-gold/20 hover:text-gold-300">
                 📜 Import Campaign
               </Button>
             </div>

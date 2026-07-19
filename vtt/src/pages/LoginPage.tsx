@@ -35,11 +35,12 @@ export default function LoginPage() {
       {/* Depth ring */}
       <div className="depth-ring absolute inset-0" />
 
-      {/* Ambient fantasy glow orbs — gold tinted */}
+      {/* Ambient fantasy glow orbs — gold/amber tinted */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-24 w-[500px] h-[500px] bg-gold-500/6 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: "5s" }} />
-        <div className="absolute bottom-1/4 -right-24 w-[450px] h-[450px] bg-gold-400/5 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "2.5s", animationDuration: "6s" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/3 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: "1.25s", animationDuration: "7s" }} />
+        <div className="absolute top-1/4 -left-24 w-[600px] h-[600px] bg-gold-500/8 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDuration: "5s" }} />
+        <div className="absolute bottom-1/4 -right-24 w-[500px] h-[500px] bg-amber-400/6 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDelay: "2.5s", animationDuration: "6s" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-500/4 rounded-full blur-[160px] animate-pulse-glow" style={{ animationDelay: "1.25s", animationDuration: "7s" }} />
+        <div className="absolute top-3/4 left-1/4 w-[400px] h-[400px] bg-gold-600/4 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "3s", animationDuration: "8s" }} />
         {/* Particle sparkle overlay */}
         <div className="absolute inset-0 bg-particle opacity-60" />
       </div>

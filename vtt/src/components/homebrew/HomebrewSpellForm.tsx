@@ -24,11 +24,11 @@ export default function HomebrewSpellForm({ form, onChange, onSubmit, onClose, i
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-      <form onSubmit={handleSubmit} className="w-full sm:max-w-lg bg-surface-900 border border-surface-700/30 rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto shadow-2xl shadow-accent-500/5">
+      <form onSubmit={handleSubmit} className="w-full sm:max-w-lg bg-surface-900 border border-surface-700/30 rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto shadow-2xl shadow-gold-500/5">
         <div className="flex items-center justify-between px-4 py-3 border-b border-surface-700/20">
-          <span className="text-sm font-bold text-gradient-arcane">{isEdit ? "Edit Spell" : "New Spell"}</span>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface-700/50 text-surface-400 active:scale-90 transition-all">
-            <X className="w-4 h-4" />
+          <span className="text-sm font-bold text-gold">{isEdit ? "Edit Spell" : "New Spell"}</span>
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 active:scale-90 transition-all duration-150 group">
+            <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
           </button>
         </div>
         <div className="p-4 space-y-3">
@@ -72,17 +72,17 @@ export default function HomebrewSpellForm({ form, onChange, onSubmit, onClose, i
               <div className="flex gap-1 mt-1">
                 {COMPONENTS.map((c) => (
                   <button key={c} type="button" onClick={() => onChange({ ...form, components: form.components.includes(c) ? form.components.filter((x) => x !== c) : [...form.components, c] })}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all ${form.components.includes(c) ? "bg-accent-600/20 border-accent-500/30 text-accent-300" : "bg-surface-800/30 border-surface-700/20 text-surface-400"}`}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all duration-200 active:scale-95 ${form.components.includes(c) ? "bg-gold-500/10 border-gold/25 text-gold-400" : "bg-surface-800/30 border-surface-700/20 text-surface-400 hover:border-gold/15"}`}
                   >{c}</button>
                 ))}
               </div>
             </div>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.concentration} onChange={(e) => onChange({ ...form, concentration: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-accent-500" />
+            <input type="checkbox" checked={form.concentration} onChange={(e) => onChange({ ...form, concentration: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-gold-500" />
             <span className="text-xs text-surface-300">Requires Concentration</span>
           </label>
-          <button type="submit" className="w-full py-2.5 rounded-xl bg-accent-600/20 border border-accent-500/20 text-accent-300 text-sm font-semibold active:scale-[0.97] transition-all flex items-center justify-center gap-2">
+          <button type="submit" className="w-full py-2.5 rounded-xl bg-gold-500/10 border border-gold/25 text-gold-400 text-sm font-semibold active:scale-[0.97] transition-all duration-200 hover:bg-gold-500/15 flex items-center justify-center gap-2">
             <Check className="w-4 h-4" />
             {isEdit ? "Update Spell" : "Create Spell"}
           </button>

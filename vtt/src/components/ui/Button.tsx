@@ -1,24 +1,23 @@
 /**
- * STᚱ VTT — Button (Premium)
+ * STᚱ VTT — Button (Premium Gold System)
  *
- * Multi-variant premium button system with glassmorphism,
- * gold accents, and arcane glow effects.
- * Supports: primary, secondary, ghost, danger, arcane,
- * warrior, rogue, divine, and gold variants.
+ * Comprehensive button system with gold/amber fantasy aesthetic.
+ * Primary default is now gold-accented.
+ * Supports: gold, primary, secondary, ghost, danger,
+ * warrior, rogue, divine variants.
  */
 
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
 type ButtonVariant =
+  | "gold"
   | "primary"
   | "secondary"
   | "ghost"
   | "danger"
-  | "arcane"
   | "warrior"
   | "rogue"
-  | "divine"
-  | "gold";
+  | "divine";
 
 type ButtonSize = "sm" | "md" | "lg" | "xl";
 
@@ -30,17 +29,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "btn-arcane text-white shadow-lg shadow-accent-600/20",
+  gold: "btn-gold text-gold-300 shadow-lg shadow-gold-500/10",
+  primary:
+    "btn-gold text-gold-300 shadow-lg shadow-gold-500/10",
   secondary:
     "bg-surface-800/70 hover:bg-surface-700/80 text-surface-200 border border-surface-600/40 hover:border-surface-500/50 backdrop-blur-sm",
   ghost:
     "bg-transparent hover:bg-surface-800/50 text-surface-300 border border-transparent hover:border-surface-700/20",
   danger: "btn-warrior",
-  arcane: "btn-arcane",
   warrior: "btn-warrior",
   rogue: "btn-rogue",
   divine: "btn-divine",
-  gold: "btn-gold text-gold-300 shadow-lg shadow-gold-500/10",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

@@ -22,12 +22,12 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete }: HomebrewS
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <span className="text-[10px] uppercase tracking-wider bg-surface-700/40 text-surface-400 px-1.5 py-0.5 rounded">{spell.school}</span>
             <span className="text-[10px] text-surface-500">{spell.range}</span>
-            <span className="text-[10px] text-accent-400">{spell.components?.join(" ")}</span>
+            <span className="text-[10px] text-gold-400">{spell.components?.join(" ")}</span>
             {spell.concentration && <span className="text-[10px] text-amber-400">Concentration</span>}
           </div>
         </div>
         <div className="flex items-center gap-1 ml-2 shrink-0">
-          <button onClick={() => onEdit(spell)} className="p-1.5 rounded-lg hover:bg-surface-700/50 text-surface-400 hover:text-accent-300 transition-all active:scale-90">
+          <button onClick={() => onEdit(spell)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onDelete(spell.id)} className="p-1.5 rounded-lg hover:bg-red-500/15 text-surface-400 hover:text-red-400 transition-all active:scale-90">

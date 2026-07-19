@@ -705,3 +705,27 @@ Apply the premium gold design system to all mobile Player Sheet components. Enfo
 - **Lines of player code modified:** ~800+
 
 ---
+
+## Cycle 11 — Comprehensive Design System Integration (Updated: 2026-07-18 21:05)
+## Cycle 11 — Comprehensive Design System Integration (In Progress)
+**Date:** 2026-07-18
+
+### Mission
+Fully integrate the Gold/Amber fantasy design system across ALL pages and components. This is a system-wide aesthetic unification pass.
+
+### Scope
+- **9 pages** → All page headers, titles, dividers, and containers
+- **11 sub-components** → Button, EmptyState, LoadingSpinner, Modal, Header, Sidebar, MobileBottomNav, PlayerPageHeader, StatusBar, RecentActivity, StatCard, QuickActions
+- **CSS** → Eliminate purple accent tokens in favor of gold/amber
+
+### Design Token Migration Plan
+| Old Token | New Token | Files Affected |
+|-----------|-----------|----------------|
+| `glass-crystal` | `glass-gold` | 9 pages |
+| `text-gradient-arcane` | `text-gold` | 9 pages |
+| `rune-divider` | `rune-gold` | 9 pages |
+| `variant="arcane"` | `variant="gold"` | EmptyState buttons |
+| `bg-accent-*` | `bg-gold-*` | CSS classes |
+| `border-accent-*` | `border-gold-*` | CSS classes |
+| `text-accent-*` | `text-gold-*` | All text
+---

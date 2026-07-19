@@ -15,10 +15,10 @@ export default function MapViewControls({
     <div className="absolute top-4 right-4 flex gap-2">
       <button
         onClick={onToggleFog}
-        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 active:scale-95 ${
           showFog
-            ? "bg-accent-600/40 text-accent-200 border border-accent-500/30"
-            : "bg-surface-800/60 text-surface-400 border border-surface-600/30 hover:bg-surface-700"
+            ? "bg-gold-500/10 text-gold-400 border border-gold/25"
+            : "bg-surface-800/60 text-surface-400 border border-surface-600/30 hover:bg-gold-500/[0.03] hover:border-gold/15"
         }`}
       >
         {showFog ? "🔦 Fog On" : "🌫 Fog Off"}

@@ -17,7 +17,7 @@ export default function GlobalCompendium() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-lg font-black text-gradient-arcane">Global Compendium</h2>
+        <h2 className="text-lg font-black text-gold drop-shadow-[0_0_8px_rgba(234,179,8,0.1)]">Global Compendium</h2>
         <button
           onClick={() => setCompact(!compact)}
           className="ml-auto text-surface-500 hover:text-surface-200 transition-colors text-xs px-2 py-1 rounded-lg border border-surface-700/30"
@@ -35,10 +35,10 @@ export default function GlobalCompendium() {
             <button
               key={tab}
               onClick={() => setTab(tab)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 active:scale-95 ${
                 activeTab === tab
-                  ? "bg-accent-600/15 text-accent-300 border border-accent-500/20"
-                  : "text-surface-400 hover:text-surface-200 border border-transparent hover:border-surface-700/30"
+                  ? "bg-gold-500/10 text-gold-400 border border-gold/25"
+                  : "text-surface-400 hover:text-surface-200 border border-transparent hover:border-gold/15"
               }`}
             >
               {tab === "items" ? "📦 Items" : tab === "spells" ? "🔮 Spells" : "🏅 Feats"}
@@ -78,7 +78,7 @@ export default function GlobalCompendium() {
               type="checkbox"
               checked={showSRD}
               onChange={toggleSRD}
-              className="rounded border-surface-600 bg-surface-800 accent-accent-500"
+              className="rounded border-surface-600 bg-surface-800 accent-gold-500"
             />
             <span className="text-[10px] text-surface-500 uppercase tracking-wider">Show SRD</span>
           </label>

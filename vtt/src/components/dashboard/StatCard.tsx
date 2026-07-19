@@ -26,8 +26,8 @@ export default function StatCard({ label, value, icon }: StatCardProps) {
         </div>
 
         {/* Gold shimmer bar */}
-        <div className="mt-2 h-0.5 w-12 shimmer-bar rounded-full bg-gold-500/10">
-          <div className="h-full w-full rounded-full bg-gold-500/20" />
+        <div className="mt-3 h-0.5 w-full shimmer-bar rounded-full bg-gold-500/8">
+          <div className="h-full w-full rounded-full bg-gradient-to-r from-gold-500/10 via-gold-400/30 to-gold-500/10" />
         </div>
       </div>
     </div>

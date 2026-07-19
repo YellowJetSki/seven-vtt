@@ -2,6 +2,7 @@
  * STᚱ VTT — Quick Actions (Premium Gold)
  *
  * Horizontal bar of quick-navigation buttons with gold accents.
+ * Uses glass-gold styling with hover-lift effects.
  */
 
 import { useNavigate } from "react-router-dom";
@@ -20,15 +21,15 @@ export default function QuickActions() {
   const navigate = useNavigate();
 
   return (
-    <div className="glass-dark rounded-xl px-4 py-3 flex items-center gap-2 flex-wrap">
-      <span className="text-[10px] uppercase tracking-widest text-gold-400 font-black mr-1">Quick Actions:</span>
+    <div className="glass-gold rounded-xl px-4 py-3 flex items-center gap-2 flex-wrap shadow-gold">
+      <span className="text-[10px] uppercase tracking-widest text-gold-400 font-black mr-1">⚡ Quick Actions:</span>
       {actions.map((action) => (
         <Button
           key={action.path}
           variant="secondary"
           size="sm"
           onClick={() => navigate(action.path)}
-          className="hover:border-gold/20 hover:text-gold-300"
+          className="hover:border-gold/20 hover:text-gold-300 border-gold/5"
         >
           {action.label}
         </Button>

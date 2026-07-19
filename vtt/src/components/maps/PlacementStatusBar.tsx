@@ -13,8 +13,8 @@ export default function PlacementStatusBar({ placementMode, wallStart }: Placeme
   };
 
   return (
-    <div className="mt-2 px-3 py-2 rounded-lg bg-accent-600/20 border border-accent-500/30 text-xs text-accent-300 flex items-center gap-2 flex-shrink-0">
-      <span className="w-2 h-2 rounded-full bg-accent-400 animate-pulse-soft" />
+    <div className="mt-2 px-3 py-2 rounded-lg bg-gold-500/8 border border-gold/20 text-xs text-gold-400 flex items-center gap-2 flex-shrink-0">
+      <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse-soft" />
       {messages[placementMode]}
     </div>
   );

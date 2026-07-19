@@ -17,17 +17,17 @@ export default function MapToolbar({ placementMode, mapName, onBack, onSetPlacem
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm"
           onClick={() => onSetPlacementMode(placementMode === "light" ? "none" : "light")}
-          className={placementMode === "light" ? "bg-accent-600/30 border-accent-500/30" : ""}>
+          className={placementMode === "light" ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.06)]" : ""}>
           💡 Place Light
         </Button>
         <Button variant="ghost" size="sm"
           onClick={() => onSetPlacementMode(placementMode === "wall" ? "none" : "wall")}
-          className={placementMode === "wall" ? "bg-accent-600/30 border-accent-500/30" : ""}>
+          className={placementMode === "wall" ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.06)]" : ""}>
           🧱 Place Wall
         </Button>
         <Button variant="ghost" size="sm"
           onClick={() => onSetPlacementMode(placementMode === "door" ? "none" : "door")}
-          className={placementMode === "door" ? "bg-accent-600/30 border-accent-500/30" : ""}>
+          className={placementMode === "door" ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.06)]" : ""}>
           🚪 Place Door
         </Button>
       </div>
