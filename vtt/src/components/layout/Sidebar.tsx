@@ -2,8 +2,8 @@
  * STᚱ VTT — Sidebar (Premium Gold)
  *
  * Navigation sidebar with gold-accented glassmorphism.
- * Collapsible between icon-only and full-width.
- * Uses rigid min-w (w-16) and max-w (w-64) boundaries.
+ * Collapsible between icon-only (w-16) and full-width (w-64).
+ * Fixed: nav link hit targets to 44px+, proper icon centering when closed.
  */
 
 import { NavLink } from "react-router-dom";
@@ -32,10 +32,10 @@ export default function Sidebar() {
     <aside
       className={`${
         sidebarOpen ? "w-64 min-w-[16rem] max-w-[16rem]" : "w-16 min-w-[4rem] max-w-[4rem]"
-      } h-full glass-gold border-r border-gold/15 flex flex-col transition-all duration-300 ease-in-out overflow-hidden relative`}
+      } h-full glass-gold border-r border-gold/15 flex flex-col transition-all duration-300 ease-in-out overflow-hidden relative shrink-0`}
     >
       {/* Brand with ᚱ rune */}
-      <div className="flex items-center gap-3 px-4 h-14 sm:h-16 border-b border-gold/10">
+      <div className="flex items-center gap-3 px-4 h-14 sm:h-16 border-b border-gold/10 shrink-0">
         <span className="text-2xl float-arcane select-none text-gold-400" aria-hidden="true">ᚱ</span>
         {sidebarOpen && (
           <span className="font-black text-gold text-lg whitespace-nowrap tracking-tight drop-shadow-[0_0_8px_rgba(234,179,8,0.15)]">
@@ -45,30 +45,32 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation — scrollable with gold scrollbar */}
-      <nav className="flex-1 min-h-0 py-4 space-y-1 px-2 overflow-y-auto scrollbar-gold">
+      <nav className="flex-1 min-h-0 py-3 space-y-0.5 px-2 overflow-y-auto scrollbar-gold">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            style={{ padding: sidebarOpen ? '0.625rem 0.75rem' : '0.625rem 0' }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+              `flex items-center ${
+                sidebarOpen ? "gap-3" : "justify-center"
+              } min-h-[44px] rounded-xl transition-all duration-200 active:scale-95 ${
                 isActive
                   ? "bg-gold-500/10 text-gold-400 border-l-[3px] border-gold-500/40 shadow-sm shadow-gold-500/5"
-                  : "text-surface-500 hover:text-surface-200 hover:bg-surface-800/30 border-l-[3px] border-transparent"
-              }`
-            }
-          >
-            <span className="text-lg flex-shrink-0">{item.icon}</span>
-            {sidebarOpen && (
-              <span className="text-sm font-semibold whitespace-nowrap tracking-wide">{item.label}</span>
-            )}
-          </NavLink>
+                  : "text-surface-500 hover:text-surface-200 hover:bg-surface-800/30 border-l-[3px] border-transparent hover:border-gold-500/10"
+              }`}
+            >
+              <span className="text-lg flex-shrink-0">{item.icon}</span>
+              {sidebarOpen && (
+                <span className="text-sm font-semibold whitespace-nowrap tracking-wide truncate">{item.label}</span>
+              )}
+            </NavLink>
         ))}
       </nav>
 
       {/* Footer */}
       {sidebarOpen && (
-        <div className="px-4 py-3 border-t border-gold/10">
+        <div className="px-4 py-3 border-t border-gold/10 shrink-0">
           <div className="rune-gold justify-center text-[8px]">✦ ᚱ ✦</div>
         </div>
       )}

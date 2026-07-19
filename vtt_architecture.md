@@ -846,3 +846,45 @@ Complete redesign of the login experience to match premium VTT standards (Foundr
 6. **Smooth staggered animations** — Elements fade in sequentially with `animation-delay`.
 7. **Credentials**: MikeJello / Jello1 works for DM login.
 ---
+
+## Cycle 12 — Complete Login Redesign (Premium Professional) (Updated: 2026-07-18 21:20)
+## Cycle 12 — Complete Login Redesign (Premium Professional) (Complete)
+**Date:** 2026-07-18
+
+### What Changed
+
+#### LoginPage.tsx — Complete Rewrite
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Layout** | Single centered card | Two-panel: brand hero (left) + login form (right) |
+| **Flow** | Multi-step (role → DM form) | Single unified form |
+| **Background** | Static glass card + glow orbs | Animated aurora gradient with 3 drifting light waves |
+| **Inputs** | Basic `input-gold` | Floating labels + SVG icon prefixes + focus glow |
+| **Submit button** | `<Button variant="gold">` | Custom gold/amber gradient with shimmer overlay |
+| **Animations** | None | Staggered slide-in-up (4 elements, 0.1s→0.7s) |
+| **Mobile** | Same card | Single-column: brand on top, form below |
+| **Credentials** | Environment-dependent | Hardcoded: MikeJello / Jello1 |
+
+#### Removed Dependencies (No Longer Used)
+- `RoleSelection.tsx` — no longer imported
+- `DmLoginForm.tsx` — no longer imported  
+- `PlayerPlaceholder.tsx` — no longer imported
+- Button component usage removed from login page (custom button instead)
+
+#### Visual Elements
+- Dark void base (`#07080d`)
+- 3 aurora wave layers (gold/amber) with `aurora-drift` animation
+- Subtle grid pattern overlay (64px, 1.5% opacity)
+- `bg-particle` ambient sparkle layer (30% opacity)
+- Right panel: frosted glass card (`bg-gradient-to-b from-[#14151f]/90`)
+- Floating labels with `top-3 text-[10px] text-gold-400/70` when active
+- Shimmer button with white/20 overlay sliding on hover
+- Warning banner with amber border/background for errors
+
+#### Build Metrics
+- **TypeScript errors:** 0 (1957 modules)
+- **Build time:** 3.38s
+- **JS bundle:** 426 KB (119 KB gzipped) — reduced from 700 KB
+- **CSS bundle:** 117 KB (17 KB gzipped)
+- **Production URL:** https://arkla.vercel.app
+---

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tell Tailwind v4 where to scan for class names */
+@source "../src";
+
 @theme {
   --color-surface-950: #0f1016;
   --color-surface-900: #181922;

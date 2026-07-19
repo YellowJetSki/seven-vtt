@@ -117,8 +117,8 @@ export default function LoginPage() {
           {/* Ambient glow behind the logo */}
           <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-gold-500/6 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: "6s" }} />
 
-          <div className="relative">
-            {/* Logo + Brand */}
+          <div className="relative flex flex-col h-full">
+            {/* Logo + Brand — anchored at top */}
             <div
               className="animate-slide-in-up opacity-0"
               style={{ animation: "slide-in-up 0.6s ease-out 0.1s forwards" }}
@@ -134,50 +134,44 @@ export default function LoginPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Tagline — directly below brand */}
+              <div>
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-light text-white/90 leading-tight">
+                  Forge your
+                  <span className="text-gold-400 font-semibold"> legend</span>.
+                </p>
+                <p className="text-sm sm:text-base text-surface-500 mt-4 leading-relaxed max-w-sm">
+                  A premium virtual tabletop for Dungeon Masters and adventurers. 
+                  Build worlds, command encounters, and tell epic stories.
+                </p>
+              </div>
+
+              {/* Feature highlights */}
+              <div className="mt-8 sm:mt-10 space-y-4">
+                {[
+                  { icon: "🗺", text: "Interactive battle maps with dynamic lighting" },
+                  { icon: "📜", text: "Full character management & compendium" },
+                  { icon: "🖥", text: "Dual-screen theatric display for players" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="text-lg w-8 text-center shrink-0">{item.icon}</span>
+                    <span className="text-sm text-surface-400">{item.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Tagline */}
+            {/* Footer — anchored at bottom */}
             <div
-              className="animate-slide-in-up opacity-0"
-              style={{ animation: "slide-in-up 0.6s ease-out 0.3s forwards" }}
+              className="mt-auto pt-8 animate-slide-in-up opacity-0"
+              style={{ animation: "slide-in-up 0.6s ease-out 0.7s forwards" }}
             >
-              <p className="text-3xl sm:text-4xl font-light text-white/90 leading-tight max-w-md">
-                Forge your
-                <span className="text-gold-400 font-semibold"> legend</span>.
-              </p>
-              <p className="text-base text-surface-500 mt-4 leading-relaxed max-w-sm">
-                A premium virtual tabletop for Dungeon Masters and adventurers. 
-                Build worlds, command encounters, and tell epic stories.
+              <div className="rune-gold w-full">✦ ✦ ✦</div>
+              <p className="text-[10px] text-surface-700 uppercase tracking-[0.15em] mt-3 font-medium">
+                Arkla Campaign &mdash; Premium Virtual Tabletop
               </p>
             </div>
-
-            {/* Feature highlights */}
-            <div
-              className="mt-10 space-y-4 animate-slide-in-up opacity-0"
-              style={{ animation: "slide-in-up 0.6s ease-out 0.5s forwards" }}
-            >
-              {[
-                { icon: "🗺", text: "Interactive battle maps with dynamic lighting" },
-                { icon: "📜", text: "Full character management & compendium" },
-                { icon: "🖥", text: "Dual-screen theatric display for players" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-lg w-8 text-center">{item.icon}</span>
-                  <span className="text-sm text-surface-400">{item.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div
-            className="animate-slide-in-up opacity-0"
-            style={{ animation: "slide-in-up 0.6s ease-out 0.7s forwards" }}
-          >
-            <div className="rune-gold w-full">✦ ✦ ✦</div>
-            <p className="text-[10px] text-surface-700 uppercase tracking-[0.15em] mt-3 font-medium">
-              Arkla Campaign &mdash; Premium Virtual Tabletop
-            </p>
           </div>
         </div>
 
@@ -226,7 +220,7 @@ export default function LoginPage() {
                       onChange={(e) => setUsername(e.target.value)}
                       onFocus={() => setFocusedField("username")}
                       onBlur={() => setFocusedField(null)}
-                      className="w-full h-12 pl-10 pr-4 pt-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-transparent focus:outline-none focus:border-gold-500/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(234,179,8,0.15),0_0_20px_rgba(234,179,8,0.03)] transition-all duration-200"
+                      className="w-full h-12 pl-10 pr-4 pt-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-transparent focus:outline-none focus:border-gold-500/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(234,179,8,0.15),0_0_20px_rgba(234,179,8,0.03)] transition-all duration-200"
                       placeholder="Username"
                       autoComplete="username"
                     />
@@ -234,11 +228,11 @@ export default function LoginPage() {
                       htmlFor="login-username"
                       className={`absolute left-10 top-1/2 -translate-y-1/2 text-surface-500 text-sm pointer-events-none transition-all duration-200 ${
                         isFloating("username")
-                          ? "top-3 text-[10px] text-gold-400/70"
+                          ? "top-2.5 text-[10px] text-gold-400/70"
                           : ""
                       }`}
                     >
-                      {isFloating("username") ? "Username" : "Username"}
+                      Username
                     </label>
                   </div>
 
@@ -256,7 +250,7 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => setFocusedField("password")}
                       onBlur={() => setFocusedField(null)}
-                      className="w-full h-12 pl-10 pr-4 pt-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-transparent focus:outline-none focus:border-gold-500/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(234,179,8,0.15),0_0_20px_rgba(234,179,8,0.03)] transition-all duration-200"
+                      className="w-full h-12 pl-10 pr-4 pt-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-transparent focus:outline-none focus:border-gold-500/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(234,179,8,0.15),0_0_20px_rgba(234,179,8,0.03)] transition-all duration-200"
                       placeholder="Password"
                       autoComplete="current-password"
                     />
@@ -264,11 +258,11 @@ export default function LoginPage() {
                       htmlFor="login-password"
                       className={`absolute left-10 top-1/2 -translate-y-1/2 text-surface-500 text-sm pointer-events-none transition-all duration-200 ${
                         isFloating("password")
-                          ? "top-3 text-[10px] text-gold-400/70"
+                          ? "top-2.5 text-[10px] text-gold-400/70"
                           : ""
                       }`}
                     >
-                      {isFloating("password") ? "Password" : "Password"}
+                      Password
                     </label>
                   </div>
 
@@ -284,15 +278,15 @@ export default function LoginPage() {
                     </div>
                   )}
 
-                  {/* Submit Button */}
+                  {/* Submit Button — 48px height for 44px+ touch target */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="relative w-full h-12 rounded-xl font-semibold text-sm transition-all duration-200 overflow-hidden group
+                    className="relative w-full h-12 rounded-xl font-semibold text-sm transition-all duration-200 overflow-hidden group cursor-pointer
                       bg-gradient-to-r from-gold-600/90 via-gold-500/90 to-amber-500/90
                       hover:from-gold-500 hover:via-gold-400 hover:to-amber-400
                       text-[#0a0b12] shadow-lg shadow-gold-500/20
-                      disabled:opacity-50 disabled:cursor-not-allowed
+                      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-gold-600/90
                       active:scale-[0.98]"
                   >
                     {/* Shimmer overlay */}

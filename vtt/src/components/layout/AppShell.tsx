@@ -4,6 +4,7 @@
  * Master layout shell with h-screen w-screen overflow-hidden flex.
  * Uses bg-obsidian-radial for deep fantasy atmosphere.
  * Sidebar has rigid min-w boundaries. Canvas gets flex-grow.
+ * Fixed: padding applied via inline to ensure overflow compatibility.
  */
 
 import type { ReactNode } from "react";
@@ -32,8 +33,10 @@ export default function AppShell({ children }: AppShellProps) {
       {/* Main content area — flex-grow with min-h-0 to prevent overflow collapse */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
         <Header />
-        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 pb-20 sm:pb-6 scrollbar-gold">
-          {children}
+        <main className="flex-1 min-h-0 overflow-y-auto scrollbar-gold">
+          <div className="h-full" style={{ padding: '1rem 1rem 5rem 1rem' }}>
+            {children}
+          </div>
         </main>
       </div>
 
