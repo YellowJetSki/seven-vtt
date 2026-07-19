@@ -3790,3 +3790,84 @@ PlayerSheet (player view)                PlayerCardCompact (DM view)
 | Player Cards page | ✅ Loads with premium card styling |
 
 ---
+
+## Sprint 2/17 — DM Dashboard Overhaul (2026-07-19) (Updated: 2026-07-19 13:43)
+## Sprint 2/17 — DM Dashboard Overhaul (Complete)
+**Date:** 2026-07-19
+**Phase:** DM Dashboard Overhaul (Cycle 2 of 17)
+**Deployed:** arkla.vercel.app
+
+---
+
+### Mission
+Transform the DM Dashboard into a comprehensive operations hub inspired by a physical DM screen. At-a-glance access to critical campaign stats, active player summaries, and quick-reference mechanics.
+
+### New Components Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `DmScreenContainer.tsx` | 45 | Premium layout container emulating a physical DM screen — table surface glow, screen "hood", depth shadows |
+| `DmQuickRef.tsx` | 210 | Inline 5e rules quick-reference with collapsible sections: DC Benchmarks, Light & Vision, Cover, Key Conditions, Exhaustion |
+
+### Files Refactored (4)
+
+| File | Before (lines) | After (lines) | Key Changes |
+|------|:--------------:|:-------------:|------------|
+| `DmDashboard.tsx` | 130 | 150 | Uses DmScreenContainer + DmQuickRef. Staggered entrance animations (80-210ms). Combat indicator in Party Status header. |
+| `PlayerStatusCard.tsx` | 130 | 75 | Uses shared `CharacterHpGauge` + `ConditionDots` sub-components. Staggered entry per card (index×60ms). Premium hover glow. |
+| `QuickNav.tsx` | 100 | 115 | Staggered entrance per tile (50ms). Premium accent colors (gold/emerald/amber/sky — no violet/purple). Synchronized tile data. |
+
+### DM Screen Visual Architecture
+
+```
+┌───────────────────────────────────────────────────────────┐
+│  "DM Screen hood" — subtle dark gradient at top            │
+│  "Table surface glow" — gold ambient at bottom             │
+│  "Bookend depth" — shadow gradients on left/right edges     │
+├───────────────────────────────────────────────────────────┤
+│                    Campaign Banner                         │
+│  ᚱ Arkla  ·  👥 0 Player Characters  ·  🗺 0 Active Maps |
+├──────────────────────────────┬────────────────────────────┤
+│  ⚡ Quick Navigation (6)     │  ⏱ Session Timer           │
+│                              │  ▶ Start / ■ End           │
+│                              │  Phase: Explore/Combat/Rest │
+│  🗺 Active Map               │                             │
+│  (or "→ Open Battle Maps")   │  ⚔ Combat Status           │
+│                              │  Round · Alive · Dead       │
+│  👥 Party Status             │                             │
+│  ┌─ Player 1 ─┐ ┌─ P2 ─┐   │  📋 DM Quick Reference      │
+│  │ HP gauge   │ │ ...  │   │  ├ 🎯 Difficulty Class       │
+│  │ AC badge   │ │      │   │  ├ ☀️ Light & Vision         │
+│  └────────────┘ └──────┘   │  ├ 🛡️ Cover                  │
+│                            │  ├ ⚡ Key Conditions          │
+│                            │  └ 💀 Exhaustion              │
+└──────────────────────────────┴────────────────────────────┘
+```
+
+### Mechanical Upgrades
+
+| Feature | Cognitive Load Reduction |
+|---------|------------------------|
+| **DmQuickRef** | 5e rules (DC, cover, light, conditions, exhaustion) accessible without leaving the dashboard |
+| **Staggered Entrance** | All panels fade in from bottom with 50-210ms delays — premium Lusion-grade feel |
+| **Shared CharacterHpGauge** | PlayerStatusCard now uses the same HP component as the PlayerSheet — consistent behavior |
+| **Combat Indicator** | "⚔ IN COMBAT" badge on Party Status header when active encounter is running |
+| **DM Screen Container** | Physical screen metaphor with ambient glow and depth shadows |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (1976 modules) |
+| Vite Build | ✅ **7.00s**, 0 warnings |
+| Vercel Deploy | ✅ **arkla.vercel.app**, 5.77s build |
+| Console errors | ✅ **0** (only Firestore deprecation) |
+| Campaign Banner renders | ✅ "Arkla" <h1>, stat cards with counts |
+| QuickNav 6 tiles | ✅ With staggered entrance animations |
+| Session Timer | ✅ ▶ Start button, phase selector chips |
+| Combat Status | ✅ "No active combat encounter" state |
+| Active Map Card | ✅ "No maps created yet" → "Open Battle Maps" |
+| Party Status | ✅ (shows when characters exist) |
+| DM Quick Reference | ✅ "Difficulty Class" / "Light & Vision" / "Cover" / "Key Conditions" / "Exhaustion" all collapsible |
+
+---
