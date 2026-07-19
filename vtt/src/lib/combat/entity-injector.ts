@@ -278,14 +278,29 @@ export function injectCombatEntities(input: InjectorInput): InjectorOutput {
   }
 
   // ── Resolve feats ──
-  // Look up feats from the character's features / feats list
-  const characterFeats = (character as any).activeFeats || [];
+  // Read the character's activeFeats refs (typed ActiveFeatRef[])
+  const characterFeatRefs: Array<{ featId: string; featName: string; isActive: boolean }> =
+    (character as any).activeFeats || [];
+  // Also check character.features (legacy string/feature names)
   const characterFeatureNames = (character.features || []).map((f: any) =>
     typeof f === "string" ? f : f.name
   );
-  for (const featName of [...characterFeats, ...characterFeatureNames]) {
+
+  // Only inject feats that are marked isActive=true
+  for (const ref of characterFeatRefs) {
+    if (!ref.isActive) continue;
     const match = featCatalog.find(f =>
-      f.name.toLowerCase() === (typeof featName === "string" ? featName.toLowerCase() : "")
+      f.id === ref.featId || f.name.toLowerCase() === ref.featName.toLowerCase()
+    );
+    if (match && !data.activeFeats.find(f => f.feat.id === match.id)) {
+      data.activeFeats.push({ feat: match, isActive: true });
+    }
+  }
+
+  // Also try to resolve from legacy features list (no toggle, always active)
+  for (const featName of characterFeatureNames) {
+    const match = featCatalog.find(f =>
+      f.name.toLowerCase() === featName.toLowerCase()
     );
     if (match && !data.activeFeats.find(f => f.feat.id === match.id)) {
       data.activeFeats.push({ feat: match, isActive: true });

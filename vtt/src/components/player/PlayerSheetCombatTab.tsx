@@ -24,6 +24,7 @@ import { injectCombatEntities } from "@/lib/combat/entity-injector";
 import CombatWeaponCard from "./CombatWeaponCard";
 import CombatSpellCard from "./CombatSpellCard";
 import CombatFeatCard from "./CombatFeatCard";
+import PlayerFeatsSection from "./PlayerFeatsSection";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
@@ -128,6 +129,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   }), [c, derived, itemCatalog, spellCatalog, featCatalog]);
   const [hpInput, setHpInput] = useState("");
   const [hpQuickMode, setHpQuickMode] = useState<"damage" | "heal">("damage");
+  const [showFeatsManager, setShowFeatsManager] = useState(false);
 
   // ── Combat status ──
   const hpRatio = c.hitPoints.max > 0 ? c.hitPoints.current / c.hitPoints.max : 0;
@@ -356,20 +358,37 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
       )}
 
       {/* ── FEATS & ACTIVE EFFECTS ── */}
-      {combatEntities.feats.length > 0 && (
-        <div>
-          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
-            <span className="w-1 h-3 rounded-full bg-violet-500/40" />
-            Feats & Effects
-            <span className="text-[9px] font-normal text-surface-500">({combatEntities.feats.length})</span>
-          </h3>
+      <div>
+        <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
+          <span className="w-1 h-3 rounded-full bg-violet-500/40" />
+          Feats &amp; Effects
+          <span className="text-[9px] font-normal text-surface-500">({combatEntities.feats.length})</span>
+          <button
+            onClick={() => setShowFeatsManager(!showFeatsManager)}
+            className={`ml-auto px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wider transition-all ${
+              showFeatsManager
+                ? "bg-gold-500/10 text-gold-400 border border-gold/20"
+                : "bg-surface-700/20 text-surface-500 hover:bg-surface-700/30 border border-surface-700/20"
+            }`}
+          >
+            {showFeatsManager ? "Close" : "Manage"}
+          </button>
+        </h3>
+
+        {showFeatsManager ? (
+          <PlayerFeatsSection character={character} />
+        ) : combatEntities.feats.length > 0 ? (
           <div className="space-y-1">
             {combatEntities.feats.map((feat) => (
               <CombatFeatCard key={feat.id} entity={feat} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-4 text-center text-surface-500 text-xs">
+            No active feats. Manage your feats to activate them.
+          </div>
+        )}
+      </div>
 
       {/* ── CLASS FEATURES ── */}
       {c.features.length > 0 && (

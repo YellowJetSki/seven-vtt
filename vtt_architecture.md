@@ -4343,3 +4343,62 @@ CombatEntity {
 | SRD data seeded | ✅ Compendium store now loads SRD items/spells/feats on init |
 
 ---
+
+## Sprint 9/17 — Spell Preparation & Feat Toggle System (2026-07-19) (Updated: 2026-07-19 14:39)
+## Sprint 9/17 — Spell Preparation & Feat Toggle System (Complete)
+**Date:** 2026-07-19
+**Phase:** Unified Entities & Combat Hooks Phase (Cycle 9 of 17)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Build interactive logic so equipping a weapon, preparing a spell, or toggling a feat automatically injects its data into the Combat Tab.
+
+### What Was Built
+
+#### New Files (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/player/SpellPrepareToggle.tsx` | 80 | Compact inline toggle button on each spell row. Gold dot when prepared, dim when not. Cantrips show as always-prepared with disabled state. Uses `stopPropagation` to avoid triggering row expand. |
+| `components/player/PlayerFeatsSection.tsx` | 240 | Full feats management panel. Lists all compendium feats with search, expandable details, toggle active/inactive per feat. Toggle button uses gold checkmark circle when active, "+" when inactive. Persists to `character.activeFeats[]`. |
+
+#### Files Modified (5)
+
+| File | Key Changes |
+|------|-------------|
+| `types/character.ts` | Added `ActiveFeatRef` interface (`featId`, `featName`, `isActive`). Added `preparedSpells: string[]` and `activeFeats: ActiveFeatRef[]` to `PlayerCharacter`. |
+| `components/player/PlayerCreateModal.tsx` | Initializes `preparedSpells: []` and `activeFeats: []` for new characters. |
+| `components/player/PlayerSheetSpellsTab.tsx` | Added `SpellPrepareToggle` to each `SpellRow` (prepend before level badge). Added `handleTogglePrepare()` that reads/writes `character.preparedSpells[]`. Cantrips always show as prepared. Disabled state for level=0 spells. |
+| `components/player/PlayerSheetCombatTab.tsx` | Integrated `PlayerFeatsSection` as expandable "Manage" panel within the Feats section. Added `showFeatsManager` state toggle. Feats section now shows either the condensed `CombatFeatCard` list or the full management panel. |
+| `lib/combat/entity-injector.ts` | Updated feat resolution to respect `isActive` flag from `ActiveFeatRef[]`. Only injects feats where `isActive === true`. Falls back to legacy `features[]` for non-toggled features. |
+
+### Data Flow
+
+```
+Player taps Prepare toggle on a spell
+  └─► SpellPrepareToggle.onChange(true)
+      └─► handleTogglePrepare("Fireball", true)
+          └─► updateCharacter(id, { preparedSpells: ["Fireball", ...] })
+              ├─► Zustand (instant)
+              └─► Firestore (async, real-time sync)
+
+Combat Tab re-renders
+  └─► injectCombatEntities()
+      └─► Reads character.preparedSpells[]
+      └─► Reads character.activeFeats[].filter(a => a.isActive)
+      └─► Resolves against SRD/homebrew catalog
+      └─► Returns CombatEntity[] for spells + feats
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.96s**, 1994 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| New components | 2 (SpellPrepareToggle, PlayerFeatsSection) |
+| Characters created post-deploy | ✅ Have `preparedSpells: []` and `activeFeats: []` |
+| Legacy characters (from localStorage) | ✅ Graceful fallback via `c.preparedSpells || []` |
+
+---

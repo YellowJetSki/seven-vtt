@@ -7,6 +7,19 @@ export type { BuffTarget, TempBuff } from "./character-temp-buffs";
 import type { ClassEntry, SavingThrow, SkillProficiency, HitPoints, Speed, DeathSaves, Feature, Proficiency, EquipmentSlot, InventoryItem, Currency, SpellSlots, ClassResource } from "./character-core";
 import type { TempBuff } from "./character-temp-buffs";
 
+/**
+ * A tracked feat reference on a character.
+ * Links to a HomebrewFeat by id or name and tracks activation state.
+ */
+export interface ActiveFeatRef {
+  /** HomebrewFeat id (or SRD feat id) */
+  featId: string;
+  /** Feat name (fallback lookup) */
+  featName: string;
+  /** Whether the feat is currently active/enabled */
+  isActive: boolean;
+}
+
 export interface PlayerCharacter {
   id: string;
   name: string;
@@ -54,6 +67,10 @@ export interface PlayerCharacter {
   flaws?: string;
   imageUrl?: string;
   isHomebrew: boolean;
+  /** Array of spell names the character has prepared */
+  preparedSpells: string[];
+  /** Array of active feat references (togglable) */
+  activeFeats: ActiveFeatRef[];
   spellSlots?: SpellSlots;
   resources?: ClassResource[];
   tempBuffs?: TempBuff[];

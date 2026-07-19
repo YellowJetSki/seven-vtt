@@ -18,10 +18,12 @@
 
 import { useState, useMemo, useCallback, useRef } from "react";
 import type { PlayerCharacter, SpellLevel } from "@/types";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { useCompendiumStore, getCompendiumSpells } from "@/stores/compendium";
 import { computeSpellcasting } from "@/lib/mechanics/character-derivations";
 import { useSpellSlotMutations } from "@/hooks/useCharacterMutations";
 import SpellSlotMeter from "./SpellSlotMeter";
+import SpellPrepareToggle from "./SpellPrepareToggle";
 
 interface PlayerSheetSpellsTabProps {
   character: PlayerCharacter;
@@ -107,6 +109,21 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
   });
   const [castFeedback, setCastFeedback] = useState<string | null>(null);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Prepared spells from character state ──
+  const preparedSpells: string[] = c.preparedSpells || [];
+  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+
+  const handleTogglePrepare = useCallback(
+    (spellName: string, prepare: boolean) => {
+      const current = c.preparedSpells || [];
+      const next = prepare
+        ? [...current, spellName]
+        : current.filter((s) => s !== spellName);
+      updateCharacter(c.id, { preparedSpells: next });
+    },
+    [c.id, c.preparedSpells, updateCharacter]
+  );
 
   // Flash message
   const flash = useCallback((msg: string) => {
@@ -380,6 +397,8 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
                 isFavorite={favorites.has(spell.name)}
                 onToggleFavorite={() => toggleFavorite(spell.name)}
                 onQuickCast={() => handleQuickCast(spell)}
+                isPrepared={true}
+                onTogglePrepare={(prep) => handleTogglePrepare(spell.name, prep)}
               />
             ))}
           </div>
@@ -407,6 +426,8 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
                 isFavorite={favorites.has(spell.name)}
                 onToggleFavorite={() => toggleFavorite(spell.name)}
                 onQuickCast={() => handleQuickCast(spell)}
+                isPrepared={preparedSpells.includes(spell.name)}
+                onTogglePrepare={(prep) => handleTogglePrepare(spell.name, prep)}
               />
             ))}
           </div>
@@ -434,6 +455,8 @@ function SpellRow({
   isFavorite,
   onToggleFavorite,
   onQuickCast,
+  isPrepared = false,
+  onTogglePrepare,
 }: {
   spell: KnownSpell;
   isExpanded: boolean;
@@ -441,6 +464,8 @@ function SpellRow({
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onQuickCast: () => void;
+  isPrepared?: boolean;
+  onTogglePrepare?: (prepared: boolean) => void;
 }) {
   const hasDamage = !!spell.damageDice;
   const hasHeal = !!spell.healDice;
@@ -452,6 +477,18 @@ function SpellRow({
         onClick={onToggle}
         className="w-full flex items-center gap-1.5 px-3 py-2 text-left"
       >
+        {/* Prepare toggle */}
+        <div className="shrink-0 flex items-center" onClick={(e) => e.stopPropagation()}>
+          {onTogglePrepare && (
+            <SpellPrepareToggle
+              isPrepared={isPrepared}
+              onChange={onTogglePrepare}
+              disabled={spell.level === 0}
+              size="sm"
+            />
+          )}
+        </div>
+
         {/* Level badge */}
         <span className={`text-[10px] w-5 text-center font-mono font-bold shrink-0 ${
           spell.level === 0 ? "text-surface-500" : "text-gold-400"

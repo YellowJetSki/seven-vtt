@@ -189,6 +189,8 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
       hitDice: hitDie,
       proficiencyBonus: pb,
       conditions: [],
+      preparedSpells: [],
+      activeFeats: [],
       deathSaves: { successes: 0, failures: 0 },
       temporaryHitPoints: 0,
       traits: [...raceTraits.map(t => ({ name: t.split(":")[0].trim(), description: t, source: "Racial Trait" })), ...subraceTraits.map(t => ({ name: t.split(":")[0].trim(), description: t, source: "Subrace" }))],
