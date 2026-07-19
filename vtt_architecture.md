@@ -3118,3 +3118,73 @@ Next: **Sprint 17/25** — Target any remaining untouched Player Sheet section (
 Next: **Sprint 18/25** — Target remaining untouched Player Sheet sections (Combat tab enhancements, Features & Traits display, or death saves upgrade).
 
 ---
+
+## Sprint 18/25 — Player Mechanics Phase: Combat Tab & Death Saves Overhaul (Updated: 2026-07-19 09:49)
+## Sprint 18/25 — Combat Tab & Death Saves Overhaul (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 3 of 10**
+**Target:** `PlayerSheetCombatTab.tsx` + `PlayerSheetDeathSaves.tsx` — Full combat interface upgrade
+
+### Before vs After — Combat Tab
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Combat Status Banner** | ❌ | 🛡️ Healthy / ⚔️ Bloodied / 💤 Unconscious / ✕ Dead — color-coded banner at top |
+| **Death Saves (always visible)** | ❌ (only shown inline in HP section) | ✅ Dedicated section with 3 success/3 failure circles + Roll + Stabilize buttons |
+| **Class Resource Tracking** | ❌ | ✅ Auto-detects Rage, Channel Divinity, Action Surge, Second Wind, Wild Shape, Ki Points, Bardic Inspiration, Sorcery Points from class features — with +/− buttons and progress bars |
+| **Short-rest resource recharge** | ❌ | ✅ Short Rest button also recharges all short-rest resources |
+| **HP Bar color** | ✅ kept | Enhanced with temp HP overlay and smooth transitions |
+| **Weapon Attacks** | ✅ kept | Enhanced with count badge, type badges (Weapon/Melee/Ranged) |
+| **Features & Actions** | ✅ kept | Added count badge |
+| **Temp HP controls** | ✅ kept | Enhanced with Clear button alongside +1/+5/+10 THP |
+| **Custom HP input** | ✅ kept | Preserved |
+| **Death Saves inline** | ❌ (only when HP=0) | ✅ Always visible — roll/stabilize at 0 HP, hidden when dead |
+
+### Before vs After — Death Saves Component
+
+| Feature | Before | After |
+|---------|--------|-------|
+| **Standalone component** | ✅ | ✅ Enhanced |
+| **Death status indicator** | ❌ | "Stable" / "Dead" / "Near Stable" / "Near Death" / "Rolling" — color-coded badge |
+| **Roll Death Save button** | ❌ | ✅ Auto-rolls d20: 20=revive, 10+=success, 1=2 failures, else=failure |
+| **Stabilize button** | ❌ | ✅ One-click stabilize (resets saves while at 0 HP) |
+| **Urgent mode** | ❌ | ✅ `urgent` prop pulses border when HP=0 |
+| **Compact mode** | ❌ | ✅ `compact` prop shrinks to single row with mini circles for use in status bars |
+| **Show roll button toggle** | ❌ | ✅ `showRollButton` prop — hide buttons when not needed |
+| **Death spiral message** | ❌ | ✅ Helpful hints: "Click circles to record saves", "Three failed saves" |
+| **Animation** | static | ✅ `animate-slide-in-up` when appearing + shadow glow on urgent |
+
+### Files Modified (2)
+
+| File | Lines | Changes |
+|------|:-----:|---------|
+| `components/player/PlayerSheetDeathSaves.tsx` | 0→225 | Complete rewrite with 8 new features |
+| `components/player/PlayerSheetCombatTab.tsx` | 280→580 | Full rewrite with status banner, death saves section, resource tracking |
+
+### Resource Auto-Detection Map
+| Feature String Match | Resource Name | Default Current/Max |
+|---------------------|---------------|:------------------:|
+| "rage" | Rage | 2/2 (long rest) |
+| "channel divinity" | Channel Divinity | 1/1 (short rest) |
+| "action surge" | Action Surge | 1/1 (short rest) |
+| "second wind" | Second Wind | 1/1 (short rest) |
+| "wild shape" | Wild Shape | 2/2 (short rest) |
+| "ki point" or "Ki" | Ki Points | 4/4 (short rest) |
+| "bardic inspiration" | Bardic Inspiration | 3/3 (long rest) |
+| "sorcery point" | Sorcery Points | 2/2 (long rest) |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.35s**, 1966 modules |
+| Vercel Deploy | ✅ **5.64s build** → arkla.vercel.app |
+| Death Saves component | ✅ standalone, well-typed, all hooks from useCharacterMutations |
+| Resource persistence | ✅ writes to campaignStore → Firestore via updateCharacter |
+| Combat status states | ✅ 4 states: Healthy/Bloodied/Unconscious/Dead |
+
+### Player Mechanics Phase — Cycle 3 Complete
+
+**Next:** Sprint 19/25 — Target remaining untouched Player Sheet sections (Features & Traits tab upgrade, ability score display enhancements, or the skills/proficiencies section).
+
+---
