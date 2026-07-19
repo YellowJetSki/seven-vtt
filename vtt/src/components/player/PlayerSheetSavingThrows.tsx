@@ -1,8 +1,6 @@
+import { useMemo } from "react";
 import type { PlayerCharacter } from "@/types";
-
-function abilityMod(score: number): number {
-  return Math.floor((score - 10) / 2);
-}
+import { getAbilityMod, getProficiencyBonus } from "@/lib/mechanics/character-derivations";
 
 function modStr(mod: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
@@ -14,6 +12,7 @@ interface PlayerSheetSavingThrowsProps {
 
 export default function PlayerSheetSavingThrows({ character }: PlayerSheetSavingThrowsProps) {
   const c = character;
+  const pb = useMemo(() => getProficiencyBonus(c.level), [c.level]);
 
   return (
     <div>
@@ -21,8 +20,8 @@ export default function PlayerSheetSavingThrows({ character }: PlayerSheetSaving
       <div className="space-y-1">
         {["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"].map((s) => {
           const save = c.savingThrows[s];
-          const mod = abilityMod(c[s as keyof typeof c] as number);
-          const total = mod + (save?.proficient ? c.proficiencyBonus : 0) + (save?.bonus || 0);
+          const mod = getAbilityMod((c as any)[s] as number);
+          const total = mod + (save?.proficient ? pb : 0) + (save?.bonus || 0);
           return (
             <div key={s} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-obsidian-mid/40 border border-surface-700/10 hover:border-gold/10 transition-all duration-200">
               <div className="flex items-center gap-2">

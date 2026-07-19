@@ -1002,3 +1002,49 @@ This caused `px-3` to compute as `0px` while other utilities like `gap-2`, `flex
 - Header padding → **16px** ✅
 - Main content → **24px** ✅
 ---
+
+## Cycle 16 — Complete CSS/SCSS/Tailwind Re-architecture (Updated: 2026-07-18 21:53)
+## Cycle 16 — Complete CSS/SCSS/Tailwind Re-architecture (2026-07-18)
+
+### Architecture Reset
+**Eliminated** the broken pattern of 3 separate CSS files (index.css + premium.css + vtt-design-system.css) with duplicated glassmorphism, buttons, and utility classes.
+
+### New Architecture
+```
+src/
+├── index.css           ← Tailwind entry: @import "tailwindcss" + @theme + @source + @layer base
+├── styles/
+│   ├── main.scss       ← Entry point: @use "partial" for all 9 partials
+│   ├── _theme.scss     ← SCSS variables only (no @theme — that's in index.css)
+│   ├── _base.scss      ← HTML/BODY overrides (empty — handled by @layer base in index.css)
+│   ├── _animations.scss ← All @keyframes + animation utility classes
+│   ├── _glass.scss      ← glass-* classes (premium, gold, dark, crystal, arcane, obsidian, card surfaces)
+│   ├── _buttons.scss    ← btn-* classes (arcane, gold, warrior, rogue, divine, premium)
+│   ├── _forms.scss      ← input-* classes (arcane, gold)
+│   ├── _utilities.scss  ← 30+ decorative classes (rune, glow, shadow, particles, corners, badges, etc.)
+│   ├── _scrollbar.scss  ← Custom scrollbars (global + .scrollbar-gold)
+│   └── _responsive.scss ← Responsive overrides for <640px and <768px
+```
+
+### Key Decisions
+1. **`@import "tailwindcss"` MUST be in a plain .css file** — the SCSS preprocessor doesn't understand Tailwind directives
+2. **`@theme` and `@source` MUST be in the same file** as `@import "tailwindcss"` (Tailwind v4 requirement)
+3. **SCSS uses `@use`** instead of deprecated `@import` — zero warnings at build time
+4. **`main.tsx` imports both** `index.css` and `main.scss` — Vite bundles them into one CSS file
+
+### Build Metrics
+- **118 KB CSS** (17 KB gzipped) — identical to previous working build size
+- **427 KB JS** (120 KB gzipped)
+- **0 TypeScript errors** (1956 modules)
+- **0 Sass warnings** (using @use instead of @import)
+- **Build time:** 3.78s (local) / 22s (Vercel)
+- **All Tailwind utilities (96/96 tested) ✅**
+- **All SCSS custom classes (glass-gold, text-gold, btn-arcane, etc.) ✅**
+
+### Cleanup
+- Deleted: `src/styles/premium.css` (all classes migrated to SCSS partials)
+- Deleted: `src/styles/vtt-design-system.css` (all classes migrated to SCSS partials)
+- Rewritten: `src/index.css` (clean, focused Tailwind entry point)
+- Rewritten: `src/main.tsx` (imports index.css + main.scss)
+- Added: `sass` devDependency (installed via npm)
+---

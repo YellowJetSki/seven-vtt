@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import PlayerLoginPage from "./pages/PlayerLoginPage";
+import PlayerSheetPage from "./pages/PlayerSheetPage";
 import DmDashboard from "./pages/DmDashboard";
 import PlayerCards from "./pages/PlayerCards";
 import HomebrewPanel from "./pages/HomebrewPanel";
@@ -13,9 +15,20 @@ import AuthGuard from "@/components/auth/AuthGuard";
 export default function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/theatric" element={<TheatricPage />} />
-      <Route path="/player" element={<LoginPage />} />
+      <Route path="/player" element={<PlayerLoginPage />} />
+
+      {/* Player Sheet — no role guard needed, auth via characterId */}
+      <Route
+        path="/player/sheet"
+        element={
+          <AuthGuard requiredRole="player">
+            <PlayerSheetPage />
+          </AuthGuard>
+        }
+      />
 
       {/* DM Campaign Routes — Auth Guarded */}
       <Route path="/campaign/dashboard" element={<AuthGuard requiredRole="dm"><DmDashboard /></AuthGuard>} />
