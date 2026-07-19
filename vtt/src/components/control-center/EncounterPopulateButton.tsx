@@ -1,7 +1,7 @@
 /**
- * STᚱ VTT — Encounter Populate Button
+ * STᚱ VTT — Encounter Populate Button (Premium Gold)
  *
- * Footer button for populating the map with a selected encounter.
+ * Gold-accented footer button for populating the map with a selected encounter.
  */
 
 import Button from "@/components/ui/Button";
@@ -18,9 +18,9 @@ export default function EncounterPopulateButton({
   onPopulate,
 }: EncounterPopulateButtonProps) {
   return (
-    <div className="shrink-0 border-t border-surface-700/20 px-3 py-2.5 space-y-2">
+    <div className="shrink-0 border-t border-gold/10 px-3 py-2.5 space-y-2">
       <Button
-        variant="arcane"
+        variant="gold"
         size="sm"
         className="w-full"
         onClick={onPopulate}
@@ -30,7 +30,7 @@ export default function EncounterPopulateButton({
         {isPlacing ? "✦ Placing..." : "✦ Populate Map with Encounter"}
       </Button>
       {!hasSelection && (
-        <p className="text-[9px] text-surface-500 text-center">
+        <p className="text-[9px] text-gold-500/40 text-center">
           Select an encounter above
         </p>
       )}

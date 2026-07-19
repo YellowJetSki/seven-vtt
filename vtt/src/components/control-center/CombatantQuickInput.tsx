@@ -1,7 +1,8 @@
 /**
- * STᚱ VTT — Combatant Quick Input
+ * STᚱ VTT — Combatant Quick Input (Premium Gold)
  *
  * Inline input for quick HP damage/heal on a combatant.
+ * Gold-accented focus ring and apply button.
  */
 
 interface CombatantQuickInputProps {
@@ -25,14 +26,14 @@ export default function CombatantQuickInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder="-dmg / +heal"
-        className="w-20 bg-surface-800/60 border border-surface-600/30 rounded px-1.5 py-0.5 text-[10px] text-surface-300 placeholder-surface-600 focus:outline-none focus:border-accent-500/40"
+        className="w-20 bg-obsidian-mid/60 border border-surface-700/30 rounded px-1.5 py-0.5 text-[10px] text-surface-300 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/15 transition-all"
       />
       <button
         onClick={(e) => {
           e.stopPropagation();
           onApply();
         }}
-        className="px-1.5 py-0.5 rounded text-[10px] bg-accent-600/20 text-accent-400 hover:bg-accent-600/30 transition-colors"
+        className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gold-500/10 text-gold-400 hover:bg-gold-500/20 border border-gold/15 hover:border-gold/25 transition-all duration-150"
       >
         Apply
       </button>

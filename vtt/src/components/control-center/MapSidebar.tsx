@@ -1,8 +1,9 @@
 /**
- * STᚱ VTT — Map Sidebar
+ * STᚱ VTT — Map Sidebar (Premium Gold)
  *
- * DM-side panel listing all battle maps with active highlight.
- * Click to switch the active map displayed in the main canvas.
+ * Gold-accented DM-side panel listing all battle maps.
+ * Active map highlighted with gold glow, hover effects with gold borders.
+ * Scrollable map list with delete. All tokens from `accent` → `gold` palette.
  */
 
 import { useCallback } from "react";
@@ -28,15 +29,17 @@ export default function MapSidebar({ activeMapId, onSelectMap }: MapSidebarProps
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-surface-700/20 shrink-0">
-        <span className="text-sm font-bold text-gradient-arcane">Maps</span>
-        <span className="text-[10px] text-surface-500 bg-surface-800/50 px-1.5 py-0.5 rounded-full">
+      {/* Gold-accented header */}
+      <div className="flex items-center justify-between px-3 py-3 border-b border-gold/10 shrink-0">
+        <span className="text-sm font-bold text-gold-300 tracking-wide drop-shadow-[0_0_6px_rgba(234,179,8,0.1)]">
+          ✦ Maps
+        </span>
+        <span className="text-[10px] text-gold-400/50 bg-gold-500/10 border border-gold/15 px-1.5 py-0.5 rounded-full font-mono">
           {battleMaps.length}
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 space-y-1 scrollbar-gold">
         {battleMaps.length === 0 && (
           <div className="text-center py-8">
             <p className="text-surface-500 text-xs">No maps</p>
@@ -53,17 +56,19 @@ export default function MapSidebar({ activeMapId, onSelectMap }: MapSidebarProps
               key={map.id}
               onClick={() => onSelectMap(map)}
               className={`
-                group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-150
+                group flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200
                 ${isActive
-                  ? "bg-accent-600/15 text-accent-300 border border-accent-500/20"
-                  : "text-surface-400 hover:bg-surface-700/30 hover:text-surface-200 border border-transparent"
+                  ? "bg-gold-500/10 text-gold-300 border border-gold/25 shadow-[0_0_12px_rgba(234,179,8,0.06)]"
+                  : "text-surface-400 hover:bg-gold-500/[0.04] hover:text-surface-200 border border-transparent hover:border-gold/10"
                 }
               `}
             >
               {/* Map icon or thumbnail placeholder */}
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${
-                  isActive ? "bg-accent-600/20" : "bg-surface-800/50"
+                className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 overflow-hidden ${
+                  isActive
+                    ? "bg-gold-500/15 ring-1 ring-gold/20"
+                    : "bg-obsidian-mid/60 ring-1 ring-surface-700/20"
                 }`}
               >
                 {map.imageUrl ? (
@@ -73,30 +78,32 @@ export default function MapSidebar({ activeMapId, onSelectMap }: MapSidebarProps
                     className="w-full h-full rounded-lg object-cover"
                   />
                 ) : (
-                  <span>🗺</span>
+                  <span className="text-base">🗺</span>
                 )}
               </div>
 
               {/* Map info */}
               <div className="flex-1 min-w-0">
-                <p className={`text-xs font-semibold truncate ${isActive ? "text-accent-200" : "text-surface-300"}`}>
+                <p className={`text-xs font-semibold truncate ${
+                  isActive ? "text-gold-200" : "text-surface-300"
+                }`}>
                   {map.name}
                 </p>
                 <div className="flex items-center gap-2 text-[9px] text-surface-500 mt-0.5">
                   <span>{map.gridWidth}×{map.gridHeight}</span>
                   {tokenCount > 0 && (
                     <>
-                      <span>·</span>
-                      <span>{tokenCount} tokens</span>
+                      <span className="text-gold-500/30">·</span>
+                      <span className="text-gold-500/40">{tokenCount} tokens</span>
                     </>
                   )}
                 </div>
               </div>
 
-              {/* Delete button */}
+              {/* Delete button — gold hover */}
               <button
                 onClick={(e) => handleDelete(e, map.id)}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/20 text-surface-500 hover:text-red-400 transition-all"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/15 text-surface-500 hover:text-red-400 transition-all duration-150"
                 title="Delete map"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

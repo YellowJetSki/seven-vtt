@@ -1,8 +1,9 @@
 /**
- * STᚱ VTT — Encounter Card
+ * STᚱ VTT — Encounter Card (Premium Gold)
  *
- * Selectable card in the encounter panel showing encounter name,
- * unit count, and enemy group breakdown.
+ * Gold-accented selectable card in the encounter panel.
+ * Active state highlighted with gold glow and border.
+ * Shows encounter name, unit count, and enemy group breakdown.
  */
 
 import type { Encounter, EnemyDoc } from "@/types";
@@ -28,14 +29,16 @@ export default function EncounterCard({
   return (
     <div
       onClick={() => onSelect(encounter.id)}
-      className={`p-2.5 rounded-lg cursor-pointer transition-all duration-150 border ${
+      className={`p-2.5 rounded-lg cursor-pointer transition-all duration-200 border ${
         isSelected
-          ? "bg-accent-600/15 border-accent-500/30"
-          : "bg-surface-800/30 border-surface-700/20 hover:bg-surface-700/40"
+          ? "bg-gold-500/10 border-gold/25 shadow-[0_0_10px_rgba(234,179,8,0.05)]"
+          : "bg-obsidian-mid/40 border-surface-700/20 hover:bg-gold-500/[0.03] hover:border-gold/10"
       }`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-surface-200">
+        <span className={`text-xs font-semibold ${
+          isSelected ? "text-gold-200" : "text-surface-200"
+        }`}>
           {encounter.name}
         </span>
         <span className="text-[10px] text-surface-500">{totalUnits} units</span>

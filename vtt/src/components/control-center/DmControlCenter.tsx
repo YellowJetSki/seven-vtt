@@ -33,9 +33,12 @@ export default function DmControlCenter() {
 
   return (
     <div className="flex h-full bg-obsidian">
-      {/* Left: Map Sidebar — rigid min-w */}
-      <div className="w-56 min-w-[14rem] max-w-[14rem] shrink-0 border-r border-gold/10 bg-obsidian-mid/80 glass-dark flex flex-col">
-        <MapSidebar activeMapId={state.activeMapId} onSelectMap={state.handleSelectMap} />
+      {/* Left: Map Sidebar — rigid min-w with gold glass border */}
+      <div className="w-56 min-w-[14rem] max-w-[14rem] shrink-0 border-r border-gold/10 bg-obsidian-mid/80 backdrop-blur-sm flex flex-col">
+        <div className="absolute inset-0 bg-gradient-to-b from-gold-500/[0.02] to-transparent pointer-events-none" />
+        <div className="relative z-10 flex flex-col h-full">
+          <MapSidebar activeMapId={state.activeMapId} onSelectMap={state.handleSelectMap} />
+        </div>
       </div>
 
       {/* Center: Canvas + Toolbar — flex-grow */}
@@ -56,7 +59,9 @@ export default function DmControlCenter() {
           onBack={state.handleGoBack}
         />
 
-        <div className="flex-1 min-h-0 relative overflow-hidden">
+        <div className="flex-1 min-h-0 relative overflow-hidden bg-obsidian">
+          {/* Ambient gold glow behind canvas */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gold-500/[0.01] to-transparent pointer-events-none" />
           <CanvasMapView
             ref={state.canvasRef}
             mapData={state.activeMap}
@@ -66,17 +71,17 @@ export default function DmControlCenter() {
             onCellClick={state.handleCellClick}
           />
 
-          {/* Floating bottom buttons — glass-premium overlay */}
+          {/* Floating bottom buttons — gold glass premium overlay */}
           <div className="absolute bottom-3 left-3 z-10 flex gap-1.5">
             <button
               onClick={() => {
                 state.setShowEncounterPanel(!state.showEncounterPanel);
                 state.setShowInitiative(false);
               }}
-              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all border backdrop-blur-md ${
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 border backdrop-blur-md shadow-lg ${
                 state.showEncounterPanel
-                  ? "glass-gold border-gold/30 text-gold-400"
-                  : "glass-dark border-surface-700/30 text-surface-400 hover:border-gold/20 hover:text-gold-300"
+                  ? "bg-gold-500/10 border-gold/30 text-gold-400 shadow-gold-500/5"
+                  : "bg-obsidian-mid/70 border-surface-700/30 text-surface-400 hover:border-gold/20 hover:text-gold-300 hover:bg-gold-500/5"
               }`}
             >
               ⚔ Encounters
@@ -86,10 +91,10 @@ export default function DmControlCenter() {
                 state.setShowInitiative(!state.showInitiative);
                 state.setShowEncounterPanel(false);
               }}
-              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all border backdrop-blur-md ${
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 border backdrop-blur-md shadow-lg ${
                 state.showInitiative
-                  ? "glass-gold border-gold/30 text-gold-400"
-                  : "glass-dark border-surface-700/30 text-surface-400 hover:border-gold/20 hover:text-gold-300"
+                  ? "bg-gold-500/10 border-gold/30 text-gold-400 shadow-gold-500/5"
+                  : "bg-obsidian-mid/70 border-surface-700/30 text-surface-400 hover:border-gold/20 hover:text-gold-300 hover:bg-gold-500/5"
               }`}
             >
               📋 Initiative{" "}
@@ -101,41 +106,53 @@ export default function DmControlCenter() {
         </div>
       </div>
 
-      {/* Right Panel: Token Inspector / Initiative / Encounter / AoE — rigid max-w */}
+      {/* Right Panel: Token Inspector / Initiative / Encounter / AoE — rigid max-w with gold glass */}
       {state.selectedToken && (
-        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 glass-dark flex flex-col">
-          <TokenInspector
-            token={state.selectedToken}
-            mapId={state.activeMap.id}
-            onClose={state.handleCloseInspector}
-            onTokenUpdated={(updated) => state.setSelectedToken(updated)}
-          />
+        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 backdrop-blur-sm flex flex-col">
+          <div className="absolute inset-0 bg-gradient-to-bl from-gold-500/[0.02] to-transparent pointer-events-none" />
+          <div className="relative z-10 flex flex-col h-full">
+            <TokenInspector
+              token={state.selectedToken}
+              mapId={state.activeMap.id}
+              onClose={state.handleCloseInspector}
+              onTokenUpdated={(updated) => state.setSelectedToken(updated)}
+            />
+          </div>
         </div>
       )}
 
       {!state.selectedToken && state.showInitiative && state.activeEncounter && (
-        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 glass-dark flex flex-col">
-          <InitiativeTracker
-            encounter={state.activeEncounter}
-            onSelectCombatant={() => {}}
-            selectedCombatantId={state.selectedCombatantId}
-          />
+        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 backdrop-blur-sm flex flex-col">
+          <div className="absolute inset-0 bg-gradient-to-bl from-gold-500/[0.02] to-transparent pointer-events-none" />
+          <div className="relative z-10 flex flex-col h-full">
+            <InitiativeTracker
+              encounter={state.activeEncounter}
+              onSelectCombatant={() => {}}
+              selectedCombatantId={state.selectedCombatantId}
+            />
+          </div>
         </div>
       )}
 
       {!state.selectedToken && state.placementMode === "aoe" && state.activeMap && (
-        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 glass-dark flex flex-col p-3 overflow-y-auto">
-          <h3 className="text-xs font-bold text-gold mb-3">Spell Templates</h3>
-          <AoEPlacementTool mapId={state.activeMap.id} onPlace={state.handleAoEPlace} />
+        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 backdrop-blur-sm flex flex-col p-3 overflow-y-auto">
+          <div className="absolute inset-0 bg-gradient-to-bl from-gold-500/[0.02] to-transparent pointer-events-none" />
+          <div className="relative z-10 space-y-3">
+            <h3 className="text-xs font-bold text-gold-400 tracking-wide">✦ Spell Templates</h3>
+            <AoEPlacementTool mapId={state.activeMap.id} onPlace={state.handleAoEPlace} />
+          </div>
         </div>
       )}
 
       {!state.selectedToken && state.showEncounterPanel && (
-        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 glass-dark flex flex-col">
-          <EncounterPanel
-            mapId={state.activeMap.id}
-            onTokensAdded={() => {}}
-          />
+        <div className="w-72 min-w-[18rem] max-w-[18rem] shrink-0 border-l border-gold/10 bg-obsidian-mid/80 backdrop-blur-sm flex flex-col">
+          <div className="absolute inset-0 bg-gradient-to-bl from-gold-500/[0.02] to-transparent pointer-events-none" />
+          <div className="relative z-10 flex flex-col h-full">
+            <EncounterPanel
+              mapId={state.activeMap.id}
+              onTokensAdded={() => {}}
+            />
+          </div>
         </div>
       )}
     </div>
