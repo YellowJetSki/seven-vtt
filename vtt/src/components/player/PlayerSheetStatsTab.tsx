@@ -1,17 +1,23 @@
 /**
- * STᚱ VTT — Player Sheet Stats Tab
+ * STᚱ VTT — Player Sheet Stats Tab (Enhanced)
  *
- * Shows all character stats and tracking elements.
- * XP controls live in the persistent stats bar (visible on all tabs).
- * This tab focuses on: Inspiration, ability scores, saving throws, skills, traits & features.
+ * Character stats hub showing:
+ * - Inspiration toggle (active → gold glow)
+ * - XP summary with level progression
+ * - Proficiency bonus
+ * - Ability scores with mod display (click to view breakdown)
+ * - Saving throws (interactive toggle proficiency)
+ * - Skills & Proficiencies hub with search, filter, toggle proficiency
+ * - Traits & Features collapsible section
  *
- * Refactored Cycle 1: Inspiration mutation uses centralized hook → Zustand + Firestore.
+ * All mutations → Zustand + Firestore via centralized hooks.
  */
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import type { PlayerCharacter } from "@/types";
 import { getProficiencyBonus } from "@/lib/mechanics/character-derivations";
 import { useInspirationMutation } from "@/hooks/useCharacterMutations";
+// Stats display utilities
 import PlayerSheetAbilityScores from "./PlayerSheetAbilityScores";
 import PlayerSheetSavingThrows from "./PlayerSheetSavingThrows";
 import PlayerSheetSkills from "./PlayerSheetSkills";
@@ -27,79 +33,131 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
 
   const { handleToggleInspiration } = useInspirationMutation();
 
-  const onInspirationToggle = useCallback(
-    () => handleToggleInspiration(c),
-    [c, handleToggleInspiration]
-  );
+  // ── Total items for traits section ──
+  const traitCount = c.traits.length + c.features.length + c.languages.length + c.proficiencies.length;
+
+  // ── XP to next level ──
+  const xpForNextLevel = c.level < 20 ? c.level * 1000 : null;
+  const xpProgress = xpForNextLevel ? Math.min(100, (c.experiencePoints / xpForNextLevel) * 100) : 100;
+
+  // ── Determine bonuses display ──
+  const abilityKeys = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
+  const abilityTotalMod = abilityKeys.reduce((sum, k) => {
+    const raw = (c as any)[k] as number;
+    return sum + Math.floor((raw - 10) / 2);
+  }, 0);
 
   return (
     <div className="space-y-4 px-3 py-3">
-      {/* Inspiration Toggle */}
+      {/* ── INSPIRATION TOGGLE ── */}
       <button
-        onClick={onInspirationToggle}
-        className={`w-full py-3 rounded-xl text-center text-xs font-semibold border active:scale-[0.98] transition-all duration-200 ${
+        onClick={() => handleToggleInspiration(c)}
+        className={`w-full py-4 rounded-xl text-center text-xs font-semibold border active:scale-[0.98] transition-all duration-200 ${
           c.inspiration
-            ? "bg-gold-500/10 border-gold/25 text-gold-400 shadow-[0_0_10px_rgba(234,179,8,0.06)]"
+            ? "bg-gold-500/12 border-gold/25 text-gold-400 shadow-[0_0_12px_rgba(234,179,8,0.08)]"
             : "bg-obsidian-mid/40 border-surface-700/20 text-surface-500 hover:border-gold/15 hover:text-gold-500/50"
         }`}
       >
-        {c.inspiration ? "✦ Inspiration (Active)" : "✦ No Inspiration"}
+        {c.inspiration ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="text-lg">✦</span>
+            <span>Inspiration Active</span>
+            <span className="text-[8px] text-gold-500/40 uppercase tracking-widest">(tap to clear)</span>
+          </span>
+        ) : (
+          <span className="flex items-center justify-center gap-2">
+            <span className="text-lg opacity-40">✦</span>
+            <span className="text-surface-500">No Inspiration</span>
+            <span className="text-[8px] text-surface-600 uppercase tracking-widest">(tap to gain)</span>
+          </span>
+        )}
       </button>
 
-      {/* XP Summary — read-only reference */}
-      <div className="rounded-xl bg-obsidian-mid/30 border border-surface-700/15 p-2.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-widest font-black text-amber-500/60">Experience Points</span>
-          <span className="text-xs font-mono font-bold text-amber-300 tabular-nums">
-            {c.experiencePoints.toLocaleString()} XP
+      {/* ── XP + LEVEL ROW ── */}
+      <div className="rounded-xl bg-obsidian-mid/30 border border-surface-700/15 p-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-widest font-black text-amber-500/60">Experience Points</span>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-surface-700/40 text-surface-300 border border-surface-600/20">
+              Lv.{c.level}
+            </span>
+          </div>
+          <span className="text-sm font-mono font-bold text-amber-300 tabular-nums">
+            {c.experiencePoints.toLocaleString()} <span className="text-[10px] text-amber-500/50">XP</span>
           </span>
         </div>
-        <div className="flex items-center justify-between mt-0.5">
-          <span className="text-[9px] text-surface-500">Level {c.level}</span>
-          {c.level < 20 ? (
-            <span className="text-[9px] text-gold-500/50">
-              {Math.max(0, (c.level * 1000) - c.experiencePoints).toLocaleString()} XP to level {c.level + 1}
-            </span>
+
+        {/* XP Progress bar */}
+        {c.level < 20 && xpForNextLevel && (
+          <div className="h-2 bg-surface-700/50 rounded-full overflow-hidden shadow-inner mb-1">
+            <div
+              className="h-full bg-gradient-to-r from-amber-500/40 to-amber-400 rounded-full transition-all duration-500"
+              style={{ width: `${xpProgress}%` }}
+            />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          {c.level < 20 && xpForNextLevel ? (
+            <>
+              <span className="text-[9px] text-surface-500">
+                {Math.max(0, xpForNextLevel - c.experiencePoints).toLocaleString()} XP to next level
+              </span>
+              <span className="text-[9px] text-surface-500 font-mono">
+                {Math.round(xpProgress)}%
+              </span>
+            </>
           ) : (
-            <span className="text-[9px] text-gold-400 font-semibold">✦ MAX LEVEL</span>
+            <span className="text-[9px] text-gold-400 font-semibold">✦ MAX LEVEL — Level 20</span>
           )}
         </div>
-        <span className="text-[8px] text-surface-600 italic block mt-0.5">
-          Tap XP in the bar above to add experience
-        </span>
       </div>
 
-      {/* Proficiency Bonus */}
-      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-obsidian-mid/40 border border-surface-700/10">
-        <span className="text-[10px] uppercase tracking-widest text-gold-500/60 font-black">Proficiency Bonus</span>
-        <span className="text-sm font-bold font-mono text-gold-300">+{pb}</span>
+      {/* ── PROFICIENCY BONUS + ABILITY TOTAL ── */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col items-center justify-center px-3 py-2.5 rounded-xl bg-obsidian-mid/40 border border-surface-700/10">
+          <span className="text-[8px] uppercase tracking-widest text-gold-500/50 font-black">Proficiency</span>
+          <span className="text-xl font-black font-mono text-gold-300 tabular-nums mt-0.5">+{pb}</span>
+        </div>
+        <div className="flex flex-col items-center justify-center px-3 py-2.5 rounded-xl bg-obsidian-mid/40 border border-surface-700/10">
+          <span className="text-[8px] uppercase tracking-widest text-gold-500/50 font-black">Ability Total</span>
+          <span className={`text-xl font-black font-mono tabular-nums mt-0.5 ${
+            abilityTotalMod > 0 ? "text-green-400" : abilityTotalMod < 0 ? "text-red-400" : "text-gold-300"
+          }`}>
+            {abilityTotalMod >= 0 ? "+" : ""}{abilityTotalMod}
+          </span>
+        </div>
       </div>
 
-      {/* Ability Scores */}
+      {/* ── ABILITY SCORES ── */}
       <PlayerSheetAbilityScores character={character} />
 
-      {/* Saving Throws */}
+      {/* ── SAVING THROWS ── */}
       <PlayerSheetSavingThrows character={character} />
 
-      {/* Skills */}
+      {/* ── SKILLS ── */}
       <div>
-        <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 block mb-1.5">Skills</span>
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">Skills</span>
+        </div>
         <PlayerSheetSkills character={character} />
       </div>
 
-      {/* Traits, Features & Languages (collapsible) */}
+      {/* ── TRAITS, FEATURES & PROFICIENCIES ── */}
       <div className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 overflow-hidden">
         <button
           onClick={() => setShowTraits(!showTraits)}
           className="w-full flex items-center justify-between px-3 py-2.5"
         >
-          <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">
-            Traits & Features
-          </span>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-surface-500">
-              {c.traits.length + c.features.length + c.languages.length} items
+            <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">
+              Features & Proficiencies
             </span>
+            {traitCount > 0 && (
+              <span className="text-[9px] text-surface-500 font-mono">({traitCount})</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
             <span className={`text-gold-500/40 transform transition-transform duration-200 ${showTraits ? "rotate-180" : ""}`}>▼</span>
           </div>
         </button>
@@ -109,7 +167,9 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
             {/* Languages */}
             {c.languages.length > 0 && (
               <div>
-                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1">Languages</span>
+                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1 flex items-center gap-1">
+                  <span>🗣️</span> Languages
+                </span>
                 <div className="flex flex-wrap gap-1">
                   {c.languages.map((lang) => (
                     <span key={lang} className="px-2 py-0.5 rounded text-[10px] bg-gold-500/8 text-gold-400 border border-gold/15">
@@ -123,7 +183,9 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
             {/* Racial Traits */}
             {c.traits.length > 0 && (
               <div>
-                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1">Racial Traits</span>
+                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1 flex items-center gap-1">
+                  <span>🧬</span> Racial Traits
+                </span>
                 <div className="flex flex-wrap gap-1">
                   {c.traits.map((trait) => (
                     <span key={typeof trait === "string" ? trait : trait.name} className="px-2 py-0.5 rounded text-[10px] bg-surface-700/30 text-surface-300 border border-surface-600/30">
@@ -137,15 +199,17 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
             {/* Class Features */}
             {c.features.length > 0 && (
               <div>
-                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1">Class Features</span>
+                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1 flex items-center gap-1">
+                  <span>⚔️</span> Class Features
+                </span>
                 <div className="space-y-1">
                   {c.features.map((feat) => (
-                    <div key={typeof feat === "string" ? feat : feat.name} className="flex items-center gap-2 px-2 py-1 rounded bg-surface-700/20">
-                      <span className="text-[10px] text-surface-300">
+                    <div key={typeof feat === "string" ? feat : feat.name} className="flex items-center gap-2 px-2 py-1.5 rounded bg-surface-700/20 border border-surface-600/15">
+                      <span className="text-[10px] font-medium text-surface-200">
                         {typeof feat === "string" ? feat : feat.name}
                       </span>
                       {typeof feat !== "string" && feat.description && (
-                        <span className="text-[9px] text-surface-500 truncate">{feat.description}</span>
+                        <span className="text-[9px] text-surface-500 truncate flex-1">{feat.description}</span>
                       )}
                     </div>
                   ))}
@@ -156,7 +220,9 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
             {/* Proficiencies */}
             {c.proficiencies.length > 0 && (
               <div>
-                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1">Proficiencies</span>
+                <span className="text-[9px] uppercase tracking-widest text-gold-500/50 font-semibold block mb-1 flex items-center gap-1">
+                  <span>🛠️</span> Proficiencies
+                </span>
                 <div className="flex flex-wrap gap-1">
                   {c.proficiencies.map((prof) => (
                     <span key={typeof prof === "string" ? prof : prof.name} className="px-2 py-0.5 rounded text-[10px] bg-surface-700/30 text-surface-300 border border-surface-600/30">

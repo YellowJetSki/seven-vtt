@@ -3188,3 +3188,78 @@ Next: **Sprint 18/25** — Target remaining untouched Player Sheet sections (Com
 **Next:** Sprint 19/25 — Target remaining untouched Player Sheet sections (Features & Traits tab upgrade, ability score display enhancements, or the skills/proficiencies section).
 
 ---
+
+## Sprint 19/25 — Player Mechanics Phase: Skills & Proficiencies Hub (Updated: 2026-07-19 09:53)
+## Sprint 19/25 — Skills & Proficiencies Hub (2026-07-19)
+**Phase:** Player Mechanics Phase — **Cycle 4 of 10**
+**Target:** `PlayerSheetSkills.tsx` + `PlayerSheetSavingThrows.tsx` + `PlayerSheetStatsTab.tsx` — Full interactive upgrade
+
+### Files Modified (3)
+
+| File | Before | After | Key Changes |
+|------|:------:|:-----:|-------------|
+| `PlayerSheetSkills.tsx` | 80 lines | 250 lines | Complete rewrite with search, ability filter, proficiency toggle, mod breakdown, color-coded values, legend |
+| `PlayerSheetSavingThrows.tsx` | 45 lines | 130 lines | Click-to-toggle proficiency, mod breakdown display, proficient count badge, color-coded totals |
+| `PlayerSheetStatsTab.tsx` | 160 lines | 245 lines | XP progress bar, Proficiency+Ability total row, integrated layout, feature count badges, cleaned imports |
+
+### Interactive Features
+
+#### Skills Hub (`PlayerSheetSkills.tsx`)
+| Feature | Mechanical Impact |
+|---------|------------------|
+| **Click proficiency dot** | Cycle: none → proficient → expertise → none — writes to Zustand + Firestore |
+| **Search filter** | Filters skills by name in real-time |
+| **Ability filter chips** | All / 💪STR / 🎯DEX / ❤️CON / 🧠INT / 👁️WIS / 💬CHA — grouped by ability |
+| **Modifier breakdown** | Shows ability mod + PB(x2 for expertise) = total |
+| **Color-coded values** | Green=positive, Red=negative, Amber=zero |
+| **Proficiency count** | X/Y proficient tracker at top |
+| **Legend** | Visual key for none/proficient/expertise dots |
+| **Group hover** | Entire row clickable, dot-button for precise toggle |
+
+#### Saving Throws (`PlayerSheetSavingThrows.tsx`)
+| Feature | Mechanical Impact |
+|---------|------------------|
+| **Click proficiency** | Toggle save proficiency on/off — writes to Zustand + Firestore |
+| **"Prof" badge** | Shows when save is proficient |
+| **Modifier breakdown** | Ability mod + PB + bonus = total |
+| **Proficient count** | "3/6 proficient" header tracker |
+| **Color-coded** | Positive=gold, Negative=red, Zero=surface |
+
+#### Stats Tab (`PlayerSheetStatsTab.tsx`)
+| Feature | Mechanical Impact |
+|---------|------------------|
+| **XP Progress bar** | Visual gradient bar showing level progression |
+| **Proficiency + Ability Total** | Two-card grid showing PB (+3) and total ability modifier sum |
+| **Inspiration toggle** | Gold glow when active, dim when off — clear hint text |
+| **Features collapsible** | Count badge shows total items, icons for each category (🗣️🧬⚔️🛠️) |
+
+### Data Flow
+```
+Player taps skill proficiency dot
+  └─► PlayerSheetSkills handleToggleProf(skillKey)
+      └─► campaignStore.updateCharacter(id, { skills: { ...skills, [skillKey]: next } })
+          ├─► Zustand (instant UI update)
+          └─► Firestore (async sync via useFirestoreSync)
+
+Player taps save proficiency
+  └─► PlayerSheetSavingThrows handleToggleSave(saveKey)
+      └─► campaignStore.updateCharacter(id, { savingThrows: { ...savingThrows, [saveKey]: isProf } })
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **8.90s**, 1966 modules |
+| Vercel Deploy | ✅ **6.19s build** → arkla.vercel.app |
+| Skill toggle persistence | ✅ writes to Zustand state |
+| Save toggle persistence | ✅ writes to Zustand state |
+| Search + filter works | ✅ client-side filtering, no re-fetch |
+| Touch targets | ✅ 44px+ for all interactive elements |
+
+### Player Mechanics Phase — Cycle 4 Complete
+
+**Next:** Sprint 20/25 — Remaining untouched sections: `PlayerSheetInventoryTab.tsx` or `PlayerSheetHeader.tsx` or `PlayerCardCompact.tsx` enhancements.
+
+---
