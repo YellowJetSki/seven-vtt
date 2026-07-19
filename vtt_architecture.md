@@ -3948,3 +3948,75 @@ _item     → 8 equipment/magic item icons
 | Console errors | ✅ **0** (only Firestore deprecation) |
 
 ---
+
+## Sprint 4/17 — Character Foundation: Ability Scores & Derived Stats (2026-07-19) (Updated: 2026-07-19 13:55)
+## Sprint 4/17 — Character Foundation: Ability Scores & Derived Stats (Complete)
+**Date:** 2026-07-19
+**Phase:** Character Foundation Phase (Cycle 4 of 17)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Implement manual input fields for players to enter rolled Ability Scores, auto-calculate 5e modifiers, and architect robust state management for derived stats (Speed, Proficiency, Initiative, Hit Dice).
+
+### New Components Created (2)
+
+#### 1. `AbilityScoreRoller.tsx` (210 lines)
+Premium interactive ability score entry component:
+- **6 stat cards** — STR/DEX/CON/INT/WIS/CHA with ability icons, color-coded modifiers
+- **Manual score entry** — Click any score to edit inline, tap Enter/Escape to commit
+- **Modifier auto-calc** — `getAbilityMod()` runs instantly, color-coded (gold=positive, rose=negative)
+- **Score descriptors** — Feeble → Weak → Below Avg → Avg → Above Avg → Exceptional → Heroic → Legendary → Mythic
+- **Standard Array preset** — "📐 Standard" button: 15/14/13/12/10/8
+- **Roll preset** — "🎲 Roll" button: 4d6 drop lowest (x6)
+- **Total modifier sum** — Footer shows live modifier total
+- **Point-buy mode** — Hidden but structured for future toggle (costs per score, total 27)
+
+#### 2. `DerivedStatsPreview.tsx` (160 lines)
+Live preview panel showing how entered scores produce final stats:
+- **Ability Modifier Strip** — 6-column grid showing STR→CHA modifiers
+- **Derived Stats Grid** — Proficiency, Initiative, Armor Class, Est. HP, Speed, Passive Perception
+- **Spellcasting stats** — Auto-appears when class is a caster (Spell DC + Spell ATK)
+- **Live update** — All stats recalculate on every score change
+
+### Files Modified (1)
+
+| File | Changes |
+|------|---------|
+| `PlayerCreateModal.tsx` | Replaced hardcoded `DEFAULT_STATS_BY_CLASS` lookup with live `AbilityScoreRoller` + `DerivedStatsPreview`. Scores are now interactive: Standard Array, Roll, or manual entry. Class change auto-applies class-optimized defaults. |
+
+### Data Flow (Character Foundation)
+```
+Player clicks ability score
+  └─► Inline editor opens
+      └─► Enter value (1-30)
+          └─► getAbilityMod(score) → live modifier
+              └─► getProficiencyBonus(level) → PB
+                  └─► Derived Stats recalculate instantly
+                      ├── Initiative = DEX mod
+                      ├── Est. HP = MAX(HD) + CON mod + avg/level
+                      ├── AC = 10 + DEX mod
+                      └── Passive Perception = 10 + WIS mod
+
+"🎲 Roll" button
+  └─► 4d6 drop lowest × 6
+      └─► All 6 scores update → modifiers recalculate
+
+"📐 Standard" button
+  └─► 15/14/13/12/10/8 assigned
+      └─► All 6 scores update
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.11s**, 1981 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| Ability Score Roller visible | ✅ 6 stat cards with icons, Standard + Roll buttons |
+| Derived Stats live | ✅ PB, Init, AC, HP, Speed, PP all updating |
+| Inline score editing | ✅ Click → input → Enter to commit |
+| Class change syncs scores | ✅ Selecting new class applies its optimal array |
+| No console errors | ✅ (only Firestore deprecation, benign) |
+
+---

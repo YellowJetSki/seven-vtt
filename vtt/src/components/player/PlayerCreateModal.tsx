@@ -15,7 +15,9 @@ import { setCharacter } from "@/lib/firestore-service";
 import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
 import Modal from "@/components/ui/Modal";
 import AssetBrowser from "@/components/ui/AssetBrowser";
-import { getAssetById, type AssetEntry } from "@/images/assetCatalog";
+import { type AssetEntry } from "@/images/assetCatalog";
+import AbilityScoreRoller from "@/components/player/AbilityScoreRoller";
+import DerivedStatsPreview from "@/components/player/DerivedStatsPreview";
 import type { PlayerCharacter } from "@/types";
 
 interface PlayerCreateModalProps {
@@ -85,6 +87,16 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
   const [showGallery, setShowGallery] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
 
+  // Interactive ability scores (editable)
+  const [abilityScores, setAbilityScores] = useState({
+    strength: 10,
+    dexterity: 10,
+    constitution: 10,
+    intelligence: 10,
+    wisdom: 10,
+    charisma: 10,
+  });
+
   const handleReset = useCallback(() => {
     setName("");
     setRace("Human");
@@ -93,6 +105,17 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
     setImageUrl("");
     setPlayerName("");
     setImagePreviewError(false);
+    const cls = "Fighter";
+    const def = DEFAULT_STATS_BY_CLASS[cls] || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    setAbilityScores({
+      strength: def.str,
+      dexterity: def.dex,
+      constitution: def.con,
+      intelligence: def.int,
+      wisdom: def.wis,
+      charisma: def.cha,
+    });
+    setShowGallery(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -103,9 +126,9 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
   const handleCreate = useCallback(() => {
     if (!name.trim()) return;
 
-    const stats = DEFAULT_STATS_BY_CLASS[className] || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
-    const hp = calcHp(className, stats.con, level);
-    const ac = calcAc(className, stats.dex);
+    const stats = abilityScores;
+    const hp = calcHp(className, stats.constitution, level);
+    const ac = calcAc(className, stats.dexterity);
     const pb = Math.ceil(level / 4) + 1;
     const hitDie = HIT_DIE_BY_CLASS[className] || "1d8";
 
@@ -121,12 +144,12 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
       background: "Custom",
       alignment: "Lawful Good",
       inspiration: false,
-      strength: stats.str,
-      dexterity: stats.dex,
-      constitution: stats.con,
-      intelligence: stats.int,
-      wisdom: stats.wis,
-      charisma: stats.cha,
+      strength: abilityScores.strength,
+      dexterity: abilityScores.dexterity,
+      constitution: abilityScores.constitution,
+      intelligence: abilityScores.intelligence,
+      wisdom: abilityScores.wisdom,
+      charisma: abilityScores.charisma,
       savingThrows: {
         strength: { proficient: false, bonus: 0 },
         dexterity: { proficient: false, bonus: 0 },
@@ -138,7 +161,7 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
       skills: {},
       hitPoints: { current: hp, max: hp, temporary: 0 },
       armorClass: ac,
-      initiative: Math.floor((stats.dex - 10) / 2),
+      initiative: Math.floor((abilityScores.dexterity - 10) / 2),
       speed: { walk: 30 },
       hitDice: hitDie,
       proficiencyBonus: pb,
@@ -168,7 +191,7 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
       console.warn("[Firestore] Failed to write new character:", err);
     });
     handleClose();
-  }, [name, playerName, race, className, level, imageUrl, addCharacter, handleClose]);
+  }, [name, playerName, race, className, level, imageUrl, abilityScores, addCharacter, handleClose]);
 
   const isValid = name.trim().length > 0;
 
@@ -227,8 +250,12 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
             </label>
             <select
               value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3 py-2.5 text-sm text-surface-200 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all appearance-none cursor-pointer"
+              onChange={(e) => {
+                const newClass = e.target.value;
+                setClassName(newClass);
+                const nd = DEFAULT_STATS_BY_CLASS[newClass] || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+                setAbilityScores({ strength: nd.str, dexterity: nd.dex, constitution: nd.con, intelligence: nd.int, wisdom: nd.wis, charisma: nd.cha });
+              }}  className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3 py-2.5 text-sm text-surface-200 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all appearance-none cursor-pointer"
             >
               {CLASSES.map((c) => (
                 <option key={c} value={c} className="bg-obsidian text-surface-200">{c}</option>
@@ -252,6 +279,28 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
                 className="w-9 h-9 rounded-xl bg-obsidian-mid/60 border border-surface-700/30 text-surface-300 hover:border-gold/20 hover:text-gold-400 active:scale-90 transition-all text-sm flex items-center justify-center"
               >+</button>
             </div>
+          </div>
+        </div>
+
+        {/* ── Ability Scores (Interactive) ── */}
+        <div className="bg-gradient-to-b from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] rounded-xl p-3 space-y-3">
+          <AbilityScoreRoller
+            scores={abilityScores}
+            onChange={setAbilityScores}
+          />
+          <div className="border-t border-white/[0.04] pt-3">
+            <DerivedStatsPreview
+              strength={abilityScores.strength}
+              dexterity={abilityScores.dexterity}
+              constitution={abilityScores.constitution}
+              intelligence={abilityScores.intelligence}
+              wisdom={abilityScores.wisdom}
+              charisma={abilityScores.charisma}
+              level={level}
+              hitDie={HIT_DIE_BY_CLASS[className] || "1d8"}
+              showSpellcasting={["Bard", "Cleric", "Druid", "Paladin", "Ranger", "Sorcerer", "Warlock", "Wizard", "Artificer"].includes(className)}
+              primaryClass={className}
+            />
           </div>
         </div>
 
@@ -334,28 +383,6 @@ export default function PlayerCreateModal({ isOpen, onClose }: PlayerCreateModal
           )}
         </div>
 
-        {/* ── Auto-computed summary ── */}
-        <div className="rounded-xl bg-gold-500/5 border border-gold/10 p-3">
-          <h4 className="text-[9px] uppercase tracking-widest font-black text-gold-500/50 mb-2">Auto-Computed Stats</h4>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div>
-              <span className="text-[8px] uppercase text-surface-500 block">AC</span>
-              <span className="text-sm font-bold tabular-nums text-cyan-300">{calcAc(className, DEFAULT_STATS_BY_CLASS[className]?.dex || 10)}</span>
-            </div>
-            <div>
-              <span className="text-[8px] uppercase text-surface-500 block">HP</span>
-              <span className="text-sm font-bold tabular-nums text-green-400">{calcHp(className, DEFAULT_STATS_BY_CLASS[className]?.con || 14, level)}</span>
-            </div>
-            <div>
-              <span className="text-[8px] uppercase text-surface-500 block">PB</span>
-              <span className="text-sm font-bold tabular-nums text-gold-400">{Math.ceil(level / 4) + 1}</span>
-            </div>
-            <div>
-              <span className="text-[8px] uppercase text-surface-500 block">HD</span>
-              <span className="text-sm font-bold tabular-nums text-surface-300">{HIT_DIE_BY_CLASS[className] || "1d8"}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* ── Footer actions ── */}
