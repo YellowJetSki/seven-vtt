@@ -18,8 +18,8 @@ export default function Header() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
 
   return (
-    <header className="h-14 sm:h-16 glass-gold border-b border-gold flex items-center justify-between px-3 sm:px-4 relative z-10 shrink-0">
-      <div className="flex items-center gap-2 sm:gap-3">
+    <header className="h-14 sm:h-16 glass-gold border-b border-gold flex items-center justify-between relative z-10 shrink-0" style={{ padding: '0 0.75rem' }}>
+      <div className="flex items-center" style={{ gap: '0.5rem' }}>
         {/* Hamburger menu — large 44px+ touch target */}
         <button
           onClick={toggleSidebar}
@@ -36,10 +36,10 @@ export default function Header() {
         <span className="text-[9px] text-surface-600 uppercase tracking-[0.15em] font-semibold hidden sm:block">Campaign</span>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center" style={{ gap: '0.5rem' }}>
         <CompendiumDrawer />
         {/* Role badge */}
-        <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-obsidian-mid/80 border border-gold/10">
+        <div className="flex items-center rounded-xl bg-obsidian-mid/80 border border-gold/10" style={{ gap: '0.5rem', padding: '0.375rem 0.75rem' }}>
           <span className="text-xs">{role === "dm" ? "👑" : "⚔"}</span>
           <span className="text-[11px] sm:text-xs text-surface-400 font-medium hidden sm:block">{role === "dm" ? "DM" : "Player"}</span>
           <div className="h-4 w-px bg-surface-700/30 shrink-0" />
@@ -48,7 +48,7 @@ export default function Header() {
         {/* Logout */}
         <button
           onClick={logout}
-          className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm text-surface-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all duration-200 active:scale-95"
+          className="rounded-xl text-xs sm:text-sm text-surface-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all duration-200 active:scale-95" style={{ padding: '0.375rem 0.75rem' }}
         >
           Logout
         </button>

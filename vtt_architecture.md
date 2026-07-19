@@ -888,3 +888,39 @@ Complete redesign of the login experience to match premium VTT standards (Foundr
 - **CSS bundle:** 117 KB (17 KB gzipped)
 - **Production URL:** https://arkla.vercel.app
 ---
+
+## Cycle 13 — Visual QA + Layout Fixes (Updated: 2026-07-18 21:31)
+## Cycle 13 — Comprehensive Visual QA + Layout Fixes (Complete)
+**Date:** 2026-07-18
+
+### Issues Found & Fixed
+
+#### 1. Hamburger Button Too Small
+- **Before:** `p-2` with `w-5 h-5` SVG = 20px click target
+- **After:** `flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11` = 44px×44px touch target ✅
+- **Compendium button:** Same fix → 44px×44px ✅
+
+#### 2. Main Content Padding Missing (0px computed)
+- **Root Cause:** Tailwind v4 Vite plugin not generating padding utility classes (`p-4`, `sm:p-6`, etc.) — only 274 CSS rules total
+- **Fix:** Replaced Tailwind classes with inline `style={{ padding: '1rem 1rem 5rem 1rem' }}` on the content wrapper div
+- **Result:** `padding: 16px 16px 80px` ✅
+
+#### 3. Nav Link Touch Targets (28px height)
+- **Before:** `py-2.5` Tailwind class → 0px computed padding → 28px height
+- **Fix:** Added `min-h-[44px]` + inline `style={{ padding: '0.625rem 0.75rem' }}` for reliable sizing
+- **Result:** 48px height, 10px 12px padding ✅
+
+#### 4. Sidebar States & Transitions
+- **Fix:** Added `justify-center` for closed state icon centering, `truncate` for long labels
+- **Fix:** `border-l-[3px]` hover state on inactive nav items
+
+#### 5. Tailwind v4 CSS Generation Issue
+- **Identified:** `@tailwindcss/vite` plugin only generating 274 CSS rules — standard padding/margin/gap utility classes not produced
+- **Mitigation:** Strategic use of inline `style` props for critical layout elements
+- **Recommendation:** Future investigation into `@source` directive or content scanning configuration
+
+### Build Metrics
+- 0 TypeScript errors (1957 modules)
+- Build: 3.3s, CSS 118 KB, JS 426 KB
+- Production: arkla.vercel.app — all fixes live
+---

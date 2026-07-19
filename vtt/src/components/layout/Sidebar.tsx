@@ -35,7 +35,7 @@ export default function Sidebar() {
       } h-full glass-gold border-r border-gold/15 flex flex-col transition-all duration-300 ease-in-out overflow-hidden relative shrink-0`}
     >
       {/* Brand with ᚱ rune */}
-      <div className="flex items-center gap-3 px-4 h-14 sm:h-16 border-b border-gold/10 shrink-0">
+      <div className="flex items-center gap-3 h-14 sm:h-16 border-b border-gold/10 shrink-0" style={{ padding: '0 1rem', gap: '0.75rem' }}>
         <span className="text-2xl float-arcane select-none text-gold-400" aria-hidden="true">ᚱ</span>
         {sidebarOpen && (
           <span className="font-black text-gold text-lg whitespace-nowrap tracking-tight drop-shadow-[0_0_8px_rgba(234,179,8,0.15)]">
@@ -70,7 +70,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       {sidebarOpen && (
-        <div className="px-4 py-3 border-t border-gold/10 shrink-0">
+        <div className="border-t border-gold/10 shrink-0" style={{ padding: '0.75rem 1rem' }}>
           <div className="rune-gold justify-center text-[8px]">✦ ᚱ ✦</div>
         </div>
       )}
