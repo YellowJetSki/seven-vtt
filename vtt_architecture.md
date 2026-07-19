@@ -4402,3 +4402,59 @@ Combat Tab re-renders
 | Legacy characters (from localStorage) | ✅ Graceful fallback via `c.preparedSpells || []` |
 
 ---
+
+## Sprint 10/17 — Spell Slot Engine & Resource Wiring (2026-07-19) (Updated: 2026-07-19 14:46)
+## Sprint 10/17 — Spell Slot Engine & Resource Wiring (Complete)
+**Date:** 2026-07-19
+**Phase:** Unified Entities & Combat Hooks Phase (Cycle 10 of 17)
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Reusable Components (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/player/ClassResourcesTracker.tsx` | 155 | Reusable class resource management panel. Collapsible, shows +/- buttons with disabled states, gradient usage bars with tier-based color coding, recharge labels per resource (Short Rest/Long Rest/Dawn), "Exhausted" badge when all consumed, auto "Recharge Short-Rest Resources" button. Extracted from inline JSX in Combat Tab. |
+| `components/player/SpellSlotStatus.tsx` | 185 | Per-level spell slot gauge display. Compact/collapsible. Shows DC/ATK/Mod stat grid, total usage bar with gradient, individual level gauges with `current/max` text overlay, Cast/Restore buttons per level, color-coded tier (full=emerald, partial=amber, exhausted=red), concentration indicator. |
+
+#### Files Modified (2)
+
+| File | Key Changes |
+|------|-------------|
+| `PlayerSheetCombatTab.tsx` | Replaced ~70 lines of inline JSX (resources rendering) with `<ClassResourcesTracker>`. Added `<SpellSlotStatus>` section between feats and features sections. Added `useSpellSlotMutations` import and hook calls. Removed duplicate import of `useHpMutations`. |
+
+### Architecture Improvements
+
+| Before | After |
+|--------|-------|
+| 70 lines of inline resource rendering with duplicated +/- button logic | Single `<ClassResourcesTracker>` component with reusable logic |
+| No slot gauges in Combat Tab | `<SpellSlotStatus>` shows DC/ATK/Mod + per-level Cast/Restore |
+| `rechargeLabel` function stranded inline | Embedded in `ClassResourcesTracker` component |
+| Resources had no visual tier | Color-coded bars: green (full), amber (partial), red (empty) |
+
+### Data Flow
+
+```
+character.resources[]
+  └─► ClassResourcesTracker
+      ├─► +/- buttons → updateCharacter(id, { resources })
+      └─► Short Rest button → recharges all short_rest resources
+
+character.spellSlots (from derived.computeAllDerivations)
+  └─► SpellSlotStatus
+      ├─► Cast button → handleCastSpell(character, level)
+      └─► Restore button → handleRestoreSlots(character, level)
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite Build | ✅ **7.78s**, 1996 modules |
+| Vercel Deploy | ✅ **arkla.vercel.app** |
+| New components | 2 (ClassResourcesTracker, SpellSlotStatus) |
+| Monolith risk | 0 files > 150 lines (both new files lean and focused) |
+
+---

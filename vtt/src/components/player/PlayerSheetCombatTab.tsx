@@ -18,18 +18,19 @@
 import { useMemo, useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCompendiumStore } from "@/stores/compendium/compendiumStore";
-import type { PlayerCharacter, ClassResource } from "@/types";
+import type { PlayerCharacter, ClassResource, SpellLevel } from "@/types";
 import { computeAllDerivations, getAbilityMod } from "@/lib/mechanics/character-derivations";
+import { useHpMutations, useSpellSlotMutations } from "@/hooks/useCharacterMutations";
 import { injectCombatEntities } from "@/lib/combat/entity-injector";
 import CombatWeaponCard from "./CombatWeaponCard";
 import CombatSpellCard from "./CombatSpellCard";
 import CombatFeatCard from "./CombatFeatCard";
 import PlayerFeatsSection from "./PlayerFeatsSection";
+import ClassResourcesTracker from "./ClassResourcesTracker";
+import SpellSlotStatus from "./SpellSlotStatus";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
-import { useHpMutations } from "@/hooks/useCharacterMutations";
-
 interface AttackEntry {
   name: string;
   atk: string;
@@ -106,6 +107,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const c = character;
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const { handleHpChange, handleSetTempHp } = useHpMutations();
+  const { handleCastSpell, handleRestoreSlots } = useSpellSlotMutations();
   const derived = useMemo(() => computeAllDerivations(c), [c]);
 
   // ── Unified Entity Injection ──
@@ -230,9 +232,6 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const intMod = derived.abilityMods.intelligence;
   const pb = derived.proficiencyBonus;
 
-  const rechargeLabel = (r: "short_rest" | "long_rest" | "dawn") =>
-    r === "short_rest" ? "Short Rest" : r === "long_rest" ? "Long Rest" : "Dawn";
-
   return (
     <div className="space-y-4 px-3 py-3">
       {/* ── COMBAT STATUS BANNER ── */}
@@ -296,50 +295,13 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         )}
       </div>
 
-      {/* ── CLASS RESOURCES ── */}
-      {resources.length > 0 && (
-        <div>
-          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
-            <span className="w-1 h-3 rounded-full bg-gold-500/40" />
-            Class Resources
-          </h3>
-          <div className="space-y-1.5">
-            {resources.map((res) => {
-              const pct = res.current / res.max;
-              const barColor = pct > 0.5 ? "bg-emerald-500" : pct > 0.25 ? "bg-amber-500" : "bg-red-500";
-              return (
-                <div key={res.name} className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-2.5 hover:border-gold/10 transition-all duration-200">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-surface-200">{res.name}</span>
-                      <span className="text-[8px] text-surface-500 uppercase tracking-wider px-1 py-0.5 rounded bg-surface-800/40 border border-surface-700/30">
-                        {rechargeLabel(res.recharge)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => handleResourceChange(res.name, -1)}
-                        disabled={res.current <= 0}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold active:scale-90 transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-500/15"
-                      >\u2212</button>
-                      <span className="text-xs font-mono font-bold tabular-nums text-gold-300 w-8 text-center">{res.current}</span>
-                      <span className="text-[8px] text-surface-500">/ {res.max}</span>
-                      <button
-                        onClick={() => handleResourceChange(res.name, 1)}
-                        disabled={res.current >= res.max}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold active:scale-90 transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-green-500/15"
-                      >+</button>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-surface-700/40 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-300 ${barColor}`} style={{ width: `${pct * 100}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* ── CLASS RESOURCES TRACKER ── */}
+      <ClassResourcesTracker
+        resources={resources}
+        onResourceChange={handleResourceChange}
+        collapsible
+        defaultOpen={true}
+      />
 
       {/* ── SPELLS (COMBAT QUICK-REFERENCE) ── */}
       {combatEntities.spells.length > 0 && (
@@ -389,6 +351,25 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
           </div>
         )}
       </div>
+
+      {/* ── SPELL SLOT STATUS ── */}
+      {derived.spellcasting.spellSlots && (() => {
+        const slots = derived.spellcasting.spellSlots;
+        const hasSlots = slots && Object.values(slots).some((s: any) => s?.max > 0);
+        if (!hasSlots) return null;
+        return (
+          <div className="mb-3">
+            <SpellSlotStatus
+              slots={derived.spellcasting.spellSlots}
+              spellcastingAbility={derived.spellcasting.spellcastingAbility}
+              spellSaveDC={derived.spellcasting.spellSaveDC}
+              spellAttackBonus={derived.spellcasting.spellAttackBonus}
+              onCast={(level) => handleCastSpell(c, level)}
+              onRestore={(level) => handleRestoreSlots(c, level as any)}
+            />
+          </div>
+        );
+      })()}
 
       {/* ── CLASS FEATURES ── */}
       {c.features.length > 0 && (
