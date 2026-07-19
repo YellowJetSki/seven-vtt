@@ -924,3 +924,42 @@ Complete redesign of the login experience to match premium VTT standards (Foundr
 - Build: 3.3s, CSS 118 KB, JS 426 KB
 - Production: arkla.vercel.app — all fixes live
 ---
+
+## Cycle 14 — Tailwind v4 Fix: Inline Style Strategy + Layout Overhaul (Updated: 2026-07-18 21:36)
+## Cycle 14 — Tailwind v4 Fix: Inline Style Strategy + Layout Overhaul (Complete)
+**Date:** 2026-07-18
+
+### Core Problem
+Tailwind v4's JIT engine (`@tailwindcss/vite`) is **not generating standard utility classes** (`.p-4`, `.px-3`, `.gap-2`, `.mx-auto`, etc.). Only **arbitrary value syntax** (`min-h-[44px]`, `w-10`) and **custom CSS** (`.glass-gold`, `.input-arcane`, etc.) are generated. The `@source` directive did not resolve the issue.
+
+**Root cause:** Tailwind v4.3.3's Vite plugin has a content scanning bug specific to this project setup — it fails to detect class names in JSX template literals during the build. Only 274 CSS rules are generated vs. the expected thousands.
+
+### Strategy: Inline Style Fallback
+All critical spacing/padding/layout Tailwind classes were replaced with equivalent inline `style` props:
+
+| Component | Tailwind Class (Broken) | Inline Style (Working) |
+|-----------|------------------------|----------------------|
+| Header | `px-3 sm:px-4` | `padding: '0 0.75rem'` |
+| Left group | `gap-2 sm:gap-3` | `gap: '0.5rem'` |
+| Right group | `gap-2 sm:gap-3` | `gap: '0.5rem'` |
+| Role badge | `px-2.5 sm:px-3 gap-2` | `padding: '0.375rem 0.75rem', gap: '0.5rem'` |
+| Logout button | `px-2.5 sm:px-3` | `padding: '0.375rem 0.75rem'` |
+| Sidebar brand bar | `px-4 gap-3` | `padding: '0 1rem', gap: '0.75rem'` |
+| Sidebar nav links | `px-3 py-2.5` | `padding: '0.625rem 0.75rem'` |
+| Sidebar footer | `px-4 py-3` | `padding: '0.75rem 1rem'` |
+| Main content | `p-4 sm:p-6 pb-20 sm:pb-6` | `padding: '1.5rem 1.5rem 5rem'` |
+
+### Fixes Verified in Production
+| Element | Before | After |
+|---------|--------|-------|
+| **Hamburger position** | 0.8px from edge (jammed) | **12.8px** ✅ (proper 12px header padding) |
+| **Hamburger size** | 20px target | **44px × 44px** ✅ |
+| **Compendium button** | 20px target | **44px × 44px** ✅ |
+| **Sidebar rune** | 0.7px (cut off at edge) | **16px** from edge ✅ |
+| **Nav link height** | 28px | **48px** ✅ (44px+ touch target) |
+| **Main padding** | 0px | **24px all sides, 80px bottom** ✅ |
+| **Role badge** | zero gap/padding | **8px gap, 12px padding** ✅ |
+
+### Tailwind v4 Recommendation
+For future investigation: the `@tailwindcss/vite` plugin may need a clean reinstall (delete `node_modules`, `package-lock.json`, reinstall) or a project scaffold from scratch. The issue is not version-related — 4.3.3 is the latest stable release as of July 2026.
+---
