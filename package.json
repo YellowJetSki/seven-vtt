@@ -6,9 +6,13 @@
     "build": "cd vtt && npm run build",
     "dev": "cd vtt && npm run dev",
     "lint": "cd vtt && npm run lint",
-    "deploy": "cd vtt && npx vercel --prod"
+    "deploy": "cd vtt && npx vercel --prod",
+    "test:unit": "cd vtt && npx vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "source-map": "^0.7.6"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }

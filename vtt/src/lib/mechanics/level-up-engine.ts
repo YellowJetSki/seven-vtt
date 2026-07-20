@@ -106,15 +106,33 @@ const FULL_SLOTS: LevelUpSpellSlots[] = [
 /**
  * Half caster (Paladin/Ranger) — slots at 2× caster level.
  */
-function getHalfSlots(casterLevel: number): LevelUpSpellSlots {
-  return FULL_SLOTS[Math.min(19, Math.max(0, Math.min(casterLevel * 2 - 1, 19)))];
+/**
+ * Half caster (Paladin/Ranger) — effective caster level = ceil(characterLevel / 2).
+ * Uses the PHB Multiclass Spellcaster table.
+ * Paladin Level 2  = Caster Level 1  = FULL_SLOTS[0] = 2 L1 slots ✓
+ * Paladin Level 5  = Caster Level 3  = FULL_SLOTS[2] = 4/2 slots  ✓
+ * Paladin Level 17 = Caster Level 9  = FULL_SLOTS[8] = 4/3/3/3/1 ✓
+ * Paladin Level 20 = Caster Level 10 = FULL_SLOTS[9] = 4/3/3/3/2 ✓
+ */
+export function getHalfSlots(casterLevel: number): LevelUpSpellSlots {
+  const effectiveCasterLevel = Math.ceil(casterLevel / 2);
+  return FULL_SLOTS[Math.min(19, Math.max(0, effectiveCasterLevel - 1))];
 }
 
 /**
  * Third caster (Eldritch Knight/Arcane Trickster) — slots at 3× caster level.
  */
-function getThirdSlots(casterLevel: number): LevelUpSpellSlots {
-  return FULL_SLOTS[Math.min(19, Math.max(0, (casterLevel * 3 - 1)))];
+/**
+ * Third caster (Eldritch Knight/Arcane Trickster) — effective caster level = ceil(characterLevel / 3).
+ * Uses the PHB Multiclass Spellcaster table.
+ * EK Level 3  = Caster Level 1  = FULL_SLOTS[0] = 2 L1 slots ✓
+ * EK Level 7  = Caster Level 3  = FULL_SLOTS[2] = 4/2 slots  ✓
+ * EK Level 20 = Caster Level 7  = FULL_SLOTS[6] = 4/3/3/1    ✓
+ */
+export function getThirdSlots(casterLevel: number): LevelUpSpellSlots {
+  const effectiveCasterLevel = Math.ceil(casterLevel / 3);
+  if (effectiveCasterLevel < 1) return FULL_SLOTS[0]; // Level 1-2 → 0 slots
+  return FULL_SLOTS[Math.min(19, Math.max(0, effectiveCasterLevel - 1))];
 }
 
 export function getSlotsForLevel(
@@ -340,9 +358,7 @@ export function computeLevelUpPreview(
     newFeatures: features.filter((f) => f !== "Ability Score Improvement"),
     newCantrips: casterType === "full" && (newLevel === 4 || newLevel === 10) ? 1 : 0,
     subclassFeature: [3, 6, 7, 9, 10, 14, 15, 18].includes(newLevel),
-    extraAttack: className === "Fighter"
-      ? [5, 11, 20].includes(newLevel)
-      : [5].includes(newLevel),
+    extraAttack: [5].includes(newLevel) || (className === "Fighter" && [11, 20].includes(newLevel)),
     asiCount: isAsiLevel(newLevel) ? 1 : 0,
   };
 }
@@ -365,22 +381,26 @@ export function applyLevelUp(
     ? Math.max(1, hpRollResult + conMod)
     : preview.hpGained;
 
-  // Compute new spell slots
+  // Compute new spell slots — FIXED: initializes `current` when unlocking new levels
   let spellSlots = character.spellSlots ? { ...character.spellSlots } : undefined;
   if (spellSlots && preview.spellSlots) {
-    const levelMap: Record<string, "level1" | "level2" | "level3" | "level4" | "level5" | "level6" | "level7" | "level8" | "level9"> = {
-      level1: "level1", level2: "level2", level3: "level3",
-      level4: "level4", level5: "level5", level6: "level6",
-      level7: "level7", level8: "level8", level9: "level9",
-    };
-    for (const [key, value] of Object.entries(levelMap)) {
-      const slot = key as keyof LevelUpSpellSlots;
-      const newMax = (preview.spellSlots[slot] ?? 0);
-      if (spellSlots[value]) {
-        spellSlots[value] = {
-          current: spellSlots[value].current,
-          max: Math.max(spellSlots[value].max, newMax),
+    const levelSlots: Array<{ key: keyof LevelUpSpellSlots; field: "level1" | "level2" | "level3" | "level4" | "level5" | "level6" | "level7" | "level8" | "level9" }> = [
+      { key: "level1", field: "level1" }, { key: "level2", field: "level2" },
+      { key: "level3", field: "level3" }, { key: "level4", field: "level4" },
+      { key: "level5", field: "level5" }, { key: "level6", field: "level6" },
+      { key: "level7", field: "level7" }, { key: "level8", field: "level8" },
+      { key: "level9", field: "level9" },
+    ];
+    for (const { key, field } of levelSlots) {
+      const newMax = preview.spellSlots[key] ?? 0;
+      if (spellSlots[field]) {
+        spellSlots[field] = {
+          current: spellSlots[field].current,
+          max: Math.max(spellSlots[field].max, newMax),
         };
+      } else if (newMax > 0) {
+        // NEW slot level unlocked — initialize current = max
+        spellSlots[field] = { current: newMax, max: newMax };
       }
     }
   }
@@ -419,7 +439,7 @@ export function applyLevelUp(
     proficiencyBonus: preview.proficiencyBonus,
     spellSlots,
     features: mergedFeatures,
-    // Recompute spentHitDice — level up adds max HD
+    // Preserve spentHitDice — leveling up does NOT reset spent HD
     spentHitDice: character.spentHitDice ?? 0,
   };
 }
