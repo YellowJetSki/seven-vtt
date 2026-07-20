@@ -5575,3 +5575,61 @@ Vite chunk warning eliminated. No more dynamic import overhead.
 | Firestore listener optimization | ✅ All listeners use cancelled guards + error callbacks + sync Unsubscribe |
 | No dice rollers | ✅ Zero RNG in refactored code |
 ---
+
+## Sprint 7/25 — Monolith Refactor: PlayerSheetSpellsTab (Updated: 2026-07-20 10:24)
+## Sprint 7/25 — Monolith Refactor: PlayerSheetSpellsTab (615 lines → 170 lines)
+
+### Target
+`PlayerSheetSpellsTab.tsx` — previously at 615 lines, the largest player component in the application.
+
+### Refactoring Results
+
+| Metric | Before | After | Improvement |
+|--------|:------:|:-----:|:-----------:|
+| PlayerSheetSpellsTab.tsx | 615 lines | 170 lines | **−72%** |
+| Sub-components created | 0 inline | 6 reusable | **+6** |
+| Utility modules created | 0 | 1 | **+1** |
+| Custom hooks created | 0 | 1 | **+1** |
+
+### New Sub-Components Created (6)
+
+| Component | File | Lines | Purpose |
+|-----------|------|:-----:|---------|
+| `SpellcastingStatsHeader` | `components/player/SpellcastingStatsHeader.tsx` | 65 | DC/ATK/Mod 3-card stat grid with class label |
+| `SpellFilterBar` | `components/player/SpellFilterBar.tsx` | 95 | Search input + favorites toggle + level chip filters |
+| `SpellRowCard` | `components/player/SpellRowCard.tsx` | 140 | Collapsible spell row with prepare/favorite/cast/damage badges |
+| `SpellRowMetaDisplay` | `components/player/SpellRowMetaDisplay.tsx` | 70 | Expanded metadata: casting info, damage/heal/save badges, description |
+| `useSpellFavorites` | `hooks/useSpellFavorites.ts` | 30 | localStorage-backed favorites persistence hook |
+| `lib/spell-utils` | `lib/spell-utils.ts` | 90 | Shared constants (SCHOOL_COLORS, SCHOOL_ICON, LEVEL_NAMES), KnownSpell type, extractors |
+
+### Existing Components Preserved (2)
+| Component | Status | Reason |
+|-----------|--------|--------|
+| `SpellPrepareToggle` | ✅ Kept as-is | Already a standalone reusable component |
+| `SpellSlotMeter` | ✅ Kept as-is | Already imported externally |
+
+### Type Fixes Applied
+| Issue | Fix |
+|-------|-----|
+| `legacySlots` type `Record<string, {current, max}>` → `SpellSlotsFull` | Properly builds all 9 levels with zeroed slots when null |
+| `onRestore as any` type cast | Removed — proper typing with `(level?: SpellLevel) => void` |
+| `pool.current` on `never` type | Added null guard for `spellcasting.spellSlots` before accessing |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript errors | ✅ **0 (2019 modules)** |
+| Vite build | ✅ **9.84s**, 0 errors, 0 warnings |
+| Production URL | ✅ **arkla.vercel.app** |
+| Console errors | ✅ **0** (only Firestore deprecation, benign) |
+| Monolith reduction | ✅ 615 → 170 lines (−72%) |
+| New reusable components | ✅ 6 new files |
+
+### Code Optimization Phase Progress (Cycles 6-7)
+
+| Sprint | Target | Files Refactored | Lines Eliminated |
+|:------:|--------|:----------------:|:----------------:|
+| 6 | Firebase listener architecture | 6 service/hook files | N/A (architectural fix) |
+| **7** | **PlayerSheetSpellsTab monolith** | **6 new files, 1 refactored** | **445 lines** |
+---
