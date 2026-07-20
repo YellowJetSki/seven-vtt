@@ -1,19 +1,12 @@
 /**
- * STᚱ VTT — Player Sheet Character Stats Sub-Component
+ * STᚱ VTT — Player Sheet Character Stats (Premium Orchestrator)
  *
- * Dedicated stats management panel showing Proficiency Bonus,
- * Initiative, Armor Class, Speed, Hit Dice, and Passive Senses.
+ * Premium unified stats management panel lining inside the Combat Tab:
+ * - CharacterStatsPanel → Core derived stats with staggered entrance
+ * - HitDiceTracker → Visual HD management (spend/recover) in glass card
+ * - SpeedConfigurator → Movement speed display in glass card
  *
- * This component replaces scattered stat displays with one
- * unified, premium visual panel that lives inside the Combat Tab.
- *
- * Wires together:
- * - CharacterStatsPanel    → Core derived stats overview
- * - HitDiceTracker         → Visual HD management (spend/recover)
- * - SpeedConfigurator       → Movement speed display
- *
- * Usage:
- *   <PlayerSheetCharacterStats character={character} />
+ * All wrapped in the unified glass gradient design system.
  */
 
 import { useCallback } from "react";
@@ -33,15 +26,11 @@ export default function PlayerSheetCharacterStats({
 }: PlayerSheetCharacterStatsProps) {
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
 
-  // Hit dice spend/recover handlers
   const handleSpendHitDie = useCallback(
     (count: number) => {
-      // In a real implementation, this would restore HP based on the roll
-      // and decrement available HD. For now we track via character notes.
       updateCharacter(character.id, {
         hitPoints: {
           ...character.hitPoints,
-          // Example: heal minimum possible HD value
           current: Math.min(
             character.hitPoints.current + (count * 1),
             character.hitPoints.max
@@ -55,19 +44,16 @@ export default function PlayerSheetCharacterStats({
   const handleRecoverHitDie = useCallback(
     (count: number) => {
       updateCharacter(character.id, {
-        hitPoints: {
-          ...character.hitPoints,
-        },
+        hitPoints: { ...character.hitPoints },
       });
     },
     [character, updateCharacter]
   );
 
-  const conMod = getAbilityMod(character.constitution);
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-1">
+      {/* Section label with gradient divider */}
+      <div className="flex items-center gap-2">
         <span className="text-[9px] font-bold uppercase tracking-wider text-white/50">
           Character Stats
         </span>
@@ -77,14 +63,16 @@ export default function PlayerSheetCharacterStats({
         </span>
       </div>
 
-      {/* Core Stat Cards (PB, Init, AC, HP) */}
+      {/* Core Stat Cards */}
       <CharacterStatsPanel character={character} />
 
       {/* Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
 
-      {/* Hit Dice */}
-      <div className="bg-gradient-to-br from-[#14151f]/60 to-[#0c0d15]/80 border border-white/[0.04] rounded-xl p-3">
+      {/* Hit Dice in glass card */}
+      <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-3 overflow-hidden group hover:border-white/[0.07] transition-all duration-200"
+        style={{ animation: "slide-in-up 0.3s ease-out 0.35s both" }}>
+        <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
         <HitDiceTracker
           hitDie={character.hitDice || "1d8"}
           total={character.level}
@@ -94,8 +82,10 @@ export default function PlayerSheetCharacterStats({
         />
       </div>
 
-      {/* Speed */}
-      <div className="bg-gradient-to-br from-[#14151f]/60 to-[#0c0d15]/80 border border-white/[0.04] rounded-xl p-3">
+      {/* Speed in glass card */}
+      <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-3 overflow-hidden group hover:border-white/[0.07] transition-all duration-200"
+        style={{ animation: "slide-in-up 0.3s ease-out 0.4s both" }}>
+        <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
         <SpeedConfigurator
           speeds={character.speed}
           encumbrancePenalty={0}

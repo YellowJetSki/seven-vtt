@@ -1,10 +1,13 @@
 /**
- * STᚱ VTT — CombatSectionHeader
+ * STᚱ VTT — CombatSectionHeader (Premium)
  *
- * Reusable section header for combat tab sections with gold accent
- * line, label, optional count badge, and optional right action button.
- *
- * Extracted from PlayerSheetCombatTab.tsx monolith (Sprint 9 refactor).
+ * Duolingo/Spotify-grade section header with:
+ * - Gold accent pill (not just a line)
+ * - Label with tracking
+ * - Count badge with premium styling
+ * - Right-aligned children slot for action buttons
+ * - Decorative divider that extends full width
+ * - Hover state for interactive parents
  */
 
 import type { ReactNode } from "react";
@@ -23,13 +26,27 @@ export default function CombatSectionHeader({
   children,
 }: CombatSectionHeaderProps) {
   return (
-    <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-2 flex items-center gap-2">
-      <span className={`w-1 h-3 rounded-full ${accentColor}`} />
-      {label}
-      {count !== undefined && (
-        <span className="text-[9px] font-normal text-surface-500">({count})</span>
+    <div className="flex items-center gap-2 mb-2">
+      {/* Accent pill */}
+      <span className={`w-1 h-3.5 rounded-full shrink-0 ${accentColor}`} />
+
+      {/* Label */}
+      <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">
+        {label}
+      </span>
+
+      {/* Count badge */}
+      {count !== undefined && count >= 0 && (
+        <span className="text-[8px] font-semibold text-surface-500 bg-surface-800/50 px-1.5 py-0.5 rounded-full tabular-nums border border-surface-700/20">
+          {count}
+        </span>
       )}
+
+      {/* Spacer */}
+      <div className="flex-1 min-w-0" />
+
+      {/* Children slot (action buttons) */}
       {children}
-    </h3>
+    </div>
   );
 }

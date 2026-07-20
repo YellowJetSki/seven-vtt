@@ -1,21 +1,14 @@
 /**
- * STᚱ VTT — Character Stats Panel
+ * STᚱ VTT — CharacterStatsPanel (Premium)
  *
- * Premium stat overview showing ALL derived character stats
- * with visual bars, context labels, and management controls.
- *
- * Replaces scattered stat displays with one unified, beautiful panel.
- *
- * Stats shown:
- * - Proficiency Bonus (with level context)
- * - Initiative (with DEX modifier breakdown)
- * - Armor Class (with armor/DEX breakdown)
- * - Speed (walk + special movement types)
- * - Hit Dice (with spend/recover)
- * - Proficiency Bonus breakdown (ability mods → saves)
- *
- * Usage:
- *   <CharacterStatsPanel character={character} />
+ * Lusion/Spotify-grade unified character stats overview:
+ * - 4 core stat cards with conic depth rings and directional glow
+ * - Ability modifier strip with 6-column color-coded grid
+ * - Speed section with movement-type icons and Hover indicator
+ * - Hit dice management with progress bar + spend/recover buttons
+ * - Passive senses with 3-card grid
+ * - All using unified glass gradient design language
+ * - Staggered entrance animation per section
  */
 
 import { useMemo } from "react";
@@ -29,16 +22,11 @@ import {
 
 interface CharacterStatsPanelProps {
   character: PlayerCharacter;
-  /** If true, shows all movement speed types in a compact grid */
   showAllSpeeds?: boolean;
-  /** Called when hit dice are spent */
-  onSpendHitDie?: (count: number) => void;
-  /** Called when hit dice are recovered */
-  onRecoverHitDie?: (count: number) => void;
   className?: string;
 }
 
-/* ── Speed Color / Icon Map ── */
+/* ── Speed Meta ── */
 const SPEED_META: Record<string, { icon: string; color: string; label: string }> = {
   walk: { icon: "👟", color: "text-emerald-400", label: "Walk" },
   fly: { icon: "🪽", color: "text-cyan-400", label: "Fly" },
@@ -70,10 +58,6 @@ function getPrimaryHitDie(character: PlayerCharacter): string {
   return character.hitDice || CLASS_HIT_DIE[primary] || "1d8";
 }
 
-function getMaxHitDice(level: number): number {
-  return level;
-}
-
 export default function CharacterStatsPanel({
   character,
   showAllSpeeds = false,
@@ -94,15 +78,12 @@ export default function CharacterStatsPanel({
 
   const initiative = computeInitiative(character);
   const ac = computeArmorClass(character);
-
   const hitDieType = getPrimaryHitDie(character);
-  const maxHd = getMaxHitDice(level);
+  const totalHd = level;
 
-  // Parse hit dice count from character data
-  const totalHd = maxHd;
-  const spentHd = 0; // Player can track spent HD
+  const totalMod = abilityMods.strength + abilityMods.dexterity + abilityMods.constitution +
+    abilityMods.intelligence + abilityMods.wisdom + abilityMods.charisma;
 
-  // Ability scores with their colors
   const abilityEntries = [
     { key: "STR", value: character.strength, mod: abilityMods.strength, color: "text-rose-400", bg: "bg-rose-500/8" },
     { key: "DEX", value: character.dexterity, mod: abilityMods.dexterity, color: "text-emerald-400", bg: "bg-emerald-500/8" },
@@ -112,112 +93,83 @@ export default function CharacterStatsPanel({
     { key: "CHA", value: character.charisma, mod: abilityMods.charisma, color: "text-pink-400", bg: "bg-pink-500/8" },
   ];
 
-  // Speed entries
   const speedKeys = showAllSpeeds
     ? (Object.keys(character.speed) as (keyof typeof character.speed)[]).filter(k => k !== "canHover")
     : ["walk"] as (keyof typeof character.speed)[];
+
+  const coreCards = [
+    {
+      icon: "🏅", label: "Proficiency", value: `+${pb}`,
+      subtext: `Level ${level} · PB +${pb}`,
+      valueColor: "text-gold-400", accentColor: "from-gold-500/20",
+    },
+    {
+      icon: "⚡", label: "Initiative", value: `${initiative >= 0 ? "+" : ""}${initiative}`,
+      subtext: `DEX ${abilityMods.dexterity >= 0 ? "+" : ""}${abilityMods.dexterity}`,
+      valueColor: initiative >= 0 ? "text-gold-400" : "text-rose-400",
+      accentColor: "from-gold-500/20",
+    },
+    {
+      icon: "🛡", label: "Armor Class", value: `${ac}`,
+      subtext: `10 + DEX (${abilityMods.dexterity})`,
+      valueColor: "text-cyan-300", accentColor: "from-cyan-500/20",
+    },
+    {
+      icon: "❤️", label: "Max HP", value: `${character.hitPoints.max}`,
+      subtext: `HD ${hitDieType} · CON ${abilityMods.constitution >= 0 ? "+" : ""}${abilityMods.constitution}`,
+      valueColor: "text-emerald-400", accentColor: "from-emerald-500/20",
+    },
+  ];
 
   return (
     <div className={`space-y-3 ${className}`}>
       {/* ── Core Stat Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {/* Proficiency Bonus */}
-        <div className="relative bg-gradient-to-br from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] rounded-xl p-3 group hover:border-gold/10 transition-all">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[14px]">🏅</span>
-            <span className="text-[9px] uppercase tracking-widest font-black text-surface-500">
-              Proficiency
-            </span>
-          </div>
-          <span className="text-xl font-black tabular-nums text-gold-400">
-            +{pb}
-          </span>
-          <p className="text-[8px] text-surface-600 mt-0.5">
-            Level {level} · {" "}
-            <span className="text-surface-500">PB +{pb}</span>
-          </p>
-          {/* Bottom accent */}
-          <div className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
-        </div>
+        {coreCards.map((card, idx) => (
+          <div
+            key={card.label}
+            className="relative group rounded-xl bg-gradient-to-b from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] p-3 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 overflow-hidden"
+            style={{ animationDelay: `${idx * 60}ms`, animation: "slide-in-up 0.3s ease-out both" }}
+          >
+            {/* Conic depth ring */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" style={{ background: `conic-gradient(from 0deg at 50% 50%, ${card.accentColor.replace("from-", "").replace("/20", "/10")}, transparent 60%)` }} />
+            {/* Directional glow */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" style={{ background: `radial-gradient(ellipse 100px 60px at 50% 20%, ${card.accentColor.replace("from-", "").replace("/20", "/8")}, transparent)` }} />
+            {/* Edge light */}
+            <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
 
-        {/* Initiative */}
-        <div className="relative bg-gradient-to-br from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] rounded-xl p-3 group hover:border-gold/10 transition-all">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[14px]">⚡</span>
-            <span className="text-[9px] uppercase tracking-widest font-black text-surface-500">
-              Initiative
+            <div className="flex items-center gap-2 mb-1 relative z-[1]">
+              <span className="text-[14px]">{card.icon}</span>
+              <span className="text-[8px] uppercase tracking-widest font-black text-surface-500">
+                {card.label}
+              </span>
+            </div>
+            <span className={`text-xl font-black tabular-nums relative z-[1] ${card.valueColor}`}>
+              {card.value}
             </span>
+            <p className="text-[7px] text-surface-600 mt-0.5 relative z-[1]">
+              {card.subtext}
+            </p>
+            {/* Bottom accent */}
+            <div className={`absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent ${card.accentColor} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300`} />
           </div>
-          <span className={`text-xl font-black tabular-nums ${
-            initiative >= 0 ? "text-gold-400" : "text-rose-400"
-          }`}>
-            {initiative >= 0 ? "+" : ""}{initiative}
-          </span>
-          <p className="text-[8px] text-surface-600 mt-0.5">
-            DEX {abilityMods.dexterity >= 0 ? "+" : ""}{abilityMods.dexterity}
-          </p>
-          <div className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
-        </div>
-
-        {/* Armor Class */}
-        <div className="relative bg-gradient-to-br from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] rounded-xl p-3 group hover:border-gold/10 transition-all">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[14px]">🛡</span>
-            <span className="text-[9px] uppercase tracking-widest font-black text-surface-500">
-              Armor Class
-            </span>
-          </div>
-          <span className="text-xl font-black tabular-nums text-cyan-300">
-            {ac}
-          </span>
-          <p className="text-[8px] text-surface-600 mt-0.5">
-            10 + DEX ({abilityMods.dexterity})
-          </p>
-          <div className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
-        </div>
-
-        {/* Max HP */}
-        <div className="relative bg-gradient-to-br from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] rounded-xl p-3 group hover:border-gold/10 transition-all">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[14px]">❤️</span>
-            <span className="text-[9px] uppercase tracking-widest font-black text-surface-500">
-              Max HP
-            </span>
-          </div>
-          <span className="text-xl font-black tabular-nums text-emerald-400">
-            {character.hitPoints.max}
-          </span>
-          <p className="text-[8px] text-surface-600 mt-0.5">
-            HD {hitDieType} · CON {abilityMods.constitution >= 0 ? "+" : ""}{abilityMods.constitution}
-          </p>
-          <div className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
-        </div>
+        ))}
       </div>
 
       {/* ── Ability Modifier Strip ── */}
-      <div>
-        <p className="text-[9px] font-bold uppercase tracking-wider text-white/50 mb-1.5 flex items-center gap-2">
+      <div style={{ animation: "slide-in-up 0.3s ease-out 0.15s both" }}>
+        <p className="text-[8px] font-bold uppercase tracking-wider text-white/50 mb-1.5 flex items-center gap-2">
           <span>Ability Scores</span>
           <span className="text-surface-600">·</span>
-          <span className="text-surface-600 font-normal normal-case text-[9px]">
-            total mod:{" "}
-            <span className={`tabular-nums font-bold ${
-              abilityMods.strength + abilityMods.dexterity + abilityMods.constitution +
-              abilityMods.intelligence + abilityMods.wisdom + abilityMods.charisma > 0
-                ? "text-gold-400" : "text-surface-500"
-            }`}>
-              {abilityMods.strength + abilityMods.dexterity + abilityMods.constitution +
-               abilityMods.intelligence + abilityMods.wisdom + abilityMods.charisma >= 0 ? "+" : ""}
-              {abilityMods.strength + abilityMods.dexterity + abilityMods.constitution +
-               abilityMods.intelligence + abilityMods.wisdom + abilityMods.charisma}
-            </span>
+          <span className={`tabular-nums font-bold text-[9px] ${totalMod > 0 ? "text-gold-400" : "text-surface-500"}`}>
+            total mod: {totalMod >= 0 ? "+" : ""}{totalMod}
           </span>
         </p>
         <div className="grid grid-cols-6 gap-1.5">
-          {abilityEntries.map(({ key, value, mod, color, bg }) => (
+          {abilityEntries.map(({ key, value, mod, color }) => (
             <div
               key={key}
-              className="flex flex-col items-center py-1.5 rounded-lg bg-[#0c0d15] border border-white/[0.04]"
+              className="flex flex-col items-center py-1.5 rounded-lg bg-gradient-to-b from-white/[0.02] to-transparent border border-white/[0.04] hover:border-white/[0.06] transition-all hover:-translate-y-0.5"
             >
               <span className={`text-[7px] font-bold uppercase tracking-wider ${color}`}>
                 {key}
@@ -236,9 +188,9 @@ export default function CharacterStatsPanel({
       </div>
 
       {/* ── Speed Section ── */}
-      <div>
-        <p className="text-[9px] font-bold uppercase tracking-wider text-white/50 mb-1.5">
-          Speed
+      <div style={{ animation: "slide-in-up 0.3s ease-out 0.2s both" }}>
+        <p className="text-[8px] font-bold uppercase tracking-wider text-white/50 mb-1.5">
+          Movement Speed
         </p>
         <div className={`grid gap-1.5 ${speedKeys.length > 1 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1"}`}>
           {speedKeys.map((key) => {
@@ -248,11 +200,11 @@ export default function CharacterStatsPanel({
             return (
               <div
                 key={key}
-                className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-[#0c0d15] border border-white/[0.04]"
+                className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-gradient-to-b from-white/[0.02] to-transparent border border-white/[0.04] hover:border-white/[0.06] transition-all"
               >
-                <span className="text-[12px]">{meta.icon}</span>
+                <span className="text-[13px]">{meta.icon}</span>
                 <div className="min-w-0">
-                  <span className="text-[9px] font-medium uppercase tracking-wider text-surface-500 block leading-tight">
+                  <span className="text-[8px] font-semibold uppercase tracking-wider text-surface-500 block leading-tight">
                     {meta.label}
                   </span>
                   <span className={`text-sm font-black tabular-nums ${meta.color}`}>
@@ -262,12 +214,11 @@ export default function CharacterStatsPanel({
               </div>
             );
           })}
-          {/* Can hover indicator */}
           {character.speed.canHover && (
-            <div className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-[#0c0d15] border border-cyan-500/10">
-              <span className="text-[12px]">✨</span>
+            <div className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-gradient-to-b from-white/[0.02] to-transparent border border-cyan-500/10 hover:border-cyan-500/20 transition-all">
+              <span className="text-[13px]">✨</span>
               <div className="min-w-0">
-                <span className="text-[9px] font-medium uppercase tracking-wider text-surface-500 block leading-tight">
+                <span className="text-[8px] font-semibold uppercase tracking-wider text-surface-500 block leading-tight">
                   Hover
                 </span>
                 <span className="text-xs font-medium text-cyan-400">Can hover</span>
@@ -278,58 +229,57 @@ export default function CharacterStatsPanel({
       </div>
 
       {/* ── Hit Dice Section ── */}
-      <div>
+      <div style={{ animation: "slide-in-up 0.3s ease-out 0.25s both" }}>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">
+          <p className="text-[8px] font-bold uppercase tracking-wider text-white/50">
             Hit Dice
           </p>
-          <span className="text-[9px] text-surface-500 tabular-nums">
-            {totalHd - spentHd}/{totalHd} remaining
+          <span className="text-[9px] text-surface-500 tabular-nums font-semibold">
+            {totalHd}/{totalHd} available
           </span>
         </div>
-        <div className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3">
+        <div className="rounded-xl bg-gradient-to-b from-[#14151f]/80 to-[#0c0d15]/90 border border-white/[0.04] p-3 hover:border-white/[0.07] transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-[18px] font-black tabular-nums text-gold-400">
+              <span className="text-[18px] font-black tabular-nums text-gold-400 drop-shadow-[0_0_4px_rgba(234,179,8,0.1)]">
                 {hitDieType}
               </span>
               <span className="text-[10px] text-surface-500">
-                × {totalHd - spentHd} available
+                × {totalHd} available
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <button
-                disabled={totalHd - spentHd <= 0}
-                className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/15 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-                title="Spend a Hit Die during a Short Rest"
+                disabled={totalHd <= 0}
+                className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-emerald-500/10 to-emerald-500/3 border border-emerald-500/15 text-emerald-400 hover:from-emerald-500/15 hover:to-emerald-500/8 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90"
               >
                 − Spend
               </button>
               <button
-                disabled={spentHd <= 0}
-                className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gold-500/10 border border-gold-500/15 text-gold-400 hover:bg-gold-500/15 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-                title="Recover Hit Dice during a Long Rest"
+                className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-gold-500/10 to-gold-500/3 border border-gold/15 text-gold-400 hover:from-gold-500/15 hover:to-gold-500/8 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90"
               >
                 + Recover
               </button>
             </div>
           </div>
           {/* HD progress bar */}
-          <div className="mt-2 h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+          <div className="mt-2 h-1.5 rounded-full bg-gradient-to-b from-surface-900/80 to-[#07080d]/80 overflow-hidden border border-white/[0.02] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-gold-500 to-amber-400 transition-all duration-500"
-              style={{ width: `${totalHd > 0 ? ((totalHd - spentHd) / totalHd) * 100 : 0}%` }}
-            />
+              className="h-full rounded-full bg-gradient-to-r from-gold-500 to-amber-400 transition-all duration-500 relative"
+              style={{ width: "100%" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full" />
+            </div>
           </div>
           <p className="text-[7px] text-surface-600 mt-1">
-            Long rest recovers up to {Math.max(1, Math.floor(level / 2))} Hit Dice
+            Long rest recovers up to {Math.max(1, Math.floor(level / 2))} Hit Dice (min 1)
           </p>
         </div>
       </div>
 
       {/* ── Passive Senses ── */}
-      <div>
-        <p className="text-[9px] font-bold uppercase tracking-wider text-white/50 mb-1.5">
+      <div style={{ animation: "slide-in-up 0.3s ease-out 0.3s both" }}>
+        <p className="text-[8px] font-bold uppercase tracking-wider text-white/50 mb-1.5">
           Passive Senses
         </p>
         <div className="grid grid-cols-3 gap-1.5">
@@ -340,11 +290,11 @@ export default function CharacterStatsPanel({
           ].map((sense) => (
             <div
               key={sense.label}
-              className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-[#0c0d15] border border-white/[0.04]"
+              className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-gradient-to-b from-white/[0.02] to-transparent border border-white/[0.04] hover:border-white/[0.06] transition-all"
             >
-              <span className="text-[10px]">{sense.icon}</span>
+              <span className="text-[11px]">{sense.icon}</span>
               <div className="min-w-0">
-                <span className="text-[7px] font-medium uppercase tracking-wider text-surface-500 block leading-tight">
+                <span className="text-[7px] font-semibold uppercase tracking-wider text-surface-500 block leading-tight">
                   {sense.label}
                 </span>
                 <span className={`text-xs font-black tabular-nums ${sense.color}`}>
