@@ -10441,3 +10441,67 @@ Total time per wolf: ~10 seconds
 Before: ~2 minutes navigating to Encounters → Bestiary → Quick Create → manually add to combat
 
 ---
+
+## Sprint 29/41 — Feature Expansion Phase (Cycle 10 of 10 — FINAL): DM Combat Wrap-Up Overlay (Updated: 2026-07-20 19:53)
+## Sprint 29/41 — End-of-Combat Wrap-Up Overlay (Feature Expansion Phase — FINAL CYCLE)
+
+### Summary
+Built a globally accessible encounter resolution overlay that presents post-combat statistics, one-click XP awards, thematic loot distribution, condition clearing, and rest suggestions — accessible from any page via the sidebar.
+
+### Architectural Changes
+
+| File | Change | Impact |
+|------|--------|--------|
+| `components/control-center/DmCombatWrapUpOverlay.tsx` | **NEW** — ~600 lines | Full wrap-up overlay with 3 tabs: Summary, XP, Loot |
+| `stores/uiStore.ts` | Added `showCombatWrapUp` state + `setCombatWrapUp` action | State management for the overlay |
+| `components/layout/AppShell.tsx` | Added event listener + DmCombatWrapUpOverlay rendering | Global mount for DM role |
+| `components/layout/Sidebar.tsx` | Added "🏆 Combat Wrap-Up" sidebar button (between NPC Quick Create and Quick Reference) | One-click access from sidebar |
+
+### Features
+
+#### Summary Tab
+| Feature | Detail |
+|---------|--------|
+| **Combat stats grid** | Rounds, kills, deaths — 3-card grid with gold/emerald/rose color coding |
+| **Party status** | Alive/dead counts with colored dots + total XP display |
+| **Clear all conditions** | One-click removes all conditions from all characters via `setCharacters` |
+| **Suggest short rest** | Heals all combatants by ~1 HD average (no dice, pure computation) |
+
+#### XP Tab
+| Feature | Detail |
+|---------|--------|
+| **Total XP pool** | Auto-calculated from enemy CRs using `getXpForCr()` — reads from actual encounter combatants |
+| **Per-character XP** | Splits total among alive party members |
+| **Award to all** | One-click applies XP to all alive characters via `useXpMutations.handleAddXp()` |
+| **Confetti effect** | Brief animation + "XP awarded!" message on completion |
+| **Individual XP** | Per-character input + Award button for custom distribution |
+
+#### Loot Tab
+| Feature | Detail |
+|---------|--------|
+| **6 thematic loot presets** | Treasure Hoard (200 GP), Magic Item Cache (potions + scrolls), Weapons & Armor, Monster Parts, Arcane Remnants, Rich Rewards (500 GP) |
+| **Gold distribution** | Adds gold as inventory items to first alive character |
+| **Item distribution** | Spreads items evenly across alive party members |
+| **Applied state tracking** | Green checkmark + disabled state per preset after application |
+
+### Typical DM Workflow (End of Combat)
+
+```
+Party defeats 4 goblins (CR 1/4 each = 200 XP)
+DM opens sidebar → "🏆 Combat Wrap-Up"
+
+See: R3 | 4 kills | 0 deaths | 200 XP total
+
+Tab → "⭐ XP": See 200 XP total, 50 per character
+Click "Award 50 XP to All Alive Characters" → Done
+
+Tab → "💰 Loot": Click "Treasure Hoard (200 GP)"
+Loot applied to Wendy (who had the highest STR)
+
+Click "Clear All Conditions" → Poisoned condition removed from Kehrfuffle
+Click "Suggest Short Rest" → Party healed ~3 HP each
+
+Total post-combat time: ~15 seconds
+Before: ~3 minutes navigating between screens
+
+---
