@@ -1,27 +1,21 @@
 /**
- * STᚱ VTT — Spell Prepare Toggle
+ * STᚱ VTT — Spell Prepare Toggle (Premium)
  *
- * A small inline toggle button on each spell row that marks
- * the spell as "prepared" or "unprepared". Prepared spells
- * automatically inject into the Combat Tab's spell list.
+ * An inline toggle button on each spell row marking the spell
+ * as "prepared" or "unprepared". Premium micro-interaction:
+ * - Gold dot with glow shadow when prepared
+ * - Dim dot when unprepared
+ * - Smooth opacity transition
+ * - Scale feedback on click
+ * - Cantrips shown as always-prepared (disabled state)
  *
- * Persists to character state → Zustand + Firestore.
- *
- * Usage:
- *   <SpellPrepareToggle
- *     isPrepared={isPrepared}
- *     onChange={(next) => handlePrepare(spellName, next)}
- *   />
+ * Prepared spells automatically inject into the Combat Tab.
  */
 
 interface SpellPrepareToggleProps {
-  /** Whether the spell is currently prepared */
   isPrepared: boolean;
-  /** Called with the new prepared state */
   onChange: (prepared: boolean) => void;
-  /** Optional disabled state (cantrips are always prepared) */
   disabled?: boolean;
-  /** Optional size variant */
   size?: "sm" | "md";
 }
 
@@ -32,15 +26,14 @@ export default function SpellPrepareToggle({
   size = "sm",
 }: SpellPrepareToggleProps) {
   const sizeClasses = size === "sm" ? "w-5 h-5 text-[10px]" : "w-7 h-7 text-xs";
-  const dotSize = size === "sm" ? "w-1.5 h-1.5" : "w-2 h-2";
 
   if (disabled) {
     return (
       <span
-        className={`inline-flex items-center justify-center rounded ${sizeClasses} bg-surface-700/30 text-surface-500 cursor-not-allowed`}
+        className={`inline-flex items-center justify-center rounded-full ${sizeClasses} bg-surface-700/30 text-surface-500 cursor-not-allowed`}
         title="Cantrips are always prepared"
       >
-        <span className={`${dotSize} rounded-full bg-surface-500/40`} />
+        <span className="w-1.5 h-1.5 rounded-full bg-surface-500/40" />
       </span>
     );
   }
@@ -51,19 +44,21 @@ export default function SpellPrepareToggle({
         e.stopPropagation();
         if (!disabled) onChange(!isPrepared);
       }}
-      className={`inline-flex items-center justify-center rounded ${sizeClasses} transition-all duration-200 ${
+      className={`inline-flex items-center justify-center rounded-full ${sizeClasses} transition-all duration-200 active:scale-90 ${
         isPrepared
-          ? "bg-gold-500/15 text-gold-400 border border-gold-500/25 shadow-[0_0_4px_rgba(234,179,8,0.15)]"
-          : "bg-surface-700/30 text-surface-500 border border-transparent hover:bg-surface-700/50 hover:text-surface-400"
+          ? "bg-gold-500/15 border border-gold-500/25 shadow-[0_0_6px_rgba(234,179,8,0.15)]"
+          : "bg-surface-800/40 border border-transparent hover:bg-surface-700/50 hover:border-surface-600/30"
       }`}
       title={isPrepared ? "Unprepare spell" : "Prepare spell"}
       aria-label={isPrepared ? "Unprepare" : "Prepare"}
     >
-      {isPrepared ? (
-        <span className={`${dotSize} rounded-full bg-gold-400 shadow-[0_0_3px_rgba(234,179,8,0.3)]`} />
-      ) : (
-        <span className={`${dotSize} rounded-full bg-surface-500/40`} />
-      )}
+      <span
+        className={`rounded-full transition-all duration-200 ${
+          isPrepared
+            ? "w-2 h-2 bg-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.4)]"
+            : "w-1.5 h-1.5 bg-surface-500/40"
+        }`}
+      />
     </button>
   );
 }

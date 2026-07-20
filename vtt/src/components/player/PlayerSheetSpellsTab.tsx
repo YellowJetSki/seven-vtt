@@ -210,10 +210,23 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
   if (!spellcasting.isCaster || !spellcasting.spellSlots) {
     return (
       <div className="space-y-4 px-3 py-3">
-        <div className="rounded-xl bg-obsidian-mid/40 border border-surface-700/20 p-6 text-center">
-          <span className="text-3xl block mb-2">📖</span>
-          <p className="text-sm text-surface-400">This character does not have spellcasting ability.</p>
-          <p className="text-xs text-surface-600 mt-1">No spell slots available for this class.</p>
+        <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-8 overflow-hidden text-center">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
+          <div
+            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#14151f]/80 to-[#0f1019]/90 border border-gold/10 flex items-center justify-center mx-auto mb-3"
+            style={{ animation: "float-arcane 3s ease-in-out infinite" }}
+          >
+            <span className="text-xl">📖</span>
+          </div>
+          <h3 className="text-xs font-bold text-gold-400 mb-1.5">No Spellcasting Ability</h3>
+          <p className="text-[10px] text-surface-500 max-w-[200px] mx-auto leading-relaxed">
+            This character does not have spellcasting ability for their class.
+          </p>
+          <div className="flex items-center gap-2 mt-4 justify-center">
+            <div className="w-6 h-px bg-gradient-to-r from-transparent to-gold-500/15" />
+            <span className="text-[8px] text-gold-500/40 font-mono">✦ ᚱ ✦</span>
+            <div className="w-6 h-px bg-gradient-to-l from-transparent to-gold-500/15" />
+          </div>
         </div>
       </div>
     );
@@ -221,9 +234,9 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
 
   return (
     <div className="space-y-4 px-3 py-3">
-      {/* Flash message */}
+      {/* Flash message — premium toast */}
       {castFeedback && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[80] px-4 py-2 rounded-xl bg-gold-500/10 border border-gold/20 text-gold-400 text-[11px] font-semibold shadow-xl shadow-gold-500/5 backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[80] px-4 py-2.5 rounded-xl bg-gradient-to-b from-gold-500/12 to-gold-500/5 border border-gold/20 text-gold-400 text-[11px] font-semibold shadow-xl shadow-black/40 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-150">
           {castFeedback}
         </div>
       )}

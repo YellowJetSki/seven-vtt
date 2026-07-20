@@ -1,13 +1,16 @@
 /**
- * STᚱ VTT — SpellRowMetaDisplay
+ * STᚱ VTT — SpellRowMetaDisplay (Premium)
  *
- * Expanded metadata section for a spell row: casting info, damage/heal/save
- * mechanical badges, and full description.
- *
- * Extracted from PlayerSheetSpellsTab.tsx monolith (Sprint 7 refactor).
+ * Lusion-grade expanded spell metadata:
+ * - 2-column info grid with gold label accents
+ * - Mechanical effect badges with color coding
+ * - Full description with proper leading
+ * - Smooth slide-in entrance animation
+ * - School color scheme accent border
  */
 
 import type { KnownSpell } from "@/lib/spell-utils";
+import { getSchoolStyle, SCHOOL_ICON } from "@/lib/spell-utils";
 
 interface SpellRowMetaDisplayProps {
   spell: KnownSpell;
@@ -19,54 +22,69 @@ export default function SpellRowMetaDisplay({ spell }: SpellRowMetaDisplayProps)
   const hasSave = !!spell.saveDC;
 
   return (
-    <div className="px-3 pb-2.5 space-y-2 animate-slide-in-up">
+    <div className="relative px-3 pb-3 pt-1 space-y-2">
+      {/* Subtle left border school accent */}
+      <div
+        className={`absolute left-[14px] top-0 bottom-3 w-0.5 rounded-full opacity-20 ${
+          getSchoolStyle(spell.school).includes("border")
+            ? getSchoolStyle(spell.school).replace("border", "bg")
+            : "bg-gold-500/20"
+        }`}
+      />
+
       {/* Meta info grid */}
-      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-surface-500">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-surface-500 pl-4">
         <span>
-          <span className="text-gold-500/50">Casting:</span> {spell.castingTime}
+          <span className="text-gold-500/50 font-semibold">Casting:</span>{" "}
+          <span className="text-surface-400">{spell.castingTime}</span>
         </span>
         <span>
-          <span className="text-gold-500/50">Range:</span> {spell.range}
+          <span className="text-gold-500/50 font-semibold">Range:</span>{" "}
+          <span className="text-surface-400">{spell.range}</span>
         </span>
         <span>
-          <span className="text-gold-500/50">Components:</span> {spell.components}
+          <span className="text-gold-500/50 font-semibold">Components:</span>{" "}
+          <span className="text-surface-400">{spell.components}</span>
         </span>
         <span>
-          <span className="text-gold-500/50">Duration:</span> {spell.duration}
+          <span className="text-gold-500/50 font-semibold">Duration:</span>{" "}
+          <span className="text-surface-400">{spell.duration}</span>
         </span>
       </div>
 
       {/* Mechanical detail badges */}
       {(hasDamage || hasHeal || hasSave || spell.attackRoll) && (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5 pl-4">
           {hasDamage && (
-            <span className="text-[9px] bg-rose-500/8 border border-rose-500/15 text-rose-400 px-1.5 py-0.5 rounded">
+            <span className="text-[9px] font-medium bg-rose-500/8 border border-rose-500/12 text-rose-400 px-2 py-0.5 rounded-lg">
               💥 {spell.damageDice}
               {spell.damageType ? ` ${spell.damageType}` : ""}
             </span>
           )}
           {hasHeal && (
-            <span className="text-[9px] bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">
+            <span className="text-[9px] font-medium bg-emerald-500/8 border border-emerald-500/12 text-emerald-400 px-2 py-0.5 rounded-lg">
               ❤ {spell.healDice} healing
             </span>
           )}
           {hasSave && (
-            <span className="text-[9px] bg-indigo-500/8 border border-indigo-500/15 text-indigo-400 px-1.5 py-0.5 rounded">
+            <span className="text-[9px] font-medium bg-indigo-500/8 border border-indigo-500/12 text-indigo-400 px-2 py-0.5 rounded-lg">
               🛡 DC {spell.saveDC} {spell.saveAbility}
             </span>
           )}
           {spell.attackRoll && (
-            <span className="text-[9px] bg-amber-500/8 border border-amber-500/15 text-amber-400 px-1.5 py-0.5 rounded">
+            <span className="text-[9px] font-medium bg-amber-500/8 border border-amber-500/12 text-amber-400 px-2 py-0.5 rounded-lg">
               🎯 Spell attack
             </span>
           )}
         </div>
       )}
 
-      {/* Full description */}
-      <p className="text-[11px] text-surface-400 leading-relaxed">
-        {spell.description || "No description available."}
-      </p>
+      {/* Description */}
+      <div className="pl-4">
+        <p className="text-[10px] text-surface-400 leading-relaxed">
+          {spell.description || "No description available."}
+        </p>
+      </div>
     </div>
   );
 }
