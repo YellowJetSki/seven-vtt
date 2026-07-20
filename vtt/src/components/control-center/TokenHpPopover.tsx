@@ -22,6 +22,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCombatStore } from "@/stores/combatStore";
+import AttackResolutionPopover from "@/components/encounters/AttackResolutionPopover";
 import type { MapToken } from "@/types";
 
 // ── Type Definitions ──
@@ -99,6 +101,16 @@ export default function TokenHpPopover({
   const [customInput, setCustomInput] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [animPhase, setAnimPhase] = useState<"entering" | "idle" | "exiting">("entering");
+  const [showAttackPopover, setShowAttackPopover] = useState(false);
+
+  // Combat store
+  const activeEncounter = useCombatStore((s) => s.activeEncounter);
+  const combatants = activeEncounter?.combatants ?? [];
+
+  // Find matching combatant for this token
+  const matchingCombatant = combatants.find(
+    (c) => c.name.toLowerCase() === token.label.toLowerCase()
+  ) || null;
 
   // Sync with token prop changes
   useEffect(() => {
@@ -331,6 +343,23 @@ export default function TokenHpPopover({
             </button>
           </div>
 
+          {/* ── Roll Attack (combat only) ── */}
+          {activeEncounter && matchingCombatant && (
+            <div style={{ animation: "slide-in-up 0.2s ease-out 0.14s both" }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAttackPopover(true);
+                }}
+                className="w-full px-2 py-2 rounded-xl text-[9px] font-bold bg-gradient-to-br from-rose-500/12 to-red-500/8 border border-rose-500/20 text-rose-400 hover:from-rose-500/20 hover:to-red-500/12 hover:border-rose-500/30 hover:shadow-[0_0_16px_rgba(244,63,94,0.04)] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2"
+              >
+                <span>⚔</span>
+                <span>Roll Attack</span>
+                <span className="text-[7px] text-rose-400/50">({matchingCombatant.type})</span>
+              </button>
+            </div>
+          )}
+
           {/* ── Custom HP Input ── */}
           {showCustom && (
             <div
@@ -384,6 +413,16 @@ export default function TokenHpPopover({
           </div>
         </div>
       </div>
+
+      {/* ── Attack Resolution Popover ── */}
+      {activeEncounter && (
+        <AttackResolutionPopover
+          initialAttacker={matchingCombatant}
+          combatants={combatants}
+          isOpen={showAttackPopover}
+          onClose={() => setShowAttackPopover(false)}
+        />
+      )}
     </div>
   );
 }
