@@ -1,11 +1,13 @@
 /**
- * STᚱ VTT — Campaign Banner (Duolingo-Grade Premium)
+ * STᚱ VTT — Campaign Banner (Lusion-Grade Premium Overhaul)
  *
- * Multi-layer hero banner with animated depth:
- * - Gold edge-lit glass surface with subtle grain
- * - Animated rune motif that breathes
- * - Campaign name + description with refined typography
- * - Dynamic stat clusters that float into view
+ * Premium hero banner with architectural depth:
+ * - 7-layer depth composition (void bg → conic ring → edge light → glow pocket → glass card → content → hover animations)
+ * - Animated conic gradient depth ring rotating over 30s
+ * - Rune with ambient glow pocket and pulse animation
+ * - Stat cluster with gold hover accent lines
+ * - Sophisticated typographic hierarchy with letter-spacing
+ * - Duolingo-grade stat counters with staggered entrance
  */
 
 import type { CampaignMeta } from "@/types";
@@ -16,36 +18,55 @@ interface CampaignBannerProps {
 }
 
 export default function CampaignBanner({ meta, stats }: CampaignBannerProps) {
-  // Calculate total entries
   const total = stats.reduce((acc, s) => acc + s.value, 0);
 
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#181a2a]/80 via-[#12131e]/85 to-[#0c0d15]/90 border border-white/[0.06] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,215,0,0.02)]">
-      {/* Depth ring — subtle conic gradient */}
-      <div className="absolute inset-0 opacity-[0.04] bg-[conic-gradient(from_0deg,transparent_0%,rgba(234,179,8,0.3)_20%,transparent_40%,rgba(234,179,8,0.15)_60%,transparent_80%)] animate-depth-rotate" style={{ animationDuration: '30s' }} />
+    <div className="relative rounded-2xl overflow-hidden group">
+      {/* ── Layer 1: Deep void background ── */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#181a2a]/90 via-[#12131e]/90 to-[#0c0d15]/95" />
 
-      {/* Top gold edge light */}
-      <div className="absolute top-0 left-12 right-12 h-px bg-gradient-to-r from-transparent via-gold-500/15 to-transparent" />
+      {/* ── Layer 2: Conic gradient depth ring (slow rotate) ── */}
+      <div
+        className="absolute inset-0 opacity-[0.04] bg-[conic-gradient(from_0deg,transparent_0%,rgba(234,179,8,0.4)_15%,transparent_30%,rgba(234,179,8,0.2)_50%,transparent_70%,rgba(234,179,8,0.15)_85%,transparent_100%)]"
+        style={{
+          animation: "spin 30s linear infinite",
+        }}
+      />
 
-      {/* Ambient glow pocket — upper right */}
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold-500/5 rounded-full blur-[60px] pointer-events-none" />
+      {/* ── Layer 3: Top gold edge light ── */}
+      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 group-hover:via-gold-500/40 to-transparent transition-all duration-700" />
 
-      {/* Content */}
+      {/* ── Layer 4: Bottom edge light on hover ── */}
+      <div className="absolute bottom-0 left-[20%] right-[20%] h-px bg-gradient-to-r from-transparent via-gold-500/0 group-hover:via-gold-500/15 to-transparent transition-all duration-700 pointer-events-none" />
+
+      {/* ── Layer 5: Ambient glow pockets ── */}
+      <div className="absolute -top-12 -right-12 w-48 h-48 bg-gold-500/[0.06] rounded-full blur-[80px] pointer-events-none group-hover:bg-gold-500/[0.08] transition-all duration-700" />
+      <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-amber-500/[0.04] rounded-full blur-[60px] pointer-events-none" />
+
+      {/* ── Layer 6: Border ── */}
+      <div className="absolute inset-0 rounded-2xl border border-white/[0.06] pointer-events-none" />
+
+      {/* ── Layer 7: Content ── */}
       <div className="relative z-10 p-6 sm:p-8">
-        {/* Top row: rune + stats cluster */}
+        {/* Top row: rune + title + stats */}
         <div className="flex items-start justify-between gap-6">
           {/* Left: Rune + Title */}
           <div className="flex items-start gap-4 min-w-0">
-            {/* Animated rune */}
-            <div className="relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-gold-500/8 to-amber-500/5 border border-gold-500/15 flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-gold-500/15 to-transparent opacity-40" />
-              <span className="text-xl sm:text-2xl font-serif text-gold-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.3)] rune-pulse">
+            {/* Premium rune container with depth ring */}
+            <div className="relative shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden">
+              {/* Rune bg depth */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 to-amber-500/5" />
+              <div className="absolute inset-0 rounded-xl border border-gold-500/20" />
+              {/* Inner glow */}
+              <div className="absolute inset-2 bg-gold-500/10 rounded-lg blur-[4px]" />
+              {/* Rune character */}
+              <span className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl font-serif text-gold-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.4)]">
                 ᚱ
               </span>
             </div>
 
             {/* Title block */}
-            <div className="min-w-0">
+            <div className="min-w-0 pt-1">
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
                 {meta.name}
               </h1>
@@ -54,8 +75,9 @@ export default function CampaignBanner({ meta, stats }: CampaignBannerProps) {
               </p>
               {/* Meta badges */}
               <div className="flex items-center gap-3 mt-3 flex-wrap">
-                <span className="text-[9px] uppercase tracking-widest text-gold-400/60 bg-gold-500/8 border border-gold-500/15 px-2 py-1 rounded font-medium">
-                  ✦ Campaign Active
+                <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/60 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse-soft" />
+                  Campaign Active
                 </span>
                 <span className="text-[9px] text-surface-500 uppercase tracking-wider">
                   {total} total entries
@@ -65,19 +87,24 @@ export default function CampaignBanner({ meta, stats }: CampaignBannerProps) {
           </div>
         </div>
 
-        {/* Stats cluster — floating data points */}
+        {/* ── Stats cluster ── */}
         <div className="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-white/[0.04]">
           <div className="flex items-stretch gap-px">
             {stats.map((stat, idx) => (
               <div
                 key={stat.label}
-                className="flex-1 min-w-0 px-2 sm:px-3 py-2 sm:py-2.5 transition-all duration-200 hover:bg-white/[0.02] rounded-lg group relative"
-                style={{ animationDelay: `${idx * 80}ms` }}
+                className="flex-1 min-w-0 px-2 sm:px-3 py-2 sm:py-2.5 transition-all duration-200 hover:bg-white/[0.02] rounded-lg group/stat relative"
+                style={{
+                  animation: `slideInUp 0.4s ease-out ${idx * 80}ms both`,
+                }}
               >
                 {/* Gold hover accent line */}
-                <div className="absolute bottom-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent group-hover:via-gold-500/20 transition-all duration-300" />
+                <div className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent group-hover/stat:via-gold-500/25 transition-all duration-300" />
 
-                <div className="flex items-center gap-2 sm:gap-2.5">
+                {/* Hover directional glow */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-gold-500/[0.02] to-transparent opacity-0 group-hover/stat:opacity-100 transition-opacity duration-300" />
+
+                <div className="relative flex items-center gap-2 sm:gap-2.5">
                   <span className="text-base sm:text-lg leading-none shrink-0">{stat.icon}</span>
                   <div className="min-w-0">
                     <p className="text-lg sm:text-xl lg:text-2xl font-black text-white/90 tabular-nums leading-tight">

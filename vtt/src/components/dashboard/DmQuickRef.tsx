@@ -1,18 +1,20 @@
 /**
- * STᚱ VTT — DM Quick Reference
+ * STᚱ VTT — DM Quick Reference (Premium Accordion Design)
  *
- * A quick-reference panel for the DM dashboard, inspired by a physical
- * DM screen. Shows commonly-referenced 5e rules:
+ * A premium quick-reference panel for the DM dashboard, inspired by
+ * physical DM screens. Collapsible section accordions with:
+ * - Smooth height transitions
+ * - Gold-accented headers with character icons
+ * - Data-dense rows with tabular layout
+ * - Color-coded stat values
+ * - Hover states on every interactive element
  *
- * - Difficulty Class benchmarks
- * - Light conditions (Bright/Dim/Darkness)
- * - Cover rules (Half/Three-Quarters/Total)
- * - Condition quick-summary (most common)
- *
- * Sections are collapsible to save space. The DM expands what they need.
+ * Sections: DC Benchmarks, Light & Vision, Cover, Key Conditions, Exhaustion
  */
 
 import { useState } from "react";
+
+// ── Sub-components ──
 
 interface SectionProps {
   title: string;
@@ -21,14 +23,14 @@ interface SectionProps {
   defaultOpen?: boolean;
 }
 
-function Section({ title, icon, children, defaultOpen = false }: SectionProps) {
+function QuickRefSection({ title, icon, children, defaultOpen = false }: SectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div>
+    <div className="border-b border-white/[0.03] last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors group"
+        className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/[0.02] transition-colors group"
       >
         <div className="flex items-center gap-1.5">
           <span className="text-sm">{icon}</span>
@@ -36,142 +38,128 @@ function Section({ title, icon, children, defaultOpen = false }: SectionProps) {
             {title}
           </span>
         </div>
-        <span className={`text-[8px] text-surface-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>
+        <span
+          className={`text-[8px] text-surface-500 transition-transform duration-300 ease-out ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
           ▼
         </span>
       </button>
 
-      {isOpen && (
-        <div className="px-2 pb-2 pt-1 animate-slide-in-up space-y-1">
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-2 pb-2 pt-1 space-y-1">
           {children}
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function QuickRefRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-1 px-1.5 rounded hover:bg-white/[0.01]">
+    <div className="flex items-center justify-between py-1 px-1.5 rounded hover:bg-white/[0.01] transition-colors">
       <span className="text-[10px] text-surface-400">{label}</span>
       <span className="text-[10px] font-semibold text-white/70 tabular-nums">{value}</span>
     </div>
   );
 }
 
+// ── Main Component ──
+
 export default function DmQuickRef() {
   return (
-    <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">📋</span>
-          <span className="text-xs font-bold text-white/70 uppercase tracking-wider">
-            DM Quick Reference
-          </span>
+    <div className="relative group">
+      <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📋</span>
+            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
+              DM Quick Reference
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="p-3 space-y-1">
-        {/* DC Benchmarks */}
-        <Section title="Difficulty Class" icon="🎯" defaultOpen>
-          <Row label="Very Easy" value="DC 5" />
-          <Row label="Easy" value="DC 10" />
-          <Row label="Moderate" value="DC 15" />
-          <Row label="Hard" value="DC 20" />
-          <Row label="Very Hard" value="DC 25" />
-          <Row label="Nearly Impossible" value="DC 30" />
-        </Section>
+        <div className="p-3 space-y-1">
+          {/* Difficulty Class */}
+          <QuickRefSection title="Difficulty Class" icon="🎯" defaultOpen>
+            <QuickRefRow label="Very Easy" value="DC 5" />
+            <QuickRefRow label="Easy" value="DC 10" />
+            <QuickRefRow label="Moderate" value="DC 15" />
+            <QuickRefRow label="Hard" value="DC 20" />
+            <QuickRefRow label="Very Hard" value="DC 25" />
+            <QuickRefRow label="Nearly Impossible" value="DC 30" />
+          </QuickRefSection>
 
-        {/* Light Conditions */}
-        <Section title="Light & Vision" icon="☀️">
-          <div className="py-1 px-1.5">
-            <div className="space-y-1">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-medium text-yellow-300/80">Bright Light</span>
-                  <p className="text-[8px] text-surface-500">Normal vision, no penalties</p>
+          {/* Light Conditions */}
+          <QuickRefSection title="Light & Vision" icon="☀️">
+            <div className="py-1 px-1.5 space-y-1.5">
+              {[
+                { label: "Bright Light", desc: "Normal vision, no penalties", color: "text-yellow-300/80" },
+                { label: "Dim Light", desc: "Disadvantage on Perception (sight)", color: "text-amber-400/60" },
+                { label: "Darkness", desc: "Blinded condition · Darkvision 60ft", color: "text-indigo-400/60" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-start justify-between gap-2">
+                  <span className={`text-[10px] font-medium ${item.color} shrink-0`}>
+                    {item.label}
+                  </span>
+                  <span className="text-[8px] text-surface-500 text-right">{item.desc}</span>
                 </div>
-              </div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-medium text-amber-400/60">Dim Light</span>
-                  <p className="text-[8px] text-surface-500">Disadvantage on Perception (sight)</p>
+              ))}
+            </div>
+          </QuickRefSection>
+
+          {/* Cover */}
+          <QuickRefSection title="Cover" icon="🛡️">
+            <QuickRefRow label="Half Cover" value="+2 AC, +2 DEX saves" />
+            <QuickRefRow label="Three-Quarters" value="+5 AC, +5 DEX saves" />
+            <QuickRefRow label="Total Cover" value="Can't be targeted directly" />
+          </QuickRefSection>
+
+          {/* Key Conditions */}
+          <QuickRefSection title="Key Conditions" icon="⚡">
+            <div className="py-1 px-1.5 space-y-1.5">
+              {[
+                { name: "Prone", desc: "Melee attacks have advantage · Ranged have disadvantage · -half speed to stand" },
+                { name: "Grappled", desc: "Speed = 0 · Escape with Athletics/Acrobatics vs DC" },
+                { name: "Restrained", desc: "Speed = 0 · Attack disadvantage · Dex save disadvantage" },
+                { name: "Stunned", desc: "Incapacitated · Auto-fail STR/DEX saves · Attacks have advantage" },
+                { name: "Invisible", desc: "Attack advantage · Attacks against have disadvantage · Can't be seen" },
+              ].map((cond) => (
+                <div key={cond.name} className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-surface-400 font-medium shrink-0">{cond.name}</span>
+                  <span className="text-[8px] text-surface-500 text-right">{cond.desc}</span>
                 </div>
-              </div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-medium text-indigo-400/60">Darkness</span>
-                  <p className="text-[8px] text-surface-500">Blinded condition · Darkvision 60ft</p>
+              ))}
+            </div>
+          </QuickRefSection>
+
+          {/* Exhaustion Table */}
+          <QuickRefSection title="Exhaustion" icon="💀">
+            <div className="py-1 px-1.5 space-y-0.5">
+              {[
+                ["Lv.1", "Disadvantage on ability checks"],
+                ["Lv.2", "Speed halved"],
+                ["Lv.3", "Disadvantage on attacks & saves"],
+                ["Lv.4", "Hit point maximum halved"],
+                ["Lv.5", "Speed reduced to 0"],
+                ["Lv.6", "Death"],
+              ].map(([lv, desc]) => (
+                <div key={lv} className="flex items-center justify-between py-0.5">
+                  <span className={`text-[9px] font-mono font-bold ${lv === "Lv.6" ? "text-red-400" : "text-amber-400/80"}`}>
+                    {lv}
+                  </span>
+                  <span className="text-[8px] text-surface-500 text-right max-w-[180px]">{desc}</span>
                 </div>
-              </div>
+              ))}
             </div>
-          </div>
-        </Section>
-
-        {/* Cover */}
-        <Section title="Cover" icon="🛡️">
-          <Row label="Half Cover" value="+2 AC, +2 DEX saves" />
-          <Row label="Three-Quarters" value="+5 AC, +5 DEX saves" />
-          <Row label="Total Cover" value="Can't be targeted directly" />
-        </Section>
-
-        {/* Common Conditions */}
-        <Section title="Key Conditions" icon="⚡">
-          <div className="py-1 px-1.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-surface-400">Prone</span>
-              <span className="text-[8px] text-surface-500 text-right max-w-[160px]">
-                Melee attacks have advantage · Ranged have disadvantage · -half speed to stand
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-surface-400">Grappled</span>
-              <span className="text-[8px] text-surface-500 text-right max-w-[160px]">
-                Speed = 0 · Can escape with Athletics/Acrobatics vs DC
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-surface-400">Restrained</span>
-              <span className="text-[8px] text-surface-500 text-right max-w-[160px]">
-                Speed = 0 · Attack disadvantage · Dex save disadvantage
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-surface-400">Stunned</span>
-              <span className="text-[8px] text-surface-500 text-right max-w-[160px]">
-                Incapacitated · Auto-fail STR/DEX saves · Attacks have advantage
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-surface-400">Invisible</span>
-              <span className="text-[8px] text-surface-500 text-right max-w-[160px]">
-                Attack advantage · Attacks against have disadvantage · Can't be seen
-              </span>
-            </div>
-          </div>
-        </Section>
-
-        {/* Exhaustion */}
-        <Section title="Exhaustion" icon="💀">
-          <div className="py-1 px-1.5 space-y-0.5">
-            {[
-              ["Lv.1", "Disadvantage on ability checks"],
-              ["Lv.2", "Speed halved"],
-              ["Lv.3", "Disadvantage on attacks & saves"],
-              ["Lv.4", "Hit point maximum halved"],
-              ["Lv.5", "Speed reduced to 0"],
-              ["Lv.6", "Death"],
-            ].map(([lv, desc]) => (
-              <div key={lv} className="flex items-center justify-between py-0.5">
-                <span className={`text-[9px] font-mono font-bold ${lv === "Lv.6" ? "text-red-400" : "text-amber-400/80"}`}>
-                  {lv}
-                </span>
-                <span className="text-[8px] text-surface-500 text-right max-w-[180px]">{desc}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
+          </QuickRefSection>
+        </div>
       </div>
     </div>
   );

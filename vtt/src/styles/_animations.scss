@@ -89,6 +89,18 @@
   100% { transform: rotate(360deg); }
 }
 
+// ── slideInUp (camelCase alias for inline animation-name) ──
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ── spin (for conic gradient rotation) ──
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @keyframes slide-in-toast {
   0% { opacity: 0; transform: translateY(16px) scale(0.95); }
   60% { opacity: 1; transform: translateY(-2px) scale(1.01); }

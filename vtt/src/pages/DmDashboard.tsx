@@ -1,24 +1,30 @@
 /**
- * STᚱ VTT — DM Dashboard (Premium DM Screen Overhaul — Sprint 2)
+ * STᚱ VTT — DM Dashboard (Lusion-Grade Premium Command Center)
  *
  * The DM's operational command center — what they see on login.
- * Transformed into a premium physical DM screen metaphor with:
- * - Staggered entrance animations across ALL elements
- * - Premium glass depth on every panel
- * - DM Quick Reference panel for at-a-glance 5e rules
- * - Shared CharacterHpGauge component for consistency
+ * Premium Lusion/Ventriloc/Overrrides-grade design with:
+ *
+ * - Cinematic loading with staggered entrance choreography
+ * - Premium DmScreenContainer with multi-layer depth
+ * - CampaignBanner with conic depth ring and stat clusters
+ * - Overrrides-style QuickNav tiles with per-tile hover glow
+ * - Spotify-grade ActiveMapCard with image preview
+ * - Ventriloc data-dashboard CombatQuickStatus
+ * - Premium chronograph SessionTimer
+ * - Accordion-style DM Quick Reference
+ * - Staggered slide-in-up entrance on ALL panels
  * - Zero legacy color tokens
  *
  * Layout:
- * ┌───────────────────────────────────────────────────────────┐
- * │                   Campaign Banner                          │
- * ├─────────────────────────────┬─────────────────────────────┤
- * │  ⚡ Quick Nav (6 tiles)    │  ⏱ Session Timer             │
- * │                             │                              │
- * │  🗺 Active Map Card        │  ⚔ Combat Status             │
- * │                             │                              │
- * │  👥 Player Status Grid     │  📋 DM Quick Reference       │
- * └─────────────────────────────┴─────────────────────────────┘
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │                     Campaign Banner                         │
+ * ├───────────────────────────────┬─────────────────────────────┤
+ * │   ⚡ Quick Nav (6 tiles)      │  ⏱ Session Timer            │
+ * │                               │                             │
+ * │   🗺 Active Map Card          │  ⚔ Combat Status            │
+ * │                               │                             │
+ * │   👥 Player Status Grid       │  📋 DM Quick Reference      │
+ * └───────────────────────────────┴─────────────────────────────┘
  */
 
 import { useEffect, useState } from "react";
@@ -62,13 +68,12 @@ export default function DmDashboard() {
     return (
       <AppShell>
         <DmScreenContainer>
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <EmptyState
-              icon="🏰"
-              title="Welcome to the Arkla Campaign"
-              description="Forge your first campaign or awaken an ancient realm from slumber."
-            />
-          </div>
+          <EmptyState
+            icon="🏰"
+            title="Welcome to the Arkla Campaign"
+            description="Forge your first campaign or awaken an ancient realm from slumber."
+            action={{ label: "Create Campaign", onClick: () => window.location.href = "/campaign/settings" }}
+          />
         </DmScreenContainer>
       </AppShell>
     );
@@ -84,52 +89,65 @@ export default function DmDashboard() {
   return (
     <AppShell>
       <DmScreenContainer>
-        {/* ── Campaign Banner (staggered) ── */}
-        <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+        {/* ── Campaign Banner (0ms entrance) ── */}
+        <div
+          className="animate-in fade-in slide-in-from-bottom-3 duration-500"
+          style={{ animationDelay: "0ms" }}
+        >
           <CampaignBanner meta={meta} stats={statCards} />
         </div>
 
         {/* ── Two-column DM War Room ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+
           {/* ─── Left Column (2/3) ─── */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-5">
-            {/* Quick Nav */}
-            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '80ms' }}>
+
+            {/* Quick Nav (80ms) */}
+            <div
+              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
+              style={{ animationDelay: "80ms" }}
+            >
               <QuickNav />
             </div>
 
-            {/* Active Map Card */}
-            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '130ms' }}>
+            {/* Active Map Card (130ms) */}
+            <div
+              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
+              style={{ animationDelay: "130ms" }}
+            >
               <ActiveMapCard />
             </div>
 
-            {/* Player Status Grid — always shown if characters exist */}
+            {/* Player Status Grid (180ms) */}
             {characters.length > 0 && (
               <div
                 className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-                style={{ animationDelay: '180ms' }}
+                style={{ animationDelay: "180ms" }}
               >
                 <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
                     <div className="flex items-center gap-2">
                       <span className="text-sm">👥</span>
-                      <span className="text-xs font-bold text-white/70 uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
                         Party Status
                       </span>
                       <span className="text-[9px] text-surface-500 bg-[#0c0d15] border border-white/[0.04] px-1.5 py-0.5 rounded-full ml-1">
                         {characters.length}
                       </span>
                     </div>
+
                     {/* Combat indicator */}
                     {isInCombat && (
-                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-500/15 border border-red-500/20 text-red-400 animate-pulse-soft">
-                        ⚔ IN COMBAT
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-500/15 border border-red-500/20 text-red-400">
+                        <span className="w-1 h-1 rounded-full bg-red-400 animate-pulse-soft" />
+                        IN COMBAT
                       </span>
                     )}
                   </div>
 
-                  {/* Player cards */}
+                  {/* Player cards grid */}
                   <div className="p-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {characters.map((char, idx) => (
@@ -144,18 +162,28 @@ export default function DmDashboard() {
 
           {/* ─── Right Column (1/3) ─── */}
           <div className="space-y-4 sm:space-y-5">
-            {/* Session Timer */}
-            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '110ms' }}>
+
+            {/* Session Timer (110ms) */}
+            <div
+              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
+              style={{ animationDelay: "110ms" }}
+            >
               <SessionTimer />
             </div>
 
-            {/* Combat Quick Status */}
-            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '160ms' }}>
+            {/* Combat Quick Status (160ms) */}
+            <div
+              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
+              style={{ animationDelay: "160ms" }}
+            >
               <CombatQuickStatus />
             </div>
 
-            {/* DM Quick Reference — inline 5e rules */}
-            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '210ms' }}>
+            {/* DM Quick Reference (210ms) */}
+            <div
+              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
+              style={{ animationDelay: "210ms" }}
+            >
               <DmQuickRef />
             </div>
           </div>

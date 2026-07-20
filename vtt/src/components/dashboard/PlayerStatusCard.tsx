@@ -1,11 +1,14 @@
 /**
- * STᚱ VTT — Player Status Card (DM Dashboard — Premium Refactor)
+ * STᚱ VTT — Player Status Card (Premium Glass Card)
  *
- * Compact player monitor for the DM dashboard using shared components.
- * Shows: name, player-name, HP gauge (with quick controls), AC, conditions.
- *
- * Sprint 2 refactor: Uses CharacterHpGauge (shared with PlayerSheet & DM Cards).
- * Staggered entry animation. Premium hover glow.
+ * Premium player health monitor for the DM dashboard.
+ * Features:
+ * - Glass gradient card with hover elevation
+ * - Shared CharacterHpGauge for HP management
+ * - ConditionDots for status effects
+ * - AC badge with gold accent
+ * - Staggered entrance animation
+ * - Edge light and directional hover glow
  */
 
 import { useState, useCallback } from "react";
@@ -21,7 +24,6 @@ interface PlayerStatusCardProps {
 
 export default function PlayerStatusCard({ character: c, index = 0 }: PlayerStatusCardProps) {
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
-
   const ac = c.armorClass ?? 10;
   const conditions = c.conditions ?? [];
 
@@ -37,14 +39,25 @@ export default function PlayerStatusCard({ character: c, index = 0 }: PlayerStat
 
   return (
     <div
-      className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3 hover:border-gold-500/12 hover:shadow-[0_0_20px_rgba(234,179,8,0.02)] transition-all duration-200 group animate-in fade-in slide-in-from-bottom-2"
-      style={{ animationDuration: '300ms', animationDelay: `${index * 60}ms` }}
+      className="relative group/card bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3 overflow-hidden
+        hover:border-gold-500/12 hover:-translate-y-0.5
+        hover:shadow-[0_4px_20px_rgba(234,179,8,0.03)]
+        transition-all duration-200 ease-out"
+      style={{
+        animation: `slideInUp 0.3s ease-out ${index * 60}ms both`,
+      }}
     >
+      {/* Directional hover glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gold-500/[0.02] to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+      {/* Top edge light on hover */}
+      <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent group-hover/card:via-gold-500/12 transition-all duration-300 pointer-events-none" />
+
       {/* Header: Name + AC + Conditions */}
-      <div className="flex items-start justify-between mb-2">
+      <div className="relative flex items-start justify-between mb-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-bold text-white/80 truncate leading-tight transition-colors group-hover:text-white/90">
+            <p className="text-sm font-bold text-white/80 truncate leading-tight transition-colors group-hover/card:text-white/90">
               {c.name || "Unnamed Hero"}
             </p>
             {conditions.length > 0 && (
@@ -63,8 +76,10 @@ export default function PlayerStatusCard({ character: c, index = 0 }: PlayerStat
         </div>
       </div>
 
-      {/* HP Gauge (shared component — used on PlayerSheet too) */}
-      <CharacterHpGauge character={c} onHpChange={handleHpChange} showControls />
+      {/* HP Gauge (shared component) */}
+      <div className="relative">
+        <CharacterHpGauge character={c} onHpChange={handleHpChange} showControls />
+      </div>
     </div>
   );
 }
