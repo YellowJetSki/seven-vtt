@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Journal Quick Note
+ * STᚱ VTT — Journal Quick Note (Premium Glass v3.0)
  *
  * Floating quick-note entry form that appears as a floating action button
  * on the journal page. DMs can instantly jot down an idea, NPC name,
@@ -7,6 +7,8 @@
  *
  * On save: creates a new 'note' type journal entry with "Quick Note" prefix
  * and the current timestamp auto-populated.
+ *
+ * Replaced glass-gold with direct glass gradient + edge light.
  */
 
 import { useState, useCallback, useEffect, useRef } from "react";
@@ -55,12 +57,10 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // Ctrl+Enter or Cmd+Enter to submit
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         handleSubmit();
       }
-      // Escape to cancel
       if (e.key === "Escape") {
         setIsOpen(false);
         setContent("");
@@ -78,7 +78,7 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-gold-500/20 to-amber-500/10 border border-gold/25 text-gold-400 shadow-[0_4px_20px_rgba(234,179,8,0.12)] hover:shadow-[0_4px_24px_rgba(234,179,8,0.2)] hover:from-gold-500/25 hover:border-gold/35 active:scale-90 transition-all duration-200 flex items-center justify-center group"
+          className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-gold-500/20 to-amber-500/10 border border-gold-500/25 text-gold-400 shadow-[0_4px_20px_rgba(234,179,8,0.12)] hover:shadow-[0_4px_24px_rgba(234,179,8,0.2)] hover:from-gold-500/25 hover:border-gold-500/35 active:scale-90 transition-all duration-200 flex items-center justify-center group"
           title="Quick Note (Ctrl+N)"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -96,14 +96,14 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
           onClick={() => { setIsOpen(false); setContent(""); }}
         >
           <div
-            className="glass-gold rounded-2xl w-full max-w-lg mx-4 mb-0 sm:mb-4 border border-gold/10 shadow-2xl shadow-gold-500/5 overflow-hidden"
+            className="relative rounded-2xl w-full max-w-lg mx-4 mb-0 sm:mb-4 border border-white/[0.06] shadow-2xl shadow-black/60 overflow-hidden bg-gradient-to-b from-[#181a2a]/95 to-[#0f1019]/95 backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-            <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
+            {/* Gold edge light */}
+            <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent" />
 
             {/* Header */}
-            <div className="shrink-0 px-4 py-3 border-b border-gold/10 flex items-center justify-between">
+            <div className="shrink-0 px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm">📝</span>
                 <h3 className="text-sm font-bold text-gold tracking-tight">Quick Note</h3>
@@ -128,7 +128,7 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
                 onKeyDown={handleKeyDown}
                 placeholder="Jot down an idea, NPC name, quest detail, or combat note..."
                 rows={4}
-                className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-xl px-3 py-2.5 text-xs text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/25 focus:ring-1 focus:ring-gold/15 resize-none min-h-[100px]"
+                className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-xl px-3 py-2.5 text-xs text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 resize-none min-h-[100px] transition-all"
                 autoFocus
               />
 
@@ -143,7 +143,7 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
             </div>
 
             {/* Footer */}
-            <div className="shrink-0 px-4 py-3 border-t border-gold/10 flex items-center justify-between">
+            <div className="shrink-0 px-4 py-3 border-t border-white/[0.06] flex items-center justify-between">
               <div className="text-[9px] text-surface-600">
                 <kbd className="px-1 py-0.5 rounded bg-surface-800 border border-white/[0.06] text-[8px]">⌘↵</kbd> to save
               </div>
@@ -157,7 +157,7 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
                 <button
                   onClick={handleSubmit}
                   disabled={!content.trim()}
-                  className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   💾 Save Note
                 </button>

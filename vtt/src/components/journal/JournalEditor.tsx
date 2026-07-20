@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Journal Editor (Enhanced — Sprint 14)
+ * STᚱ VTT — Journal Editor (Premium v3.0)
  *
  * Rich editor for DM journal entries with:
  * - Title, type selector, tags, session number
@@ -9,6 +9,8 @@
  * - Word count, character count, relative timestamps
  * - Delete and save actions
  * - Read-only viewing with markdown rendering
+ *
+ * Replaced glass-gold with direct glass gradient + corner ornaments.
  */
 
 import { useState, useCallback, useEffect, useMemo } from "react";
@@ -162,11 +164,13 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="text-3xl">📖</div>
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-gold-500/10 to-amber-500/5 border border-gold-500/20 flex items-center justify-center">
+            <span className="text-3xl drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]">📖</span>
+          </div>
           <p className="text-sm text-surface-500">Select a journal entry or create a new one</p>
           <button
             onClick={onCreate}
-            className="px-3 py-1.5 rounded text-[11px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all"
+            className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 active:scale-95 transition-all duration-200"
           >
             ✦ New Entry
           </button>
@@ -187,7 +191,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
               onClick={handleTogglePin}
               className={`text-[10px] px-1.5 py-0.5 rounded transition-all active:scale-90 ${
                 isPinned
-                  ? "bg-gold-500/15 border border-gold/25 text-gold-400"
+                  ? "bg-gold-500/15 border border-gold-500/25 text-gold-400"
                   : "bg-transparent border border-transparent text-surface-600 hover:text-surface-400"
               }`}
               title={isPinned ? "Unpin entry" : "Pin entry for quick access"}
@@ -195,7 +199,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
               {isPinned ? "★" : "☆"}
             </button>
 
-            <span className="text-[10px] px-2 py-0.5 rounded bg-gold-500/10 border border-gold/15 text-gold-400">
+            <span className="text-[10px] px-2 py-0.5 rounded bg-gold-500/10 border border-gold-500/15 text-gold-400">
               {ENTRY_TYPES.find((t) => t.type === entry.type)?.icon}{" "}
               {ENTRY_TYPES.find((t) => t.type === entry.type)?.label}
             </span>
@@ -266,13 +270,13 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
         <div className="shrink-0 border-t border-white/[0.03] px-6 py-3 flex items-center gap-2">
           <button
             onClick={() => setIsEditing(true)}
-            className="px-3 py-1.5 rounded text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all"
+            className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 active:scale-95 transition-all duration-200"
           >
             ✏ Edit
           </button>
           <button
             onClick={handleDelete}
-            className="px-3 py-1.5 rounded text-[10px] border border-red-500/15 text-red-400 hover:bg-red-500/10 active:scale-95 transition-all"
+            className="px-3 py-1.5 rounded-lg text-[10px] border border-red-500/15 text-red-400 hover:bg-red-500/10 active:scale-95 transition-all"
           >
             🗑 Delete
           </button>
@@ -293,7 +297,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
               onClick={() => setType(t.type)}
               className={`text-[10px] px-2 py-1 rounded transition-all duration-150 active:scale-95 ${
                 type === t.type
-                  ? "bg-gold-500/10 text-gold-400 border border-gold/20"
+                  ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 text-gold-400 border border-gold-500/20"
                   : "text-surface-500 hover:text-surface-300 border border-transparent hover:border-white/[0.06]"
               }`}
             >
@@ -313,7 +317,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
               onChange={(e) =>
                 setSessionNumber(e.target.value ? parseInt(e.target.value) : undefined)
               }
-              className="w-16 py-1 px-2 rounded text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15"
+              className="w-16 py-1 px-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
             />
           </div>
         )}
@@ -325,7 +329,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Entry title..."
-            className="w-full py-2 px-3 rounded-lg text-sm font-bold bg-[#07080d] border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+            className="w-full py-2 px-3 rounded-lg text-sm font-bold bg-[#07080d]/70 border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] text-surface-700">
             {title.length}/120
@@ -338,7 +342,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             onClick={() => setShowPreview(false)}
             className={`text-[10px] px-2 py-0.5 rounded transition-all ${
               !showPreview
-                ? "bg-gold-500/10 text-gold-400 border border-gold/20"
+                ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 text-gold-400 border border-gold-500/20"
                 : "text-surface-500 border border-transparent hover:text-surface-300"
             }`}
           >
@@ -348,7 +352,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             onClick={() => setShowPreview(true)}
             className={`text-[10px] px-2 py-0.5 rounded transition-all ${
               showPreview
-                ? "bg-gold-500/10 text-gold-400 border border-gold/20"
+                ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 text-gold-400 border border-gold-500/20"
                 : "text-surface-500 border border-transparent hover:text-surface-300"
             }`}
           >
@@ -370,7 +374,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your journal entry here... Use **bold**, *italic*, `code`, - lists, or # headers for markdown."
             rows={12}
-            className="w-full py-2 px-3 rounded-lg text-xs leading-relaxed bg-[#07080d] border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[200px]"
+            className="w-full py-2 px-3 rounded-lg text-xs leading-relaxed bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[200px] transition-all"
           />
         )}
 
@@ -387,7 +391,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-gold-500/10 border border-gold/15 text-gold-400 flex items-center gap-1"
+                className="text-[9px] px-1.5 py-0.5 rounded bg-gold-500/10 border border-gold-500/15 text-gold-400 flex items-center gap-1"
               >
                 #{tag}
                 <button
@@ -411,12 +415,12 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
                 }
               }}
               placeholder="Add a tag..."
-              className="flex-1 py-1 px-2 rounded text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600"
+              className="flex-1 py-1 px-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600 transition-all"
             />
             <button
               onClick={() => addTag(tagInput)}
               disabled={!tagInput.trim()}
-              className="px-2 py-1 rounded text-[10px] bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 disabled:opacity-30 transition-all"
+              className="px-2 py-1 rounded text-[10px] bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 disabled:opacity-30 transition-all"
             >
               Add
             </button>
@@ -443,13 +447,13 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
         <button
           onClick={handleSave}
           disabled={!title.trim()}
-          className="px-4 py-1.5 rounded text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 disabled:opacity-30 transition-all"
+          className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 disabled:opacity-30 transition-all duration-200"
         >
           💾 Save Entry
         </button>
         <button
           onClick={handleCancel}
-          className="px-3 py-1.5 rounded text-[10px] border border-white/[0.06] text-surface-500 hover:text-surface-300 active:scale-95 transition-all"
+          className="px-3 py-1.5 rounded-lg text-[10px] border border-white/[0.06] text-surface-500 hover:text-surface-300 active:scale-95 transition-all"
         >
           Cancel
         </button>

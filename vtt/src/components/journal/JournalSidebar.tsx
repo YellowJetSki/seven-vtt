@@ -1,10 +1,12 @@
 /**
- * STᚱ VTT — Journal Sidebar (Enhanced — Sprint 14)
+ * STᚱ VTT — Journal Sidebar (Premium Glass v3.0)
  *
  * Left sidebar with session grouping, type filter tabs, search,
  * pinned entries at top, and entry list with relative timestamps.
  * Shows session entries grouped by session number
  * with quest pins and lore markers.
+ *
+ * Replaced bg-obsidian/60 with premium glass gradient.
  */
 
 import { useMemo, useState } from "react";
@@ -116,7 +118,7 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
   };
 
   return (
-    <div className="w-64 border-r border-white/[0.04] flex flex-col h-full bg-obsidian/60">
+    <div className="w-64 border-r border-white/[0.04] flex flex-col h-full bg-gradient-to-b from-[#141520]/60 to-[#0f1019]/70">
       {/* ── Type Filters ── */}
       <div className="shrink-0 p-2.5 space-y-2">
         <div className="flex flex-wrap gap-1">
@@ -126,7 +128,7 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
               onClick={() => setFilterType(t.type)}
               className={`text-[10px] px-1.5 py-1 rounded transition-all duration-150 active:scale-95 ${
                 filterType === t.type
-                  ? "bg-gold-500/10 text-gold-400 border border-gold/20"
+                  ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 text-gold-400 border border-gold-500/20"
                   : "text-surface-500 hover:text-surface-300 border border-transparent hover:border-white/[0.06]"
               }`}
             >
@@ -142,7 +144,7 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search journal..."
-            className="w-full py-1.5 pl-7 pr-2 rounded text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600"
+            className="w-full py-1.5 pl-7 pr-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600 transition-all"
           />
           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-surface-600">🔍</span>
         </div>
@@ -158,7 +160,7 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
 
         {groupedEntries.map((group) => (
           <div key={group.label}>
-            <div className="px-2.5 py-1.5 flex items-center gap-1.5">
+            <div className="px-2.5 py-1.5 flex items-center gap-1.5 border-b border-white/[0.02]">
               <span className="text-[9px] text-surface-600 uppercase tracking-wider font-semibold">
                 {group.label}
               </span>
@@ -170,16 +172,16 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
                 <button
                   key={entry.id}
                   onClick={() => onSelectEntry(entry.id)}
-                  className={`w-full text-left px-2.5 py-1.5 transition-all duration-150 border-l-[2px] ${
+                  className={`w-full text-left px-2.5 py-1.5 transition-all duration-150 border-l-[2px] relative ${
                     activeEntryId === entry.id
-                      ? "bg-gold-500/8 border-gold/40 text-gold-200"
+                      ? "bg-gold-500/8 border-gold-500/40 text-gold-200"
                       : "border-transparent hover:bg-gold-500/[0.02] hover:border-white/[0.04]"
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
                     {/* Pin icon */}
                     {isPinned && (
-                      <span className="text-[8px] text-gold-400 shrink-0">★</span>
+                      <span className="text-[8px] text-gold-400/80 shrink-0">★</span>
                     )}
                     <span className={`text-[10px] px-1 py-0.5 rounded ${getTypeColor(entry.type)}`}>
                       {getTypeIcon(entry.type)}
