@@ -9012,3 +9012,79 @@ Connection restores
 - Files created: **0** (all infrastructure improvements to existing files)
 
 ---
+
+## Sprint 7/41 — Firebase & Login Phase (Cycle 5 of 10) (Updated: 2026-07-20 18:29)
+## Sprint 7/41 — Firebase & Login Phase: Player Login Flow Completion (Complete)
+
+### Deliverables
+
+#### 1. Player Login Retry UX (`PlayerLoginPage.tsx`)
+Added **3 connection states** to the player login experience:
+| State | Visual | Behavior |
+|-------|--------|----------|
+| Connected | Emerald dot | Normal flow — select character, enter name, sign in |
+| Connecting | Amber pulse dot | Spinner on button, sign in disabled, "Connecting to campaign..." |
+| Sync Unavailable | Amber dot + alert banner | "Retry" button shown in an amber alert banner with instructions |
+
+**Retry button** — When `syncExhausted = true`, a "Retry" pill appears inside an amber alert banner:
+- Triggers `window.location.reload()` to re-initialize Firebase
+- Also provides "Try Again" on the sign-in button itself
+- Characters still shown from Zustand persisted state for offline access
+
+**Edge case — characters empty + exhausted**: Shows "Character data loading..." with amber loading graphic instead of the "No characters available" empty state. Player knows the issue is connection, not missing data.
+
+#### 2. Player Sheet Auto-Reconnect (`PlayerSheetPage.tsx`)
+Added **3 page states** for the player's sheet page:
+| State | Screen | Message |
+|-------|--------|---------|
+| **Loading** (persisted, awaiting Firestore) | Spinner + ᚱ emblem + glass card | "Loading campaign data... Your character will load automatically" |
+| **Character Not Found** (no sync) | Premium glass card with edge light | Contextual: "Loading Character Data..." vs "Character Not Found" |
+| **Sync Exhausted** (persisted, failed) | Amber alert within card | "Campaign data is currently unavailable" + "Try Again" button |
+
+**Sync indicator** in the status bar — when `!firebaseConnected`, shows "syncing" with amber pulse dot next to character name.
+
+#### 3. AuthGuard Player Re-Login (`AuthGuard.tsx`)
+Updated to allow players through when:
+- `role === "player"` AND `characterId` is persisted (from Zustand rehydration)
+- The `PlayerSheetPage` handles the "character not found" case gracefully
+- Previously, a page refresh would redirect players back to /login
+
+#### 4. Auth Reconnect Hook (`useAuthReconnect.ts`)
+Created a new hook providing `isReconnecting` derived state for any component to check if the player is reconnecting from persisted state.
+
+### Files Created
+- `hooks/useAuthReconnect.ts` — Reconnect detection hook
+
+### Files Modified
+- `pages/PlayerLoginPage.tsx` — Retry UX, sync exhaustion, auto-fill from playerIdentifiers
+- `pages/PlayerSheetPage.tsx` — Loading state, connecting indicator, try-again button
+- `components/auth/AuthGuard.tsx` — Player re-login from persisted state
+
+### Architecture — Player Login State Flow (After Sprint 7)
+
+```
+Page Refresh (Player was logged in)
+  └─ Zustand rehydrates from localStorage (instant)
+      ├─ authState: "authenticated", role: "player", characterId: "wendy_1"
+      └─ AuthGuard: allows through (no redirect to /login)
+          └─ PlayerSheetPage renders
+              ├─ characters array is EMPTY (Firestore hasn't synced yet)
+              ├─ firebaseConnected = false
+              ├─ Shows "Loading campaign data..." screen
+              └─ Firestore onSnapshot arrives (~200ms-1s)
+                  └─ characters populated → character found → PlayerSheet shows
+
+First-time Player Login
+  └─ PlayerLoginPage loads
+      ├─ firebaseConnected = true → select character + name
+      ├─ firebaseConnected = false (retry failed) → "Sync unavailable" + Retry
+      └─ Sign In → loginAsPlayer() → navigate to /player/sheet
+```
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2115 modules)
+- Vite build: ✅ 6.89s, 0 warnings
+- Deployed: arkla.vercel.app
+- Git checkpoint: ✅ Sprint 7 saved
+
+---
