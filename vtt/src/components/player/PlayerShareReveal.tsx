@@ -14,12 +14,12 @@
  * to listen for the DM share document in real-time.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { listenDmShare, dismissDmShare } from "@/lib/firestore-service";
 import type { DmSharePayload } from "@/lib/firestore-service";
 
 interface PlayerShareRevealProps {
-  /** Campaign ID for Firestore subscription */
+  /** Campaign ID for Firestore subscription (optional — uses default) */
   campaignId?: string;
 }
 
@@ -27,6 +27,11 @@ export default function PlayerShareReveal({}: PlayerShareRevealProps) {
   const [share, setShare] = useState<DmSharePayload | null>(null);
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  // FIX (Sprint 29): Use ref to prevent stale closure in the onSnapshot callback.
+  // Previously, the `share` variable in the dependency closure would not update
+  // when the listener fired rapidly, causing a memory leak of previous share state.
+  const shareRef = useRef<DmSharePayload | null>(share);
+  shareRef.current = share;
 
   useEffect(() => {
     const unsub = listenDmShare((payload) => {
@@ -34,16 +39,13 @@ export default function PlayerShareReveal({}: PlayerShareRevealProps) {
         setShare(payload);
         setVisible(true);
         setDismissed(false);
-      } else {
-        // Only hide if we had a previous share — prevents flash on mount
-        if (share) {
-          setVisible(false);
-        }
+      } else if (shareRef.current) {
+        // Use ref to avoid stale closure — only hide if we had a previous share
+        setVisible(false);
       }
     });
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Intentionally [] — ref prevents stale closure
 
   const handleDismiss = useCallback(async () => {
     setDismissed(true);

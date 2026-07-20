@@ -72,6 +72,8 @@ export default function MultiTargetAoEPopover({
   const [aoEResult, setAoEResult] = useState<AoEDamageResult | null>(null);
   const [applied, setApplied] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  // FIX (Sprint 29): Ref for timeout to prevent dangling setTimeouts after unmount.
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset on open
   useEffect(() => {
@@ -104,6 +106,11 @@ export default function MultiTargetAoEPopover({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
+      // FIX (Sprint 29): Clear any pending close timeout on unmount.
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
     };
   }, [isOpen, onClose]);
 
@@ -175,7 +182,12 @@ export default function MultiTargetAoEPopover({
 
     setApplied(true);
 
-    setTimeout(() => {
+    // FIX (Sprint 29): Store timeout ref for cleanup on unmount.
+    // Previously, the 1.2s setTimeout could fire after component unmount,
+    // causing React state update warnings and potential double-close.
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      closeTimeoutRef.current = null;
       onClose();
     }, 1200);
   }, [aoEResult, damageAmount, damageType, spellName, aoeDamageCombatants, onClose]);

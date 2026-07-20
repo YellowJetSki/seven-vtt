@@ -13,9 +13,10 @@
  *   - Send + Dismiss buttons
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useInventoryMutations } from "@/hooks/useCharacterMutations";
 import { setDmShare, dismissDmShare, clearDmShare, listenDmShare } from "@/lib/firestore-service";
 import type { DmSharePayload } from "@/lib/firestore-service";
 import Modal from "@/components/ui/Modal";
@@ -34,8 +35,10 @@ const SHARE_TYPES = [
 
 export default function DmSharePicker({ isOpen, onClose }: DmSharePickerProps) {
   const characters = useCampaignStore((s) => s.characters);
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const username = useAuthStore((s) => s.username);
+  // FIX (Sprint 29): Use Firestore-synced inventory mutations.
+  // Previously used: useCampaignStore((s) => s.updateCharacter) → Zustand only.
+  const { handleAddItem: inventoryAddItem } = useInventoryMutations();
 
   const [imageUrl, setImageUrl] = useState("");
   const [title, setTitle] = useState("");
@@ -134,7 +137,10 @@ export default function DmSharePicker({ isOpen, onClose }: DmSharePickerProps) {
     const target = characters.find((c) => c.id === targetPlayerId);
     if (!target) return;
 
+    // FIX (Sprint 29): Use Firestore-synced inventory hook + unique item ID.
+    // Previously used: Zustand-only updateCharacter → no cross-device sync.
     const newItem = {
+      id: `share_${targetPlayerId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name: currentShare.inventoryPayload.name,
       quantity: currentShare.inventoryPayload.quantity,
       weight: currentShare.inventoryPayload.weight,
@@ -142,9 +148,8 @@ export default function DmSharePicker({ isOpen, onClose }: DmSharePickerProps) {
       isEquipped: false,
     };
 
-    const updatedInventory = [...(target.inventory || []), newItem];
-    updateCharacter(target.id, { inventory: updatedInventory });
-  }, [currentShare, targetPlayerId, characters, updateCharacter]);
+    inventoryAddItem(target, newItem);
+  }, [currentShare, targetPlayerId, characters, inventoryAddItem]);
 
   const isValid = imageUrl.trim().length > 0 && title.trim().length > 0 && !imageError;
 
