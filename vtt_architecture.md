@@ -6131,3 +6131,51 @@ Remaining Feature QA targets:
 
 **Total: 16 bugs fixed, 155+ tests added across 3 QA sprints.**
 ---
+
+## Sprint 16/25 — Final Polish Phase: Premium Inventory Tab Refactoring (Updated: 2026-07-20 11:08)
+## Sprint 16/25 — Final Polish Phase: Premium Inventory Tab Overhaul (2026-07-20)
+
+### Target
+Entire Inventory Tab ecosystem — 490-line orchestrator (`PlayerSheetInventoryTab.tsx`) + 7 sub-components. Complete premium visual refactoring to Lusion/Spotify/Ventriloc-grade standards.
+
+### Components Refactored (7)
+
+| File | Lines (Before) | Lines (After) | Premium Upgrades |
+|------|:--------------:|:-------------:|------------------|
+| `InventoryWeightBar.tsx` | 115 | 140 | Gradient fill with box-shadow, tier markers (33/66/100%), status icons with color coding, speed penalty with diff display, edge lighting, shimmer overlay |
+| `InventoryCurrencyBar.tsx` | 190 | 200 | Orbital coin grid with per-coin hover glows, radial gradient backgrounds, wealth density bar, total estimate with visual progress, quick-add presets |
+| `InventoryCategoryChips.tsx` | 45 | 70 | Pill-shaped buttons with staggered entrance animation, active glow dot, color-matched count badges, gold active state |
+| `InventorySortControls.tsx` | 40 | 55 | Minimal pill layout, inline select with gold focus, animated direction arrow rotation |
+| `InventoryEmptyState.tsx` | 35 | 80 | Lusion-grade empty states: contextual messages, floating animated icon, runed divider, gradient CTA with shadow glow |
+| `InventoryItemRow.tsx` | 170 | 215 | Multi-layer depth with edge lighting, hover elevation lift (-translate-y-0.5), directional glow sweep, equip toggle with gold shadow, smooth action button reveal |
+| `ItemFormModal.tsx` | 115 | 155 | Multi-layer glass card with corner ornaments, floating label inputs, quantity stepper with −/+ buttons, live category preview, custom checkbox toggle |
+| `SellConfirmModal.tsx` | 65 | 105 | Cash register aesthetic, item detail card, value/weight grid with amber/gold accent, edge lighting, corner ornaments |
+
+### Premium Design Tokens Applied
+
+| Pattern | Usage |
+|---------|-------|
+| `bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95` | Card surfaces across all 7 components |
+| `hover:-translate-y-0.5 active:scale-[0.97]` | Hover lift + press feedback on interactive rows |
+| `via-gold-500/20 to-transparent` | Top edge light on every card |
+| `shadow-[0_0_6px_rgba(234,179,8,0.1)]` | Gold glow on active/equipped states |
+| `corner-ornament corner-gold` | Premium gold corner ornaments on modals |
+| `from-transparent via-gold-500/0 group-hover:via-gold-500/15` | Directional glow sweep on hover |
+| `tabular-nums` | Consistent monospace digits for numeric displays |
+| `text-[7px] uppercase tracking-widest font-black text-gold-500/60` | Floating label pattern |
+
+### Build & QA
+
+| Metric | Result |
+|--------|:------:|
+| TypeScript errors | ✅ **0** (2033 modules) |
+| Vite production build | ✅ **8.87s**, 0 warnings |
+| Vercel deploy | ✅ **29s** → `vtt-five.vercel.app` |
+| CSS bundle | 289 KB (31.8 KB gzipped) |
+| JS bundle | 1,482 KB (363 KB gzipped) |
+| Git savepoint | ✅ Sprint 16 |
+
+### Final Polish Phase (Sprints 16-20) — Cycle 1/5 Complete
+
+Next: Sprint 17 — Select another unique, untargeted component/screen for premium aesthetic refactoring.
+---
