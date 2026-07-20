@@ -7064,3 +7064,42 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 - Component isolation: ✅ All files < 240 lines, single responsibility
 - Git checkpoint: ✅ Sprint 5 saved
 ---
+
+## Sprint 6/30 — Comprehensive Premium Refactor: Encounters & Bestiary Page (Updated: 2026-07-20 13:01)
+## Sprint 6/30 — Comprehensive Premium Refactor: Encounters & Bestiary Page (2026-07-20)
+
+**Phase:** The Comprehensive Premium Refactor Phase (Cycles 3-12)
+**Target:** UnifiedEncounterHub page (`/campaign/encounters`) — merged bestiary + encounters management
+**Design Inspirations:** Lusion, Overrrides, Ventriloc
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### Files Enhanced (6)
+| File | Lines | Key Premium Upgrades |
+|------|:-----:|---------------------|
+| **UnifiedEncounterHub.tsx** | 160 | 7-layer cinematic hero header (matching Battle Maps/Player Cards): conic depth ring, dual edge lights, glow pockets. Premium content panels with direct glass gradient + gold edge light. Tab bar with gold count badge. Gold-accented stats line. |
+| **BestiaryPanel.tsx** | 140 | Premium stats bar with CR badges + gold accent. Search with gold focus `focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15`. Gold gradient "New" button `from-gold-500/12 to-amber-500/8`. Glass gradient list background. |
+| **EncounterComposer.tsx** | 310 | Premium glass gradient encounter cards with `from-[#14151f]/60 to-[#0f1019]/70`. Hover elevation `hover:-translate-y-0.5`. Gold-accented selected state with shield glow `shadow-[0_0_12px_rgba(234,179,8,0.04)]`. Gradient create form with gold focus. Emerald gradient "Launch" button `from-emerald-500/12 to-green-500/8`. |
+| **EnemyQuickCreate.tsx** | 230 | Replaced `glass-gold` with direct glass gradient `from-[#14151f]/95 to-[#0f1019]/90`. Gold edge light + corner ornaments. Gold focus on all inputs `focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15`. Gradient auto-preview card. Gradient confirm button. |
+| **EnemyStatblock.tsx** | 590 | Replaced `glass-gold` with direct glass gradient. Gold edge light + 4 corner ornaments. Gold gradient stat cards `from-gold-500/10 to-amber-500/5`. Premium ability score grid. Gold focus on all edit inputs. Gradient Save/Delete buttons. |
+| **EnemyList.tsx** | Kept — already functional, no glass-gold usage | Clean existing code, no refactor needed |
+
+### Design Patterns Applied
+| Pattern | Count | Usage |
+|---------|:-----:|-------|
+| 7-layer cinematic hero header | 1 | UnifiedEncounterHub (matching Battle Maps/Player Cards) |
+| Glass gradient `from-[#14151f]/X to-[#0f1019]/X` | 5 | Hero header panels, panels, modals |
+| Gold edge light `via-gold-500/25` | 5 | Hero header, panels, all modals |
+| Gold gradient buttons `from-gold-500/12 to-amber-500/8` | 3 | Bestiary "New", Quick Create "Create & Add", Statblock "Save" |
+| Emerald gradient buttons `from-emerald-500/12 to-green-500/8` | 1 | EncounterComposer "Launch" |
+| Gold focus rings `focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15` | 4 | All inputs across all 4 files |
+| `hover:-translate-y-0.5` hover elevation | 1 | Encounter cards |
+| Glass gradient stat cards `from-gold-500/10 to-amber-500/5` | 3 | Statblock AC/HP/Speed cards |
+| Corner ornaments | 3 | Quick Create, Statblock modals |
+| `glass-gold` eliminated | 3 | Quick Create, Statblock, UnifiedEncounterHub now use direct gradients |
+
+### Quality Gates
+- TypeScript: ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (350 parser errors — all files, not my code)
+- Git checkpoint: ✅ Sprint 6 saved
+- Architecture ledger: ✅ Updated
+---
