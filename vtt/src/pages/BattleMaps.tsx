@@ -11,7 +11,7 @@
  * Integrates with campaignStore for CRUD operations.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import AppShell from "@/components/layout/AppShell";
 import DmControlCenter from "@/components/control-center/DmControlCenter";
@@ -30,12 +30,8 @@ export default function BattleMaps() {
   const [editName, setEditName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  // Auto-show control center if maps exist
-  useEffect(() => {
-    if (battleMaps.length > 0 && !showControlCenter) {
-      setShowControlCenter(true);
-    }
-  }, [battleMaps.length, showControlCenter]);
+  // Maps shown → user clicks "Open Map" on a MapCard to enter control center
+  // This prevents accidentally skipping the map list view
 
   const handleCreateMap = useCallback(() => setShowCreator(true), []);
   const handleCreatorClose = useCallback(() => setShowCreator(false), []);
@@ -63,8 +59,8 @@ export default function BattleMaps() {
     setConfirmDelete(null);
   }, [removeBattleMap]);
 
-  /* ── EMPTY STATE ── */
-  if (!showControlCenter || battleMaps.length === 0) {
+  /* ── EMPTY STATE (no maps created yet) ── */
+  if (battleMaps.length === 0) {
     return (
       <AppShell>
         <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
@@ -211,6 +207,28 @@ export default function BattleMaps() {
 
       {/* Map Creator Modal */}
       <MapCreatorModal isOpen={showCreator} onClose={handleCreatorClose} />
+    </AppShell>
+  );
+  }
+
+  /* ── DM CONTROL CENTER (map selected) ── */
+  return (
+    <AppShell>
+      <div className="flex flex-col h-full" style={{ minHeight: "0", flex: 1 }}>
+        {/* Back to map list button */}
+        <div className="shrink-0 border-b border-white/[0.04] bg-gradient-to-r from-[#14151f]/90 to-[#0f1019]/95 px-4 py-2 flex items-center z-10">
+          <button
+            onClick={() => setShowControlCenter(false)}
+            className="flex items-center gap-1.5 text-[10px] font-semibold text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-95"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <span>Back to Maps</span>
+          </button>
+        </div>
+        <div className="flex-1 min-h-0">
+          <DmControlCenter />
+        </div>
+      </div>
     </AppShell>
   );
 }
