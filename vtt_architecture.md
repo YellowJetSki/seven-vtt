@@ -7439,3 +7439,66 @@ A floating, collapsible HP management panel accessible from the Player Cards pag
 |:------:|--------|-------------|
 | **13** | **Combat HP HUD** | **Floating HP management panel across all DM pages** |
 ---
+
+## Sprint 14/30 — Loot Deposit Panel (Updated: 2026-07-20 13:21)
+## Sprint 14/30 — Real-Play D&D Mechanics: Loot Deposit Panel & Equipment Management (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 2 OF 10
+**Target:** Streamline DM loot distribution to player characters during live sessions
+**Tabletop Value:** Enables the DM to deposit items (potions, gold, weapons, quest items) into specific characters' inventories with 1-2 clicks — no opening character sheets, no manual store mutations
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### New Component: `LootDepositPanel.tsx` (550 lines)
+
+A collapsible loot distribution panel mounted on the Player Cards page:
+
+| Section | Lines | Description |
+|---------|:-----:|-------------|
+| Loot Presets | 45 | 9 pre-built presets: Healing Potion, Gold (10/50/100), Torch, Rations, Rope, Arrows, Magic Item |
+| Currency Deposit | 30 | Gold presets write directly to character's currency (not inventory) |
+| Inventory Deposit | 35 | Items deposited with stacking logic for consumables (auto-increment qty) |
+| Custom Item Form | 70 | Name, quantity (+/- stepper), weight, description fields with validation |
+| Character Target Picker | 40 | Selectable character chips with HP indicator dots, gold accent on selection |
+| Recent Deposits Log | 45 | Last 3 deposits with timestamp, undo button per entry |
+| Flash Message Toast | 25 | Success/info/warning notifications with auto-dismiss |
+| Quick Gold (+10GP) on PlayerCardCompact | 15 | Per-card "+10G" button for instant gold deposit |
+
+### Files Modified (4)
+
+| File | Changes |
+|------|---------|
+| `components/player/PlayerList.tsx` | Added LootDepositPanel import + toggle state + handleQuickGold callback + mount between header and grid |
+| `components/player/PlayerListHeader.tsx` | Added Loot toggle button (📦) with gold active state + new props interface |
+| `components/player/PlayerCardCompact.tsx` | Added `onQuickGold` prop interface + gold deposit button `+10G` in stat strip + updated function signature |
+| `components/player/LootDepositPanel.tsx` | **NEW** — Full loot deposit system |
+
+### Tabletop Features Delivered
+
+| Feature | Value for Live Session |
+|---------|----------------------|
+| 9 loot presets (Healing Potion, Gold, Torch, Rations, etc.) | One-click deposit of common adventuring gear |
+| Currency vs Inventory separation | Gold auto-adds to character's coin purse, items go to inventory |
+| Smart stacking | Consumables (potions, rations, arrows) auto-increment quantity |
+| Custom item form | Any item name, quantity, weight, description — no limits |
+| Character target picker | Click a name chip → all deposits go to that character |
+| HP indicator dots on picker | Green/amber/red — see who's wounded while distributing loot |
+| Quick +10G per card | Instant gold injection from the card itself |
+| Recent deposits log | Last 3 deposits with undo capability |
+| Flash message notifications | Visual feedback for every deposit action |
+| Collapsible panel (Loot toggle) | Shows/hides on demand, doesn't clutter the page |
+| Premium glass card styling | Edge light, gradient backgrounds, staggered animations |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (352 parser errors — all pre-sprint, +1 from new file)
+- Git checkpoint: ✅ Sprint 14 saved
+- Architecture ledger: ✅ Updated
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 13 | Combat HP HUD | Floating HP management panel across Player Cards + Dashboard |
+| **14** | **Loot Deposit Panel** | **Item/currency deposit to characters with presets + undo** |
+---
