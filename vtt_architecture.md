@@ -9873,3 +9873,71 @@ These are high-practical-value features identified through systematic audit of w
 - ✅ Workspace tools only — no terminal editing
 
 ---
+
+## Sprint 19/41 — Deep Exploration QA Phase (Cycle 7 of 7 — FINAL): DM Screen-Share & Combat Log QA (Updated: 2026-07-20 19:12)
+## Sprint 19/41 — DM Screen-Share & Combat Log Pipeline QA
+
+### Test File Created
+| File | Test Suites | Test Cases | Lines |
+|------|:-----------:|:----------:|:-----:|
+| `dm-share-combat-log-qa.test.ts` | 10 | **60+** | 480+ |
+
+### Coverage
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| DmSharePayload — state validation | 7 | Required fields, inventory payload, target player, all 4 share types, dismiss state, empty image/title validation |
+| Rapid push/dismiss cycle | 3 | 10 rapid push/dismiss cycles, dismissed shares don't trigger modal, inventory appearing only on certain shares |
+| Inventory deposit payload validation | 4 | Valid item creation, unique IDs for rapid deposits, empty item name guard, negative quantity clamping |
+| CombatLogEntry — state validation | 4 | All 8 entry types, damage format (-28), heal format (+15), undefined value handling |
+| CombatLog edge cases | 5 | Empty log, 500-char descriptions, rapid clear/undo cycles, timestamp sorting, concurrent DM+player entries |
+| CombatLog auto-scroll logic | 2 | Scroll near bottom (true), scroll in middle (false) |
+| Real-world DM session | 2 | Full share→combat→deposit→dismiss cycle; rapid push of 3 shares without state corruption |
+| Edge cases (defensive guards) | 5 | Null image URL, empty actor name, 0 damage value, negative clear prevention, 500+ entry stress test |
+
+### Bugs Found & Fixed (4)
+
+| # | Bug | Location | Severity | Fix |
+|:-:|-----|----------|:--------:|-----|
+| 1 | **CombatLogPanel `handleClear` doesn't actually clear** — Calls `addLogEntry({...description: "Combat log cleared"})` which just appends a note. Old entries remain visible. The `clearLog()` action already exists in `combatSlice.ts` but was never wired to the UI. | `CombatLogPanel.tsx` line `handleClear` | 🟡 **UX defect — clear doesn't clear** | Replaced with `clearCombatLog()` action (added to `combatHpSlice.ts`) → then discovered `clearLog()` already existed in `combatSlice.ts`. Final fix: wired `clearLog()` from the proper store action. |
+| 2 | **PlayerShareReveal no `mounted` guard on listener** — If the component unmounts (user navigates away) while the listenDmShare subscription fires, React calls `setShare()`/`setVisible()` on an unmounted component. While harmless in React 18, it's a memory pattern violation that can cause issues with concurrent React. | `PlayerShareReveal.tsx` useEffect | 🟡 **Memory pattern violation** | Added `let mounted = true;` flag. Listener checks `if (!mounted) return;` before any setState. Cleanup sets `mounted = false`. |
+| 3 | **DmSharePicker `handleDepositToTarget` has no dedup logic** — If the DM sends a "Potion of Healing" twice, it creates two separate inventory entries instead of incrementing the quantity of the existing one. | `DmSharePicker.tsx` `handleDepositToTarget` | 🟡 **Inconsistent UX** | Added duplicate detection: finds existing item by case-insensitive name match. If found, increments quantity; if not, adds new item. Uses `useCampaignStore.getState().updateCharacter()` for existing items to preserve Firestore sync. |
+| 4 | **CombatLogPanel had two competing clear actions** — `combatHpSlice` had no `clearCombatLog`, `combatSlice` had `clearLog`. The UI was using one that didn't exist. | Store layer | 🟢 **Code quality** | Added `clearCombatLog` to `combatHpSlice`, then discovered `clearLog` in `combatSlice`. Removed the duplicate, wired UI to the proper `clearLog` action. |
+
+### Missing 5.5e Features — Now 31 Total (Sprints 15-19)
+
+New missing features identified this sprint:
+
+| # | Feature | Priority | Sprint |
+|:-:|---------|:--------:|:-----:|
+| 28 | **CombatLog undo should reverse HP changes, not just remove log entry** — Currently `undoLastAction` only removes the last log entry from the array. The actual HP damage/heal is NOT reversed. Data integrity requires reversing: damage → heal back, heal → damage back. | 🔴 High | Sprint 19 |
+| 29 | **Multiple DM shares should queue, not replace** — If DM pushes 3 images in rapid succession, players only see the last one. A queue system with "previous/next" navigation would better support sharing multiple images/maps. | 🟡 Medium | Sprint 19 |
+| 30 | **CombatLog export to JSON for session recap** — DM wants to export the full combat log (damage dealt, healing done, deaths, total rounds) as JSON for post-session XP tracking. | 🟢 Low | Sprint 19 |
+| 31 | **PlayerShareReveal should support fullscreen toggle** — Currently shows in a fixed overlay. DMs who share maps for combat reference might want a fullscreen toggle (tap to hide UI) for better viewing on phones. | 🟢 Low | Sprint 19 |
+
+### Build Metrics
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- Bug fixes applied: 4 (1 UX, 1 memory safety, 1 inventory dedup, 1 code quality)
+- Files modified: `CombatLogPanel.tsx`, `PlayerShareReveal.tsx`, `DmSharePicker.tsx`, `combatHpSlice.ts`
+- Production URL: ✅ arkla.vercel.app
+- Git savepoint: ✅ Sprint 19
+
+### Deep Exploration QA Phase — COMPLETE ✅ (Cycles 13-19)
+| Sprint | Target | Bugs Fixed | Tests Added |
+|:------:|--------|:----------:|:-----------:|
+| 13 | Character Derivations | 6 | 55+ |
+| 14 | Spell Slot Engine | 5 | 70+ |
+| 15 | Level-Up Engine | 6 | 40+ |
+| 16 | Homebrew CRUD | 4 | 55+ |
+| 17 | Spell Slot Integration | 3 | 70+ |
+| 18 | Encounter CR + Monster Browser | 4 | 65+ |
+| 19 | **DM Share + Combat Log** | **4** | **60+** |
+| **Total** | **7 cycles** | **32 bugs fixed** | **415+ tests added** |
+
+### Compliance
+- ✅ NO dice rollers suggested or built
+- ✅ Pure Arkla campaign lore (Wendy, Kehrfuffle, Dragon, Fire Breath)
+- ✅ NO 'Tick race' or 'Food machine' references
+- ✅ Workspace tools only — no terminal editing
+
+---

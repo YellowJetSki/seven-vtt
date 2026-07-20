@@ -98,7 +98,7 @@ export default function CombatLogPanel({
 }: CombatLogPanelProps) {
   const combatLog = useCombatStore((s) => s.combatLog);
   const undoLastAction = useCombatStore((s) => s.undoLastAction);
-  const addLogEntry = useCombatStore((s) => s.addLogEntry);
+  const clearLog = useCombatStore((s) => s.clearLog);
 
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -127,18 +127,9 @@ export default function CombatLogPanel({
   }, [isOpen]);
 
   const handleClear = useCallback(() => {
-    // Add a clear entry and then undo everything
-    // Since we can't clear the full log via the API, we mark it
-    addLogEntry({
-      id: `clear_${Date.now()}`,
-      timestamp: Date.now(),
-      type: "note",
-      actorId: "system",
-      actorName: "System",
-      description: "Combat log cleared",
-    });
+    clearLog();
     setShowClearConfirm(false);
-  }, [addLogEntry]);
+  }, [clearLog]);
 
   const handleUndo = useCallback(() => {
     if (combatLog.length === 0) return;

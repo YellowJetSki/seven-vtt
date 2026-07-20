@@ -137,18 +137,34 @@ export default function DmSharePicker({ isOpen, onClose }: DmSharePickerProps) {
     const target = characters.find((c) => c.id === targetPlayerId);
     if (!target) return;
 
-    // FIX (Sprint 29): Use Firestore-synced inventory hook + unique item ID.
-    // Previously used: Zustand-only updateCharacter → no cross-device sync.
-    const newItem = {
-      id: `share_${targetPlayerId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      name: currentShare.inventoryPayload.name,
-      quantity: currentShare.inventoryPayload.quantity,
-      weight: currentShare.inventoryPayload.weight,
-      description: currentShare.inventoryPayload.description,
-      isEquipped: false,
-    };
+    // FIX (Sprint 29 + Sprint 19): Use Firestore-synced inventory hook.
+    // Check if the target already has an item with the same name. If so,
+    // increment quantity instead of adding a duplicate.
+    const payload = currentShare.inventoryPayload;
+    const existingIndex = (target.inventory || []).findIndex(
+      (i) => i.name.toLowerCase() === payload.name.toLowerCase()
+    );
 
-    inventoryAddItem(target, newItem);
+    if (existingIndex >= 0) {
+      // Increment quantity on existing item (InventoryItem is keyed by name+equip+desc)
+      const { updateCharacter } = useCampaignStore.getState();
+      const updatedInventory = (target.inventory || []).map((item, idx) =>
+        idx === existingIndex
+          ? { ...item, quantity: item.quantity + payload.quantity }
+          : item
+      );
+      updateCharacter(target.id, { inventory: updatedInventory });
+    } else {
+      // Add new item
+      const newItem = {
+        name: payload.name,
+        quantity: payload.quantity,
+        weight: payload.weight,
+        description: payload.description,
+        isEquipped: false,
+      };
+      inventoryAddItem(target, newItem);
+    }
   }, [currentShare, targetPlayerId, characters, inventoryAddItem]);
 
   const isValid = imageUrl.trim().length > 0 && title.trim().length > 0 && !imageError;

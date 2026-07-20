@@ -34,7 +34,9 @@ export default function PlayerShareReveal({}: PlayerShareRevealProps) {
   shareRef.current = share;
 
   useEffect(() => {
+    let mounted = true;
     const unsub = listenDmShare((payload) => {
+      if (!mounted) return;
       if (payload && !payload.isDismissed) {
         setShare(payload);
         setVisible(true);
@@ -44,7 +46,10 @@ export default function PlayerShareReveal({}: PlayerShareRevealProps) {
         setVisible(false);
       }
     });
-    return () => unsub();
+    return () => {
+      mounted = false;
+      unsub();
+    };
   }, []); // Intentionally [] — ref prevents stale closure
 
   const handleDismiss = useCallback(async () => {
