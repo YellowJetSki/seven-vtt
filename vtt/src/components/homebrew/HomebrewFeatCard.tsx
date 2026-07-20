@@ -1,8 +1,10 @@
 /**
- * STᚱ VTT — Homebrew Feat Card (v2.0)
+ * STᚱ VTT — Homebrew Feat Card (Premium Glass v3.0)
  *
- * Enhanced with ability score increase display, skill proficiency display,
- * duplicate action, visible toggle, and bulk-select checkbox.
+ * Enhanced with premium glass gradient card, hover elevation,
+ * gold edge light on hover, ability score increase display,
+ * skill proficiency display, duplicate action, visible toggle,
+ * and bulk-select checkbox.
  */
 
 import { Edit3, Trash2, Copy, Eye, EyeOff } from "lucide-react";
@@ -34,7 +36,16 @@ export default function HomebrewFeatCard({
     : [];
 
   return (
-    <div className={`premium-surface rounded-xl p-3 hover-lift group transition-all duration-200 ${isSelected ? "ring-2 ring-gold/30 bg-gold-500/5" : ""}`}>
+    <div
+      className={`relative rounded-xl p-3 transition-all duration-200 group ${
+        isSelected
+          ? "bg-gradient-to-b from-gold-500/10 to-gold-500/5 border border-gold-500/25 shadow-[0_0_12px_rgba(234,179,8,0.04)]"
+          : "bg-gradient-to-b from-[#14151f]/60 to-[#0f1019]/70 border border-white/[0.04] hover:border-gold-500/15 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+      }`}
+    >
+      {/* Gold edge light on hover */}
+      <div className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent transition-all duration-300 group-hover:via-gold-500/15" />
+
       <div className="flex items-start justify-between gap-2">
         {isBulkMode && onToggleSelect && (
           <input
@@ -47,18 +58,15 @@ export default function HomebrewFeatCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-surface-200 truncate">{feat.name}</span>
+            <span className="text-sm font-semibold text-surface-200 truncate group-hover:text-gold-200 transition-colors">{feat.name}</span>
             {feat.repeatable && <span className="text-[10px] text-amber-400">↻ Repeatable</span>}
-            <span className={`text-[10px] ${feat.visibleToPlayers ? "text-gold-400" : "text-surface-600"}`} title={feat.visibleToPlayers ? "Visible to players" : "DM only"}>
-              {feat.visibleToPlayers ? <Eye className="w-3 h-3 inline" /> : <EyeOff className="w-3 h-3 inline" />}
-            </span>
           </div>
 
           <p className="text-xs text-surface-500 mt-1 line-clamp-2">{feat.description}</p>
 
           {/* Ability Score Increases */}
           {abilityIncreaseList.length > 0 && (
-            <div className="flex gap-1 mt-1.5">
+            <div className="flex gap-1 mt-1.5 flex-wrap">
               {abilityIncreaseList.map((ab, i) => (
                 <span key={i} className="text-[10px] bg-gold-500/10 text-gold-400 px-1.5 py-0.5 rounded font-medium">
                   +1 {ab.slice(0, 3).toUpperCase()}

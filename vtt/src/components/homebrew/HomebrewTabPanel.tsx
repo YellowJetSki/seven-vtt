@@ -1,7 +1,9 @@
 /**
- * STᚱ VTT — Homebrew Tab Panel (v2.0)
+ * STᚱ VTT — Homebrew Tab Panel (Premium v3.0)
  *
- * Enhanced with bulk-select mode, duplicate, and visibility callbacks.
+ * Enhanced with bulk-select mode, duplicate, visibility callbacks,
+ * and premium layout with staggered card entrance.
+ * Uses direct glass gradient background for each card section.
  */
 
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat } from "@/types/homebrew";
@@ -59,17 +61,18 @@ export default function HomebrewTabPanel({
     return (
       <div className="space-y-2">
         {items.map((item) => (
-          <HomebrewItemCard
-            key={item.id}
-            item={item}
-            onEdit={() => onEditItem(item)}
-            onDelete={() => onDeleteItem(item.id)}
-            onDuplicate={() => onDuplicateItem(item)}
-            onToggleVisibility={onToggleItemVisibility}
-            isBulkMode={isBulkMode}
-            isSelected={selectedIds?.has(item.id)}
-            onToggleSelect={onToggleSelect}
-          />
+          <div key={item.id} className="animate-in slide-in-from-bottom-1 duration-200" style={{ animationDelay: `${Math.min(items.indexOf(item) * 15, 300)}ms` } as React.CSSProperties}>
+            <HomebrewItemCard
+              item={item}
+              onEdit={() => onEditItem(item)}
+              onDelete={() => onDeleteItem(item.id)}
+              onDuplicate={() => onDuplicateItem(item)}
+              onToggleVisibility={(id, visible) => onToggleItemVisibility(id, visible)}
+              isBulkMode={isBulkMode}
+              isSelected={selectedIds?.has(item.id)}
+              onToggleSelect={onToggleSelect}
+            />
+          </div>
         ))}
       </div>
     );
@@ -80,17 +83,18 @@ export default function HomebrewTabPanel({
     return (
       <div className="space-y-2">
         {spells.map((spell) => (
-          <HomebrewSpellCard
-            key={spell.id}
-            spell={spell}
-            onEdit={() => onEditSpell(spell)}
-            onDelete={() => onDeleteSpell(spell.id)}
-            onDuplicate={() => onDuplicateSpell(spell)}
-            onToggleVisibility={onToggleSpellVisibility}
-            isBulkMode={isBulkMode}
-            isSelected={selectedIds?.has(spell.id)}
-            onToggleSelect={onToggleSelect}
-          />
+          <div key={spell.id} className="animate-in slide-in-from-bottom-1 duration-200" style={{ animationDelay: `${Math.min(spells.indexOf(spell) * 15, 300)}ms` } as React.CSSProperties}>
+            <HomebrewSpellCard
+              spell={spell}
+              onEdit={() => onEditSpell(spell)}
+              onDelete={() => onDeleteSpell(spell.id)}
+              onDuplicate={() => onDuplicateSpell(spell)}
+              onToggleVisibility={(id, visible) => onToggleSpellVisibility(id, visible)}
+              isBulkMode={isBulkMode}
+              isSelected={selectedIds?.has(spell.id)}
+              onToggleSelect={onToggleSelect}
+            />
+          </div>
         ))}
       </div>
     );
@@ -101,17 +105,18 @@ export default function HomebrewTabPanel({
   return (
     <div className="space-y-2">
       {feats.map((feat) => (
-        <HomebrewFeatCard
-          key={feat.id}
-          feat={feat}
-          onEdit={() => onEditFeat(feat)}
-          onDelete={() => onDeleteFeat(feat.id)}
-          onDuplicate={() => onDuplicateFeat(feat)}
-          onToggleVisibility={onToggleFeatVisibility}
-          isBulkMode={isBulkMode}
-          isSelected={selectedIds?.has(feat.id)}
-          onToggleSelect={onToggleSelect}
-        />
+        <div key={feat.id} className="animate-in slide-in-from-bottom-1 duration-200" style={{ animationDelay: `${Math.min(feats.indexOf(feat) * 15, 300)}ms` } as React.CSSProperties}>
+          <HomebrewFeatCard
+            feat={feat}
+            onEdit={() => onEditFeat(feat)}
+            onDelete={() => onDeleteFeat(feat.id)}
+            onDuplicate={() => onDuplicateFeat(feat)}
+            onToggleVisibility={(id, visible) => onToggleFeatVisibility(id, visible)}
+            isBulkMode={isBulkMode}
+            isSelected={selectedIds?.has(feat.id)}
+            onToggleSelect={onToggleSelect}
+          />
+        </div>
       ))}
     </div>
   );

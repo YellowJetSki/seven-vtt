@@ -1,7 +1,8 @@
 /**
- * STᚱ VTT — Homebrew Spell Card (v2.0)
+ * STᚱ VTT — Homebrew Spell Card (Premium Glass v3.0)
  *
- * Enhanced with AoE shape/size display, damage/healing stats,
+ * Enhanced with premium glass gradient card, hover elevation,
+ * gold edge light on hover, AoE shape/size display, damage/healing stats,
  * duplicate action, visible toggle, and bulk-select checkbox.
  */
 
@@ -34,7 +35,16 @@ const LEVEL_COLORS: Record<string, string> = {
 
 export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate, onToggleVisibility, isBulkMode, isSelected, onToggleSelect }: HomebrewSpellCardProps) {
   return (
-    <div className={`premium-surface rounded-xl p-3 hover-lift group transition-all duration-200 ${isSelected ? "ring-2 ring-gold/30 bg-gold-500/5" : ""}`}>
+    <div
+      className={`relative rounded-xl p-3 transition-all duration-200 group ${
+        isSelected
+          ? "bg-gradient-to-b from-gold-500/10 to-gold-500/5 border border-gold-500/25 shadow-[0_0_12px_rgba(234,179,8,0.04)]"
+          : "bg-gradient-to-b from-[#14151f]/60 to-[#0f1019]/70 border border-white/[0.04] hover:border-gold-500/15 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+      }`}
+    >
+      {/* Gold edge light on hover */}
+      <div className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent transition-all duration-300 group-hover:via-gold-500/15" />
+
       <div className="flex items-start justify-between gap-2">
         {isBulkMode && onToggleSelect && (
           <input
@@ -47,12 +57,9 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-surface-200 truncate">{spell.name}</span>
+            <span className="text-sm font-semibold text-surface-200 truncate group-hover:text-gold-200 transition-colors">{spell.name}</span>
             <span className={`text-[10px] font-bold uppercase tracking-wider ${LEVEL_COLORS[String(spell.level)] ?? "text-surface-400"}`}>
               {spell.level === 0 ? "Cantrip" : `Lv ${spell.level}`}
-            </span>
-            <span className={`text-[10px] ${spell.visibleToPlayers ? "text-gold-400" : "text-surface-600}"}`} title={spell.visibleToPlayers ? "Visible to players" : "DM only"}>
-              {spell.visibleToPlayers ? <Eye className="w-3 h-3 inline" /> : <EyeOff className="w-3 h-3 inline" />}
             </span>
           </div>
 
@@ -62,9 +69,8 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
 
           {/* Stat Chips */}
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider bg-surface-700/40 text-surface-400 px-1.5 py-0.5 rounded">{spell.school}</span>
+            <span className="text-[10px] uppercase tracking-wider border border-white/[0.06] text-surface-400 px-1.5 py-0.5 rounded">{spell.school}</span>
             <span className="text-[10px] text-surface-500">{spell.range}</span>
-            <span className="text-[10px] text-gold-400">{spell.components?.join("")}</span>
             {spell.concentration && <span className="text-[10px] text-amber-400">Concentration</span>}
             {spell.ritual && <span className="text-[10px] text-violet-400">Ritual</span>}
 
@@ -89,7 +95,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
           </div>
 
           {spell.classes && spell.classes.length > 0 && (
-            <div className="flex gap-1 mt-1.5">
+            <div className="flex gap-1 mt-1.5 flex-wrap">
               {spell.classes.map((cls, i) => (
                 <span key={i} className="text-[9px] bg-gold-500/10 text-gold-400 px-1.5 py-0.5 rounded">{cls}</span>
               ))}
