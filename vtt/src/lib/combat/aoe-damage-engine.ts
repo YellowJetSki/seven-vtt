@@ -196,6 +196,7 @@ export function createAoELogEntry(
 ): CombatLogEntry {
   const aliveCount = result.targets.filter((t) => !t.isDead).length;
   const deadCount = result.targets.filter((t) => t.isDead).length;
+  const firstTarget = result.targets[0];
 
   return {
     id: generateAoELogId(),
@@ -203,8 +204,12 @@ export function createAoELogEntry(
     type: "damage",
     actorId,
     actorName,
+    targetId: firstTarget?.combatantId,
+    targetName: result.targets.length > 1
+      ? `${result.targets.length} targets`
+      : firstTarget?.combatantName,
     value: damage,
-    description: `${spellName}: ${result.targets.length} targets, ${aliveCount} alive, ${deadCount} dead (${damageType})`,
+    description: `${spellName}: ${aliveCount} alive, ${deadCount} dead (${damageType})`,
   };
 }
 

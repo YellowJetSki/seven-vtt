@@ -30,7 +30,14 @@ export function createLogEntry(
   type: CombatLogEntry["type"],
   actorId: string,
   actorName: string,
-  options?: { targetId?: string; targetName?: string; value?: number; description?: string }
+  options?: {
+    targetId?: string;
+    targetName?: string;
+    value?: number;
+    description?: string;
+    /** Undo payload: snapshots of HP state before this action */
+    undoPayload?: CombatLogEntry["undoPayload"];
+  }
 ): CombatLogEntry {
   return {
     id: generateId(),

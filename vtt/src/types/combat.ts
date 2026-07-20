@@ -39,6 +39,20 @@ export interface StatusEffect {
   effect: string;
 }
 
+/**
+ * Carries the data needed to REVERSE a combat log action.
+ * When the user clicks "undo", the engine uses this payload
+ * to restore the previous HP state of all affected combatants.
+ */
+export interface UndoPayload {
+  /** Per-combatant HP snapshots before the action */
+  hpSnapshots: Array<{
+    combatantId: string;
+    previousHP: CombatantHP;
+    previousIsDead: boolean;
+  }>;
+}
+
 export interface CombatLogEntry {
   id: string;
   timestamp: number;
@@ -49,6 +63,10 @@ export interface CombatLogEntry {
   targetName?: string;
   value?: number;
   description?: string;
+  /** Undo data: the HP state BEFORE this action was applied.
+   *  If present, undoing this entry will restore all combatants
+   *  to their previous HP and isDead states. */
+  undoPayload?: UndoPayload;
 }
 
 export interface LiveSessionState {

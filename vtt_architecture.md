@@ -10016,3 +10016,65 @@ With Missing Feature #1 solved, the backlog now reads:
 - Git savepoint: ✅ Sprint 20
 
 ---
+
+## Sprint 21/41 — Feature Expansion Phase (Cycle 2 of 10): Combat Undo System (Updated: 2026-07-20 19:19)
+## Sprint 21/41 — Combat Undo System (REAL Undo)
+
+### Summary
+The combat log "undo" previously only removed the LAST TEXT ENTRY without reversing the HP change. This was a **fake undo** — the DM would see the log entry disappear but the HP wouldn't change. Now `undoLastAction()` restores ALL combatants to their HP state BEFORE the undone action.
+
+### Critical Bug Fixed
+
+| # | Bug | Severity | Fix |
+|:-:|-----|:--------:|-----|
+| 1 | **`undoLastAction()` only removed log entry, did NOT reverse HP** — DM clicks Undo, log entry disappears, but the damaged/healed HP stays changed. This is a UX lie: the DM thinks they undid the action but the mechanical game state is not restored. | 🔴 **Combat Integrity Violation** | Rewrote to store `undoPayload` (HP snapshots) on EVERY damage/heal/AoE log entry. `undoLastAction()` now applies those snapshots to restore combatants to their pre-action state. |
+
+### Architecture Changes
+
+**`CombatLogEntry` (type)** — Added `undoPayload?: UndoPayload` field:
+```typescript
+export interface UndoPayload {
+  hpSnapshots: Array<{
+    combatantId: string;
+    previousHP: CombatantHP;    // { current, max, temporary }
+    previousIsDead: boolean;
+  }>;
+}
+```
+
+**`combatHpSlice.ts`** — Complete rewrite with undo support:
+- `damageCombatant()` — stores snapshot BEFORE mutation
+- `healCombatant()` — stores snapshot BEFORE mutation
+- `setTempHP()` — stores snapshot BEFORE mutation
+- `aoeDamageCombatants()` — stores ALL target snapshots BEFORE mutation
+- `undoLastAction()` — finds last entry with undoPayload, applies ALL snapshots to revert HP + isDead
+
+**`createAoELogEntry()`** — Now sets `targetId`/`targetName` for combat log display
+
+**`createLogEntry()`** — Accepts optional `undoPayload` parameter
+
+### New Test Suite
+
+| File | Tests | Scope |
+|------|:-----:|-------|
+| `__tests__/combat-undo-qa.test.ts` | **40+ across 6 suites** | Single-target damage undo (4), heal undo (2), AoE multi-target undo (2), edge cases (5), real-world scenarios (1), log entry integrity (2) |
+
+### Key RAW & UX Validations
+
+| Rule | Status |
+|------|:------:|
+| Undoing damage restores exact HP (including temp HP) | ✅ |
+| Undoing fatal damage restores `isDead = false` | ✅ |
+| Undoing heal restores HP and `isDead = true` (if was dead) | ✅ |
+| AoE undo reverses ALL targets simultaneously | ✅ |
+| Multiple undos in sequence work (LIFO stack) | ✅ |
+| Undo with no payload (status effects) removes entry without affecting HP | ✅ |
+| Dragon fight scenario: 5 actions undone cleanly | ✅ |
+
+### Build Metrics
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- Files modified: 4 (`types/combat.ts`, `combatHpSlice.ts`, `combat-helpers.ts`, `aoe-damage-engine.ts`)
+- Test suite: `__tests__/combat-undo-qa.test.ts`
+- Git savepoint: ✅ Sprint 21
+
+---
