@@ -370,13 +370,20 @@ export default function PlayerLoginPage() {
                 </span>
               </button>
 
-              {/* ── DM Link ── */}
-              <div className="mt-4 text-center">
+              {/* ── Footer Links ── */}
+              <div className="flex items-center justify-center gap-4 mt-4">
+                <button
+                  onClick={() => navigate("/player/join")}
+                  className="text-[10px] text-surface-600 hover:text-gold-400/60 transition-colors duration-200 tracking-wide uppercase"
+                >
+                  Join with Code
+                </button>
+                <span className="text-surface-700 text-[8px]">|</span>
                 <button
                   onClick={() => navigate("/login")}
                   className="text-[10px] text-surface-600 hover:text-gold-400/60 transition-colors duration-200 tracking-wide uppercase"
                 >
-                  Dungeon Master Login
+                  DM Login
                 </button>
               </div>
 

@@ -29,6 +29,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [focusedField, setFocusedField] = useState<"username" | "password" | null>(null);
+  const syncExhausted = useAuthStore((s) => s.syncExhausted);
 
   useEffect(() => {
     if (authState === "authenticated" && role === "dm") {
@@ -258,20 +259,56 @@ export default function LoginPage() {
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
 
                   {/* Connection status indicator */}
-                  <div className="flex items-center justify-start gap-2 mb-4">
+                  <div className="flex items-center justify-start gap-2 mb-3">
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        firebaseConnected
-                          ? "bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]"
-                          : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)] animate-pulse"
+                        syncExhausted
+                          ? "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)]"
+                          : firebaseConnected
+                            ? "bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]"
+                            : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)] animate-pulse"
                       }`}
                     />
                     <span className={`text-[9px] uppercase tracking-wider ${
-                      firebaseConnected ? "text-emerald-400/50" : "text-amber-400/50"
+                      syncExhausted
+                        ? "text-amber-400/50"
+                        : firebaseConnected
+                          ? "text-emerald-400/50"
+                          : "text-amber-400/50"
                     }`}>
-                      {firebaseConnected ? "Campaign Online" : "Connecting to campaign..."}
+                      {syncExhausted
+                        ? "Campaign Unavailable"
+                        : firebaseConnected
+                          ? "Campaign Online"
+                          : "Connecting to campaign..."
+                      }
                     </span>
                   </div>
+
+                  {/* Sync exhaustion banner for DM */}
+                  {syncExhausted && (
+                    <div className="mb-4 p-3 rounded-xl bg-amber-500/8 border border-amber-500/15 animate-slide-in-up">
+                      <div className="flex items-center gap-2.5">
+                        <svg className="w-4 h-4 shrink-0 text-amber-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-semibold text-amber-300">
+                            Campaign data unavailable
+                          </p>
+                          <p className="text-[9px] text-amber-400/50 mt-0.5">
+                            Character data won't sync until connection is restored. You can still sign in locally.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/20 text-[9px] font-semibold text-amber-300 hover:bg-amber-500/20 active:scale-95 transition-all duration-150"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Card Header */}
                   <div className="mb-8">

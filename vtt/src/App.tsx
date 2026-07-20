@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { hasValidConfig } from "@/lib/firebase";
 import LoginPage from "./pages/LoginPage";
 import PlayerLoginPage from "./pages/PlayerLoginPage";
+import PlayerJoinPage from "./pages/PlayerJoinPage";
 import PlayerSheetPage from "./pages/PlayerSheetPage";
 import DmDashboard from "./pages/DmDashboard";
 import PlayerCards from "./pages/PlayerCards";
@@ -36,6 +37,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/theatric" element={<TheatricPage />} />
       <Route path="/player" element={<PlayerLoginPage />} />
+      <Route path="/player/join" element={<PlayerJoinPage />} />
 
       {/* Player Sheet — no role guard needed, auth via characterId */}
       <Route
