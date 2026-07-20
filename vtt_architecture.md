@@ -10341,3 +10341,52 @@ Goblin breaks free
 - Time saved per condition application: **~30 seconds** (no need to navigate to Player Cards page)
 
 ---
+
+## Sprint 27/41 — Feature Expansion Phase (Cycle 8 of 10): DM Quick Action Popover (Updated: 2026-07-20 19:41)
+## Sprint 27/41 — Globally Accessible DM Quick Action Popover
+
+### Summary
+Built a unified, globally accessible floating overlay for applying damage, healing, temp HP, and gold/loot to any character or combatant from ANY page. No navigation to Player Cards needed — the DM opens it from the sidebar and sees a live party summary, selects targets, picks an amount, and applies.
+
+### Architectural Changes
+
+| File | Change | Impact |
+|------|--------|--------|
+| `components/control-center/DmQuickActionPopover.tsx` | **NEW** — ~500 lines | Globally accessible damage/heal/temp-hp/gold distribution tool |
+| `stores/uiStore.ts` | Added `showQuickActions` state + `setQuickActions` action + interface + initial value | State management for the overlay |
+| `components/layout/AppShell.tsx` | Added sidebar event listener + DmQuickActionPopover rendering | Global mount for DM role |
+| `components/layout/Sidebar.tsx` | Added "⚡ Quick Actions" sidebar button | One-click access from sidebar |
+
+### Features
+
+| Feature | Detail |
+|---------|--------|
+| **4 action modes** | Damage (🗡 rose), Heal (❤ emerald), Temp HP (🛡 amber), Gold (💰 gold) — each with unique color scheme |
+| **Amount presets** | 4 presets per mode (1/5/10/25 for damage/heal, 5/10/15/25 for temp, 10/25/50/100 for gold) |
+| **Custom amount input** | Number input with Enter-to-apply, validates positive integers |
+| **Party summary bar** | Live party HP total/max with gradient bar, wounded count, dead count |
+| **Multi-target selector** | Grid of all characters + combatants with HP bars, temp HP indicator, status colors |
+| **Bulk actions** | Select All / Select Wounded / Clear buttons + "Apply to All" button |
+| **Recent actions log** | Last 5 actions tracked with undo per action (inverse mutation) |
+| **Flash messages** | Success/info/warning feedback for every apply and undo |
+| **Filtered by role** | Only renders for DM role |
+
+### DM Workflow (Live Combat)
+
+```
+Dragon breath deals 42 fire damage to the party
+  → DM opens "⚡ Quick Actions" from sidebar
+  → Sees Party Summary: 82/82 HP — all healthy
+  → Switches to "Damage" mode (rose accent)
+  → Enters "42" in custom input
+  → Clicks "All" → all 2 party members selected
+  → "Apply to All" → both characters take 42 damage
+  → Flash: "✨ Applied Damage (42) to 2 targets"
+  → Party bar updates: 40/82 with wounded indicator
+```
+
+### Time Saved
+- **Before:** ~60 seconds navigating to Player Cards, editing each character's HP individually
+- **After:** ~8 seconds from any page
+
+---
