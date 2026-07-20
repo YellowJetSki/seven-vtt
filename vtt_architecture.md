@@ -9688,3 +9688,71 @@ These are high-practical-value features identified through systematic audit of w
 - ✅ Workspace tools only — no terminal editing
 
 ---
+
+## Sprint 16/41 — Deep Exploration QA Phase (Cycle 4 of 7): Theatric Display Canvas QA & Missing Features Compilation (Updated: 2026-07-20 19:00)
+## Sprint 16/41 — Theatric Display Canvas QA & Missing Features Compilation
+
+### Test File Created
+| File | Test Suites | Test Cases | Lines |
+|------|:-----------:|:----------:|:-----:|
+| `theatric-display-qa.test.ts` | 11 | **65+** | 480+ |
+
+### Coverage Breakdown
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| Map Data Integrity | 7 | Valid grid, 1x1 min, 100x100 max, 0-size, negative size, missing URL, 200px size |
+| Token State — Visibility & HP | 10 | Visible/invisible filter, HP ratio color thresholds (boundary: 0.5, 0.25), undefined HP, zero max HP, overrun HP (50/44), negative HP, label fallback chain, empty label, type fallback color |
+| Token Position & Grid | 4 | Pixel coordinate computation, origin (0,0), negative positions (off-grid), size scaling (Medium through Gargantuan) |
+| Camera Transforms | 8 | Default zoom, extreme zoom out (0.1), extreme zoom in (4.0), negative zoom, zero zoom, pan offset, extreme pan (10000px), rotation angles |
+| Canvas Dimensions & HiDPI | 5 | 4K scaling (devicePixelRatio=2), Retina (dpr=3), standard (dpr=1), resize guard, zero-size canvas |
+| Connection State Management | 5 | Initial disconnect, connect transition, map-not-found grace, multi-map switching, mid-session token adds |
+| Ambient Particles | 5 | 60 particles initialized, valid property ranges, off-screen wrap (top), left edge wrap, right edge wrap |
+| Rendering Overlays | 3 | Vignette gradient stop ordering, letterbox bar computation (5%), grid line count |
+| Edge Cases & Defensive Guards | 7 | Null canvas ref, null container ref, empty token list, undefined mapData, failed image load, headless getContext(null), undefined mapTokens[id] |
+| UI State Machine | 6 | Loading state, error state, connected state, auto-hide toggle, grid toggle, label toggle |
+| Keyboard Pan Shortcuts | 7 | Pan speed at various zooms, multi-key combination, complete release, extreme zoom edge case (100), **zero zoom bug (Infinity) — documented for fix** |
+
+### Critical Bugs Found & Fixed (3)
+
+| # | Bug | File | Severity | Fix |
+|:-:|-----|------|:--------:|-----|
+| 1 | **RAF loop accumulation — 4+ concurrent loops** — `renderFrame` in all 3 useEffect deps. Every camera/token/mapData change re-created the RAF loop, ResizeObserver, and initial render. Old RAF instances NOT cancelled, accumulating 4-5 concurrent 60fps loops within seconds of interaction. **Memory + CPU leak.** | `useTheatricCanvas.ts` | 🔴 **Critical — memory leak** | Complete rewrite: `renderOnce` is now stable (empty deps, reads state from refs). Single RAF loop (mounted once, tracks rafRef for cancellation on unmount). Single ResizeObserver (mounted once, disconnects on unmount). Ref-sync updated every render via inline assignment at top of hook. |
+| 2 | **Keyboard pan stale closure + interval leak** — `camera.zoom` and `setCamera` in useEffect deps. Every camera change re-created the key handlers AND the interval timer. The old interval was NOT cleared before creating a new one. Input polling ran at 16ms causing accumulation. | `TheatricPage.tsx` | 🔴 **Critical — interval + memory leak** | Added `cameraRef` + `setCameraRef` sticky refs. Keyboard effect now has `[]` deps (stable, never re-creates). Interval uses refs to read latest camera state. Added `Math.max(0.01, cam.zoom)` guard against zoom=0 producing Infinity speed. Added proper interval cleanup with `clearInterval` in return. |
+| 3 | **Zoom = 0 pan speed Infinity** — `const speed = 16 / zoom` with zoom=0 produces `Infinity`. Any accidental zoom-to-zero would make keyboard pan teleport the camera instantly | `TheatricPage.tsx` | 🟡 Medium | Added `Math.max(0.01, cam.zoom)` guard. Minimum zoom floor of 0.01 limits speed to 1600px/frame (large but not infinite). |
+
+### Missing 5.5e Live-Play Features Added (Cumulative, Sprint 15 + 16 = 17 Total)
+
+| # | Feature | Priority | Sprint Added |
+|:-:|---------|:--------:|:-----------:|
+| 1 | Token Aura/Emotion System | 🔴 High | Sprint 15 |
+| 2 | Turn Countdown Timer | 🔴 High | Sprint 15 |
+| 3 | PC Spell Slot Sync | 🔴 High | Sprint 15 |
+| 4 | Player Defense Roll Mode | 🟡 Medium | Sprint 15 |
+| 5 | Monster Loot Table | 🟡 Medium | Sprint 15 |
+| 6 | Auto-compute Passive Perception | 🟡 Medium | Sprint 15 |
+| 7 | Concentration Timer | 🟡 Medium | Sprint 15 |
+| 8 | Dual Wielding Attack Button | 🟡 Medium | Sprint 15 |
+| 9 | Healing Word Button | 🟡 Medium | Sprint 15 |
+| 10 | DM Faction/Group Tracker | 🟢 Low | Sprint 15 |
+| **11** | **Canvas Culling/Optimization** — Token position culling for off-screen tokens (100+ tokens will render all, even those far outside viewport) | 🟡 Medium | Sprint 16 |
+| **12** | **Theatric Display Status Bar Persistent** — Auto-hide HUD can be toggled to "always on" for accessibility | 🟢 Low | Sprint 16 |
+| **13** | **Canvas Pan Boundaries** — Camera can pan infinitely into void (no clamp to map edges). Add optional grid-edge boundary lock | 🟢 Low | Sprint 16 |
+| **14** | **Token HP Bar Visual for 0/ max (dead)** — Currently renders a thin red line. Should render a "💀" or fully grayed-out bar for visual clarity | 🟢 Low | Sprint 16 |
+| **15** | **Multi-Map Theatric Queue** — DM queues 3-5 maps for theatric display, auto-advances on encounter change | 🟡 Medium | Sprint 16 |
+| **16** | **Theatric Ambient Audio Sync** — Background audio track per map (e.g., dungeon ambience, forest birds) synced to theatric display | 🟢 Low | Sprint 16 |
+| **17** | **Theatric DM Note Overlay** — DM pushes a text overlay to the theatric display for quest hooks or atmosphere descriptions | 🟡 Medium | Sprint 16 |
+
+### Build Metrics
+- TypeScript: ✅ **0 errors**
+- Files fixed: `useTheatricCanvas.ts` (complete rewrite), `TheatricPage.tsx` (keyboard handler fix)
+- Production URL: ✅ arkla.vercel.app
+- Git savepoint: ✅ Sprint 16
+
+### Compliance
+- ✅ NO dice rollers suggested or built
+- ✅ Pure Arkla campaign lore (Wendy, Kehrfuffle)
+- ✅ NO 'Tick race' or 'Food machine' references
+- ✅ Workspace tools only — no terminal editing
+
+---

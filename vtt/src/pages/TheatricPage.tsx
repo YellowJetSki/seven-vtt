@@ -40,6 +40,12 @@ export default function TheatricPage() {
   const keysRef = useRef<Set<string>>(new Set());
   const panIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
+  // Sticky refs for camera to prevent stale closure in keyboard handler
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
+  const setCameraRef = useRef(setCamera);
+  setCameraRef.current = setCamera;
+
   // Load map from URL param
   useEffect(() => {
     const mapId = searchParams.get("map");
@@ -85,7 +91,7 @@ export default function TheatricPage() {
     hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
   }, []);
 
-  // Keyboard panning with arrow keys
+  // Keyboard panning with arrow keys — stable effect, reads camera from refs
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysRef.current.add(e.key);
@@ -93,12 +99,14 @@ export default function TheatricPage() {
         e.preventDefault();
         if (!panIntervalRef.current) {
           panIntervalRef.current = setInterval(() => {
-            const speed = 16 / camera.zoom;
+            const cam = cameraRef.current;
+            const setCam = setCameraRef.current;
+            const speed = 16 / Math.max(0.01, cam.zoom); // Guard against zoom = 0 → Infinity
             const k = keysRef.current;
-            if (k.has("ArrowUp")) setCamera({ y: camera.y + speed });
-            if (k.has("ArrowDown")) setCamera({ y: camera.y - speed });
-            if (k.has("ArrowLeft")) setCamera({ x: camera.x + speed });
-            if (k.has("ArrowRight")) setCamera({ x: camera.x - speed });
+            if (k.has("ArrowUp")) setCam({ y: cam.y + speed });
+            if (k.has("ArrowDown")) setCam({ y: cam.y - speed });
+            if (k.has("ArrowLeft")) setCam({ x: cam.x + speed });
+            if (k.has("ArrowRight")) setCam({ x: cam.x - speed });
           }, 16);
         }
       }
@@ -117,9 +125,12 @@ export default function TheatricPage() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      if (panIntervalRef.current) clearInterval(panIntervalRef.current);
+      if (panIntervalRef.current) {
+        clearInterval(panIntervalRef.current);
+        panIntervalRef.current = undefined;
+      }
     };
-  }, [camera.zoom, setCamera]);
+  }, []); // ← stable: never re-creates, reads from refs
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {

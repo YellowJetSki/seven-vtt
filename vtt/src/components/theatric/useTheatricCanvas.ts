@@ -1,10 +1,15 @@
 /**
- * STᚱ VTT — useTheatricCanvas (Premium Cinematic)
+ * STᚱ VTT — useTheatricCanvas (Premium Cinematic) [FIXED]
  *
  * Hook managing the cinematic Canvas rendering loop for the Theatric Display.
  * Supports optional grid overlay, ambient particle field, and gold-tinted
  * cinematic overlays. Handles HiDPI scaling, ResizeObserver, and
  * requestAnimationFrame loop at 60fps.
+ *
+ * FIXED (Sprint 16): RAF loop accumulation — now uses stable ref-based
+ * render callback to prevent concurrent RAF loops on dependency changes.
+ * FIXED: ResizeObserver now stable — only mounted once, disconnects on unmount.
+ * FIXED: HiDPI canvas reallocation only triggers on actual size changes.
  */
 
 import { useRef, useEffect, useCallback } from "react";
@@ -31,8 +36,24 @@ export function useTheatricCanvas(
   const mapImage = useRef<HTMLImageElement | null>(null);
   const particles = useRef<Particle[]>([]);
   const frameRef = useRef(0);
+  const rafRef = useRef<number>(0);
+  const obsRef = useRef<ResizeObserver | null>(null);
 
-  // Initialize ambient gold particles
+  // Sticky refs to prevent stale closures in RAF loop
+  const cameraRef = useRef(camera);
+  const mapDataRef = useRef(mapData);
+  const tokensRef = useRef(tokens);
+  const showLabelsRef = useRef(showLabels);
+  const showGridRef = useRef(showGrid);
+
+  // Keep refs in sync with reactive values
+  cameraRef.current = camera;
+  mapDataRef.current = mapData;
+  tokensRef.current = tokens;
+  showLabelsRef.current = showLabels;
+  showGridRef.current = showGrid;
+
+  // Initialize ambient gold particles — stable (runs once)
   useEffect(() => {
     particles.current = Array.from({ length: 60 }, () => ({
       x: Math.random() * 2000 - 1000,
@@ -45,7 +66,7 @@ export function useTheatricCanvas(
     }));
   }, []);
 
-  // Load map image
+  // Load map image — stable by mapData.imageUrl (runs when URL changes)
   useEffect(() => {
     if (!mapData.imageUrl) return;
     const img = new Image();
@@ -53,15 +74,20 @@ export function useTheatricCanvas(
     img.src = mapData.imageUrl;
     img.onload = () => {
       mapImage.current = img;
-      renderFrame();
+      renderOnce();
+    };
+    img.onerror = () => {
+      // Silently fail — canvas will show dark background
+      mapImage.current = null;
     };
     return () => {
       mapImage.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapData.imageUrl]);
 
-  // Render frame function
-  const renderFrame = useCallback(() => {
+  // ── Single stable render function (reads from refs) ──
+  const renderOnce = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -71,12 +97,14 @@ export function useTheatricCanvas(
     const w = rect.width;
     const h = rect.height;
 
-    // Handle HiDPI — only re-allocate when size changes
-    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+    // Only re-allocate HiDPI canvas when size actually changes
+    const targetW = Math.round(w * dpr);
+    const targetH = Math.round(h * dpr);
+    if (canvas.width !== targetW || canvas.height !== targetH) {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+      canvas.width = targetW;
+      canvas.height = targetH;
     }
 
     const ctx = canvas.getContext("2d");
@@ -93,75 +121,82 @@ export function useTheatricCanvas(
     ctx.fillRect(0, 0, w, h);
 
     // Camera transform
+    const cam = cameraRef.current;
     const cx = w / 2;
     const cy = h / 2;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.scale(camera.zoom, camera.zoom);
-    ctx.rotate(camera.rotation);
-    ctx.translate(-cx + camera.x, -cy + camera.y);
+    ctx.scale(cam.zoom, cam.zoom);
+    ctx.rotate(cam.rotation);
+    ctx.translate(-cx + cam.x, -cy + cam.y);
 
     // Draw map image
+    const mData = mapDataRef.current;
     if (mapImage.current) {
       ctx.drawImage(
         mapImage.current,
         0,
         0,
-        mapData.gridWidth * mapData.gridSize,
-        mapData.gridHeight * mapData.gridSize
+        mData.gridWidth * mData.gridSize,
+        mData.gridHeight * mData.gridSize
       );
 
       // Optional grid overlay — gold-tinted, subtle
-      if (showGrid) {
-        drawGrid(ctx, mapData.gridWidth, mapData.gridHeight, mapData.gridSize);
+      if (showGridRef.current) {
+        drawGrid(ctx, mData.gridWidth, mData.gridHeight, mData.gridSize);
       }
     }
 
     // Draw visible tokens with shadow pass
-    const visibleTokens = tokens.filter((t) => t.visible);
-    visibleTokens.forEach((t) => drawToken(ctx, t, mapData.gridSize, showLabels));
+    const visibleTokens = tokensRef.current.filter((t) => t.visible);
+    visibleTokens.forEach((t) => drawToken(ctx, t, mData.gridSize, showLabelsRef.current));
     ctx.restore();
 
     // Gold ambient particles (in screen space, behind vignette)
     const p = particles.current;
     frameRef.current++;
+    const fIdx = frameRef.current;
     p.forEach((pt) => {
-      pt.x += pt.vx + Math.sin(frameRef.current * 0.01 + pt.y * 0.01) * 0.05;
+      pt.x += pt.vx + Math.sin(fIdx * 0.01 + pt.y * 0.01) * 0.05;
       pt.y += pt.vy;
       if (pt.y < -800) { pt.y = 800; pt.x = Math.random() * 2000 - 1000; }
       if (pt.x < -1200) pt.x = 1200;
       if (pt.x > 1200) pt.x = -1200;
     });
-    drawParticles(ctx, p, camera.zoom, cx, cy);
+    drawParticles(ctx, p, cam.zoom, cx, cy);
 
     // Cinematic overlays
     drawVignette(ctx, w, h);
     drawLetterbox(ctx, w, h);
-  }, [camera, mapData, tokens, showLabels, showGrid]);
+  }, []); // ← stable reference: no dependencies, reads from refs
 
-  // Render on dependency change
-  useEffect(() => {
-    renderFrame();
-  }, [renderFrame]);
-
-  // Resize observer
-  useEffect(() => {
-    const obs = new ResizeObserver(() => renderFrame());
-    if (containerRef.current) obs.observe(containerRef.current);
-    return () => obs.disconnect();
-  }, [renderFrame]);
-
-  // Animation loop — 60fps with RAF
+  // ── Single RAF loop — stable, runs once on mount ──
   useEffect(() => {
     let running = true;
     const animate = () => {
       if (!running) return;
-      renderFrame();
-      requestAnimationFrame(animate);
+      renderOnce();
+      rafRef.current = requestAnimationFrame(animate);
     };
     animate();
     return () => {
       running = false;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
     };
-  }, [renderFrame]);
+  }, [renderOnce]); // renderOnce is stable (empty deps)
+
+  // ── Single ResizeObserver — stable, runs once on mount ──
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const obs = new ResizeObserver(() => renderOnce());
+    obs.observe(containerRef.current);
+    obsRef.current = obs;
+    return () => {
+      obs.disconnect();
+      obsRef.current = null;
+    };
+  }, [renderOnce]); // renderOnce is stable (empty deps)
 }
