@@ -6179,3 +6179,50 @@ Entire Inventory Tab ecosystem — 490-line orchestrator (`PlayerSheetInventoryT
 
 Next: Sprint 17 — Select another unique, untargeted component/screen for premium aesthetic refactoring.
 ---
+
+## Sprint 17/25 — Final Polish Phase: Premium Spellbook & Spellcasting Overhaul (Updated: 2026-07-20 11:13)
+## Sprint 17/25 — Final Polish Phase: Premium Spellbook & Spellcasting Overhaul (2026-07-20)
+
+### Target
+Entire Spellcasting UI ecosystem — 490-line orchestrator (`PlayerSheetSpellsTab.tsx`) + 5 sub-components. Complete premium visual refactoring to Lusion/Spotify/Ventriloc-grade standards.
+
+### Components Refactored (6)
+
+| File | Lines (Before) | Lines (After) | Premium Upgrades |
+|------|:--------------:|:-------------:|------------------|
+| `SpellcastingStatsHeader.tsx` | 70 | 100 | Lusion-style conic depth ring per card, hover elevation lift, directional radial glow, edge light, tier-based color coding (cyan/gold/emerald), decorative class divider with gold fade |
+| `SpellSlotMeter.tsx` | 225 | 280 | Spotify "now playing" concentration dot with ping animation, Lusion arc-fill gauge per level, caster tier badge (amber/cyan/violet), usage pill color tiering, shimmer fill overlay, slot breakdown with ▸ collapse |
+| `SpellFilterBar.tsx` | 80 | 100 | Pill-shaped chips with staggered entrance, custom faves checkbox with gold glow, active dot indicator, focus-ring search field, decorative spacing |
+| `SpellRowCard.tsx` | 90 | 110 | Multi-layer depth card, hover elevation lift (-translate-y-0.5), directional glow sweep, edge light animation, inline "Cast" button with "✨" feedback, gold name accent when prepared |
+| `SpellRowMetaDisplay.tsx` | 45 | 65 | School-colored left accent border, gold/50 label keys, rounded mechanical effect badges, improved description leading |
+| `SpellPrepareToggle.tsx` | 65 | 55 | Rounded pill toggle, gold dot glow shadow on prepared, scale feedback on press, cleaner disabled state |
+| `PlayerSheetSpellsTab.tsx` | 490 | 495 | Premium non-caster empty state: floating animated book icon, runed dividers, Lusion glass card; premium flash toast; wrapped stats header with `slide-in-up` |
+
+### Premium Design Tokens Applied
+
+| Pattern | Usage |
+|---------|-------|
+| `conic-gradient(from 0deg at 50% 50%, ...)` | Lusion-style depth ring on stat cards |
+| `radial-gradient(ellipse 100px 60px at 50% 20%, ...)` | Directional hover glow on stat cards |
+| `bg-gradient-to-b from-white/[0.02] to-transparent` | Premium card surfaces |
+| `hover:-translate-y-0.5 active:scale-[0.99]` | Hover lift + press feedback on rows |
+| `via-gold-500/20 to-transparent` | Top edge light on every card |
+| `animate-ping` on concentration dot | Spotify "now playing" inspiration |
+| `border-[#14151f]/90 to-[#0f1019]/95` | Unified glass card gradients |
+| `group-open:rotate-90` | Smooth collapse chevron animation |
+
+### Build & QA
+
+| Metric | Result |
+|--------|:------:|
+| TypeScript errors | ✅ **0** (2033 modules) |
+| Vite production build | ✅ **9.27s**, 0 warnings |
+| Vercel deploy | ✅ **29s** → `vtt-five.vercel.app` |
+| CSS bundle | 293 KB (32.1 KB gzipped) |
+| JS bundle | 1,489 KB (364 KB gzipped) |
+| Git savepoint | ✅ Sprint 17 |
+
+### Final Polish Phase (Sprints 16-20) — Cycle 2/5 Complete
+
+Next: Sprint 18 — Select another unique, untargeted component/screen for premium aesthetic refactoring.
+---
