@@ -184,12 +184,13 @@ export function useXpMutations() {
  * to SpellSlotsFull (engine format with {level, current, max}).
  */
 function toFullSlots(slots: SpellSlots): SpellSlotsFull {
-  const full: SpellSlotsFull = {} as SpellSlotsFull;
+  const full = {} as SpellSlotsFull;
+  const fullAny = full as unknown as Record<string, { level: number; current: number; max: number }>;
   for (let lvl = 1 as SpellLevel; lvl <= 9; lvl++) {
-    const key = `level${lvl}` as keyof SpellSlots;
-    const pool = slots[key];
+    const key = `level${lvl}`;
+    const pool = slots[key as keyof SpellSlots];
     if (pool) {
-      (full as Record<string, unknown>)[key] = { level: lvl, current: pool.current, max: pool.max };
+      fullAny[key] = { level: lvl, current: pool.current, max: pool.max };
     }
   }
   return full;

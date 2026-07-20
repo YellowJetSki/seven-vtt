@@ -14,6 +14,7 @@
 
 import { NavLink } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
+import { useResponsive } from "@/hooks/useResponsive";
 
 const navItems = [
   { path: "/campaign/dashboard", label: "Dashboard", icon: "📊" },
@@ -29,6 +30,7 @@ const navItems = [
 export default function MobileBottomNav() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScroll, setCanScroll] = useState(false);
+  const { isDesktop } = useResponsive();
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -38,7 +40,7 @@ export default function MobileBottomNav() {
   }, []);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-obsidian/95 backdrop-blur-lg border-t border-gold/10 lg:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-obsidian/95 backdrop-blur-lg border-t border-gold/10 safe-area-bottom" style={{ display: isDesktop ? 'none' : 'flex' }}>
       {/* Gold gradient top border */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold-500/25 to-transparent" />
 
