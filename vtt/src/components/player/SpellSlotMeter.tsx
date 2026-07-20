@@ -1,15 +1,17 @@
 /**
- * STᚱ VTT — Spell Slot Meter (Premium Lusion/Spotify Edition)
+ * STᚱ VTT — Spell Slot Meter (Premium Lusion/Spotify Edition v3)
  *
  * Premium gold-accented spell slot visualization with:
- * - Animated arc-fill gauge per level (Lusion-style)
+ * - Animated arc-fill gauge per level (Lusion-style depth)
  * - Expandable per-level Cast/Restore controls with spring feedback
- * - Concentration tracking with pulse ring animation (Spotify "now playing")
- * - Spell DC/ATK stat cards with hover glow
- * - Usage donut-style progress visualization
+ * - Concentration tracking with Spotify "now playing" ping ring
+ * - Spell DC/ATK stat cards with directional hover glow
+ * - Usage gradient bar with shimmer
  * - Caster type badge with visual tier indicator
- * - Slot breakdown with bullet-point details
- * - "Long Rest" one-click restore with spin feedback
+ * - Slot breakdown with bullet-point status
+ * - "Restore All (Long Rest)" one-click with spin animation
+ * - Staggered entrance on expand
+ * - Hover lift with 0.5px elevation
  */
 
 import { useState, useMemo } from "react";
@@ -54,21 +56,22 @@ export default function SpellSlotMeter({
   // Empty state
   if (totalSlots === 0) {
     return (
-      <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-3 overflow-hidden">
+      <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-3 overflow-hidden group hover:border-white/[0.07] transition-all duration-200">
+        {/* Edge light */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-2 relative z-[1]">
           <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">Spellcasting</h3>
           <span className={`px-1.5 py-0.5 rounded text-[7px] uppercase tracking-wider font-semibold border ${CASTER_TIER_COLORS[casterType]}`}>
             {CASTER_LABELS[casterType]}
           </span>
         </div>
-        <p className="text-[11px] text-surface-500 italic">No spell slots available at this level.</p>
+        <p className="text-[10px] text-surface-500 italic relative z-[1]">No spell slots available at this level.</p>
         {spellSaveDC > 0 && (
-          <div className="flex gap-2 mt-2">
-            <div className="px-2 py-1 rounded-lg bg-gold-500/8 text-gold-400/70 border border-gold/10 text-[10px] font-semibold tabular-nums">
+          <div className="flex gap-2 mt-2 relative z-[1]">
+            <div className="px-2 py-1 rounded-lg bg-gradient-to-b from-gold-500/8 to-gold-500/2 text-gold-400/70 border border-gold/10 text-[10px] font-semibold tabular-nums">
               DC {spellSaveDC}
             </div>
-            <div className="px-2 py-1 rounded-lg bg-gold-500/8 text-gold-400/70 border border-gold/10 text-[10px] font-semibold tabular-nums">
+            <div className="px-2 py-1 rounded-lg bg-gradient-to-b from-gold-500/8 to-gold-500/2 text-gold-400/70 border border-gold/10 text-[10px] font-semibold tabular-nums">
               +{spellAttackBonus} ATK
             </div>
           </div>
@@ -84,25 +87,30 @@ export default function SpellSlotMeter({
   };
 
   return (
-    <div className={`relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] overflow-hidden transition-all duration-200 hover:border-white/[0.07] ${compact ? "p-2" : "p-3"}`}>
+    <div className={`relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] overflow-hidden transition-all duration-200 group hover:border-white/[0.07] ${compact ? "p-2" : "p-3"}`}>
       {/* Edge light */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
+
+      {/* Hover glow */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-white/[0.01] via-transparent to-transparent" />
 
       {/* ── HEADER ── */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between group relative z-[1]"
+        className="w-full flex items-center justify-between relative z-[1]"
       >
-        <div className="flex items-center gap-2">
-          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-1 h-3.5 rounded-full bg-amber-500/40 shrink-0" />
+          <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500/60 whitespace-nowrap">
             Spell Slots
           </h3>
-          <span className={`hidden sm:inline px-1.5 py-0.5 rounded text-[7px] uppercase tracking-wider font-semibold border ${CASTER_TIER_COLORS[casterType]}`}>
+          <span className={`hidden sm:inline px-1.5 py-0.5 rounded text-[7px] uppercase tracking-wider font-semibold border shrink-0 ${CASTER_TIER_COLORS[casterType]}`}>
             {CASTER_LABELS[casterType]}
           </span>
-          {/* Concentration "now playing" dot */}
+          {/* Concentration "now playing" indicator */}
           {concentrationSpell && (
-            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 shrink-0"
+              title={`Concentrating on ${concentrationSpell}`}>
               <span className="relative w-1.5 h-1.5">
                 <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
                 <span className="absolute inset-0 rounded-full bg-emerald-400" />
@@ -112,8 +120,8 @@ export default function SpellSlotMeter({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Usage pill with color tiering */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Usage pill */}
           <div className={`px-1.5 py-0.5 rounded-lg border text-[9px] font-semibold tabular-nums ${
             usedPct >= 75
               ? "bg-rose-500/10 text-rose-400 border-rose-500/15"
@@ -132,7 +140,7 @@ export default function SpellSlotMeter({
 
       {/* ── Usage bar (always visible) ── */}
       {!compact && (
-        <div className="relative h-1.5 mt-2 bg-surface-800/60 rounded-full overflow-hidden border border-white/[0.02]">
+        <div className="relative h-1.5 mt-2 bg-gradient-to-b from-surface-900/80 to-[#07080d]/80 rounded-full overflow-hidden border border-white/[0.02] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
           <div
             className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
             style={{
@@ -142,8 +150,10 @@ export default function SpellSlotMeter({
                 : "linear-gradient(90deg, #34d399, #eab308)",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
             }}
-          />
-          {/* Glint marker at current pct */}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full" />
+          </div>
+          {/* Glint marker */}
           <div
             className="absolute top-0 h-full w-0.5 bg-white/20 rounded-full"
             style={{ left: `${usedPct}%` }}
@@ -153,27 +163,23 @@ export default function SpellSlotMeter({
 
       {/* ── EXPANDED CONTENT ── */}
       {expanded && (
-        <div className="space-y-2 mt-3 animate-in slide-in-from-top-1 duration-150">
+        <div className="space-y-2 mt-3 animate-in slide-in-from-top-1 duration-150 relative z-[1]">
           {/* DC + ATK + Concentration stat strip */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <div className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-cyan-500/8 to-cyan-500/2 text-cyan-400 border border-cyan-500/15 tabular-nums">
-              DC <span className="text-[11px]">{spellSaveDC}</span>
+            <div className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-cyan-500/8 to-cyan-500/2 text-cyan-400 border border-cyan-500/15 tabular-nums hover:-translate-y-0.5 transition-all duration-200">
+              DC <span className="text-[11px] font-bold">{spellSaveDC}</span>
             </div>
-            <div className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-gold-500/8 to-gold-500/2 text-gold-400 border border-gold/15 tabular-nums">
-              +{spellAttackBonus} ATK
-            </div>
-            {/* Mod display */}
-            <div className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-emerald-500/8 to-emerald-500/2 text-emerald-400 border border-emerald-500/15 tabular-nums">
-              Mod +0
+            <div className="px-2 py-1 rounded-lg text-[9px] font-semibold bg-gradient-to-b from-gold-500/8 to-gold-500/2 text-gold-400 border border-gold/15 tabular-nums hover:-translate-y-0.5 transition-all duration-200">
+              +{spellAttackBonus} <span className="text-[11px] font-bold">ATK</span>
             </div>
             {/* Concentration badge */}
             {concentrationSpell && (
-              <div className="px-2 py-1 rounded-lg text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 flex items-center gap-1">
-                <span className="relative w-1.5 h-1.5">
+              <div className="px-2 py-1 rounded-lg text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 flex items-center gap-1 max-w-[160px]">
+                <span className="relative w-1.5 h-1.5 shrink-0">
                   <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
                   <span className="absolute inset-0 rounded-full bg-emerald-400" />
                 </span>
-                {concentrationSpell}
+                <span className="truncate">{concentrationSpell}</span>
               </div>
             )}
           </div>
@@ -191,7 +197,7 @@ export default function SpellSlotMeter({
                   className="relative px-2 py-1.5 rounded-xl bg-gradient-to-b from-white/[0.02] to-transparent border border-white/[0.04] hover:border-gold/10 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 overflow-hidden"
                   style={{ animationDelay: `${idx * 40}ms`, animation: "slide-in-up 0.3s ease-out both" }}
                 >
-                  {/* Hover glow */}
+                  {/* Hover directional glow */}
                   <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-gold-500/[0.02] via-transparent to-amber-500/[0.02] rounded-xl" />
 
                   {/* Level header */}
@@ -205,8 +211,8 @@ export default function SpellSlotMeter({
                     </span>
                   </div>
 
-                  {/* Gauge bar — Lusion arc style */}
-                  <div className="relative h-2 rounded-full bg-gradient-to-b from-surface-900/80 to-[#07080d]/80 overflow-hidden border border-white/[0.02] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+                  {/* Gauge bar — Lusion style with depth */}
+                  <div className="relative h-2.5 rounded-full bg-gradient-to-b from-surface-900/80 to-[#07080d]/80 overflow-hidden border border-white/[0.02] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
                     <div
                       className="h-full rounded-full transition-all duration-700 ease-out relative"
                       style={{
@@ -219,7 +225,6 @@ export default function SpellSlotMeter({
                         boxShadow: isExhausted ? "none" : "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.2)",
                       }}
                     >
-                      {/* Shimmer */}
                       {!isExhausted && (
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full" />
                       )}
@@ -239,14 +244,14 @@ export default function SpellSlotMeter({
                     <button
                       onClick={() => onCast?.(level as SpellLevel)}
                       disabled={current <= 0}
-                      className="flex-1 py-0.5 rounded-lg text-[8px] font-semibold transition-all duration-150 bg-gradient-to-b from-gold-500/10 to-gold-500/5 text-gold-400 border border-gold/15 hover:from-gold-500/20 hover:to-gold-500/10 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed disabled:active:scale-100"
+                      className="flex-1 py-1 rounded-lg text-[8px] font-semibold transition-all duration-150 bg-gradient-to-b from-gold-500/10 to-gold-500/5 text-gold-400 border border-gold/15 hover:from-gold-500/20 hover:to-gold-500/10 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed disabled:active:scale-100"
                     >
                       Cast
                     </button>
                     <button
                       onClick={() => onRestore?.(level as SpellLevel)}
                       disabled={current >= max}
-                      className="flex-1 py-0.5 rounded-lg text-[8px] font-semibold transition-all duration-150 bg-gradient-to-b from-obsidian-mid/60 to-obsidian-mid/40 text-surface-400 border border-surface-700/30 hover:border-gold/15 hover:text-gold-300 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed disabled:active:scale-100"
+                      className="flex-1 py-1 rounded-lg text-[8px] font-semibold transition-all duration-150 bg-gradient-to-b from-obsidian-mid/60 to-obsidian-mid/40 text-surface-400 border border-surface-700/30 hover:border-gold/15 hover:text-gold-300 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed disabled:active:scale-100"
                     >
                       Rest
                     </button>
@@ -269,7 +274,7 @@ export default function SpellSlotMeter({
             <span className="ml-1">Restore All (Long Rest)</span>
           </button>
 
-          {/* ── Slot breakdown ── */}
+          {/* ── Slot breakdown (collapsible details) ── */}
           <details className="group">
             <summary className="text-[8px] text-surface-600 cursor-pointer hover:text-surface-400 transition-colors list-none flex items-center gap-1">
               <span className="inline-block transition-transform duration-150 group-open:rotate-90">▸</span>
