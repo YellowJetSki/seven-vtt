@@ -7,7 +7,7 @@
  * Click to open full statblock.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import type { EnemyDoc } from "@/types";
 
 interface EnemyListProps {
@@ -43,11 +43,15 @@ function getCrSortValue(cr: number): number {
 
 export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicate, searchQuery, onAddToEncounter, encounterContextLabel }: EnemyListProps) {
   const [search, setSearch] = useState(searchQuery || "");
+  const prevSearchRef = useRef(searchQuery);
 
-  // Sync external searchQuery with internal state
-  if (searchQuery !== undefined && searchQuery !== search) {
-    setSearch(searchQuery);
-  }
+  // Sync external searchQuery with internal state (using useEffect to avoid render-time mutation)
+  useEffect(() => {
+    if (searchQuery !== undefined && searchQuery !== prevSearchRef.current) {
+      setSearch(searchQuery);
+      prevSearchRef.current = searchQuery;
+    }
+  }, [searchQuery]);
   const [typeFilter, setTypeFilter] = useState("All");
   const [crMin, setCrMin] = useState<number>(0);
   const [crMax, setCrMax] = useState<number>(30);

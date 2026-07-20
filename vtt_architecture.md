@@ -9810,3 +9810,66 @@ These are high-practical-value features identified through systematic audit of w
 - ✅ Workspace tools only — no terminal editing
 
 ---
+
+## Sprint 18/41 — Deep Exploration QA Phase (Cycle 6 of 7): Encounter CR + Monster Browser Pipeline QA (Updated: 2026-07-20 19:09)
+## Sprint 18/41 — Encounter CR + Monster Browser Pipeline QA
+
+### Test File Created
+| File | Test Suites | Test Cases | Lines |
+|------|:-----------:|:----------:|:-----:|
+| `encounter-cr-qa.test.ts` | 9 | **65+** | 500+ |
+
+### Coverage
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| parseCr | 4 | Fractions (1/8→0.125, 1/4→0.25, 1/2→0.5), integer strings, numeric passthrough, garbage strings return 0 |
+| getXpForCr | 3 | Fractional CRs, integer CRs 1-30, unknown/negative/NaN return 0 |
+| getEffectiveMultiplier (DMG RAW pg.83) | 15 | Standard party 1/2/3-6/7-10/11-14/15+ monsters; solo party (×1.5 modifier); large party 6+ (shifted bracket); edge: 0 enemies, party size 0, negative party size |
+| calculateEncounterXp | 5 | Single goblin, 4 goblins (×2), 6+1 enemies (×2.5), empty array, negative CR filtering |
+| determineDifficulty (thresholds) | 8 | Lv5: trivial/easy/medium/hard/deadly; Lv1: trivial/medium/deadly; Lv20 deadly; level 0/negative → trivial; fractional level rounding |
+| analyzeEncounterDifficulty | 9 | 4 goblins → medium, 1 owlbear → easy, 1 dragon → hard, dragon+6 → deadly, Kehrfuffle solo → trivial, large party 6 → trivial, empty array, partyThresholds scaling, CR range |
+| getDifficultyLabel & Color | 2 | All 6 ratings produce valid labels/colors |
+| CR Range & Enemy Count | 2 | Mixed CR min/max, NaN CR filtering |
+| Edge Cases (defensive guards) | 5 | CR 0 creatures, 50+ enemies, zero party size, input array immutability, deterministic output |
+| Real-World DM Scenarios | 7 | Sunless Citadel (Lv1: 2 goblins easy, boss room deadly), forest patrol (Lv5: trivial), owlbear (easy), dragon+minions (deadly), Kehrfuffle solo, Wendy solo vs 2 |
+| Rapid Fire Stress Test | 2 | 100 random encounters (1-10 enemies, Lv1-20); 5 rapidly changing party configs |
+
+### Bugs Found & Fixed (4)
+
+| # | Bug | Location | Severity | Fix |
+|:-:|-----|----------|:--------:|-----|
+| 1 | **EncounterBuilder uses deprecated `glass-gold` class** — Modal body used `glass-gold` which has been deprecated in favor of direct gradient classes. Visual inconsistency. | `EncounterBuilder.tsx` line `className="glass-gold..."` | 🟡 Visual | Replaced with `bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/90` + proper shadow tokens. |
+| 2 | **Corner ornaments clipped by `overflow-hidden`** — Four `corner-ornament` divs were rendered but the parent container had `overflow-hidden`, cutting them off. Dead visual elements. | `EncounterBuilder.tsx` 4 divs | 🟢 Visual | Removed all 4 corner ornaments, replaced with gold edge light gradient matching modal pattern. |
+| 3 | **EnemyList `searchQuery` prop sync causes render-time state mutation** — The line `if (searchQuery !== undefined && searchQuery !== search) { setSearch(searchQuery); }` runs synchronously during render, which is a React anti-pattern. If the parent passes a new object reference on every render, this triggers an infinite re-render loop. | `EnemyList.tsx` lines ~48-50 | 🔴 **Performance bug — potential infinite re-render** | Replaced with `useRef` + `useEffect` pattern. `prevSearchRef.current` tracks the previous value; `useEffect([searchQuery])` only calls `setSearch` when the value actually changes. |
+| 4 | **Missing `useRef` & `useEffect` imports** — EnemyList needed `useRef` and `useEffect` for the fix but only imported `useMemo` and `useState`. | `EnemyList.tsx` import line | 🔴 **Compilation error** | Added `useRef, useEffect` to the React import. |
+
+### Missing 5.5e Features — Now 27 Total (Sprints 15-18)
+
+| # | Feature | Priority | Sprint |
+|:-:|---------|:--------:|:-----:|
+| 18 | `getCasterType` return `"none"` for non-casters | 🔴 High | Sprint 17 |
+| 19 | Multi-class spell slot table (PHB 164) | 🔴 High | Sprint 17 |
+| 20 | Arcane Recovery / Natural Recovery UI | 🟡 Medium | Sprint 17 |
+| 21 | Spell preparation limit (INT + level) | 🟡 Medium | Sprint 17 |
+| 22 | Warlock Pact Magic slots table | 🔴 High | Sprint 17 |
+| **23** | **Encounter CR should support mixed-level parties** — Current `analyzeEncounterDifficulty` uses a single `avgLevel`. For parties with varied levels (e.g., Wendy Lv5 + Kehrfuffle Lv5 + new-join Lv3), the DMG recommends computing threshold by averaging XP thresholds per character, not averaging their levels. | 🟡 Medium | Sprint 18 |
+| **24** | **"Add all in current filter" to encounter** — DM filters by creature type, then has no "add all 6 goblins" button. Must click each one individually. | 🟡 Medium | Sprint 18 |
+| **25** | **Encounter difficulty edge labeling for "impossible"** — `determineDifficulty` returns "deadly" for anything above the deadly threshold. Some encounters (e.g., CR 30 Tarrasque vs Lv1 party) need a distinct "impossible" label with guidance. | 🟢 Low | Sprint 18 |
+| **26** | **Enemy CR range boundaries should use per-character thresholds** — For party of 4, the deadly threshold * 4 is used. Per DMG pg. 83, the threshold is per-character multiplied by party size — already correct. But the `partyThresholds` returned should also include a `perCharacter` breakdown for DM reference. | 🟢 Low | Sprint 18 |
+| **27** | **Enemy quick-create should auto-populate AC/HP from CR on every CR change** — Currently `handleCrChange` sets both AC and HP. But the user can manually override AC or HP, and then switch CR — the manual override is lost. Should only auto-fill on initial creation if the fields haven't been manually touched. | 🟡 Medium | Sprint 18 |
+
+### Build Metrics
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- Bug fixes applied: 4 (1 performance, 1 compilation, 2 visual)
+- Files modified: `EncounterBuilder.tsx`, `EnemyList.tsx`
+- Production URL: ✅ arkla.vercel.app
+- Git savepoint: ✅ Sprint 18
+
+### Compliance
+- ✅ NO dice rollers suggested or built
+- ✅ Pure Arkla campaign lore (Wendy, Kehrfuffle, Kaelen)
+- ✅ NO 'Tick race' or 'Food machine' references
+- ✅ Workspace tools only — no terminal editing
+
+---

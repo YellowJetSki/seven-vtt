@@ -166,13 +166,11 @@ export default function EncounterBuilder({
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="glass-gold rounded-2xl w-full max-w-2xl mx-4 border border-gold/10 shadow-2xl shadow-gold-500/5 flex flex-col max-h-[85vh]"
+        className="bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/90 rounded-2xl w-full max-w-2xl mx-4 border border-gold-500/15 shadow-[0_32px_80px_rgba(0,0,0,0.55),0_8px_24px_rgba(0,0,0,0.3)] flex flex-col max-h-[85vh] relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
+        {/* Gold edge light */}
+        <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
 
         {/* Header */}
         <div className="shrink-0 px-5 py-3.5 border-b border-gold/10">
