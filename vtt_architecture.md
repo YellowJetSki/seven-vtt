@@ -5772,3 +5772,60 @@ Vite chunk warning eliminated. No more dynamic import overhead.
 | ConditionManager.tsx | 350 | 🟢 Low |
 | CharacterStatsPanel.tsx | 360 | 🟢 Low |
 ---
+
+## Sprint 10/25 — Monolith Refactor: PlayerCreateModal (Updated: 2026-07-20 10:35)
+## Sprint 10/25 — Monolith Refactor: PlayerCreateModal (524 lines → 260 lines)
+
+### Target
+`PlayerCreateModal.tsx` — the **#1 largest remaining monolith** in the codebase at 524 lines.
+
+### Refactoring Results
+
+| Metric | Before | After | Improvement |
+|--------|:------:|:-----:|:-----------:|
+| PlayerCreateModal.tsx | 524 lines | 260 lines | **−50%** |
+| New sub-components created | 0 inline | 3 reusable | **+3** |
+| New lib modules created | 0 | 1 | **+1** |
+| Total modules (build) | 2029 | 2033 | +4 (net gain) |
+| Vite build time | 10.47s | 9.95s | −0.5s (faster) |
+
+### New Files Created (4)
+
+| File | Lines | Type | Purpose |
+|------|:-----:|:----:|---------|
+| `lib/character/class-defaults.ts` | 85 | ♻️ Pure data | `CLASSES`, `DEFAULT_STATS_BY_CLASS`, `HIT_DIE_BY_CLASS`, `SPELLCASTING_CLASSES`, `calcHp()`, `calcAc()` |
+| `components/player/CharacterFormFields.tsx` | 45 | 🧩 UI | Character name + player name input fields |
+| `components/player/RaceClassSelector.tsx` | 145 | 🧩 UI | Race/Subrace/Class/Level selectors with race info badges |
+| `components/player/PortraitPicker.tsx` | 125 | 🧩 UI | Image URL input, gallery toggle, live preview, error handling |
+
+### Code Optimization Phase COMPLETE (Sprints 6-10)
+
+| Sprint | Target | Lines Before | Lines After | Reduction |
+|:------:|--------|:----------:|:---------:|:---------:|
+| 7 | PlayerSheetSpellsTab | 615 | 170 | **−72%** |
+| 8 | PlayerSheetInventoryTab | 460 | 195 | **−58%** |
+| 9 | PlayerSheetCombatTab | 577 | 210 | **−64%** |
+| **10** | **PlayerCreateModal** | **524** | **260** | **−50%** |
+| **Total** | **4 largest monoliths** | **2,176** | **835** | **−62% avg** |
+| **Total new reusable files** | | | **16** | **16 clean files** |
+
+### Final File Size Audit
+
+| Threshold | Count | Files |
+|:---------:|:-----:|-------|
+| > 500 lines | **0** | ✅ All eliminated |
+| 400-500 lines | **1** | LevelUpPanel (457) |
+| 300-400 lines | **8** | RestBreakdown, ConditionManager, CharacterStatsPanel, EnemyCreator, etc. |
+| < 300 lines | **85+** | All remaining clean components |
+
+No file now exceeds 500 lines — the original monolith problem is fully solved.
+
+### Next Phase: Feature QA & Testing (Sprints 11-15)
+
+For Sprint 11, target a feature flow for thorough quality assurance:
+- Encounter creation → monster addition → difficulty calculation
+- Level-up engine (HP, slots, features, ASI notifications)
+- Rest & Recovery (Short Rest / Long Rest with hit dice spending)
+- Inventory CRUD (add, equip, use, sell, delete items)
+- Skills & proficiency toggling with Firestore sync
+---
