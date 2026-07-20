@@ -1,45 +1,40 @@
 /**
- * STᚱ VTT — useFirestoreEntitySync (Real-Time Entity Sync)
+ * STᚱ VTT — useFirestoreEntitySync (Campaign Meta + Entities Sync)
  *
- * Bridges campaign entities (enemies, encounters, battleMaps, journal)
- * between Firestore and Zustand. This completes the real-time sync layer
- * for ALL campaign data.
+ * Bridges campaign entities (campaign meta, enemies, encounters,
+ * battleMaps, journal) between Firestore and Zustand.
+ *
+ * SYNCED COLLECTIONS (Sprint 5):
+ *   - campaign doc          → metaSlice.setMeta
+ *   - enemies subcollection → entitySlice.setEnemies
+ *   - encounters subcollection → entitySlice.setEncounters
+ *   - battleMaps subcollection → entitySlice.setBattleMaps
+ *   - journal subcollection → entitySlice.setJournal
  *
  * Architecture:
- *   Firestore ──(onSnapshot)──► useFirestoreEntitySync ──(setState)──► Zustand campaignStore
+ *   Firestore ──(onSnapshot)──► useFirestoreEntitySync ──(setState)──► Zustand campagnStore
  *   Entity mutations ──► useEntityMutations ──(setDoc)──► Firestore ◄──(onSnapshot)──► other tabs
- *
- * Syncs 4 collections:
- *   - enemies (CRUD via entity-service)
- *   - encounters (CRUD via entity-service)
- *   - battleMaps + mapTokens (CRUD via entity-service)
- *   - journal (CRUD via entity-service)
- *
- * FIX (Cycle 3): Previously, entitySlice.ts ONLY wrote to Zustand `set()`.
- * No Firestore writes happened for enemies, encounters, maps, or journal.
- * This hook adds the real-time listener subscriptions.
- *
- * MUST be mounted alongside useFirestoreSync in the auth gate.
  */
 
 import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
-import {
-  listenActiveEncounter,
-} from "@/lib/firestore-service";
 import { getFirestoreDb } from "@/lib/firebase";
-import { collection, onSnapshot, type Unsubscribe } from "firebase/firestore";
+import { collection, onSnapshot, doc, type Unsubscribe } from "firebase/firestore";
 import { fromFirestore, CAMPAIGN_COLLECTION } from "@/lib/firestore/helpers";
-import type { EnemyDoc, Encounter, BattleMap, MapToken, JournalEntry } from "@/types";
+import type { CampaignMeta, EnemyDoc, Encounter, BattleMap, MapToken, JournalEntry } from "@/types";
 import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 
 /**
- * Subscribes to real-time updates for ALL campaign entity collections.
- * Each entity type has its own subcollection listener.
+ * Subscribes to real-time updates for:
+ * - Campaign document (meta)
+ * - enemies subcollection
+ * - encounters subcollection
+ * - battleMaps subcollection
+ * - journal subcollection
  */
 export function useFirestoreEntitySync(): void {
   const mountedRef = useRef(false);
@@ -53,7 +48,9 @@ export function useFirestoreEntitySync(): void {
   const setFirebaseConnected = useAuthStore((s) => s.setFirebaseConnected);
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
 
-  // Store actions
+  // Store actions — campaign meta
+  const setMeta = useCampaignStore((s) => s.setMeta);
+  // Store actions — entities
   const setEnemies = useCampaignStore((s) => s.setEnemies);
   const setEncounters = useCampaignStore((s) => s.setEncounters);
   const setBattleMaps = useCampaignStore((s) => s.setBattleMaps);
@@ -83,6 +80,22 @@ export function useFirestoreEntitySync(): void {
         if (!mounted) return;
 
         const campaignPath = `${CAMPAIGN_COLLECTION}/${FALLBACK_CAMPAIGN_ID}`;
+
+        // ── Campaign Meta Listener ──
+        const unsubMeta = onSnapshot(
+          doc(db, CAMPAIGN_COLLECTION, FALLBACK_CAMPAIGN_ID),
+          (snap) => {
+            if (!mounted) return;
+            if (snap.exists()) {
+              const meta = fromFirestore<CampaignMeta>(snap.id, snap.data());
+              setMeta(meta);
+            }
+          },
+          (err) => {
+            console.warn("[Firestore/Entities/Meta] Listener error:", err);
+          }
+        );
+        unsubsRef.current.push(unsubMeta);
 
         // ── Enemies listener ──
         const unsubEnemies = onSnapshot(
@@ -148,12 +161,13 @@ export function useFirestoreEntitySync(): void {
         );
         unsubsRef.current.push(unsubJournal);
 
+        // Mark connected on first successful sync
         setFirebaseConnected(true);
         retryCountRef.current = 0;
       }).catch((err) => {
         console.warn("[Firestore/Entities] Failed to initialize:", err);
         if (!mounted) return;
-        // Retry logic: connection watchdog
+        // Retry on init failure
         if (retryCountRef.current < MAX_RETRIES) {
           retryCountRef.current++;
           retryTimeoutRef.current = setTimeout(subscribe, RETRY_DELAY_MS);
@@ -182,5 +196,5 @@ export function useFirestoreEntitySync(): void {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState, role, setEnemies, setEncounters, setBattleMaps, setMapTokens, setJournal, setFirebaseConnected]);
+  }, [authState, role, setMeta, setEnemies, setEncounters, setBattleMaps, setMapTokens, setJournal, setFirebaseConnected]);
 }

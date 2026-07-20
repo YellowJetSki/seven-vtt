@@ -26,6 +26,8 @@ import Header from "./Header";
 import MobileBottomNav from "./MobileBottomNav";
 import ToastContainer from "@/components/ui/ToastContainer";
 import DmQuickReferenceOverlay from "@/components/ui/DmQuickReferenceOverlay";
+import ConnectionBanner from "@/components/ui/ConnectionBanner";
+import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
 interface AppShellProps {
@@ -36,6 +38,7 @@ export default function AppShell({ children }: AppShellProps) {
   const showQuickRef = useUIStore((s) => s.showQuickRef);
   const toggleQuickRef = useUIStore((s) => s.toggleQuickRef);
   const setQuickRef = useUIStore((s) => s.setQuickRef);
+  const role = useAuthStore((s) => s.role);
 
   // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
   const handleToggleQuickRef = useCallback(() => {
@@ -67,8 +70,10 @@ export default function AppShell({ children }: AppShellProps) {
     <div className="h-screen w-screen overflow-hidden flex bg-obsidian-radial">
       {/* Atmospheric depth ring */}
       <div className="depth-ring fixed inset-0 pointer-events-none z-0" />
-      {/* Ambient particle overlay */}
-      <div className="fixed inset-0 bg-particle opacity-40 pointer-events-none z-0" />
+
+      {/* ── Connection Banner ──
+          Shows sync status for all authenticated sessions */}
+      {role && <ConnectionBanner />}
 
       {/* ── SIDEBAR ──
           Desktop: persistent side-rail, always visible

@@ -18,12 +18,39 @@ export async function setCampaignMeta(campaignId: string, meta: CampaignMeta): P
   await setDoc(doc(db, CAMPAIGN_COLLECTION, campaignId), toFirestore(meta), { merge: true });
 }
 
-export function listenCampaignMeta(campaignId: string, callback: (meta: CampaignMeta | null) => void): Unsubscribe {
-  return new Promise<Unsubscribe>(async (resolve) => {
-    const db = await getFirestoreDb();
-    const unsub = onSnapshot(doc(db, CAMPAIGN_COLLECTION, campaignId), (snap) => {
-      callback(snap.exists() ? fromFirestore<CampaignMeta>(snap.id, snap.data()) : null);
+/**
+ * Safe campaign meta listener — returns a sync Unsubscribe immediately.
+ * Uses the same `cancelled` guard pattern as the other service functions.
+ */
+export function listenCampaignMeta(
+  campaignId: string,
+  callback: (meta: CampaignMeta | null) => void
+): Unsubscribe {
+  let unsub: Unsubscribe | null = null;
+  let cancelled = false;
+
+  getFirestoreDb()
+    .then((db) => {
+      if (cancelled) return;
+      unsub = onSnapshot(
+        doc(db, CAMPAIGN_COLLECTION, campaignId),
+        (snap) => {
+          if (cancelled) return;
+          callback(snap.exists() ? fromFirestore<CampaignMeta>(snap.id, snap.data()) : null);
+        },
+        (err) => {
+          console.warn("[Firestore/CampaignMeta] Listener error:", err);
+          if (!cancelled) callback(null);
+        }
+      );
+    })
+    .catch((err) => {
+      console.warn("[Firestore/CampaignMeta] Init error:", err);
+      if (!cancelled) callback(null);
     });
-    resolve(unsub);
-  }) as unknown as Unsubscribe;
+
+  return () => {
+    cancelled = true;
+    if (unsub) unsub();
+  };
 }
