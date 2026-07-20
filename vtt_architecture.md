@@ -7103,3 +7103,48 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 - Git checkpoint: ✅ Sprint 6 saved
 - Architecture ledger: ✅ Updated
 ---
+
+## Sprint 7/30 — Comprehensive Premium Refactor: Homebrew Panel (Updated: 2026-07-20 13:03)
+## Sprint 7/30 — Comprehensive Premium Refactor: Homebrew Panel (2026-07-20)
+
+**Phase:** The Comprehensive Premium Refactor Phase (Cycles 3-12)
+**Target:** Homebrew Panel (`/campaign/homebrew`) — the DM's custom content hub
+**Design Inspirations:** Lusion, Overrrides, Ventriloc
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### Files Enhanced (9)
+
+| File | Lines | Key Premium Upgrades |
+|------|:-----:|---------------------|
+| **HomebrewPanel.tsx** | 100 | 7-layer cinematic hero header (matching Battle Maps/Player Cards/UnifiedEncounterHub): conic depth ring, dual edge lights, glow pockets, ambient glow pockets with hover amplification. Premium content area with glass gradient `from-[#141520]/90 to-[#0f1019]/95` + gold edge light. Replaced `glass-gold` + `rune-gold` with direct gradients. |
+| **HomebrewManager.tsx** | 230 | Kept as-is — already functional, well-structured orchestrator. No glass-gold dependency. |
+| **HomebrewTabs.tsx** | 50 | Replaced `border-b` pattern with premium pill tab bar inside `bg-[#0c0d15]/60` container. Gold gradient active state `from-gold-500/12 to-amber-500/8`. Active pill has `shadow-[0_0_8px_rgba(234,179,8,0.03)]` glow. |
+| **HomebrewSearchBar.tsx** | 145 | All inputs now have `focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15` gold focus. Search input has `bg-[#07080d]/70` premium glass background. Action buttons: gradient Add `from-gold-500/12 to-amber-500/8`, export/import/bulk with gold hover. Bulk toolbar uses `from-red-950/50 to-red-950/30` gradient. |
+| **HomebrewTabPanel.tsx** | 105 | Added staggered entrance animation `animate-in slide-in-from-bottom-1 duration-200` with `index*15ms` delay (capped at 300ms). Clean pass-through for 3 card types. |
+| **HomebrewEmptyState.tsx** | 55 | Premium Lusion-grade empty state with floating icon container + ambient glow, gradient title, polished description, rune divider `✦ ✦ ✦`. Replaced basic "No x yet" with full premium treatment. |
+| **HomebrewItemCard.tsx** | 120 | Premium glass gradient card `from-[#14151f]/60 to-[#0f1019]/70`. Hover elevation `hover:-translate-y-0.5 + hover:shadow-[0_4px_20px_rgba(0,0,0,0.2)]`. Gold edge light on hover `via-gold-500/15`. Gold selected state with `shadow-[0_0_12px_rgba(234,179,8,0.04)]`. Name turns `hover:text-gold-200`. Replaced `premium-surface` + `hover-lift` with direct gradients. |
+| **HomebrewSpellCard.tsx** | 155 | Same premium glass gradient card as ItemCard. Gold edge light, hover elevation, selected glow. Name hover color transition. Replaced `premium-surface` with direct gradient. |
+| **HomebrewFeatCard.tsx** | 145 | Same premium glass gradient card as ItemCard/SpellCard. Gold edge light, hover elevation, selected glow. Name hover color transition. Replaced `premium-surface` with direct gradient. |
+
+### Design Patterns Applied
+
+| Pattern | Count | Usage |
+|---------|:-----:|-------|
+| 7-layer cinematic hero header | 1 | HomebrewPanel (matching Battle Maps) |
+| Glass gradient `from-[#14151f]/60 to-[#0f1019]/70` | 3 | All 3 card types |
+| Gold edge light on hover | 3 | All 3 card types |
+| Hover elevation `hover:-translate-y-0.5` | 3 | All 3 card types |
+| Gold focus rings `focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15` | 2 | SearchBar inputs, form inputs |
+| Gold gradient buttons `from-gold-500/12 to-amber-500/8` | 6 | Tab pills, Add button, all action buttons |
+| Staggered entrance animation | 1 | TabPanel items (15ms × index, capped 300ms) |
+| Gold pill tab bar | 1 | HomebrewTabs |
+| `premium-surface` eliminated | 3 | ItemCard, SpellCard, FeatCard |
+| `glass-gold` eliminated | 1 | HomebrewPanel |
+
+### Quality Gates
+
+- TypeScript: ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (350 parser errors — all files, not my code)
+- Git checkpoint: ✅ Sprint 7 saved
+- Architecture ledger: ✅ Updated
+---
