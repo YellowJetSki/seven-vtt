@@ -9,8 +9,7 @@ import PlayerSheetPage from "./pages/PlayerSheetPage";
 import DmDashboard from "./pages/DmDashboard";
 import PlayerCards from "./pages/PlayerCards";
 import HomebrewPanel from "./pages/HomebrewPanel";
-import Encounters from "./pages/Encounters";
-import DmEnemies from "./pages/DmEnemies";
+import UnifiedEncounterHub from "./pages/UnifiedEncounterHub";
 import BattleMaps from "./pages/BattleMaps";
 import DmJournal from "./pages/DmJournal";
 import CampaignSettings from "./pages/CampaignSettings";
@@ -50,8 +49,8 @@ export default function App() {
       <Route path="/campaign/dashboard" element={<AuthGuard requiredRole="dm"><DmDashboard /></AuthGuard>} />
       <Route path="/campaign/player-cards" element={<AuthGuard requiredRole="dm"><PlayerCards /></AuthGuard>} />
       <Route path="/campaign/homebrew" element={<AuthGuard requiredRole="dm"><HomebrewPanel /></AuthGuard>} />
-      <Route path="/campaign/encounters" element={<AuthGuard requiredRole="dm"><Encounters /></AuthGuard>} />
-      <Route path="/campaign/enemies" element={<AuthGuard requiredRole="dm"><DmEnemies /></AuthGuard>} />
+      <Route path="/campaign/encounters" element={<AuthGuard requiredRole="dm"><UnifiedEncounterHub /></AuthGuard>} />
+      <Route path="/campaign/enemies" element={<Navigate to="/campaign/encounters" replace />} />
       <Route path="/campaign/maps" element={<AuthGuard requiredRole="dm"><BattleMaps /></AuthGuard>} />
       <Route path="/campaign/journal" element={<AuthGuard requiredRole="dm"><DmJournal /></AuthGuard>} />
       <Route path="/campaign/settings" element={<AuthGuard requiredRole="dm"><CampaignSettings /></AuthGuard>} />

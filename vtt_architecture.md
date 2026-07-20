@@ -5037,3 +5037,89 @@ DM clicks "⚙ Manage" on player card
 | MapCreatorModal map picker | ✅ Uses `imageUrl || svg` for PNG support |
 | ESLint hygiene | 287 parser errors — all pre-existing ESLint config issue (TSX/JS mismatch), not code errors. `tsc` = 0 errors. |
 ---
+
+## Sprint 2/4 — NPC & Encounter Tab Merger (2026-07-20) (Updated: 2026-07-20 08:43)
+## Sprint 2/4 — NPC & Encounter Tab Merger: Unified Encounter Hub (2026-07-20)
+**Date:** 2026-07-20
+**Phase:** DM Tools, Assets & Encounter — Cycle 2 of 4
+**Deployed:** arkla.vercel.app
+
+### Mission
+Merge the Encounter tab and NPC Library tab into a single unified system. DMs can browse monsters AND manage encounters in one workflow.
+
+### Architecture: Unified Two-Panel System
+
+```
+UnifiedEncounterHub.tsx (page orchestrator)
+├── Glass-gold header: "Bestiary & Encounters"
+├── Tab bar: Bestiary (Monsters) | Encounters (X)
+└── Content area (tab-switched):
+    ├── BestiaryPanel.tsx
+    │   ├── Stats bar (CR buckets, type count)
+    │   ├── Search + Quick Create
+    │   ├── EnemyList (grid with "+ Add" button per card)
+    │   ├── EnemyStatblock (modal on click)
+    │   └── EnemyQuickCreate (modal)
+    └── EncounterComposer.tsx
+        ├── Encounter selector header (+ New button)
+        ├── Inline create form
+        ├── Encounter list (scrollable, selectable)
+        └── Detail panel: difficulty, XP, enemy group +/- controls, Launch button
+```
+
+### Route Changes
+| Route | Before | After |
+|-------|--------|-------|
+| `/campaign/encounters` | `Encounters.tsx` (standalone) | `UnifiedEncounterHub.tsx` |
+| `/campaign/enemies` | `DmEnemies.tsx` (standalone) | Redirect → `/campaign/encounters` |
+
+### Nav Changes
+| Nav Item | Before | After |
+|----------|--------|-------|
+| Sidebar: "Encounters" | ⚔ → `/campaign/encounters` | ⚔ → `/campaign/encounters` (label: "Bestiary & Encounters") |
+| Sidebar: "NPC Library" | 👾 → `/campaign/enemies` | **Removed** (redirected to unified page) |
+
+### New Files Created (3)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `BestiaryPanel.tsx` | 130 | Monster browser panel with search, quick-create, statblock, and "Add to Encounter" button on each card |
+| `EncounterComposer.tsx` | 290 | Encounter manager panel with create, select, enemy group +/- controls, live difficulty, and Launch |
+| `UnifiedEncounterHub.tsx` | 140 | Two-panel orchestrator page with tab switching |
+
+### Files Modified (3)
+| File | Key Changes |
+|------|-------------|
+| `App.tsx` | Replaced `Encounters.tsx` + `DmEnemies.tsx` imports with `UnifiedEncounterHub.tsx`. Route `/campaign/enemies` now redirects to `/campaign/encounters`. |
+| `Sidebar.tsx` | Merged "Encounters" + "NPC Library" into single "Bestiary & Encounters" nav item. |
+| `EnemyList.tsx` | Added `searchQuery`, `onAddToEncounter`, `encounterContextLabel` props. "Add to Encounter" button appears on hover. |
+
+### DM Workflow (Complete)
+```
+DM wants to build an encounter:
+  1. Opens "Bestiary & Encounters" page
+  2. Bestiary tab: browses/search monsters, clicks to view statblocks
+  3. Clicks "+ Add" on a monster → switches to Encounters tab
+     (or creates encounter first, then adds monsters)
+  4. Encounters tab: sees selected encounter with monster groups
+  5. Uses +/- buttons to adjust monster counts
+  6. Sees live difficulty (Easy/Medium/Hard/Deadly), XP, CR range
+  7. Clicks "Launch Encounter" → navigates to Battle Maps
+
+All CR calculations use the existing lib/mechanics/encounter-cr.ts engine.
+```
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** (2004 modules) |
+| Vite production build | ✅ **7.48s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.20s build |
+| ESLint hygiene | 290 errors — all pre-existing parser config issue (TSX/JS mismatch), no new code errors |
+| Page renders | ✅ `/campaign/encounters` loads with unified header |
+| Old route redirects | ✅ `/campaign/enemies` → `/campaign/encounters` |
+
+### Removed Dependencies
+- `pages/DmEnemies.tsx` — No longer imported by router (but preserved as file for reference)
+- `pages/Encounters.tsx` — No longer imported by router (but preserved as file for reference)
+- Sidebar had duplicate nav items — now single "Bestiary & Encounters"
+---

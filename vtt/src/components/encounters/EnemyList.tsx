@@ -14,6 +14,12 @@ interface EnemyListProps {
   onSelect: (enemy: EnemyDoc) => void;
   onQuickCreate: () => void;
   onDuplicate: (enemy: EnemyDoc) => void;
+  /** External search query from parent (e.g. BestiaryPanel search bar) */
+  searchQuery?: string;
+  /** If set, shows "Add to Encounter" button on each card */
+  onAddToEncounter?: (enemyId: string) => void;
+  /** Label for the encounter context (e.g. "Goblin Ambush") */
+  encounterContextLabel?: string;
 }
 
 const CREATURE_TYPES = [
@@ -34,8 +40,13 @@ function getCrSortValue(cr: number): number {
   return cr;
 }
 
-export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicate }: EnemyListProps) {
-  const [search, setSearch] = useState("");
+export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicate, searchQuery, onAddToEncounter, encounterContextLabel }: EnemyListProps) {
+  const [search, setSearch] = useState(searchQuery || "");
+
+  // Sync external searchQuery with internal state
+  if (searchQuery !== undefined && searchQuery !== search) {
+    setSearch(searchQuery);
+  }
   const [typeFilter, setTypeFilter] = useState("All");
   const [crMin, setCrMin] = useState<number>(0);
   const [crMax, setCrMax] = useState<number>(30);
@@ -276,6 +287,17 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
                       </div>
                     )}
                   </div>
+
+                  {/* Add to Encounter button */}
+                  {onAddToEncounter && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onAddToEncounter(enemy.id); }}
+                      className="shrink-0 self-start mt-0.5 px-1.5 py-1 rounded text-[8px] font-semibold bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/12 active:scale-90 transition-all opacity-0 group-hover:opacity-100"
+                      title={encounterContextLabel ? `Add to "${encounterContextLabel}"` : "Add to encounter"}
+                    >
+                      + Add
+                    </button>
+                  )}
                 </div>
               </button>
             ))}
