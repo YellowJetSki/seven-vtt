@@ -411,6 +411,8 @@ async function main() {
       ],
       experienceSystem: "xp",
       currencyName: "Assarions (Gold)",
+      joinCode: "ARKLA1",
+      joinCodeExpiresAt: NOW + 86400000,
       privateDmNotes: [
         "MAJOR PLOT POINTS:",
         "1. The Lizard Emblem — connects Wendys belt, Toerns pin, the strange coin. Represents the Lacerta, an ancient reptilian order.",
@@ -522,10 +524,34 @@ async function main() {
   });
   console.log("✅ liveSessions/arkla — written");
 
+  // ── Write presence entries (subcollection of campaign) ──
+  await firestoreSet("campaigns/arkla/presence", wendy.id, {
+    data: {
+      characterId: wendy.id,
+      playerName: "Gina",
+      role: "player",
+      lastSeen: NOW,
+      sessionId: `session_${wendy.id}`,
+    },
+  });
+  console.log("✅ presence/wendy — written");
+  await firestoreSet("campaigns/arkla/presence", kehrfuffle.id, {
+    data: {
+      characterId: kehrfuffle.id,
+      playerName: "James",
+      role: "player",
+      lastSeen: NOW,
+      sessionId: `session_${kehrfuffle.id}`,
+    },
+  });
+  console.log("✅ presence/kehrfuffle — written");
+
   console.log("\n✨ Emulator seed complete!");
   console.log("   Auth user: mikejalow@gmail.com / Jello1");
   console.log("   Campaign: The Arkla Chronicles");
   console.log("   Characters: 4");
+  console.log("   Presence: Wendy, Kehrfuffle");
+  console.log("   Join code: ARKLA1 (24h expire)");
   console.log("   Log in at http://localhost:5173 with MikeJello / Jello1");
 }
 

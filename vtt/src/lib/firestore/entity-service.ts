@@ -148,6 +148,31 @@ export async function setJournalEntry(campaignId: string, entryId: string, entry
   await setDoc(doc(db, journalPath(campaignId), entryId), toFirestore(entry), { merge: true });
 }
 
+// ── Generic Entity Set (for offline queue replay) ────────────
+
+const COLLECTION_MAP: Record<string, string> = {
+  enemies: "enemies",
+  encounters: "encounters",
+  battleMaps: "maps",
+  journal: "journal",
+  characters: "characters",
+};
+
+/**
+ * Generic entity setter for offline queue replay.
+ * Resolves collection path from a friendly name (e.g., "enemies" → "/enemies").
+ */
+export async function setEntity(
+  campaignId: string,
+  entityId: string,
+  collectionName: string,
+  data: unknown
+): Promise<void> {
+  const db = await getFirestoreDb();
+  const col = COLLECTION_MAP[collectionName] || collectionName;
+  await setDoc(doc(db, `${CAMPAIGN_COLLECTION}/${campaignId}/${col}`, entityId), toFirestore(data as Record<string, unknown>), { merge: true });
+}
+
 // ── Batch / Utility ───────────────────────────────────────────
 
 export async function clearSubcollection(campaignId: string, subcollection: string): Promise<void> {
