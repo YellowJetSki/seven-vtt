@@ -22,6 +22,7 @@ export default function LoginPage() {
   const authState = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
   const login = useAuthStore((s) => s.login);
+  const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -255,6 +256,22 @@ export default function LoginPage() {
                 <div className="relative bg-gradient-to-b from-[#14151f]/[0.92] to-[#0f101a]/[0.95] backdrop-blur-2xl border border-white/[0.06] rounded-2xl p-8 sm:p-10 shadow-[0_32px_80px_rgba(0,0,0,0.55),0_8px_24px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,215,0,0.03)_inset,0_1px_0_rgba(255,255,255,0.03)_inset]">
                   {/* Subtle gold edge light */}
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
+
+                  {/* Connection status indicator */}
+                  <div className="flex items-center justify-start gap-2 mb-4">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        firebaseConnected
+                          ? "bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]"
+                          : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)] animate-pulse"
+                      }`}
+                    />
+                    <span className={`text-[9px] uppercase tracking-wider ${
+                      firebaseConnected ? "text-emerald-400/50" : "text-amber-400/50"
+                    }`}>
+                      {firebaseConnected ? "Campaign Online" : "Connecting to campaign..."}
+                    </span>
+                  </div>
 
                   {/* Card Header */}
                   <div className="mb-8">

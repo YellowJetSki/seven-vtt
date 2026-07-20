@@ -21,6 +21,27 @@ import { useUIStore } from "@/stores/uiStore";
 import { useResponsive } from "@/hooks/useResponsive";
 import CompendiumDrawer from "./CompendiumDrawer";
 
+/** Tiny connection dot for the Header — visual at-a-glance sync status */
+function ConnectionDot() {
+  const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
+  return (
+    <div className="flex items-center gap-1.5 px-1.5" title={firebaseConnected ? "Synced" : "Connecting..."}>
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${
+          firebaseConnected
+            ? "bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]"
+            : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)] animate-pulse"
+        }`}
+      />
+      <span className={`hidden sm:block text-[8px] uppercase tracking-[0.15em] font-medium ${
+        firebaseConnected ? "text-emerald-500/50" : "text-amber-500/50"
+      }`}>
+        {firebaseConnected ? "Live" : "Sync"}
+      </span>
+    </div>
+  );
+}
+
 export default function Header() {
   const username = useAuthStore((s) => s.username);
   const role = useAuthStore((s) => s.role);
@@ -108,6 +129,9 @@ export default function Header() {
         {/* ── RIGHT GROUP ── */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           <CompendiumDrawer />
+
+          {/* Firebase connection status */}
+          <ConnectionDot />
 
           {/* Role badge — glass inset */}
           <div
