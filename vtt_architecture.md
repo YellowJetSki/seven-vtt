@@ -6386,3 +6386,96 @@ The VTT has been fully modernized across all 5 phases with:
 - **Player Mechanics** (Sprites 16-20): Inventory, spellbook, combat tab, spell slot ecosystem, **final polish**
 
 ---
+
+## Sprint 21/25 — Premium Battlemap Overhaul: Rapid DM Token HP Popover (Updated: 2026-07-20 11:40)
+## Sprint 21/25 — Premium Battlemap Overhaul: Rapid DM Token HP Popover (2026-07-20)
+
+**Phase:** Premium Battlemap Overhaul Phase (Cycle 1 of 5)
+**Target:** Build rapid DM token HP manipulation tool — click token on canvas → instant glass popover for HP adjustment without opening full character sheets.
+
+---
+
+### New Files Created (1)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/control-center/TokenHpPopover.tsx` | ~420 | Premium floating glass popover for instant HP manipulation. Gold glass card with edge light + directional glow. Features: token icon + label + type badge, color-coded HP bar (emerald→amber→red), quick buttons (-10/-5/-1/+1/+5/+10), custom "Set HP" input, status effect dots, status label (Healthy/Bloodied/Critical/Dead), Esc/click-outside dismiss, viewport clamping, staggered entrance animation (0ms→40ms→80ms→120ms→160ms→200ms). |
+
+### Files Modified (3)
+
+| File | Lines | Key Changes |
+|------|:-----:|:------------|
+| `useDmControlCenter.ts` | ~185 | Added Cycle 21 state: `hpPopoverToken`, `hpPopoverPosition`, `handleTokenClickEx()` (enhanced click handler with position tracking), `handleCloseHpPopover()`, `handleHpChangeFromPopover()` (writes to Zustand + Firestore instantly). |
+| `DmControlCenter.tsx` | ~165 | Integrated `TokenHpPopover` — renders when `hpPopoverToken` is set, positioned at canvas click coordinates. Enhanced `handleCanvasTokenClick` callback. |
+| `CanvasMapView.tsx` | ~235 | Updated `onTokenClick` signature to pass `clientX/clientY` for precise popover positioning. Enhanced `handleClick` passes native `MouseEvent` coordinates. |
+
+### Architecture — Token HP Popover Data Flow
+
+```
+DM clicks token on canvas
+  └─► CanvasMapView.handleClick(e)
+      └─► onTokenClick(token, e.clientX, e.clientY)
+          └─► DmControlCenter.handleCanvasTokenClick(token, x, y)
+              └─► useDmControlCenter.handleTokenClickEx(token, x, y)
+                  ├─► setHpPopoverPosition({ top: y - 20, left: x - 20 })
+                  ├─► setHpPopoverToken(token)
+                  └─► handleTokenClick(token) // also opens inspector
+
+TokenHpPopover renders at {top, left} with glass card
+  ├─► DM clicks "-5" → handleDamage(5) → applyHp(hpCurrent - 5)
+  │   └─► onHpChange(token.id, clamped, hpMax)
+  │       └─► useDmControlCenter.handleHpChangeFromPopover(id, current, max)
+  │           └─► updateToken(tokenId, { hp: { current, max } })
+  │               ├─► Zustand (instant UI update)
+  │               └─► Firestore (async via useTokenMutations)
+  ├─► DM presses Escape → setAnimPhase("exiting") → setTimeout(onClose, 150)
+  └─► DM clicks outside → mousedown listener → same exit flow
+
+Viewport clamping: left = max(8, min(pos.left, window.innerWidth - 340))
+                   top = max(8, min(pos.top, window.innerHeight - 420))
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (2033 modules) |
+| Vite production build | ✅ **7.99s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.14s build |
+| Component isolation | ✅ `TokenHpPopover.tsx` = ~420 lines (single file, self-contained) |
+| No breaking changes | ✅ All existing components continue to work (`CanvasMapView` has enhanced prop interface but is backward-compatible) |
+| Premium design tokens | ✅ Gold glass card, edge light, directional glow, staggered entrance, color-coded HP bar |
+
+### Token HP Popover UI Layout
+
+```
+┌─ Gold glass card (w-[320px]) ──────────────────────────┐
+│ ─── Edge light gradient ─────────────────────────────── │
+│                                                         │
+│  [icon] Token Label [player]         [Health]   [✕]    │
+│         type="player" badge          status label       │
+│                                                         │
+│  HP ────────────────────────────────── 32 / 44          │
+│  ▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░  (emerald gradient bar)   │
+│                                                         │
+│  [-10]  [-5]  [-1]  [+1]  [+5]  (red→green gradient)  │
+│                                                         │
+│  [+10 Heal]                    [✎ Set HP]               │
+│                                                         │
+│  Effects: ● ● ● (status dots)                          │
+│                                                         │
+│  Pos: (15, 8)  Speed: 30ft  Init: +2  Tap outside→     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Token HP Popover HP Color Thresholds
+
+| Ratio | HP Bar Color | HP Text Color | Status Label |
+|:-----:|:-----------:|:-------------:|:-----------:|
+| > 75% | `bg-emerald-500` | `text-emerald-400` | Healthy |
+| > 50% | `bg-emerald-400` | `text-emerald-300` | Scratched |
+| > 25% | `bg-amber-500` | `text-amber-400` | Bloodied |
+| > 0% | `bg-red-500` | `text-red-400` | Critical |
+| = 0% | `bg-rose-500` | `text-rose-500` | Dead |
+
+---
