@@ -34,6 +34,15 @@ import {
   formatDiceRoll,
   type AttackResultType,
 } from "@/lib/combat/attack-engine";
+import {
+  applyDamageTypes,
+  getDamageEffectColor,
+  getDamageEffectLabel,
+  formatDamageType,
+  type DamageApplicationResult,
+  type DamageEffect,
+} from "@/lib/combat/damage-type-engine";
+import { getCombatantDefenses } from "@/lib/combat/typed-damage-engine";
 import type { Combatant, EnemyAttack, EnemyDoc } from "@/types";
 
 interface AttackResolutionPopoverProps {
@@ -142,6 +151,12 @@ export default function AttackResolutionPopover({
   const [isResolving, setIsResolving] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [resistanceInfo, setResistanceInfo] = useState<{
+    rawDamage: number;
+    finalDamage: number;
+    effect: DamageEffect;
+    explanation: string;
+  } | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Reset on open
@@ -276,6 +291,31 @@ export default function AttackResolutionPopover({
       selectedAttack.secondaryDamage
     );
 
+    // Compute resistance-applied damage for display
+    if (result.attackRoll.hit && result.damageRoll && targetCombatant) {
+      const defenses = getCombatantDefenses(targetCombatant, enemies);
+      const { results, totalFinalDamage } = applyDamageTypes(
+        result.totalDamage,
+        [selectedAttack.damageType],
+        defenses.resistances,
+        defenses.immunities,
+        defenses.vulnerabilities
+      );
+
+      if (results.length > 0) {
+        setResistanceInfo({
+          rawDamage: result.totalDamage,
+          finalDamage: totalFinalDamage,
+          effect: results[0].effect,
+          explanation: results[0].explanation,
+        });
+        // Override the result's totalDamage with resistance-applied value
+        result.totalDamage = totalFinalDamage;
+      }
+    } else {
+      setResistanceInfo(null);
+    }
+
     // Animate after a brief delay (simulating the die rolling)
     setTimeout(() => {
       setAttackResult(result);
@@ -283,14 +323,18 @@ export default function AttackResolutionPopover({
       // Keep the "rolling" visual for a moment
       setTimeout(() => setIsAnimating(false), 200);
     }, 500);
-  }, [selectedAttacker, selectedAttack, targetCombatant, targetAC]);
+  }, [selectedAttacker, selectedAttack, targetCombatant, targetAC, enemies]);
 
   // ── Handle Apply Damage ──
   const handleApplyDamage = useCallback(() => {
     if (!attackResult || !selectedAttacker || !targetCombatant) return;
 
-    if (attackResult.attackRoll.hit && attackResult.totalDamage > 0) {
-      damageCombatant(targetCombatant.id, attackResult.totalDamage);
+    if (attackResult.attackRoll.hit) {
+      // Use resistance-finalized damage if available
+      const damageToApply = resistanceInfo?.finalDamage ?? attackResult.totalDamage;
+      if (damageToApply > 0) {
+        damageCombatant(targetCombatant.id, damageToApply);
+      }
     }
 
     setApplied(true);
@@ -299,7 +343,7 @@ export default function AttackResolutionPopover({
     setTimeout(() => {
       onClose();
     }, 800);
-  }, [attackResult, selectedAttacker, targetCombatant, damageCombatant, onClose]);
+  }, [attackResult, selectedAttacker, targetCombatant, resistanceInfo, damageCombatant, onClose]);
 
   // ── Position ──
   const popoverStyle = position
@@ -653,6 +697,40 @@ export default function AttackResolutionPopover({
                       </span>
                     )}
                   </div>
+
+                  {/* ── Resistance/Vulnerability/Immunity Display ── */}
+                  {resistanceInfo && resistanceInfo.effect !== "standard" && (
+                    <div
+                      className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${
+                        resistanceInfo.effect === "immune"
+                          ? "bg-sky-500/8 border-sky-500/15"
+                          : resistanceInfo.effect === "resistance"
+                          ? "bg-emerald-500/8 border-emerald-500/15"
+                          : "bg-rose-500/8 border-rose-500/15"
+                      }`}
+                    >
+                      <span className="text-[10px]">
+                        {resistanceInfo.effect === "immune" ? "🛡️" : resistanceInfo.effect === "resistance" ? "½" : "×2"}
+                      </span>
+                      <div className="flex-1">
+                        <p className={`text-[8px] font-bold ${
+                          resistanceInfo.effect === "immune"
+                            ? "text-sky-400"
+                            : resistanceInfo.effect === "resistance"
+                            ? "text-emerald-400"
+                            : "text-rose-400"
+                        }`}>
+                          {resistanceInfo.effect === "immune" ? "Immune" : resistanceInfo.effect === "resistance" ? "Resistance" : "Vulnerability"}
+                        </p>
+                        <p className="text-[7px] text-surface-600 mt-0.5">
+                          {resistanceInfo.explanation}
+                        </p>
+                      </div>
+                      <span className="text-[9px] font-black tabular-nums text-surface-400">
+                        {resistanceInfo.rawDamage} → {resistanceInfo.finalDamage}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -664,7 +742,7 @@ export default function AttackResolutionPopover({
                 >
                   <span>⚔</span>
                   <span>
-                    Apply {attackResult.totalDamage} damage to {targetCombatant.name}
+                    Apply {resistanceInfo?.finalDamage ?? attackResult.totalDamage} damage to {targetCombatant.name}
                   </span>
                 </button>
               )}
@@ -677,7 +755,7 @@ export default function AttackResolutionPopover({
                 >
                   <p className="text-[10px] text-emerald-400 font-bold">✓ Damage applied!</p>
                   <p className="text-[8px] text-emerald-400/60 mt-0.5">
-                    {attackResult.totalDamage} damage dealt to {targetCombatant?.name}
+                    {resistanceInfo?.finalDamage ?? attackResult.totalDamage} damage dealt to {targetCombatant?.name}
                   </p>
                 </div>
               )}
