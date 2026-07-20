@@ -157,3 +157,25 @@
 .animate-empty-float-core { animation: empty-float-core 6s ease-in-out infinite; }
 .animate-empty-particle { animation: empty-particle-drift 3s ease-out infinite; }
 .animate-loading-progress { animation: loading-progress-fill 2s ease-in-out infinite; }
+
+// ── Premium Modal Keyframes ────────────────────────────────────
+
+@keyframes modal-card-enter {
+  0% { opacity: 0; transform: scale(0.92) translateY(16px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modal-content-enter {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+// ── Utility Classes ────────────────────────────────────────────
+.animate-modal-card-enter { animation: modal-card-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-modal-content-enter { animation: modal-content-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-in-fade { animation: slide-in-fade 0.2s ease-out both; }

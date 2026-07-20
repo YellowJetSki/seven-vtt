@@ -221,7 +221,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
   const isValid = name.trim().length > 0;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Create Player Character" size="lg" showRune>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Create Player Character" size="lg" showOrnaments>
       <div className="space-y-4 max-h-[70vh] overflow-y-auto scrollbar-gold px-1">
         {/* ── Name ── */}
         <div>

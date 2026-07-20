@@ -5424,3 +5424,50 @@ Layer 7: Action button area (0.2s)
 | ESLint (pre-existing misconfig) | 312 errors — all parser config, not code |
 | Console errors | ✅ 0 (only Firestore deprecation) |
 ---
+
+## Sprint 5/25 — Premium Modal Overhaul (Updated: 2026-07-20 10:16)
+## Sprint 5/25 — Premium Modal Overhaul (2026-07-20)
+
+### Mission
+Transform the Modal component into a Lusion/Ventriloc-grade premium overlay with multi-depth glass layers, staggered entrance animations, sophisticated micro-interactions, and cohesive design system integration.
+
+### File Rewritten (1)
+
+| File | Before (lines) | After (lines) | Key Changes |
+|------|:--------------:|:-------------:|-------------|
+| `components/ui/Modal.tsx` | 80 | 210 | Complete rewrite: 3-layer depth (backdrop → outer glow halo → glass card with gold edge), 4 staggered entrance keyframes (card-enter + 3 content-enter steps), premium close button with hover glow + 90° rotation spring, reusable sub-components (ModalBackdrop, ModalCloseButton, ModalOrnaments), subtitle support, headerAction slot, XL/Full sizes |
+
+### New Sub-Components (3)
+| Component | Lines | Purpose |
+|-----------|:-----:|---------|
+| `ModalBackdrop` | 35 | Dual-layer backdrop: deep blue-black base blur + ambient gold/amber glow orbs |
+| `ModalCloseButton` | 45 | Premium X button with hover glow ring + SVG morph + spring rotation |
+| `ModalOrnaments` | 30 | 4-corner rune ornaments as inline SVGs with rotation per corner |
+
+### New Keyframes (3)
+| Animation | Timing | Purpose |
+|-----------|--------|---------|
+| `modal-card-enter` | 0.35s cubic-bezier(0.16,1,0.3,1) | Card scale(0.92→1) + translateY(16→0) + opacity(0→1) |
+| `modal-content-enter` | 0.3s cubic-bezier(0.16,1,0.3,1) | Content translateY(8→0) + opacity(0→1) |
+| `slide-in-fade` | 0.2s ease-out | Backdrop opacity (0→1) |
+
+### Staggered Entrance Architecture
+```
+t=0.00s: Backdrop (slide-in-fade)
+t=0.05s: Card outer glow halo + glass card body (modal-card-enter)
+t=0.10s: Header area (modal-content-enter)
+t=0.15s: Content area (modal-content-enter)
+```
+
+### Breaking Change (Fixed)
+- `showRune` prop → `showOrnaments` (renamed for clarity, all consumers updated)
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ 0 errors (2014 modules) |
+| Vite Build | ✅ 8.17s |
+| Vercel Deploy | ✅ arkla.vercel.app |
+| ESLint (pre-existing) | 312 — all parser config, not code |
+| Console errors | ✅ 0 (only Firestore deprecation) |
+---
