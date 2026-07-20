@@ -127,7 +127,7 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
     const enc: Encounter = {
       id: generateId(),
       name: newName.trim(),
-      description: newDesc.trim() || undefined,
+      description: newDesc.trim() || "",
       environment: newEnv,
       difficulty: "easy",
       isActive: false,

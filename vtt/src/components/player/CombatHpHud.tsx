@@ -132,7 +132,10 @@ export default function CombatHpHud({ page = "player-cards" }: CombatHpHudProps)
   // ── Quick Heal All (short rest: heal 1 HD worth per character) ──
   const handleQuickHealAll = useCallback(() => {
     characters.forEach((c) => {
-      const avgHd = c.hitDice === 12 ? 7 : c.hitDice === 10 ? 6 : c.hitDice === 8 ? 5 : c.hitDice === 6 ? 4 : 5;
+      // hitDice is a string like "1d8" — extract the die size
+      const hdMatch = c.hitDice?.match(/d(\d+)/i);
+      const hdNum = hdMatch ? parseInt(hdMatch[1], 10) : 8;
+      const avgHd = hdNum >= 12 ? 7 : hdNum >= 10 ? 6 : hdNum >= 8 ? 5 : 4;
       const conMod = Math.floor((c.constitution - 10) / 2);
       const healAmount = avgHd + Math.max(0, conMod);
       const newCurrent = Math.min(c.hitPoints.max, c.hitPoints.current + healAmount);

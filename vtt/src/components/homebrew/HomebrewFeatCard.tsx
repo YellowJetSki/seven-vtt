@@ -74,7 +74,7 @@ export default function HomebrewFeatCard({
             )}
             {feat.prerequisites && feat.prerequisites.length > 0 && (
               <span className="text-[8px] text-surface-500">
-                Prereq: {feat.prerequisites.map((p) => `${ABILITY_LABELS[p.ability] || p.ability} ${p.minimumValue}`).join(", ")}
+                Prereq: {feat.prerequisites.map((p) => `${ABILITY_LABELS[(p.ability as keyof typeof ABILITY_LABELS)] || p.ability} ${p.minimumValue}`).join(", ")}
               </span>
             )}
           </div>

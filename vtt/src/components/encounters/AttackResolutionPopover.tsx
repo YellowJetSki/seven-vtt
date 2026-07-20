@@ -664,7 +664,7 @@ export default function AttackResolutionPopover({
 
                   {/* Die rolls */}
                   <div className="flex flex-wrap gap-1 mb-1.5">
-                    {attackResult.damageRoll.rolls.map((roll, i) => (
+                    {attackResult.damageRoll.rolls.map((roll: number, i: number) => (
                       <DamageDie
                         key={i}
                         value={roll}

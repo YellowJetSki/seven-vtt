@@ -23,7 +23,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatHpMutations } from "@/hooks/useCombatMutations";
-import type { AoEDamageResult } from "@/lib/combat/aoe-damage-engine";
 import {
   computeAoEDamage,
   type AoETargetResult,

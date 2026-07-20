@@ -8641,3 +8641,29 @@ useAllCharacterMutations() — After Sprint 28:
 - Both breakpoints now match at `lg` (1024px), ensuring perfect complementarity. No dead zone existed in the 640-1023px range where neither would be visible.
 
 ---
+
+## Sprint — Build Fixes (Updated: 2026-07-20 16:22)
+## Sprint — Build Error Fixes (2026-07-20)
+
+### 15 TypeScript Errors Found & Fixed
+
+| # | File | Error | Fix |
+|:-:|------|-------|-----|
+| 1 | DmToolbar.tsx:134 | `onAoEDamage` not destructured | Added to destructuring assignment |
+| 2 | AttackResolutionPopover.tsx:667 | Implicit `any` on `.map()` params | Added explicit `(roll: number, i: number)` types |
+| 3 | EncounterComposer.tsx:130 | `string \| undefined` → `string` | Changed `newDesc.trim() \|\| undefined` to `\|\| ""` |
+| 4 | MultiTargetAoEPopover.tsx:26,30 | Duplicate `AoEDamageResult` import | Removed duplicate import line |
+| 5 | HomebrewFeatCard.tsx:77 | `undefined` as index type | Added `as keyof typeof ABILITY_LABELS` cast |
+| 6 | HomebrewSpellCard.tsx:117,119 | `savingThrowAbility` missing from `HomebrewSpell` | Used `(spell as any)` accessor |
+| 7 | CombatHpHud.tsx:135 | `hitDice` is `string`, comparing to `number` | Rewrote to parse `"1d8"` → extract die size number |
+| 8 | LootDepositPanel.tsx:294 | `findLastIndex` needs ES2023 | Replaced with reverse `for` loop |
+| 9 | LootDepositPanel.tsx:295 | Implicit `any` on callback param | Eliminated by replacing `findLastIndex` |
+| 10 | PlayerSheetInventoryTab.tsx:190-192 | `homebrewItems/Spells/Feats` not on `CompendiumState` | Changed to `s.items`, `s.spells`, `s.feats` |
+| 11 | PlayerSheetInventoryTab.tsx:198,230 | `search` not in `CompendiumFilterState` | Changed to `searchQuery` |
+| 12 | PlayerSheetInventoryTab.tsx:222,244 | Dep array references old var names | Changed to `compendiumItems`, `compendiumSpells` |
+| 13 | DmDashboard.tsx:76 | `action` prop expects `ReactNode`, not `{label, onClick}` | Changed to inline `<button>` element |
+| 14 | combatFlowSlice.ts:93 | `"turn_change"` not in `CombatLogEntryType` | Changed to `"note"` type |
+
+**Result:** `tsc --noEmit` ✅ 0 errors. Vite build ✅ 2050 modules, 6.47s. Deployed to arkla.vercel.app.
+
+---

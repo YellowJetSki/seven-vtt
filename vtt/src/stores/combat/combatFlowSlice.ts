@@ -90,7 +90,7 @@ export const createCombatFlowSlice: StateCreator<CombatSlice & CombatFlowSlice, 
         );
       } else if (nextIndex !== currentCombatantIndex) {
         entries.push(
-          createLogEntry("turn_change", combatants[nextIndex]?.id || "system", combatants[nextIndex]?.name || "Unknown", {
+          createLogEntry("note", combatants[nextIndex]?.id || "system", combatants[nextIndex]?.name || "Unknown", {
             description: `${combatants[nextIndex]?.name || "Unknown"}'s turn`,
           })
         );

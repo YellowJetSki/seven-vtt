@@ -291,9 +291,12 @@ export default function LootDepositPanel({ className = "" }: LootDepositPanelPro
 
       // Find and remove the last matching item from inventory
       const invCopy = [...char.inventory];
-      const itemIdx = invCopy.findLastIndex(
-        (i) => i.name === entry.itemName
-      );
+      const itemIdx = (() => {
+        for (let idx = invCopy.length - 1; idx >= 0; idx--) {
+          if (invCopy[idx].name === entry.itemName) return idx;
+        }
+        return -1;
+      })();
       if (itemIdx >= 0) {
         if (invCopy[itemIdx].quantity > entry.quantity && isConsumable(invCopy[itemIdx].name)) {
           invCopy[itemIdx] = {

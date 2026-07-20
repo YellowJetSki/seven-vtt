@@ -44,7 +44,7 @@ export default function DmToolbar({
   onAddPlayerToken,
   onAddEnemyToken,
   onBack,
-  onShare,
+  onShare, onAoEDamage,
 }: DmToolbarProps) {
   const isActive = (mode: PlacementMode) => placementMode === mode;
 

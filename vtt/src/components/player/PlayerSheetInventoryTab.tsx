@@ -187,20 +187,18 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
   // ── Compendium drop handlers (Drag-and-Drop) ──
   // FIX (Sprint 28): CompendiumDropTarget was previously never instantiated.
   // Now wraps the inventory list and resolves dropped items from the compendium catalog.
-  const homebrewItems = useCompendiumStore((s) => s.homebrewItems);
-  const homebrewSpells = useCompendiumStore((s) => s.homebrewSpells);
-  const homebrewFeats = useCompendiumStore((s) => s.homebrewFeats);
+  const compendiumItems = useCompendiumStore((s) => s.items);
+  const compendiumSpells = useCompendiumStore((s) => s.spells);
+  const compendiumFeats = useCompendiumStore((s) => s.feats);
 
   const handleDropCompendiumItem = useCallback(
     (_charId: string, itemId: string) => {
       // Try to resolve from SRD first, then homebrew
-      const allItems = getCompendiumItems(homebrewItems, {
-        search: itemId,
-        showHomebrewOnly: false,
+      const allItems = getCompendiumItems(compendiumItems, {
+        searchQuery: itemId,
         showSRD: true,
         categoryFilter: null,
         schoolFilter: null,
-        rarityFilter: null,
       });
       const resolvedItem = allItems.find(
         (i) => i.id === itemId || i.name.toLowerCase() === itemId.toLowerCase()
@@ -221,16 +219,15 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
         flash(`\uD83D\uDCE6 Added ${itemId}`);
       }
     },
-    [character, handleAddItem, homebrewItems, flash]
+    [character, handleAddItem, compendiumItems, flash]
   );
 
   const handleDropCompendiumSpell = useCallback(
     (_charId: string, spellId: string) => {
-      const allSpells = getCompendiumSpells(homebrewSpells, {
-        search: spellId,
-        showHomebrewOnly: false,
+      const allSpells = getCompendiumSpells(compendiumSpells, {
+        searchQuery: spellId,
         showSRD: true,
-        levelFilter: null,
+        categoryFilter: null,
         schoolFilter: null,
       });
       const resolvedSpell = allSpells.find(
@@ -244,7 +241,7 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
         }
       }
     },
-    [character, inventory, handleSetInventory, homebrewSpells, flash]
+    [character, inventory, handleSetInventory, compendiumSpells, flash]
   );
 
   const speedPenalty = 0;

@@ -73,7 +73,7 @@ export default function DmDashboard() {
             icon="🏰"
             title="Welcome to the Arkla Campaign"
             description="Forge your first campaign or awaken an ancient realm from slumber."
-            action={{ label: "Create Campaign", onClick: () => window.location.href = "/campaign/settings" }}
+            action={<button onClick={() => window.location.href = "/campaign/settings"} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-gold-500/12 to-amber-500/8 border border-gold-500/15 text-gold-400 hover:shadow-[0_0_24px_rgba(234,179,8,0.04)] transition-all duration-200 hover:-translate-y-0.5">Create Campaign</button>}
           />
         </DmScreenContainer>
       </AppShell>
