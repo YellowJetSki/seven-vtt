@@ -7812,3 +7812,64 @@ Now: After deploying → click "Roll Initiative" → animated d20 results appear
 | 17 | Encounter Launch Flow | One-click deploy of enemies as map tokens |
 | **18** | **Automated Initiative Roll** | **Animated d20 roll + 5e sorted turn order + combat auto-start** |
 ---
+
+## Sprint 19/30 — Attack Resolution Flow (Updated: 2026-07-20 13:36)
+## Sprint 19/30 — Real-Play D&D Mechanics: Attack Resolution & Damage Application Flow (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 7 OF 10
+**Target:** Automated attack resolution system — click token during combat, roll d20+ATK vs target AC, auto-apply damage
+
+### Problem Solved
+Before this sprint, the DM had to:
+1. Know the monster's attack bonus and damage dice (from EnemyDoc or statblock)
+2. Roll d20 + attack bonus mentally
+3. Compare to target AC manually
+4. Ask "Does a 17 hit?"
+5. Roll damage dice physically
+6. Manually click HP buttons (-5, -1, etc.) to apply damage
+
+Now: Click token → "⚔ Roll Attack" → select attack → select target → "Roll Attack" → animated d20 result → hit/miss/crit → auto-apply damage.
+
+### New Files Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/combat/attack-engine.ts` | 220 | Pure functions: `rollDie()`, `parseDiceExpression()`, `rollDamageExpression()`, `makeAttackRoll()` (5e RAW: nat20=crit, nat1=miss), `resolveAttack()`, `getEnemyAttacks()` (from EnemyDoc structured attacks or actions text), `formatDiceRoll()`, types (AttackRollResult, DamageRollResult, AttackResolutionResult) |
+| `components/encounters/AttackResolutionPopover.tsx` | 460 | Premium floating attack resolution tool. Features: attacker selector (combatant list), attack selector (from EnemyDoc with ATK/DMG/Range display), target selector (auto-filters enemies vs players based on attacker type), manual AC input toggle, "Roll Attack" button with 500ms rolling animation, animated d20 SVG result, damage die visualization, Apply Damage button (writes to combatStore), "Roll Another Attack" flow |
+
+### Files Modified (1)
+
+| File | Changes |
+|------|---------|
+| `TokenHpPopover.tsx` | Added `useCombatStore` import. Added `activeEncounter`, `combatants`, `matchingCombatant` derivation. Added "⚔ Roll Attack" button (only visible during active combat). Integrated `AttackResolutionPopover` component as overlay. |
+
+### Attack Resolution Features
+
+| Feature | Detail |
+|---------|--------|
+| **Attacker selector** | Dropdown of all combatants with type badges (🛡/👹/🧙) |
+| **Attack selector** | Reads structured attacks from EnemyDoc via `getEnemyAttacks()` |
+| **Attack fallback** | Parses `actions` textarea for statblocks; falls back to CR-based synthetic attacks |
+| **Target selector** | Auto-filters: enemies target players, players target enemies |
+| **Manual AC mode** | Toggle button for quick "what if" AC checks |
+| **d20 roll** | `rollD20() + attackBonus` with proper natural 20/1 handling |
+| **Critical hit** | Nat 20 = automatic hit + double damage dice |
+| **Critical miss** | Nat 1 = automatic miss |
+| **Damage rolls** | `parseDiceExpression("2d6+3")` → rolls dice + bonus |
+| **Damage die visualization** | Individual die SVG icons with color per die type |
+| **Die roll formula** | "5 + 3 + 2 = 10" human-readable breakdown |
+| **Apply damage** | Writes `damageCombatant(targetId, totalDamage)` to combatStore |
+| **Re-roll flow** | After applying, "Roll Another Attack" button resets for next round |
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 13 | Combat HP HUD | Floating HP management panel from Player Cards |
+| 14 | Loot Deposit Panel | Item/currency deposit with presets + undo |
+| 15 | Condition Quick-Toggle | 16-condition management with concentration tracker |
+| 16 | DM Quick Reference | 12-section rules overlay accessible from any page |
+| 17 | Encounter Launch Flow | One-click deploy of enemies as map tokens |
+| 18 | Automated Initiative Roll | Animated d20 roll + 5e sorted turn order |
+| **19** | **Attack Resolution & Damage** | **One-click attack roll, damage, and auto-apply** |
+---
