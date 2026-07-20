@@ -18,6 +18,8 @@ export interface CampaignSettings {
   allowedRaces: string[];
   allowedClasses: string[];
   currencyPreset: string;
+  joinCode?: string;
+  joinCodeExpiresAt?: number;
 }
 
 export interface CampaignStats {

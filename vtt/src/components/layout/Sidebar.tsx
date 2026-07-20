@@ -25,6 +25,7 @@ import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import SidebarBrand from "./SidebarBrand";
 import SidebarNavLink from "./SidebarNavLink";
 import SidebarFooter from "./SidebarFooter";
+import SyncHealthPanel from "@/components/ui/SyncHealthPanel";
 
 interface NavItem {
   path: string;
@@ -152,6 +153,25 @@ export default function Sidebar() {
               </span>
             )}
           </button>
+        </div>
+
+        {/* ── SYNC HEALTH ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          {sidebarOpen ? (
+            <SyncHealthPanel />
+          ) : (
+            <button
+              onClick={() => {
+                const event = new CustomEvent("toggle-sync-health");
+                window.dispatchEvent(event);
+              }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.04] hover:bg-white/[0.03] active:scale-95 transition-all duration-200"
+              title="System Status"
+              aria-label="Toggle System Status"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]" />
+            </button>
+          )}
         </div>
 
         {/* ── FOOTER ANCHOR ── */}

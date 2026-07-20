@@ -20,6 +20,7 @@ import XpSystemPicker from "@/components/campaign/XpSystemPicker";
 import RaceClassRestrictions from "@/components/campaign/RaceClassRestrictions";
 import DmNotesSection from "@/components/campaign/DmNotesSection";
 import CampaignStatsDashboard from "@/components/campaign/CampaignStatsDashboard";
+import JoinCodePanel from "@/components/campaign/JoinCodePanel";
 import type { CampaignMeta, CampaignSettings } from "@/types";
 
 export default function CampaignSettings() {
@@ -49,6 +50,8 @@ export default function CampaignSettings() {
     allowedRaces: [],
     allowedClasses: [],
     currencyPreset: "standard",
+    joinCode: "",
+    joinCodeExpiresAt: undefined,
   };
 
   const handleSaveMeta = useCallback((updates: Partial<CampaignMeta>) => {
@@ -131,6 +134,9 @@ export default function CampaignSettings() {
 
             {/* Character Creation */}
             <RaceClassRestrictions settings={settings} onSave={handleSaveSettings} />
+
+            {/* Join Code */}
+            <JoinCodePanel settings={settings} onSave={handleSaveSettings} />
 
             {/* DM Private Notes */}
             <DmNotesSection settings={settings} onSave={handleSaveSettings} />
