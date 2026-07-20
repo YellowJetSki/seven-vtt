@@ -26,6 +26,7 @@ import Header from "./Header";
 import MobileBottomNav from "./MobileBottomNav";
 import ToastContainer from "@/components/ui/ToastContainer";
 import DmQuickReferenceOverlay from "@/components/ui/DmQuickReferenceOverlay";
+import DmPartyRestOverlay from "@/components/control-center/DmPartyRestOverlay";
 import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -38,6 +39,8 @@ export default function AppShell({ children }: AppShellProps) {
   const showQuickRef = useUIStore((s) => s.showQuickRef);
   const toggleQuickRef = useUIStore((s) => s.toggleQuickRef);
   const setQuickRef = useUIStore((s) => s.setQuickRef);
+  const showPartyRest = useUIStore((s) => s.showPartyRest);
+  const setPartyRest = useUIStore((s) => s.setPartyRest);
   const role = useAuthStore((s) => s.role);
 
   // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
@@ -49,6 +52,16 @@ export default function AppShell({ children }: AppShellProps) {
     window.addEventListener("toggle-dm-quickref", handleToggleQuickRef);
     return () => window.removeEventListener("toggle-dm-quickref", handleToggleQuickRef);
   }, [handleToggleQuickRef]);
+
+  // ── Listen for custom "toggle-dm-party-rest" event from sidebar ──
+  const handleTogglePartyRest = useCallback(() => {
+    setPartyRest(!showPartyRest);
+  }, [setPartyRest, showPartyRest]);
+
+  useEffect(() => {
+    window.addEventListener("toggle-dm-party-rest", handleTogglePartyRest);
+    return () => window.removeEventListener("toggle-dm-party-rest", handleTogglePartyRest);
+  }, [handleTogglePartyRest]);
 
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
@@ -106,6 +119,15 @@ export default function AppShell({ children }: AppShellProps) {
         isOpen={showQuickRef}
         onClose={() => setQuickRef(false)}
       />
+
+      {/* ── DM Party Rest Overlay ──
+          Globally accessible — open from sidebar or keyboard shortcut */}
+      {role === "dm" && (
+        <DmPartyRestOverlay
+          isOpen={showPartyRest}
+          onClose={() => setPartyRest(false)}
+        />
+      )}
     </div>
   );
 }

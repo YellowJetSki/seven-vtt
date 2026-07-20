@@ -28,10 +28,9 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useRestMutations } from "@/hooks/useCharacterMutations";
 import type { PlayerCharacter } from "@/types";
 import {
-  applyShortRest,
-  applyLongRest,
   computeHitDiceTotal,
   computeAvailableHitDice,
   computeAvgHpPerDie,
@@ -130,7 +129,7 @@ function computeLongPreview(character: PlayerCharacter): {
 // ── Main Component ──
 export default function DmPartyRestOverlay({ isOpen, onClose }: DmPartyRestOverlayProps) {
   const characters = useCampaignStore((s) => s.characters);
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+  const { handleApplyShortRest, handleApplyLongRest } = useRestMutations();
   const [applyingShort, setApplyingShort] = useState(false);
   const [applyingLong, setApplyingLong] = useState(false);
   const [appliedShort, setAppliedShort] = useState(false);
@@ -148,10 +147,7 @@ export default function DmPartyRestOverlay({ isOpen, onClose }: DmPartyRestOverl
     setApplyingShort(true);
     setError(null);
     try {
-      for (const char of party) {
-        const result = applyShortRest(char, { hitDiceToSpend: Math.min(computeAvailableHitDice(char), computeHitDiceTotal(char)) });
-        updateCharacter(char.id, result);
-      }
+      handleApplyShortRest(party);
       setAppliedShort(true);
       setTimeout(() => { setAppliedShort(false); onClose(); }, 1500);
     } catch (err) {
@@ -159,17 +155,14 @@ export default function DmPartyRestOverlay({ isOpen, onClose }: DmPartyRestOverl
     } finally {
       setApplyingShort(false);
     }
-  }, [party, updateCharacter, onClose]);
+  }, [party, handleApplyShortRest, onClose]);
 
   // ── Apply Long Rest to ALL characters ──
   const handleLongRest = useCallback(async () => {
     setApplyingLong(true);
     setError(null);
     try {
-      for (const char of party) {
-        const result = applyLongRest(char);
-        updateCharacter(char.id, result);
-      }
+      handleApplyLongRest(party);
       setAppliedLong(true);
       setTimeout(() => { setAppliedLong(false); onClose(); }, 1500);
     } catch (err) {
@@ -177,7 +170,7 @@ export default function DmPartyRestOverlay({ isOpen, onClose }: DmPartyRestOverl
     } finally {
       setApplyingLong(false);
     }
-  }, [party, updateCharacter, onClose]);
+  }, [party, handleApplyLongRest, onClose]);
 
   if (!isOpen) return null;
 

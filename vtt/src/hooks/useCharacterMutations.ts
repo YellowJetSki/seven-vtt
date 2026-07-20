@@ -17,6 +17,12 @@ import { setCharacter } from "@/lib/firestore-service";
 import type { PlayerCharacter, SpellLevel, SpellSlotsFull, SpellSlots, InventoryItem } from "@/types";
 import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 import { castSpell, restoreSlots } from "@/lib/mechanics/spell-slot-engine";
+import {
+  applyShortRest,
+  applyLongRest,
+  computeHitDiceTotal,
+  computeAvailableHitDice,
+} from "@/lib/mechanics/rest-engine";
 
 /**
  * Writes a character update to both Zustand (instant) and Firestore (async).
@@ -581,6 +587,37 @@ export function useInventoryMutations() {
   };
 }
 
+// ── Rest Mutations (Sprint 25) ──
+
+export function useRestMutations() {
+  const write = useWriteCharacter();
+
+  const handleApplyShortRest = useCallback(
+    (characters: PlayerCharacter[]) => {
+      for (const char of characters) {
+        const totalHD = computeHitDiceTotal(char);
+        const availHD = computeAvailableHitDice(char);
+        const toSpend = Math.min(availHD, totalHD);
+        const result = applyShortRest(char, { hitDiceToSpend: toSpend });
+        write(char.id, result);
+      }
+    },
+    [write]
+  );
+
+  const handleApplyLongRest = useCallback(
+    (characters: PlayerCharacter[]) => {
+      for (const char of characters) {
+        const result = applyLongRest(char);
+        write(char.id, result);
+      }
+    },
+    [write]
+  );
+
+  return { handleApplyShortRest, handleApplyLongRest };
+}
+
 /**
  * Convenience hook that returns ALL character mutations.
  */
@@ -595,3 +632,4 @@ export function useAllCharacterMutations() {
     ...useInventoryMutations(),
   };
 }
+

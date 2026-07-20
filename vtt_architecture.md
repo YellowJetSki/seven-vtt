@@ -10228,3 +10228,55 @@ Built a complete Concentration Tracking system for the DM during live combat. Pr
 - Feature value: **~20 seconds saved per concentration check** (no mental math for DC, no separate app for d20)
 
 ---
+
+## Sprint 25/41 — Feature Expansion Phase (Cycle 6 of 10): Globally Accessible Party Rest Overlay (Updated: 2026-07-20 19:34)
+## Sprint 25/41 — Globally Accessible Party Rest Overlay
+
+### Summary
+Fixed a critical accessibility gap: the DM Party Rest Overlay was ONLY accessible from the Battle Map page (DmControlCenter). The DM had to navigate to Battle Maps to perform rest operations on party members. Now it's globally accessible from the sidebar on ANY page.
+
+### Architectural Changes
+
+| File | Change | Impact |
+|------|--------|--------|
+| `useCharacterMutations.ts` | Added `useRestMutations()` hook with `handleApplyShortRest()` and `handleApplyLongRest()` — both write to BOTH Zustand (instant) + Firestore (async via `useWriteCharacter`) | ✅ Fixes the Firestore sync gap. Previously, `DmPartyRestOverlay` used raw `updateCharacter()` which only wrote to Zustand. |
+| `DmPartyRestOverlay.tsx` | Replaced raw `updateCharacter` + `applyShortRest`/`applyLongRest` calls with `useRestMutations()` hook | ✅ Rest mutations now sync to Firestore |
+| `uiStore.ts` | Added `showPartyRest: boolean` state and `setPartyRest(show: boolean)` action | ✅ Enables global state management |
+| `AppShell.tsx` | Added `showPartyRest` state, event listener for `toggle-dm-party-rest`, renders `<DmPartyRestOverlay>` globally | ✅ Accessible from ANY page |
+| `Sidebar.tsx` | Added "😴 Party Rest" button between Quick Reference and Connected Players sections. Dispatches `toggle-dm-party-rest` custom event | ✅ One-click access from sidebar |
+
+### How It Works
+```
+DM clicks "😴 Party Rest" in sidebar (ANY page)
+  └─► window.dispatchEvent(new CustomEvent("toggle-dm-party-rest"))
+      └─► AppShell listener catches event
+          └─► setPartyRest(!showPartyRest)
+              └─► DmPartyRestOverlay renders globally
+                  ├─► Lists all party members with HP/HD/slot status
+                  ├─► Short Rest preview (HP healed, resources recharged)
+                  ├─► Long Rest preview (HP, HD recovered, slots restored)
+                  ├─► "😴 Short Rest" button → handleApplyShortRest(party)
+                  │   ├─► Zustand (instant UI update for ALL characters)
+                  │   └─► Firestore (async batch sync via useWriteCharacter)
+                  └─► "🛌 Long Rest" button → handleApplyLongRest(party)
+```
+
+### 5e RAW Implementation
+| Feature | Rule | Implementation |
+|---------|------|----------------|
+| **Short Rest** | PHB pg. 186: Spend hit dice, regain HP, recharge short-rest resources | Spends ALL available HD (up to total), applies avg HP per die, auto-recharges short-rest features |
+| **Long Rest** | PHB pg. 186: Full HP, all HD recovered (half level, min 1), all spell slots restored, all features recharged | Full HP recovery, HD recovered = max(1, floor(level/2)), all slots at max, all resources at max |
+
+### Files Modified (5)
+- `hooks/useCharacterMutations.ts` — Added `useRestMutations()` with 2 Firestore-synced mutation functions
+- `components/control-center/DmPartyRestOverlay.tsx` — Replaced raw Zustand writes with hook
+- `stores/uiStore.ts` — Added `showPartyRest` state
+- `components/layout/AppShell.tsx` — Global listener + overlay rendering
+- `components/layout/Sidebar.tsx` — Added Party Rest sidebar button
+
+### Key Metrics
+- `tsc --noEmit`: ✅ 0 errors
+- Zero new ESLint errors (all 395 pre-existing parser config issues)
+- Time saved per rest operation: **~3 minutes** (no longer need to navigate to Battle Maps, open each character sheet, apply rest individually)
+
+---
