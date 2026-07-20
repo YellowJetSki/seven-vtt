@@ -10280,3 +10280,64 @@ DM clicks "😴 Party Rest" in sidebar (ANY page)
 - Time saved per rest operation: **~3 minutes** (no longer need to navigate to Battle Maps, open each character sheet, apply rest individually)
 
 ---
+
+## Sprint 26/41 — Feature Expansion Phase (Cycle 7 of 10): DM Combat Condition Bar (Updated: 2026-07-20 19:37)
+## Sprint 26/41 — Globally Accessible DM Combat Condition Bar
+
+### Summary
+Built a globally accessible floating overlay for applying the 6 most common combat conditions (Incapacitated, Paralyzed, Prone, Restrained, Stunned, Unconscious) to any player character or combatant with one-click toggles. Accessible from ANY page via the sidebar.
+
+### Architectural Changes
+
+| File | Change | Impact |
+|------|--------|--------|
+| `components/control-center/DmCombatConditionBar.tsx` | **NEW** — 420-line standalone component | Globally accessible combat condition management |
+| `stores/uiStore.ts` | Added `showCombatConditions` state + `setCombatConditions` action | Global toggle state for the condition bar |
+| `components/layout/AppShell.tsx` | Added sidebar event listener + overlay rendering | Condition bar mounts globally for DM role |
+| `components/layout/Sidebar.tsx` | Added "⚡ Conditions" button between Party Rest and Quick Reference | One-click access from sidebar |
+
+### Features
+
+| Feature | Detail |
+|---------|--------|
+| **Target selector** | Shows ALL player characters + active combatants (filtered by All/Allies/Enemies). Per-target condition dot indicator. |
+| **6 combat conditions** | Incapacitated (rose), Paralyzed (amber), Prone (sky), Restrained (amber), Stunned (pink), Unconscious (red) — each with unique color, icon, and active/inactive styling |
+| **Clear All** | One-click remove all conditions from selected target |
+| **Concentration management** | Inline "Set/ Break" with spell name input, emerald pulse indicator when concentrating |
+| **Flash message feedback** | Success/info/warning toasts for every toggle action |
+| **Target filter chips** | All / Allies / Enemies with active gold state |
+| **Firestore sync** | All mutations use `useConditionMutations()` hook — writes to BOTH Zustand + Firestore |
+
+### DM Workflow (Live Combat)
+
+```
+Goblin shoves Kehrfuffle prone
+  → DM clicks "⚡ Conditions" in sidebar
+  → Selects Kehrfuffle from target list
+  → Clicks "Prone" button → amber toggle lights up
+  → Flash: "✔ Applied Prone to Kehrfuffle"
+  → Prone badge persists in combat tracker
+
+Next round: Wendy casts Hold Person on the Goblin
+  → Targets "Goblin Scout" → clicks "Paralyzed"
+  → Flash: "✔ Applied Paralyzed to Goblin Scout"
+  → Paralyzed badge with amber glow appears
+
+Goblin breaks free
+  → Re-selects Goblin → clicks "Paralyzed" again
+  → Amber toggle dims → Flash: "✖ Removed Paralyzed from Goblin Scout"
+```
+
+### Files Modified (4)
+- `stores/uiStore.ts` — Added state + action
+- `components/layout/AppShell.tsx` — Global listener + overlay
+- `components/layout/Sidebar.tsx` — Sidebar button
+- `components/control-center/DmCombatConditionBar.tsx` — **NEW**
+
+### Key Metrics
+- `tsc --noEmit`: ✅ 0 errors
+- Zero new ESLint errors
+- 420 lines in new component (single file, self-contained)
+- Time saved per condition application: **~30 seconds** (no need to navigate to Player Cards page)
+
+---
