@@ -20,6 +20,6 @@ export interface SpellSlotsFull {
   level9: SpellSlotPool;
 }
 
-export type CasterType = "full" | "half" | "third";
+export type CasterType = "full" | "half" | "third" | "pact" | "none";
 
 export { getMaxSlots, getCasterType } from "@/data/spell-progression";

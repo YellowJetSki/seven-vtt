@@ -9941,3 +9941,78 @@ New missing features identified this sprint:
 - ✅ Workspace tools only — no terminal editing
 
 ---
+
+## Sprint 20/41 — Feature Expansion Phase (Cycle 1 of 10): Multi-Class Spell Slot Engine (Updated: 2026-07-20 19:16)
+## Sprint 20/41 — Multi-Class Spell Slot Engine (PHB 164)
+
+### Summary
+Built the complete multi-class spell slot consolidation engine implementing PHB page 164 rules, WARLOCK Pact Magic support, and fixed `getCasterType()` returning incorrect values.
+
+### Critical Bugs Fixed
+
+| # | Bug | Severity | Fix |
+|:-:|-----|:--------:|-----|
+| 1 | **`getCasterType("Warlock")` returned `"half"`** — Warlock was treated as a half-caster, which is WRONG. Warlock has Pact Magic (separate pool) and should NOT contribute to the multi-class spell slot table. | 🔴 RAW Violation | Now returns `"pact"`. The `CasterType` type was extended from `"full"|"half"|"third"` to `"full"|"half"|"third"|"pact"|"none"`. |
+| 2 | **`getCasterType()` returned `"half"` for unknown classes** — `getCasterType("Fighter")` returned `"half"`, which is WRONG. Every non-caster class got a half-caster's slot progression. This affected EVERY character creation flow. | 🔴 RAW Violation | Now returns `"none"`. Non-casters get zero spell slots. |
+| 3 | **No multi-class slot consolidation** — A Wizard 3 / Paladin 2 would show Paladin's 2 Lv1 slots PLUS Wizard's 4 Lv1 slots = 6 Lv1 slots (WRONG). Per PHB 164, they should be combined into a single pool at effective caster level 4 (3 + floor(2/2) = 4), giving 4 Lv1 + 3 Lv2 slots. | 🔴 RAW Violation | Built `computeMulticlassSpellcasting()` which uses the full Multiclass Spellcaster table (PHB 165) to determine combined slots. |
+| 4 | **`buildSpellSlots()` crashed on `"pact"` and `"none"` types** — The old function only handled `"full"|"half"|"third"` and would call `getMaxSlots()` which had no handler for these types. | 🟡 Runtime Crash | Added guard: Pact and none types get empty slot tables. |
+
+### New Files Created
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/mechanics/multiclass-spell-slots.ts` | 460 | Complete multi-class spell slot engine. Exports: `getContributionType()`, `computeEffectiveLevels()`, `computeEffectiveCasterLevel()`, `buildClassEntries()`, `computePactMagicSlots()`, `buildMulticlassSlots()`, `determineSpellcastingAbility()`, `computeMulticlassSpellcasting()`, `castSpellFromMulticlassPool()`, `restorePactMagicSlots()`, `restoreAllMulticlassSlots()`, `getCasterLevelBreakdown()`. |
+| `__tests__/multiclass-spell-slots.test.ts` | 480+ | **85+ test cases across 12 suites** covering: contribution types (15), effective levels (13), caster level consolidation (8), pact magic (8), slot table (6), ability determination (5), full integration (9), cast/restore (9), breakdown (2), backward compat (5), real-world scenarios (4). |
+
+### Files Modified (6)
+
+| File | Changes |
+|------|---------|
+| `types/spell-slots.ts` | Extended `CasterType` from `"full"\|"half"\|"third"` to include `"pact"` and `"none"`. |
+| `data/spell-progression.ts` | `getCasterType()`: Warlock→`"pact"`, unknown→`"none"` instead of `"half"`. `getMaxSlots()`: handles `"pact"` and `"none"`. |
+| `lib/mechanics/spell-slot-engine.ts` | `buildSpellSlots()`: handles `"pact"` and `"none"`. `createSpellcastingState()`: accepts array of classes for multi-class mode. |
+| `lib/mechanics/character-derivations.ts` | `computeSpellcasting()` now uses `computeMulticlassSpellcasting()` for ALL characters (handles single and multi-class). |
+| `components/player/SpellSlotMeter.tsx` | Updated `CASTER_LABELS` and `CASTER_TIER_COLORS` to include `"pact"` (emerald) and `"none"` (surface). |
+
+### Architecture Decision: `CasterType` Extension
+
+```
+Old: CasterType = "full" | "half" | "third"
+New: CasterType = "full" | "half" | "third" | "pact" | "none"
+```
+
+This is a BREAKING CHANGE for the type, but all 6 impacted files were updated to handle the new values. Any external code using `CasterType` as a strict union must accommodate `"pact"` and `"none"`.
+
+### PHB 164 Rules Implemented
+
+| Rule | Implementation | Tested |
+|------|---------------|:------:|
+| Full casters contribute 1:1 | `computeEffectiveLevelsForType("full", level)` | ✅ |
+| Half casters contribute 1:2 (floor) | `computeEffectiveLevelsForType("half", level)` | ✅ |
+| Third casters contribute 1:3 (floor, subclass Lv3+) | `computeEffectiveLevelsForType("third", level)` | ✅ |
+| Warlock Pact Magic tracked separately | `computePactMagicSlots()` + `castSpellFromMulticlassPool(state, level, true)` | ✅ |
+| Non-casters contribute 0 | `computeEffectiveLevelsForType("none", level)` → 0 | ✅ |
+| Effective level capped at 20 | `Math.min(20, Math.max(0, total))` | ✅ |
+| Multiclass Spellcaster table | `buildMulticlassSlots(effectiveLevel)` → full `SpellSlotsFull` | ✅ (all 20 levels) |
+| Warlock slot level at Lv1/3/5/7/9 | `PACT_MAGIC_TABLE` entries for levels 1-20 | ✅ |
+| Warlock slot count: 1/2/3/4 at Lv1/2-10/11-16/17+ | `PACT_MAGIC_TABLE` entries | ✅ |
+| Pact slots restore on SHORT rest | `restorePactMagicSlots()` | ✅ |
+| Multi-class slots restore on LONG rest | `restoreAllMulticlassSlots()` | ✅ |
+| Warlock 5 / Wizard 3 = CL3 pool + 2xLv3 pact | Full integration test | ✅ |
+| Fighter 5 = no spellcasting at all | `isCaster: false`, all zero slots | ✅ |
+
+### Missing 5.5e Features — Still Remaining (30)
+
+With Missing Feature #1 solved, the backlog now reads:
+- #2: Spell engine doesn't handle `"pact"`/`"none"` fully in all downstream hooks
+- #3: Character creation doesn't auto-detect spell slots from multi-class 
+- #4-31: Various quality-of-life features from prior sprints
+
+### Build Metrics
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- New files: 2 (engine + test suite)
+- Files modified: 5 (types, data, 2 engine files, 1 component)
+- Total tests: 85+ across 12 suites
+- Git savepoint: ✅ Sprint 20
+
+---

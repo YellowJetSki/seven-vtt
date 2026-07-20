@@ -9,6 +9,7 @@
 import type { PlayerCharacter, SpellLevel, SpellSlotsFull, CasterType } from "@/types";
 import { getCasterType, getMaxSlots } from "@/types";
 import { computeSpellSaveDC, computeSpellAttackBonus, buildSpellSlots } from "./spell-slot-engine";
+import { computeMulticlassSpellcasting, type MulticlassSpellcastingState } from "@/lib/mechanics/multiclass-spell-slots";
 import { computeTotalWeight, computeEncumbrance, type EncumbranceState } from "@/types";
 
 // ── Ability Modifier ─────────────────────────────────────────
@@ -251,44 +252,58 @@ const SPELLCASTING_ABILITY: Record<string, string> = {
 };
 
 export function computeSpellcasting(character: PlayerCharacter): DerivedSpellcasting {
-  const classNames = character.classes.map(c => c.name.toLowerCase());
-  const primaryClass = classNames[0] || "";
-  const casterType = getCasterType(primaryClass);
+  const classes = character.classes && character.classes.length > 0
+    ? character.classes.map(c => ({ name: c.name, level: c.level }))
+    : [{ name: character.class || "Fighter", level: character.level }];
 
-  // Determine primary ability from primary class
-  const abilityName = SPELLCASTING_ABILITY[primaryClass] || "intelligence";
-  const rawScore = character[abilityName as keyof PlayerCharacter] as number || 10;
-  const mod = getAbilityMod(rawScore);
+  // Use the multiclass engine for ALL characters (handles single-class too)
+  const abilities = {
+    strength: character.strength || 10,
+    dexterity: character.dexterity || 10,
+    constitution: character.constitution || 10,
+    intelligence: character.intelligence || 10,
+    wisdom: character.wisdom || 10,
+    charisma: character.charisma || 10,
+  };
   const pb = getProficiencyBonus(character.level);
+  const mcState = computeMulticlassSpellcasting(classes, abilities, pb);
 
-  const isCaster = casterType === "full" || casterType === "half" || casterType === "third";
+  // Determine casting class for ability display
+  const primaryClass = classes[0]?.name?.toLowerCase() || "";
+  const abilityName = SPELLCASTING_ABILITY[primaryClass] || "intelligence";
 
   let spellSlots: SpellSlotsFull | null = null;
-  if (isCaster) {
-    spellSlots = buildSpellSlots(casterType, character.level);
-    // If character has stored spell slots data, use that (with current/max tracking)
+  if (mcState.isCaster) {
+    spellSlots = mcState.multiclassSlots;
+
+    // If character has stored spell slot data, merge current values
     if (character.spellSlots) {
-      // Merge stored current values with computed max
-      const computed = buildSpellSlots(casterType, character.level);
+      const merged = {} as SpellSlotsFull;
       for (let lvl = 1 as SpellLevel; lvl <= 9; lvl++) {
         const key = `level${lvl}` as keyof SpellSlotsFull;
+        const computed = mcState.multiclassSlots[key];
         const stored = (character.spellSlots as any)[key];
-        if (stored && computed[key]) {
-          computed[key] = { ...computed[key], current: Math.min(stored.current ?? computed[key].current, computed[key].max) };
+        if (computed) {
+          merged[key] = {
+            ...computed,
+            current: stored
+              ? Math.min(stored.current ?? computed.current, computed.max)
+              : computed.current,
+          };
         }
       }
-      spellSlots = computed;
+      spellSlots = merged;
     }
   }
 
   return {
-    casterType: isCaster ? casterType : null,
-    isCaster,
+    casterType: mcState.isCaster ? (mcState.effectiveCasterLevel > 0 ? "full" : mcState.pactSlots.hasPactMagic ? "pact" : "none") : null,
+    isCaster: mcState.isCaster,
     spellSlots,
-    spellSaveDC: isCaster ? computeSpellSaveDC(mod, pb) : 0,
-    spellAttackBonus: isCaster ? computeSpellAttackBonus(mod, pb) : 0,
+    spellSaveDC: mcState.spellSaveDC,
+    spellAttackBonus: mcState.spellAttackBonus,
     spellcastingAbility: abilityName,
-    spellcastingMod: mod,
+    spellcastingMod: mcState.spellcastingAbilityMod,
   };
 }
 

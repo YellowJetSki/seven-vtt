@@ -1,5 +1,16 @@
 import type { SpellLevel, SpellSlotsFull, CasterType } from "@/types";
 import { getCasterType, getMaxSlots } from "@/types";
+import {
+  computeMulticlassSpellcasting,
+  type MulticlassSpellcastingState,
+  castSpellFromMulticlassPool,
+  restoreAllMulticlassSlots,
+  restorePactMagicSlots,
+  buildClassEntries,
+  computeEffectiveCasterLevel,
+  getCasterLevelBreakdown,
+  type ClassSpellcastingEntry,
+} from "@/lib/mechanics/multiclass-spell-slots";
 
 // ── Core Math Functions ──────────────────────────────────────
 
@@ -12,10 +23,10 @@ export function computeSpellAttackBonus(abilityMod: number, proficiencyBonus: nu
 }
 
 export function buildSpellSlots(casterType: CasterType, level: number): SpellSlotsFull {
-  const slots = getMaxSlots(casterType, level);
+  const slots = casterType === "pact" || casterType === "none" ? {} : getMaxSlots(casterType, level);
   const pool: SpellSlotsFull = {} as SpellSlotsFull;
   for (let lvl = 1 as SpellLevel; lvl <= 9; lvl++) {
-    const max = slots[lvl] ?? 0;
+    const max = (slots as any)[lvl] ?? 0;
     (pool as any)[`level${lvl}`] = { level: lvl, current: max, max };
   }
   return pool;
@@ -77,19 +88,43 @@ export interface SpellCastResult {
 }
 
 export function createSpellcastingState(
-  className: string,
-  classLevel: number,
-  spellcastingAbilityScore: number,
-  proficiencyBonus: number
+  className: string | { name: string; level: number }[],
+  classLevel?: number,
+  spellcastingAbilityScore?: number,
+  proficiencyBonus?: number
 ): SpellcastingState {
+  // Multi-class mode: accept array of classes
+  if (Array.isArray(className)) {
+    const classes = className;
+    const pb = spellcastingAbilityScore !== undefined
+      ? classLevel ?? 2
+      : (proficiencyBonus ?? 2);
+    const mcState = computeMulticlassSpellcasting(
+      classes,
+      { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+      pb
+    );
+    return {
+      slots: mcState.multiclassSlots,
+      casterType: mcState.effectiveCasterLevel > 0 ? "full" : mcState.pactSlots.hasPactMagic ? "pact" : "none",
+      spellSaveDC: mcState.spellSaveDC,
+      spellAttackBonus: mcState.spellAttackBonus,
+      preparedSpells: [],
+      knownSpells: [],
+      cantripsKnown: [],
+      concentrationSpell: null,
+    };
+  }
+
+  // Single-class mode (backward compatible)
   const casterType = getCasterType(className);
-  const slots = buildSpellSlots(casterType, classLevel);
-  const mod = Math.floor((spellcastingAbilityScore - 10) / 2);
+  const slots = buildSpellSlots(casterType, classLevel ?? 1);
+  const mod = Math.floor(((spellcastingAbilityScore ?? 10) - 10) / 2);
   return {
     slots,
     casterType,
-    spellSaveDC: computeSpellSaveDC(mod, proficiencyBonus),
-    spellAttackBonus: computeSpellAttackBonus(mod, proficiencyBonus),
+    spellSaveDC: computeSpellSaveDC(mod, proficiencyBonus ?? 2),
+    spellAttackBonus: computeSpellAttackBonus(mod, proficiencyBonus ?? 2),
     preparedSpells: [],
     knownSpells: [],
     cantripsKnown: [],

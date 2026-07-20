@@ -1,6 +1,6 @@
 // ── D&D 5e Spell Slot Progression Tables ─────────────────────
 
-import type { SpellLevel } from "@/types";
+import type { SpellLevel, CasterType } from "@/types";
 
 export const FULL_CASTER_SLOTS: Record<number, Partial<Record<SpellLevel, number>>> = {
   1: { 1: 2 }, 2: { 1: 3 }, 3: { 1: 4, 2: 2 }, 4: { 1: 4, 2: 3 },
@@ -40,21 +40,25 @@ export const THIRD_CASTER_SLOTS: Record<number, Partial<Record<SpellLevel, numbe
   20: { 1: 4, 2: 3, 3: 3, 4: 1 },
 };
 
-export function getMaxSlots(casterType: "full" | "half" | "third", level: number): Partial<Record<SpellLevel, number>> {
+export function getMaxSlots(casterType: CasterType, level: number): Partial<Record<SpellLevel, number>> {
   switch (casterType) {
     case "full": return FULL_CASTER_SLOTS[level] ?? {};
     case "half": return HALF_CASTER_SLOTS[level] ?? {};
     case "third": return THIRD_CASTER_SLOTS[level] ?? {};
+    case "pact":
+    case "none":
+      return {};
   }
 }
 
-export function getCasterType(className: string): "full" | "half" | "third" {
+export function getCasterType(className: string): CasterType {
   const fullCasters = ["wizard", "cleric", "druid", "sorcerer", "bard"];
   const halfCasters = ["paladin", "ranger", "artificer"];
   const thirdCasters = ["eldritch knight", "arcane trickster"];
-  const lower = className.toLowerCase();
+  const lower = className.toLowerCase().trim();
   if (fullCasters.includes(lower)) return "full";
   if (halfCasters.includes(lower)) return "half";
   if (thirdCasters.includes(lower)) return "third";
-  return "half";
+  if (lower === "warlock") return "pact";
+  return "none";
 }

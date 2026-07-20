@@ -29,16 +29,20 @@ interface SpellSlotMeterProps {
   compact?: boolean;
 }
 
-const CASTER_LABELS: Record<CasterType, string> = {
+const CASTER_LABELS: Record<string, string> = {
   full: "Full Caster",
   half: "Half Caster",
   third: "Third Caster",
+  pact: "Pact Magic",
+  none: "—",
 };
 
-const CASTER_TIER_COLORS: Record<CasterType, string> = {
+const CASTER_TIER_COLORS: Record<string, string> = {
   full: "text-amber-400 border-amber-500/20 bg-amber-500/8",
   half: "text-cyan-400 border-cyan-500/20 bg-cyan-500/8",
   third: "text-violet-400 border-violet-500/20 bg-violet-500/8",
+  pact: "text-emerald-400 border-emerald-500/20 bg-emerald-500/8",
+  none: "text-surface-600 border-surface-700/20 bg-surface-800/40",
 };
 
 export default function SpellSlotMeter({
