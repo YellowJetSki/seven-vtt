@@ -10,11 +10,11 @@
  * │  Fixed min-w   │   flex-grow             │  Animated    │
  * └────────────────────────────────────────────────────────┘
  *
- * Cycle 21 Enhancement (Premium Battlemap Overhaul):
- *   - Token HP Popover: rapid DM HP adjustment directly from token click
- *   - Popover appears near the clicked token with gold glass styling
- *   - Instant HP updates: -10/-5/-1/+1/+5/+10 + custom set
- *   - Escape key or click outside to dismiss
+ * Cycle 21 Enhancement: Token HP Popover (rapid HP adjustment)
+ * Cycle 22 Enhancement: Token Drag-and-Drop (smooth repositioning)
+ *   - Canvas relays onMoveToken to useDmControlCenter.handleMoveToken
+ *   - useTokenMutations.moveToken writes to Zustand + Firestore
+ *   - Drag preview rendered directly on canvas by CanvasMapView
  */
 
 import { useCallback, useState } from "react";
@@ -34,15 +34,13 @@ export default function DmControlCenter() {
   const [showSharePicker, setShowSharePicker] = useState(false);
 
   /**
-   * Enhanced canvas click handler: extracts click position for the HP popover
-   * and delegates to the hook's enhanced token click handler.
+   * Enhanced canvas token click: opens HP popover + inspector.
    */
   const handleCanvasTokenClick = useCallback(
-    (token: MapToken, _clientX?: number, _clientY?: number) => {
-      // Use the enhanced click handler from the hook which opens both popover + inspector
-      state.handleTokenClickEx(token, _clientX ?? 0, _clientY ?? 0);
+    (token: MapToken) => {
+      state.handleTokenClickEx(token, 0, 0);
     },
-    [state.handleTokenClickEx]
+    [state]
   );
 
   if (!state.activeMap) {
@@ -83,12 +81,9 @@ export default function DmControlCenter() {
             mapData={state.activeMap}
             tokens={state.activeTokens}
             dmView={state.isDmView}
-            onTokenClick={(token) => {
-              // Enhanced: pass click position via mouse event
-              // The CanvasMapView's onClick already gives us clientX/clientY
-              handleCanvasTokenClick(token);
-            }}
+            onTokenClick={(token) => handleCanvasTokenClick(token)}
             onCellClick={state.handleCellClick}
+            onMoveToken={state.handleMoveToken}
           />
         </div>
 
