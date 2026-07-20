@@ -131,7 +131,7 @@ describe("getSlotsForLevel", () => {
   // Half caster progression — PHB Paladin/Ranger table
   const halfCasterCases: [number, Record<string, number>][] = [
     [1,  { level1: 0, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
-    [2,  { level1: 2, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
+    [2,  { level1: 2, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }], // Paladin 2 = caster level 1 = 2 L1 slots ✓
     [5,  { level1: 4, level2: 2, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
     [9,  { level1: 4, level2: 3, level3: 2, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
     [13, { level1: 4, level2: 3, level3: 3, level4: 1, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
@@ -149,7 +149,7 @@ describe("getSlotsForLevel", () => {
 
   // Third caster progression — Eldritch Knight/Arcane Trickster
   const thirdCasterCases: [number, Record<string, number>][] = [
-    [1,  { level1: 0, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
+    [1,  { level1: 0, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }], // No slots at level 1 ✓
     [3,  { level1: 2, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
     [4,  { level1: 3, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
     [7,  { level1: 4, level2: 2, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 }],
@@ -287,11 +287,39 @@ describe("computeLevelUpPreview", () => {
     expect(preview!.extraAttack).toBe(true);
   });
 
-  it("Rogue gets Extra Attack at level 5", () => {
+  it("Rogue does NOT get Extra Attack at level 5 (Rogues don't get it)", () => {
     const char = makeCharacter({ class: "Rogue", level: 4 });
     const preview = computeLevelUpPreview(char);
     expect(preview).not.toBeNull();
-    expect(preview!.extraAttack).toBe(true); // Rogues don't get Extra Attack — BUG!
+    expect(preview!.extraAttack).toBe(false); // Only Fighters/Paladins/Rangers/Barbarians/Monks
+  });
+
+  it("Paladin gets Extra Attack at level 5", () => {
+    const char = makeCharacter({ class: "Paladin", level: 4 });
+    const preview = computeLevelUpPreview(char);
+    expect(preview).not.toBeNull();
+    expect(preview!.extraAttack).toBe(true);
+  });
+
+  it("Barbarian gets Extra Attack at level 5", () => {
+    const char = makeCharacter({ class: "Barbarian", level: 4 });
+    const preview = computeLevelUpPreview(char);
+    expect(preview).not.toBeNull();
+    expect(preview!.extraAttack).toBe(true);
+  });
+
+  it("Wizard does NOT get Extra Attack at level 5", () => {
+    const char = makeCharacter({ class: "Wizard", level: 4 });
+    const preview = computeLevelUpPreview(char);
+    expect(preview).not.toBeNull();
+    expect(preview!.extraAttack).toBe(false);
+  });
+
+  it("Fighter gets Extra Attack (3) at level 20", () => {
+    const char = makeCharacter({ class: "Fighter", level: 19 });
+    const preview = computeLevelUpPreview(char);
+    expect(preview).not.toBeNull();
+    expect(preview!.extraAttack).toBe(true);
   });
 
   it("computes Cantrip gain for Wizard at level 4", () => {
@@ -472,5 +500,182 @@ describe("getGenericFeatures", () => {
     const char = makeCharacter({ class: "Fighter", level: 5 });
     const features = getGenericFeatures(5, char);
     expect(features.some((f) => f.includes("Spell Slots"))).toBe(false);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 11. Comprehensive RAW Compliance — Full Class Progression (2026-07-20)
+// ═══════════════════════════════════════════════════════════════
+
+describe("RAW compliance — Full class progression tests", () => {
+  // ── All classes by caster type ──
+  it("Warlock is detected as warlock type (not full)", () => {
+    expect(detectCasterType("Warlock")).toBe("warlock");
+    expect(getSlotsForLevel(5, "warlock")).toBeNull();
+  });
+
+  it("Warlock is not in FULL_CASTER_CLASSES (prevents incorrect slot giving)", () => {
+    // Warlock removed from FULL_CASTER_CLASSES
+    // It correctly falls through to "warlock" in detectCasterType
+    expect(detectCasterType("Warlock")).toBe("warlock");
+  });
+
+  // ── HP gain minimum ──
+  it("HP gain minimum of 1 even with very low CON (e.g. CON 3 = -4 mod)", () => {
+    const char = makeCharacter({ class: "Wizard", level: 4, constitution: 3 }); // CON -4
+    // d6 avg = ceil(6/2) + 1 = 4, mod = -4, hpGained max(1, 0) = 1
+    const preview = computeLevelUpPreview(char);
+    expect(preview).not.toBeNull();
+    expect(preview!.hpGained).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── Null preview for max level ──
+  it("computeLevelUpPreview returns null for level 20", () => {
+    expect(computeLevelUpPreview(makeCharacter({ level: 20 }))).toBeNull();
+  });
+
+  // ── applyLevelUp returns empty for level 20 ──
+  it("applyLevelUp returns empty object for level 20", () => {
+    expect(Object.keys(applyLevelUp(makeCharacter({ level: 20 }))).length).toBe(0);
+  });
+
+  // ── Features deduplication on level up ──
+  it("applyLevelUp does not duplicate existing features", () => {
+    const char = makeCharacter({
+      class: "Fighter",
+      level: 4,
+      features: [{ name: "Second Wind", description: "Already have it", source: "Fighter" }],
+    });
+    const result = applyLevelUp(char);
+    const secondWindCount = (result.features ?? []).filter(
+      (f: any) => f.name === "Second Wind"
+    ).length;
+    expect(secondWindCount).toBeLessThanOrEqual(1); // Should not duplicate
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 12. Edge Cases — State Integrity & Cross-Session
+// ═══════════════════════════════════════════════════════════════
+
+describe("edge cases — state integrity", () => {
+  it("handles undefined spellSlots gracefully (no crash)", () => {
+    const char = makeCharacter({ class: "Wizard", level: 4, spellSlots: undefined });
+    const result = applyLevelUp(char);
+    expect(result.level).toBe(5);
+    // Should create spellSlots if they didn't exist
+    expect(result.spellSlots).toBeDefined();
+  });
+
+  it("handles undefined hitPoints gracefully", () => {
+    const char = makeCharacter({ level: 4, hitPoints: undefined as any });
+    const result = applyLevelUp(char);
+    expect(result.hitPoints?.max).toBeDefined();
+  });
+
+  it("handles undefined features gracefully", () => {
+    const char = makeCharacter({ level: 4, features: undefined as any });
+    const result = applyLevelUp(char);
+    expect(result.features).toBeDefined();
+  });
+
+  it("handles undefined spentHitDice gracefully", () => {
+    const char = makeCharacter({ level: 4, spentHitDice: undefined });
+    const result = applyLevelUp(char);
+    expect(result.spentHitDice).toBe(0);
+  });
+
+  it("level up from 19 to 20 correctly finalizes level", () => {
+    const char = makeCharacter({ class: "Fighter", level: 19 });
+    const preview = computeLevelUpPreview(char);
+    expect(preview).not.toBeNull();
+    expect(preview!.newLevel).toBe(20);
+    expect(preview!.asiAvailable).toBe(true); // ASI at 19 → 20
+    const result = applyLevelUp(char);
+    expect(result.level).toBe(20);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 13. Error Handling — Graceful Degradation
+// ═══════════════════════════════════════════════════════════════
+
+describe("error handling — graceful degradation", () => {
+  it("computeLevelUpPreview does not throw for any valid input", () => {
+    expect(() => computeLevelUpPreview(makeCharacter())).not.toThrow();
+    expect(() => computeLevelUpPreview(makeCharacter({ level: 1 }))).not.toThrow();
+    expect(() => computeLevelUpPreview(makeCharacter({ level: 19 }))).not.toThrow();
+    expect(() => computeLevelUpPreview(makeCharacter({ level: 20 }))).not.toThrow();
+  });
+
+  it("applyLevelUp does not throw for any valid input", () => {
+    expect(() => applyLevelUp(makeCharacter())).not.toThrow();
+    expect(() => applyLevelUp(makeCharacter({ level: 1 }))).not.toThrow();
+    expect(() => applyLevelUp(makeCharacter({ level: 19 }))).not.toThrow();
+    expect(() => applyLevelUp(makeCharacter({ level: 20 }))).not.toThrow();
+  });
+
+  it("detectCasterType handles empty string, undefined gracefully", () => {
+    expect(detectCasterType("")).toBe("none");
+    expect(detectCasterType("   ")).toBe("none");
+    expect(detectCasterType("UnknownClass")).toBe("none");
+  });
+
+  it("getHitDieType returns d8 for unknown classes (safe fallback)", () => {
+    expect(getHitDieType("UnknownClass")).toBe(8);
+    expect(getHitDieType("")).toBe(8);
+  });
+
+  it("getSlotsForLevel handles level 0 gracefully", () => {
+    const slots = getSlotsForLevel(0, "full");
+    expect(slots).not.toBeNull();
+    // Level 0 doesn't exist in game, but min level returns level 1 slots
+  });
+
+  it("getClassFeatures handles invalid level gracefully", () => {
+    const features = getClassFeatures("Fighter", 0);
+    expect(features).toEqual([]);
+    const featuresHigh = getClassFeatures("Fighter", 99);
+    expect(featuresHigh).toEqual([]);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 14. Cross-Device Sync Contract — applyLevelUp Return Shape
+// ═══════════════════════════════════════════════════════════════
+
+describe("cross-device sync — applyLevelUp return shape", () => {
+  it("returned object is a valid Partial<PlayerCharacter> for Zustand/Firestore", () => {
+    const char = makeCharacter({ class: "Fighter", level: 4 });
+    const result = applyLevelUp(char);
+    // MUST have these fields for Firestore merge
+    expect(result).toHaveProperty("level");
+    expect(result).toHaveProperty("hitPoints");
+    expect(result).toHaveProperty("proficiencyBonus");
+    // MAY have these fields
+    if (result.spellSlots) {
+      // If spellSlots exists, they must be properly shaped
+      const slots = result.spellSlots as any;
+      expect(slots).toHaveProperty("level1");
+    }
+    // features should be an array
+    expect(Array.isArray(result.features)).toBe(true);
+  });
+
+  it("returned object does NOT have undefined fields (Firestore rejects undefined)", () => {
+    const char = makeCharacter({ class: "Fighter", level: 4 });
+    const result = applyLevelUp(char);
+    // Check no undefined values (common Firestore error)
+    const checkUndefined = (obj: Record<string, unknown>, path: string = ""): string | null => {
+      for (const key of Object.keys(obj)) {
+        if (obj[key] === undefined) return `${path}.${key}`;
+        if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
+          const deepResult = checkUndefined(obj[key] as Record<string, unknown>, `${path}.${key}`);
+          if (deepResult) return deepResult;
+        }
+      }
+      return null;
+    };
+    expect(checkUndefined(result as unknown as Record<string, unknown>)).toBeNull();
   });
 });

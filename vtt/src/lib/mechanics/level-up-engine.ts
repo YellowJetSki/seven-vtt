@@ -53,7 +53,7 @@ export type CasterType = "full" | "half" | "third" | "warlock" | "none";
 // ── Caster Type Detection ─────────────────────────────────────
 
 const FULL_CASTER_CLASSES = [
-  "Bard", "Cleric", "Druid", "Sorcerer", "Wizard", "Warlock",
+  "Bard", "Cleric", "Druid", "Sorcerer", "Wizard",
 ];
 
 const HALF_CASTER_CLASSES = [
@@ -115,6 +115,11 @@ const FULL_SLOTS: LevelUpSpellSlots[] = [
  * Paladin Level 20 = Caster Level 10 = FULL_SLOTS[9] = 4/3/3/3/2 ✓
  */
 export function getHalfSlots(casterLevel: number): LevelUpSpellSlots {
+  // Half-casters get NO spell slots at level 1
+  // Levels 2+ use ceil(level/2) caster level per PHB Multiclass Spellcaster table
+  if (casterLevel < 2) {
+    return { level1: 0, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 };
+  }
   const effectiveCasterLevel = Math.ceil(casterLevel / 2);
   return FULL_SLOTS[Math.min(19, Math.max(0, effectiveCasterLevel - 1))];
 }
@@ -130,8 +135,13 @@ export function getHalfSlots(casterLevel: number): LevelUpSpellSlots {
  * EK Level 20 = Caster Level 7  = FULL_SLOTS[6] = 4/3/3/1    ✓
  */
 export function getThirdSlots(casterLevel: number): LevelUpSpellSlots {
+  // Third-casters get NO spell slots at levels 1-2
+  // Level 3+ uses ceil(level/3) caster level per PHB Multiclass Spellcaster table
+  // EK level 3 = caster level 1 → 2 L1 slots
+  if (casterLevel < 3) {
+    return { level1: 0, level2: 0, level3: 0, level4: 0, level5: 0, level6: 0, level7: 0, level8: 0, level9: 0 };
+  }
   const effectiveCasterLevel = Math.ceil(casterLevel / 3);
-  if (effectiveCasterLevel < 1) return FULL_SLOTS[0]; // Level 1-2 → 0 slots
   return FULL_SLOTS[Math.min(19, Math.max(0, effectiveCasterLevel - 1))];
 }
 
@@ -358,7 +368,14 @@ export function computeLevelUpPreview(
     newFeatures: features.filter((f) => f !== "Ability Score Improvement"),
     newCantrips: casterType === "full" && (newLevel === 4 || newLevel === 10) ? 1 : 0,
     subclassFeature: [3, 6, 7, 9, 10, 14, 15, 18].includes(newLevel),
-    extraAttack: [5].includes(newLevel) || (className === "Fighter" && [11, 20].includes(newLevel)),
+    extraAttack: (
+      // Fighters: 5, 11, 20
+      (className === "Fighter" && [5, 11, 20].includes(newLevel)) ||
+      // Paladins/Rangers/Barbarians/Monks: level 5
+      (["Paladin", "Ranger", "Barbarian", "Monk"].includes(className) && newLevel === 5) ||
+      // Bards: Valor/Swords at 6
+      false
+    ),
     asiCount: isAsiLevel(newLevel) ? 1 : 0,
   };
 }
