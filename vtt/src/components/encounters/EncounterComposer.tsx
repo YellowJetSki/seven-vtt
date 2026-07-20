@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { analyzeEncounterDifficulty, getDifficultyLabel, getDifficultyColor } from "@/lib/mechanics/encounter-cr";
 import { getXpForCr, parseCr } from "@/lib/mechanics/encounter-cr";
+import EncounterLaunchModal from "./EncounterLaunchModal";
 import type { Encounter, EnemyDoc } from "@/types";
 
 interface EncounterComposerProps {
@@ -64,6 +65,8 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
   const [newName, setNewName] = useState("");
   const [newEnv, setNewEnv] = useState("dungeon");
   const [newDesc, setNewDesc] = useState("");
+  const [showLaunchModal, setShowLaunchModal] = useState(false);
+  const battleMaps = useCampaignStore((s) => s.battleMaps);
 
   // ── Derived ──
   const selectedEncounter = useMemo(
@@ -143,9 +146,15 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
 
   const handleLaunch = useCallback(() => {
     if (!selectedEncounterId || !selectedEncounter) return;
-    updateEncounter(selectedEncounterId, { isActive: true });
-    navigate("/campaign/maps");
-  }, [selectedEncounterId, selectedEncounter, updateEncounter, navigate]);
+    // If there are no battle maps, navigate directly to create one
+    if (battleMaps.length === 0) {
+      updateEncounter(selectedEncounterId, { isActive: true, updatedAt: Date.now() });
+      navigate("/campaign/maps");
+      return;
+    }
+    // Show the launch modal for map selection
+    setShowLaunchModal(true);
+  }, [selectedEncounterId, selectedEncounter, updateEncounter, navigate, battleMaps.length]);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -370,13 +379,20 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
           <button
             onClick={handleLaunch}
             disabled={selectedEncounter.enemyGroups.length === 0}
-            className="w-full py-2 rounded-xl text-[10px] font-bold bg-gradient-to-br from-emerald-500/12 to-green-500/8 border border-emerald-500/20 text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/12 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(52,211,153,0.06)] disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-xl text-[10px] font-bold bg-gradient-to-br from-emerald-500/15 to-green-500/10 border border-emerald-500/25 text-emerald-400 hover:from-emerald-500/25 hover:to-green-500/15 hover:border-emerald-500/35 hover:shadow-[0_0_24px_rgba(52,211,153,0.08)] disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2"
           >
             <span>▶</span>
             <span>Launch Encounter</span>
           </button>
         </div>
       )}
+
+      {/* ── Encounter Launch Modal ── */}
+      <EncounterLaunchModal
+        encounter={selectedEncounter}
+        isOpen={showLaunchModal}
+        onClose={() => setShowLaunchModal(false)}
+      />
     </div>
   );
 }
