@@ -5,6 +5,16 @@ import { clampHP, createLogEntry } from "./combat-helpers";
 import type { AoEDamageResult } from "@/lib/combat/aoe-damage-engine";
 import { buildAoEHPUpdates, createAoELogEntry } from "@/lib/combat/aoe-damage-engine";
 
+// ── Combat log overflow protection ──
+// Prevents unbounded growth during long sessions
+const MAX_COMBAT_LOG = 500;
+const COMBAT_LOG_CULL_COUNT = Math.floor(MAX_COMBAT_LOG * 0.2); // Remove oldest 20%
+
+function trimCombatLog(log: CombatLogEntry[]): CombatLogEntry[] {
+  if (log.length <= MAX_COMBAT_LOG) return log;
+  return log.slice(COMBAT_LOG_CULL_COUNT);
+}
+
 export interface CombatHpActions {
   damageCombatant: (combatantId: string, amount: number) => void;
   healCombatant: (combatantId: string, amount: number) => void;
@@ -48,7 +58,7 @@ export const createCombatHpSlice: StateCreator<CombatSlice & CombatHpSlice, [], 
       const dead = hp.current <= 0;
       const log = [createLogEntry("damage", combatantId, c.name, { value: amount })];
       if (dead && !c.isDead) log.push(createLogEntry("death", combatantId, c.name));
-      return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { hitPoints: hp, isDead: dead }) }, combatLog: [...state.combatLog, ...log] };
+      return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { hitPoints: hp, isDead: dead }) }, combatLog: trimCombatLog([...state.combatLog, ...log]) };
     }),
 
   aoeDamageCombatants: (
@@ -97,7 +107,7 @@ export const createCombatHpSlice: StateCreator<CombatSlice & CombatHpSlice, [], 
           ...state.activeEncounter,
           combatants,
         },
-        combatLog: [...state.combatLog, ...logEntries],
+        combatLog: trimCombatLog([...state.combatLog, ...logEntries]),
       };
     }),
 
@@ -110,13 +120,22 @@ export const createCombatHpSlice: StateCreator<CombatSlice & CombatHpSlice, [], 
       const alive = hp.current > 0;
       const log = [createLogEntry("heal", combatantId, c.name, { value: amount })];
       if (c.isDead && alive) log.push(createLogEntry("revive", combatantId, c.name));
-      return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { hitPoints: hp, isDead: !alive }) }, combatLog: [...state.combatLog, ...log] };
+      return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { hitPoints: hp, isDead: !alive }) }, combatLog: trimCombatLog([...state.combatLog, ...log]) };
     }),
 
   setTempHP: (combatantId: string, amount: number) =>
     set((state) => {
       if (!state.activeEncounter) return state;
-      return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { hitPoints: { ...state.activeEncounter.combatants.find((x) => x.id === combatantId)!.hitPoints, temporary: amount } }) } };
+      const existing = state.activeEncounter.combatants.find((x) => x.id === combatantId);
+      if (!existing) return state;
+      return {
+        activeEncounter: {
+          ...state.activeEncounter,
+          combatants: mapCombatants(state.activeEncounter.combatants, combatantId, {
+            hitPoints: { ...existing.hitPoints, temporary: amount },
+          }),
+        },
+      };
     }),
 
   addStatusEffect: (combatantId: string, effect: string) =>
@@ -151,7 +170,7 @@ export const createCombatHpSlice: StateCreator<CombatSlice & CombatHpSlice, [], 
       return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { notes }) } };
     }),
 
-  addLogEntry: (entry: CombatLogEntry) => set((state) => ({ combatLog: [...state.combatLog, entry] })),
+  addLogEntry: (entry: CombatLogEntry) => set((state) => ({ combatLog: trimCombatLog([...state.combatLog, entry]) })),
 
   undoLastAction: () => set((state) => {
     if (state.combatLog.length === 0) return state;
