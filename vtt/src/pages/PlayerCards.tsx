@@ -14,6 +14,7 @@
 import { useCampaignStore } from "@/stores/campaignStore";
 import AppShell from "@/components/layout/AppShell";
 import PlayerList from "@/components/player/PlayerList";
+import CombatHpHud from "@/components/player/CombatHpHud";
 
 export default function PlayerCards() {
   const characters = useCampaignStore((s) => s.characters);
@@ -89,6 +90,9 @@ export default function PlayerCards() {
         <div className="mt-4 sm:mt-6">
           <PlayerList />
         </div>
+
+        {/* ── Combat HP HUD (floating, real-play tabletop tool) ── */}
+        <CombatHpHud page="player-cards" />
       </div>
     </AppShell>
   );

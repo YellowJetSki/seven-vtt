@@ -33,6 +33,7 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatStore } from "@/stores/combatStore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
+import CombatHpHud from "@/components/player/CombatHpHud";
 import DmScreenContainer from "@/components/dashboard/DmScreenContainer";
 import CampaignBanner from "@/components/dashboard/CampaignBanner";
 import QuickNav from "@/components/dashboard/QuickNav";
@@ -189,6 +190,9 @@ export default function DmDashboard() {
           </div>
         </div>
       </DmScreenContainer>
+
+      {/* ── Combat HP HUD (floating, real-play tabletop tool) ── */}
+      <CombatHpHud page="dashboard" />
     </AppShell>
   );
 }
