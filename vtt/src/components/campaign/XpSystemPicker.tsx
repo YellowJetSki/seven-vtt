@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — XP System & Currency Config
+ * STᚱ VTT — XP System & Currency Config (Premium Gold Version)
  *
  * Choose between XP (experience tracking) or Milestone (level at story beats).
  * Configure currency name and preset (standard, silver standard, etc.).
@@ -79,8 +79,8 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
                 onClick={() => handleSystemChange(p.value as "xp" | "milestone")}
                 className={`text-left p-3 rounded-xl transition-all duration-150 active:scale-[0.98] ${
                   xpSystem === p.value
-                    ? "bg-gold-500/10 border border-gold/20 shadow-[0_0_8px_rgba(234,179,8,0.04)]"
-                    : "bg-[#07080d] border border-white/[0.04] hover:border-white/[0.08]"
+                    ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 shadow-[0_0_8px_rgba(234,179,8,0.04)]"
+                    : "bg-[#07080d]/70 border border-white/[0.04] hover:border-white/[0.08]"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -107,8 +107,8 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
                 onClick={() => handlePresetChange(p.value)}
                 className={`text-left p-3 rounded-xl transition-all duration-150 active:scale-[0.98] ${
                   currencyPreset === p.value
-                    ? "bg-gold-500/10 border border-gold/20 shadow-[0_0_8px_rgba(234,179,8,0.04)]"
-                    : "bg-[#07080d] border border-white/[0.04] hover:border-white/[0.08]"
+                    ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 shadow-[0_0_8px_rgba(234,179,8,0.04)]"
+                    : "bg-[#07080d]/70 border border-white/[0.04] hover:border-white/[0.08]"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
               value={currencyName}
               onChange={(e) => { setCurrencyName(e.target.value); setHasChanges(true); }}
               placeholder="e.g., Dragon Scales, Guild Marks..."
-              className="w-full py-1.5 px-3 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+              className="w-full py-1.5 px-3 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
             />
           )}
         </div>
@@ -139,7 +139,7 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
           <button
             onClick={handleSave}
             disabled={!hasChanges}
-            className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150"
+            className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           >
             💾 Save Rules
           </button>

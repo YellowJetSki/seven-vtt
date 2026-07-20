@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Campaign Settings (Sprint 10)
+ * STᚱ VTT — Campaign Settings (Premium 7-Layer Cinema Header)
  *
  * Complete campaign configuration dashboard:
  * - Campaign Info: name, description, DM name
@@ -9,7 +9,7 @@
  * - Campaign Statistics: live counts, session tracking
  *
  * All changes write to Zustand campaignStore (metaSlice) instantly.
- * Future: Firestore sync layer for cross-DM restoration.
+ * Replaced glass-gold + corner-ornament + depth-ring with 7-layer cinema header.
  */
 
 import { useCallback, useMemo } from "react";
@@ -66,30 +66,62 @@ export default function CampaignSettings() {
   return (
     <AppShell>
       <div className="flex flex-col h-full">
-        {/* ── Header ── */}
-        <div className="shrink-0 glass-gold rounded-2xl m-4 p-4 relative overflow-hidden">
-          <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-          <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
-          <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
-          <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
-          <div className="depth-ring absolute inset-0 opacity-20" />
-          <div className="relative z-10 flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-black text-gold tracking-tight drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">
-                Campaign Settings
-              </h1>
-              <p className="text-[11px] text-surface-500 mt-1">
-                Configure your campaign rules, restrictions, and metadata
-              </p>
+        {/* ── 7-Layer Cinematic Hero Header ── */}
+        <div className="relative rounded-2xl overflow-hidden group mx-4 mt-4">
+          {/* Layer 1: Gradient backdrop */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#181a2a]/90 via-[#12131e]/90 to-[#0c0d15]/95" />
+          {/* Layer 2: Conic depth ring */}
+          <div
+            className="absolute inset-0 opacity-[0.04] bg-[conic-gradient(from_0deg,transparent_0%,rgba(234,179,8,0.4)_15%,transparent_30%,rgba(234,179,8,0.2)_50%,transparent_70%,rgba(234,179,8,0.15)_85%,transparent_100%)]"
+            style={{ animation: "spin 30s linear infinite" }}
+          />
+          {/* Layer 3: Top edge light */}
+          <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 group-hover:via-gold-500/40 to-transparent transition-all duration-700" />
+          {/* Layer 4: Bottom edge light */}
+          <div className="absolute bottom-0 left-[20%] right-[20%] h-px bg-gradient-to-r from-transparent via-gold-500/0 group-hover:via-gold-500/15 to-transparent transition-all duration-700 pointer-events-none" />
+          {/* Layer 5: Ambient glow pockets */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-gold-500/[0.06] rounded-full blur-[80px] pointer-events-none group-hover:bg-gold-500/[0.08] transition-all duration-700" />
+          <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-amber-500/[0.04] rounded-full blur-[60px] pointer-events-none" />
+          {/* Layer 6: Border */}
+          <div className="absolute inset-0 rounded-2xl border border-white/[0.06] pointer-events-none" />
+
+          {/* Layer 7: Content */}
+          <div className="relative z-10 p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              {/* Icon container */}
+              <div className="relative shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 to-amber-500/5" />
+                <div className="absolute inset-0 rounded-xl border border-gold-500/20" />
+                <div className="absolute inset-2 bg-gold-500/10 rounded-lg blur-[4px]" />
+                <span className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl drop-shadow-[0_0_12px_rgba(234,179,8,0.4)]">
+                  ⚙
+                </span>
+              </div>
+
+              <div className="min-w-0 pt-1 flex-1">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                      Campaign Settings
+                    </h1>
+                    <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
+                      Configure your campaign rules, restrictions, and metadata
+                    </p>
+                    <div className="flex items-center gap-3 mt-3 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/60 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse-soft" />
+                        {meta ? "Active Campaign" : "No Campaign"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-gold-500/10 border border-gold/15 text-gold-400">
-              {meta ? "Active Campaign" : "No Campaign"}
-            </span>
           </div>
         </div>
 
         {/* ── Settings Panels ── */}
-        <div className="flex-1 mx-4 mb-4 overflow-y-auto">
+        <div className="flex-1 mx-4 mt-3 mb-4 overflow-y-auto scrollbar-gold">
           <div className="max-w-4xl mx-auto space-y-4 pb-8">
             {/* Campaign Info */}
             <CampaignInfoForm meta={meta} onSave={handleSaveMeta} />

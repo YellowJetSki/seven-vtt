@@ -1,5 +1,5 @@
 /**
- * ST R VTT - Race & Class Restrictions
+ * STᚱ VTT — Race & Class Restrictions (Premium Gold Version)
  *
  * Multi-select chip-based picker for allowed races and classes.
  * DM can restrict character creation options for campaign setting integrity.
@@ -102,7 +102,7 @@ export default function RaceClassRestrictions({ settings, onSave }: RaceClassRes
   };
 
   return (
-    <SettingsSection icon="CB" title="Character Creation" description="Restrict races and classes available to players">
+    <SettingsSection icon="🧬" title="Character Creation" description="Restrict races and classes available to players">
       <div className="space-y-4">
         {/* Races */}
         <div className="space-y-2">
@@ -122,8 +122,8 @@ export default function RaceClassRestrictions({ settings, onSave }: RaceClassRes
                   onClick={() => toggleRace(race)}
                   className={`text-[10px] px-2 py-1 rounded-lg transition-all duration-150 active:scale-90 ${
                     selected
-                      ? "bg-gold-500/10 border border-gold/20 text-gold-300 shadow-[0_0_6px_rgba(234,179,8,0.03)]"
-                      : "bg-[#07080d] border border-white/[0.04] text-surface-500 hover:text-surface-300 hover:border-white/[0.08]"
+                      ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-300 shadow-[0_0_6px_rgba(234,179,8,0.03)]"
+                      : "bg-[#07080d]/70 border border-white/[0.04] text-surface-500 hover:text-surface-300 hover:border-white/[0.08]"
                   }`}
                 >
                   {raceIcons[race] || "PC"} {race}
@@ -151,8 +151,8 @@ export default function RaceClassRestrictions({ settings, onSave }: RaceClassRes
                   onClick={() => toggleClass(cls)}
                   className={`text-[10px] px-2 py-1 rounded-lg transition-all duration-150 active:scale-90 ${
                     selected
-                      ? "bg-gold-500/10 border border-gold/20 text-gold-300 shadow-[0_0_6px_rgba(234,179,8,0.03)]"
-                      : "bg-[#07080d] border border-white/[0.04] text-surface-500 hover:text-surface-300 hover:border-white/[0.08]"
+                      ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-300 shadow-[0_0_6px_rgba(234,179,8,0.03)]"
+                      : "bg-[#07080d]/70 border border-white/[0.04] text-surface-500 hover:text-surface-300 hover:border-white/[0.08]"
                   }`}
                 >
                   {classIcons[cls] || "PC"} {cls}
@@ -170,7 +170,7 @@ export default function RaceClassRestrictions({ settings, onSave }: RaceClassRes
           <button
             onClick={handleSave}
             disabled={!hasChanges}
-            className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150"
+            className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           >
             Save Restrictions
           </button>

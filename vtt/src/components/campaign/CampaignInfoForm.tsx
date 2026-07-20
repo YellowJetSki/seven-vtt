@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Campaign Info Form
+ * STᚱ VTT — Campaign Info Form (Premium Gold Version)
  *
  * Editable campaign metadata: name, description, DM name.
  * Shows creation date and last updated timestamp.
@@ -58,7 +58,7 @@ export default function CampaignInfoForm({ meta, onSave }: CampaignInfoFormProps
             value={name}
             onChange={(e) => { setName(e.target.value); markChanged(); }}
             placeholder="Enter campaign name..."
-            className="w-full py-2 px-3 rounded-lg text-sm font-semibold bg-[#07080d] border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+            className="w-full py-2 px-3 rounded-lg text-sm font-semibold bg-[#07080d]/70 border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
           />
         </div>
 
@@ -70,7 +70,7 @@ export default function CampaignInfoForm({ meta, onSave }: CampaignInfoFormProps
             value={dmName}
             onChange={(e) => { setDmName(e.target.value); markChanged(); }}
             placeholder="DM name..."
-            className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+            className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
           />
         </div>
 
@@ -82,20 +82,20 @@ export default function CampaignInfoForm({ meta, onSave }: CampaignInfoFormProps
             onChange={(e) => { setDescription(e.target.value); markChanged(); }}
             placeholder="Campaign synopsis, setting, or premise..."
             rows={3}
-            className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[60px]"
+            className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[60px] transition-all"
           />
         </div>
 
         {/* Save */}
         <div className="flex items-center justify-between pt-1">
           <div className="text-[9px] text-surface-600 space-y-0.5">
-            <div>Created {new Date(meta.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-            <div>Updated {new Date(meta.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+            <div>Created {meta.createdAt ? new Date(meta.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "N/A"}</div>
+            <div>Updated {meta.updatedAt ? new Date(meta.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "N/A"}</div>
           </div>
           <button
             onClick={handleSave}
             disabled={!hasChanges || !name.trim()}
-            className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150"
+            className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           >
             💾 Save Info
           </button>
