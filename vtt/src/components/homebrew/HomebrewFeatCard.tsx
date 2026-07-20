@@ -102,7 +102,7 @@ export default function HomebrewFeatCard({
             <button onClick={() => onToggleVisibility(feat.id, !feat.visibleToPlayers)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-500 hover:text-gold-400 transition-all active:scale-90" title={feat.visibleToPlayers ? "Hide from players" : "Show to players"}>
               {feat.visibleToPlayers ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
-            <button onClick={() => onDuplicate(feat)} className="p-1.5 rounded-lg hover:bg-mage-500/10 text-surface-400 hover:text-mage-400 transition-all active:scale-90" title="Duplicate">
+            <button onClick={() => onDuplicate(feat)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all active:scale-90" title="Duplicate">
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button onClick={() => onEdit(feat)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">

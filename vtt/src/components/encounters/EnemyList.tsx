@@ -108,7 +108,7 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
 
   const getTypeColor = (type: string): string => {
     const colors: Record<string, string> = {
-      Aberration: "text-purple-400 bg-purple-500/10 border-purple-500/15",
+      Aberration: "text-violet-400 bg-violet-500/10 border-violet-500/15",
       Beast: "text-amber-400 bg-amber-500/10 border-amber-500/15",
       Celestial: "text-gold-400 bg-gold-500/10 border-gold/15",
       Construct: "text-cyan-400 bg-cyan-500/10 border-cyan-500/15",

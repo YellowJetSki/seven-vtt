@@ -101,7 +101,7 @@ export default function WallEditor({
                     )}
                     <button
                       onClick={() => onRemoveWall(wall.id)}
-                      className="text-warrior-400 hover:text-warrior-300 text-xs transition-colors"
+                      className="text-rose-400 hover:text-rose-300 text-xs transition-colors"
                       aria-label={`Remove wall ${wall.id}`}
                     >
                       ✕

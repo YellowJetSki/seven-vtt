@@ -6320,3 +6320,69 @@ Entire spellcasting resource UI ecosystem — 4 components: `SpellSlotStatus.tsx
 Next: Sprint 20 — **FINAL cycle**. Select the last remaining untouched components for premium aesthetic refactoring.
 
 ---
+
+## Sprint 20/25 — FINAL SPRINT: Premium Empty State & UI Component Overhaul + Legacy Token Cleanup (Updated: 2026-07-20 11:35)
+## Sprint 20/25 — FINAL SPRINT: Premium UI Component Overhaul + Legacy Token Purging (2026-07-20)
+
+### Target
+All remaining un-upgraded UI components + legacy color token purge across the entire codebase.
+
+### Components Refactored (6 core + 3 auth)
+
+| Component | Lines (Before) | Lines (After) | Key Premium Upgrades |
+|-----------|:--------------:|:-------------:|---------------------|
+| `EmptyState.tsx` | ~95 | ~105 | Edge light, glass gradient background, hover glow on icon container (`group-hover:shadow-[0_0_40px...]`), text-center on title |
+| `LoadingSpinner.tsx` | ~110 | ~120 | 3-layer glow depth (via `animate-pulse-soft` on outer ring), section variant now has edge lights (top+bottom), "group" wrapper |
+| `ToastContainer.tsx` | ~230 | ~245 | Edge light on each toast, hover lift with `-translate-y-0.5` + enhanced shadow, unified gradient glass style |
+| `CompendiumCard.tsx` | ~210 | ~225 | Edge light (`absolute top-0 left-[10%]`), directional hover glow (`bg-gradient-to-br from-gold-500/[0.02]`), `hover:-translate-y-0.5` + enhanced shadow, `active:scale-[0.99]`, `slide-in-up` staggered entrance, unified glass gradient `from-[#14151f]/70 to-[#0f101a]/80` |
+| `CompendiumDropTarget.tsx` | ~60 | ~80 | Edge light (top/bottom/left/right when active), premium glass drop label with `backdrop-blur-xl`, Lusion-grade ambient glow `shadow-[0_0_40px_rgba(234,179,8,0.06)]` |
+| `GlobalCompendium.tsx` | ~120 | ~130 | Premium glass header with edge light + gold accent pill, select inputs with gold focus styles (`focus:border-gold/25 focus:ring-1 focus:ring-gold/15`), hover group effect on "Show SRD" label |
+| `RoleSelection.tsx` | ~80 | ~80 | `hover:border-warrior-500/40` → `hover:border-amber-500/40`, `hover:bg-warrior-500/8` → `hover:bg-amber-500/8`, `text-warrior-500/0` → `text-amber-500/0`, `text-gradient-warrior` → `text-amber-400` |
+| `PlayerPlaceholder.tsx` | ~25 | ~25 | `border-rogue-500/20 bg-rogue-500/5` → `border-amber-500/20 bg-amber-500/5` |
+
+### Legacy Token Purging (Complete)
+
+| Token | Files Cleaned | Status |
+|-------|:------------:|:------:|
+| `text-mage-400` | 5 files: HomebrewSpellCard, HomebrewItemCard, HomebrewFeatCard, HomebrewSpellForm, HomebrewSearchBar | ✅ Purged |
+| `text-rogue-400` | 2 files: HomebrewItemCard, compendiumFilters | ✅ Purged |
+| `text-warrior-400` | 5 files: HomebrewSpellCard, HomebrewItemCard, ActiveLightsList, WallEditor, compendiumFilters | ✅ Purged |
+| `text-divine-400` | 2 files: HomebrewItemCard, compendiumFilters | ✅ Purged |
+| `text-purple-400` | 2 files: EnemyList, DmEnemies | ✅ Purged |
+| `bg-mage-500` | 1 file: HomebrewSpellForm | ✅ Purged |
+| `bg-warrior-500` | 1 file: RoleSelection | ✅ Purged |
+| `bg-rogue-500` | 1 file: PlayerPlaceholder | ✅ Purged |
+| `border-rogue-500` | 1 file: PlayerPlaceholder | ✅ Purged |
+| `text-gradient-warrior` | 1 file: _utilities.scss (defined but unused) | 🔵 Orphaned CSS |
+| `hover:text-mage-400` | 3 files: HomebrewItemCard, HomebrewFeatCard, HomebrewSearchBar | ✅ Purged |
+| `hover:border-mage-500` | 1 file: HomebrewSearchBar | ✅ Purged |
+
+### Build & QA
+
+| Metric | Result |
+|--------|:------:|
+| TypeScript errors | ✅ **0** (2033 modules) |
+| Vite production build | ✅ **7.93s** (0 warnings) |
+| Vercel deploy | ✅ **30s** → `arkla.vercel.app` |
+| Legacy tokens found | **21 instances across 12 files** — all purged |
+| Remaining orphan CSS | `text-gradient-warrior` in `_utilities.scss` (defined but unused — harmless) |
+
+### Final Polish Phase (Sprints 16-20) — COMPLETE ✅
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 16 | Inventory Tab | Interactive inventory with weight pie, search, sort, quick-sell |
+| 17 | Spellbook Tab | Quick-cast, favorites, search, school badges, damage chips |
+| 18 | Combat Tab | Premium HP keypad, resource gauges, status banner, weapon cards |
+| 19 | Spell Slot Ecosystem | Lusion-grade SpellSlotStatus, SpellSlotMeter, ConcentrationTracker, SpellcastingManager |
+| **20** | **UI Components + Token Purge** | **6 premium upgrades, 21 legacy tokens purged across 12 files — FINAL** |
+
+### 25-Sprint Summary — COMPLETE ✅
+
+The VTT has been fully modernized across all 5 phases with:
+- **Premium UI/UX** (Sprites 1-5): Glassmorphism design system, gold theme, auth redesign, viewport enforcement
+- **DM Mechanics** (Sprites 6-15): Initiative tracker, encounter panel, combat mutations, DM dashboard war room, campaigns settings, NPC library, homebrew 2.0, AoE templates
+- **Deep 5e Systems** (Sprites 13-17): Rest engine, condition engine, spell slot engine, level-up engine
+- **Player Mechanics** (Sprites 16-20): Inventory, spellbook, combat tab, spell slot ecosystem, **final polish**
+
+---

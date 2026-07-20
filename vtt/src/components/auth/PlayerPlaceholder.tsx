@@ -1,3 +1,9 @@
+/**
+ * STᚱ VTT — Player Placeholder (Premium Gold)
+ *
+ * Placeholder state shown when player sign-in is not available.
+ */
+
 interface PlayerPlaceholderProps {
   onBack: () => void;
 }
@@ -16,7 +22,7 @@ export default function PlayerPlaceholder({ onBack }: PlayerPlaceholderProps) {
         Back
       </button>
 
-      <div className="p-6 rounded-xl border border-rogue-500/20 bg-rogue-500/5">
+      <div className="p-6 rounded-xl border border-amber-500/20 bg-amber-500/5">
         <p className="text-surface-300 text-sm text-center">
           Player sign-in will be available once characters are created by the DM.
         </p>

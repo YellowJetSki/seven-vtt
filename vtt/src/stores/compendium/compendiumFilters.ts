@@ -17,11 +17,11 @@ export interface CompendiumFilterState {
 export function rarityColor(rarity: string): string {
   const map: Record<string, string> = {
     common: "text-surface-400",
-    uncommon: "text-rogue-400",
-    rare: "text-mage-400",
+    uncommon: "text-emerald-400",
+    rare: "text-amber-400",
     very_rare: "text-gold-400",
-    legendary: "text-divine-400",
-    artifact: "text-warrior-400",
+    legendary: "text-rose-400",
+    artifact: "text-violet-400",
   };
   return map[rarity] ?? "text-surface-400";
 }

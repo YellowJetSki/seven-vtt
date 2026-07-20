@@ -206,7 +206,7 @@ function ClassInput({ classes, onChange }: { classes: string[]; onChange: (c: st
   return (
     <div className="flex flex-wrap gap-1.5 mb-1">
       {classes.map((cls, i) => (
-        <span key={i} className="flex items-center gap-1 bg-mage-500/10 border border-mage-500/20 text-mage-400 text-[10px] px-2 py-0.5 rounded-full">
+        <span key={i} className="flex items-center gap-1 bg-gold-500/10 border border-gold-500/20 text-gold-400 text-[10px] px-2 py-0.5 rounded-full">
           {cls}
           <button type="button" onClick={() => onChange(classes.filter((_, j) => j !== i))} className="hover:text-red-400 transition-colors">&times;</button>
         </span>

@@ -21,15 +21,15 @@ interface HomebrewSpellCardProps {
 
 const LEVEL_COLORS: Record<string, string> = {
   "0": "text-surface-400",
-  "1": "text-green-400",
-  "2": "text-green-400",
-  "3": "text-green-400",
-  "4": "text-mage-400",
-  "5": "text-mage-400",
-  "6": "text-mage-400",
-  "7": "text-red-400",
-  "8": "text-red-400",
-  "9": "text-warrior-400",
+  "1": "text-emerald-400",
+  "2": "text-emerald-400",
+  "3": "text-emerald-400",
+  "4": "text-gold-400",
+  "5": "text-gold-400",
+  "6": "text-gold-400",
+  "7": "text-rose-400",
+  "8": "text-rose-400",
+  "9": "text-violet-400",
 };
 
 export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate, onToggleVisibility, isBulkMode, isSelected, onToggleSelect }: HomebrewSpellCardProps) {
@@ -66,11 +66,11 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
             <span className="text-[10px] text-surface-500">{spell.range}</span>
             <span className="text-[10px] text-gold-400">{spell.components?.join("")}</span>
             {spell.concentration && <span className="text-[10px] text-amber-400">Concentration</span>}
-            {spell.ritual && <span className="text-[10px] text-mage-400">Ritual</span>}
+            {spell.ritual && <span className="text-[10px] text-violet-400">Ritual</span>}
 
             {/* Damage/Healing */}
             {spell.damageDice && (
-              <span className="text-[10px] text-warrior-400 font-medium">
+              <span className="text-[10px] text-rose-400 font-medium">
                 {spell.damageDice}{spell.damageType ? ` ${spell.damageType}` : ""}
               </span>
             )}
@@ -84,14 +84,14 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
             )}
 
             {/* Save DC / Attack */}
-            {spell.saveDC && <span className="text-[10px] text-mage-400">DC {spell.saveDC}</span>}
-            {spell.spellAttackBonus && <span className="text-[10px] text-mage-400">+{spell.spellAttackBonus} ATK</span>}
+            {spell.saveDC && <span className="text-[10px] text-gold-400">DC {spell.saveDC}</span>}
+            {spell.spellAttackBonus && <span className="text-[10px] text-gold-400">+{spell.spellAttackBonus} ATK</span>}
           </div>
 
           {spell.classes && spell.classes.length > 0 && (
             <div className="flex gap-1 mt-1.5">
               {spell.classes.map((cls, i) => (
-                <span key={i} className="text-[9px] bg-mage-500/10 text-mage-400 px-1.5 py-0.5 rounded">{cls}</span>
+                <span key={i} className="text-[9px] bg-gold-500/10 text-gold-400 px-1.5 py-0.5 rounded">{cls}</span>
               ))}
             </div>
           )}
@@ -102,7 +102,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
             <button onClick={() => onToggleVisibility(spell.id, !spell.visibleToPlayers)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-500 hover:text-gold-400 transition-all active:scale-90" title={spell.visibleToPlayers ? "Hide from players" : "Show to players"}>
               {spell.visibleToPlayers ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
-            <button onClick={() => onDuplicate(spell)} className="p-1.5 rounded-lg hover:bg-mage-500/10 text-surface-400 hover:text-mage-400 transition-all active:scale-90" title="Duplicate">
+            <button onClick={() => onDuplicate(spell)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all active:scale-90" title="Duplicate">
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button onClick={() => onEdit(spell)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">

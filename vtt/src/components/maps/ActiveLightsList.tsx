@@ -16,7 +16,7 @@ export default function ActiveLightsList({ lights, onRemove }: ActiveLightsListP
             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: light.colorHex }} />
             <span className="text-xs text-surface-300">{light.radius}′/{light.dimRadius}′</span>
           </div>
-          <button onClick={() => onRemove(light.id)} className="text-warrior-400 hover:text-warrior-300 text-xs transition-colors" aria-label={`Remove light ${light.id}`}>✕</button>
+          <button onClick={() => onRemove(light.id)} className="text-rose-400 hover:text-rose-300 text-xs transition-colors" aria-label={`Remove light ${light.id}`}>✕</button>
         </div>
       ))}
     </div>

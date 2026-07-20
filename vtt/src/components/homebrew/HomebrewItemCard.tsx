@@ -21,11 +21,11 @@ interface HomebrewItemCardProps {
 
 const RARITY_COLORS: Record<string, string> = {
   common: "text-surface-400",
-  uncommon: "text-rogue-400",
-  rare: "text-mage-400",
-  "very rare": "text-gold-400",
-  legendary: "text-divine-400",
-  artifact: "text-warrior-400",
+  uncommon: "text-amber-400",
+  rare: "text-gold-400",
+  "very rare": "text-rose-400",
+  legendary: "text-violet-400",
+  artifact: "text-emerald-400",
 };
 
 export default function HomebrewItemCard({
@@ -74,15 +74,15 @@ export default function HomebrewItemCard({
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <span className="text-[10px] uppercase tracking-wider bg-surface-700/40 text-surface-400 px-1.5 py-0.5 rounded">{item.category}</span>
             {isWeapon && item.damageDice && (
-              <span className="text-[10px] text-warrior-400 font-medium">{item.damageDice}{item.damageType ? ` ${item.damageType}` : ""}{item.attackBonus ? ` +${item.attackBonus}` : ""}</span>
+              <span className="text-[10px] text-rose-400 font-medium">{item.damageDice}{item.damageType ? ` ${item.damageType}` : ""}{item.attackBonus ? ` +${item.attackBonus}` : ""}</span>
             )}
             {isArmor && item.acBonus && (
-              <span className="text-[10px] text-mage-400 font-medium">AC {item.acBonus}</span>
+              <span className="text-[10px] text-gold-400 font-medium">AC {item.acBonus}</span>
             )}
             {item.requiresAttunement && <span className="text-[10px] text-gold-400 font-medium">⚡ Attunement</span>}
             {hasCharges && <span className="text-[10px] text-amber-400">⟳ {item.charges}/{item.chargesMax}</span>}
             <span className="text-[10px] text-surface-500">{item.weight} lb</span>
-            <span className="text-[10px] text-divine-400">{item.value} gp</span>
+            <span className="text-[10px] text-gold-400">{item.value} gp</span>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ export default function HomebrewItemCard({
             >
               {item.visibleToPlayers ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
-            <button onClick={() => onDuplicate(item)} className="p-1.5 rounded-lg hover:bg-mage-500/10 text-surface-400 hover:text-mage-400 transition-all active:scale-90" title="Duplicate">
+            <button onClick={() => onDuplicate(item)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all active:scale-90" title="Duplicate">
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-gold-500/10 text-surface-400 hover:text-gold-400 transition-all duration-150 active:scale-90">

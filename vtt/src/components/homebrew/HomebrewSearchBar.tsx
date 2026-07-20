@@ -72,7 +72,7 @@ export default function HomebrewSearchBar({
 
         <button
           onClick={handleImportClick}
-          className="p-2 rounded-xl text-surface-400 hover:text-mage-400 hover:bg-mage-500/10 border border-transparent hover:border-mage-500/25 transition-all duration-200 active:scale-90"
+          className="p-2 rounded-xl text-surface-400 hover:text-gold-400 hover:bg-gold-500/10 border border-transparent hover:border-gold-500/25 transition-all duration-200 active:scale-90"
           title="Import homebrew from JSON"
         >
           <Upload className="w-4 h-4" />
