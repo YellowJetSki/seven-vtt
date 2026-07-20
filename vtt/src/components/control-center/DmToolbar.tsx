@@ -27,6 +27,7 @@ interface DmToolbarProps {
   onAddEnemyToken: () => void;
   onBack: () => void;
   onShare?: () => void;
+  onAoEDamage?: () => void;
 }
 
 export default function DmToolbar({
@@ -128,8 +129,18 @@ export default function DmToolbar({
         </button>
       </div>
 
-      {/* Right: Theatric launcher + Share */}
+      {/* Right: Theatric launcher + Share + AoE */}
       <div className="flex items-center gap-2 shrink-0">
+        {onAoEDamage && (
+          <button
+            onClick={onAoEDamage}
+            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-rose-400 hover:border-rose-500/15 hover:bg-rose-500/5 transition-all duration-150 font-medium flex items-center gap-1"
+            title="Apply AoE damage to multiple targets"
+          >
+            <span>💥</span>
+            <span>AoE</span>
+          </button>
+        )}
         {onShare && (
           <button
             onClick={onShare}

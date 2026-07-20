@@ -2,11 +2,22 @@ import type { StateCreator } from "zustand";
 import type { CombatLogEntry, Combatant } from "@/types";
 import type { CombatSlice } from "./combatSlice";
 import { clampHP, createLogEntry } from "./combat-helpers";
+import type { AoEDamageResult } from "@/lib/combat/aoe-damage-engine";
+import { buildAoEHPUpdates, createAoELogEntry } from "@/lib/combat/aoe-damage-engine";
 
 export interface CombatHpActions {
   damageCombatant: (combatantId: string, amount: number) => void;
   healCombatant: (combatantId: string, amount: number) => void;
   setTempHP: (combatantId: string, amount: number) => void;
+  /** Apply AoE damage to multiple combatants at once with per-target resistance */
+  aoeDamageCombatants: (
+    actorId: string,
+    actorName: string,
+    spellName: string,
+    damage: number,
+    damageType: string,
+    result: AoEDamageResult
+  ) => void;
 }
 
 export interface CombatEffectActions {
@@ -38,6 +49,56 @@ export const createCombatHpSlice: StateCreator<CombatSlice & CombatHpSlice, [], 
       const log = [createLogEntry("damage", combatantId, c.name, { value: amount })];
       if (dead && !c.isDead) log.push(createLogEntry("death", combatantId, c.name));
       return { activeEncounter: { ...state.activeEncounter, combatants: mapCombatants(state.activeEncounter.combatants, combatantId, { hitPoints: hp, isDead: dead }) }, combatLog: [...state.combatLog, ...log] };
+    }),
+
+  aoeDamageCombatants: (
+    actorId: string,
+    actorName: string,
+    spellName: string,
+    damage: number,
+    damageType: string,
+    result: AoEDamageResult
+  ) =>
+    set((state) => {
+      if (!state.activeEncounter) return state;
+
+      // Build per-combatant HP updates
+      const updates = buildAoEHPUpdates(result);
+
+      // Apply all HP changes simultaneously
+      let combatants = [...state.activeEncounter.combatants];
+      const logEntries: CombatLogEntry[] = [];
+
+      for (const update of updates) {
+        const existing = combatants.find((c) => c.id === update.combatantId);
+        if (!existing) continue;
+        combatants = mapCombatants(combatants, update.combatantId, {
+          hitPoints: update.hitPoints,
+          isDead: update.isDead,
+        });
+      }
+
+      // Create a single grouped AoE log entry
+      const aoeEntry = createAoELogEntry(
+        actorId,
+        actorName,
+        spellName,
+        damage,
+        damageType,
+        result
+      );
+      logEntries.push(aoeEntry);
+
+      // Add death entries (deduplicated by engine)
+      logEntries.push(...result.deathEntries);
+
+      return {
+        activeEncounter: {
+          ...state.activeEncounter,
+          combatants,
+        },
+        combatLog: [...state.combatLog, ...logEntries],
+      };
     }),
 
   healCombatant: (combatantId: string, amount: number) =>

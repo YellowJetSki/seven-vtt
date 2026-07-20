@@ -29,12 +29,15 @@ import ControlCenterEmptyState from "./ControlCenterEmptyState";
 import CanvasActionBar from "./CanvasActionBar";
 import DmSharePicker from "./DmSharePicker";
 import TokenHpPopover from "./TokenHpPopover";
+import MultiTargetAoEPopover from "@/components/encounters/MultiTargetAoEPopover";
 import { useDmControlCenter } from "./useDmControlCenter";
 import type { MapToken } from "@/types";
 
 export default function DmControlCenter() {
   const state = useDmControlCenter();
   const [showSharePicker, setShowSharePicker] = useState(false);
+  const [showAoEPopover, setShowAoEPopover] = useState(false);
+  const activeEncounter = useCombatStore((s) => s.activeEncounter);
 
   // ── Cycle 23: Combat flow actions ──
   const nextTurn = useCombatStore((s) => s.nextTurn);
@@ -64,6 +67,16 @@ export default function DmControlCenter() {
           position={state.hpPopoverPosition}
           onClose={state.handleCloseHpPopover}
           onHpChange={state.handleHpChangeFromPopover}
+        />
+      )}
+
+      {/* ─── AoE Damage Popover ──────────────────────── */}
+      {showAoEPopover && activeEncounter && (
+        <MultiTargetAoEPopover
+          combatants={activeEncounter.combatants}
+          isOpen={showAoEPopover}
+          onClose={() => setShowAoEPopover(false)}
+          position={{ top: window.innerHeight / 2 - 300, left: window.innerWidth / 2 - 190 }}
         />
       )}
 
@@ -115,6 +128,7 @@ export default function DmControlCenter() {
               onAddEnemyToken={state.handleAddEnemyToken}
               onBack={state.handleGoBack}
               onShare={() => setShowSharePicker(true)}
+              onAoEDamage={() => setShowAoEPopover(true)}
             />
           </div>
         </div>
