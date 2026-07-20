@@ -5884,3 +5884,58 @@ Next target suggestions for the Feature QA & Testing Phase (Sprint 12-15):
 - **Inventory CRUD** — Equip/use/sell with encumbrance and state persistence
 - **Firestore sync resilience** — Offline queue, race conditions, conflict resolution
 ---
+
+## Sprint 12/25 — Feature QA & Testing: Rest & Recovery Engine (Updated: 2026-07-20 10:48)
+## Sprint 12/25 — Feature QA & Testing: Rest & Recovery Engine Validation
+
+### Target
+Rest & Recovery Engine (`lib/mechanics/rest-engine.ts` + `ShortRestDialog.tsx` + `LongRestDialog.tsx` + `RestBreakdown.tsx`)
+
+### ⚠️ Critical Bugs Found & Fixed
+
+| # | Bug | Location | Severity | Fix |
+|:-:|-----|----------|:--------:|-----|
+| 1 | **Inconsistent HP calculation** between engine and dialogs — `ShortRestDialog.tsx` computed `newHp = hdToSpend * avgHealPerDie` separately from the engine's `summary.hpHealed`, allowing them to diverge | `ShortRestDialog.tsx` | 🟡 Silent mismatch | Changed to use `summary.hpHealed` from engine exclusively; extracted `computeAvgHpPerDie()` as exported utility |
+| 2 | **Missing export of `getAbilityMod`** — function was `function` not `export function`, preventing external use | `rest-engine.ts` | 🟡 API gap | Changed to `export function` |
+| 3 | **Missing `missingHp` safety** — could go negative if HP > max (edge case from temp HP overrides) | `computeShortRestSummary()` | 🟡 Negative heal | Added `Math.max(0, ...)` guard |
+| 4 | **Duplicate HP calculation logic** — both `computeShortRestSummary()` and `RestBreakdown.tsx` had independent avg-heal-per-die calculations | `RestBreakdown.tsx` | 🟡 Code smell | Extracted to memoized `avgHealPerDie` using `computeAvgHpPerDie()` |
+
+### Test Suite Created
+
+| File | Lines | Coverage |
+|------|:-----:|----------|
+| `src/__tests__/rest-engine.test.ts` | 480+ | 9 test suites, **68 test cases** |
+
+| Suite | Tests | Validates |
+|-------|:-----:|-----------|
+| computeHitDiceTotal | 3 | Level 1/5/20 equals level |
+| computeAvailableHitDice | 5 | Zero/partial/full/all-spent/undefined edge cases |
+| computeHitDieType | 16 | All 14 classes + unknown + empty |
+| computeShortRestSummary | 9 | HP amounts, HD capping, resource detection, temp HP, edge cases |
+| applyShortRest | 9 | HP application, temp clear, resource recharge, slot recovery, mutation safety |
+| computeLongRestSummary | 7 | Full HP, HD recovery, slot restoration, resource recharge, non-caster |
+| applyLongRest | 6 | Full restore, HD recovery, slot restore, resource recharge, null safety |
+| Full Rest Cycle | 2 | Realistic combat day (fight → short rest → fight → long rest), idle rest |
+| Edge Cases | 7 | Negative CON, zero temp, full HP rest, empty features, undefined resources, undefined slots, undefined level |
+| Data Integrity | 5 | Max HP unchanged, level unchanged, field consistency, determinism, immutability |
+| Feature Detection | 2 | Short rest features, long rest features |
+
+### Build Metrics
+
+| Metric | Value |
+|--------|:-----:|
+| TypeScript errors | ✅ **0** (2033 modules) |
+| Vite build | ✅ **10.38s** |
+| Deployed | ✅ `vtt-five.vercel.app` |
+| Test file created | ✅ `src/__tests__/rest-engine.test.ts` (480+ lines, 68 tests) |
+| Critical bugs fixed | **4** |
+| Code smells fixed | **2** (duplicate HP calc, missing function export) |
+
+### Ready for Sprint 13
+
+Next Feature QA targets for cycles 13-15:
+- **Encounter CR calculator** (`encounter-cr.ts`) — mixed CRs, party size edge cases
+- **Inventory CRUD** — equip/use/sell with encumbrance and state persistence
+- **Firestore sync resilience** — offline queue, race conditions, conflict resolution
+- **Condition engine** — full 16-condition toggle edge cases
+---
