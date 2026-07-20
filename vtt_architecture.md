@@ -10390,3 +10390,54 @@ Dragon breath deals 42 fire damage to the party
 - **After:** ~8 seconds from any page
 
 ---
+
+## Sprint 28/41 — Feature Expansion Phase (Cycle 9 of 10): DM NPC Quick-Create Popover (Updated: 2026-07-20 19:48)
+## Sprint 28/41 — Globally Accessible DM NPC Quick-Create Popover
+
+### Summary
+Built a globally accessible NPC/monster statblock creator that builds a complete 5e enemy (name, type, size, CR, AC, HP, 6 ability scores, structured attacks) in seconds from ANY page, and instantly injects it into the active combat encounter or campaign monster list.
+
+### Architectural Changes
+
+| File | Change | Impact |
+|------|--------|--------|
+| `components/control-center/DmNpcQuickCreatePopover.tsx` | **NEW** — ~480 lines | Full NPC statblock builder with ability scores, CR auto-math, attack manager, one-click "Create & Add to Combat" |
+| `stores/uiStore.ts` | Added `showNpcQuickCreate` state + `setNpcQuickCreate` action | State management for the overlay |
+| `components/layout/AppShell.tsx` | Added sidebar event listener + DmNpcQuickCreatePopover rendering | Global mount for DM role |
+| `components/layout/Sidebar.tsx` | Added "👾 NPC Quick Create" sidebar button | One-click access from sidebar |
+
+### Features
+
+| Feature | Detail |
+|---------|--------|
+| **Full statblock form** | Name, 15 creature types, 6 sizes, 19 CR values (0→20) |
+| **Auto-computed AC/HP from CR** | Selecting CR auto-fills AC and HP per DMG averages |
+| **Override AC/HP** | Manual number inputs for custom monsters |
+| **6 ability scores** | Individual input per ability with live modifier display |
+| **Standard Array preset** | One-click 15/14/13/12/10/8 assignment |
+| **Structured attack manager** | Add attacks with name, bonus, damage dice, type, melee/ranged toggle |
+| **Attack removal** | ✕ button per attack to remove |
+| **Live preview card** | Shows name, type, size, CR, AC, HP, XP, first attack — updates in real time |
+| **One-click "Create & Add to Combat"** | Writes to both campaign store + combat encounter simultaneously |
+| **Active encounter detection** | Button text changes: "Create & Add to Combat" vs "Create NPC" |
+| **Flash messages** | Success/warning feedback for all actions |
+| **Form reset on create** | Cleans form after successful creation for rapid monster generation |
+
+### DM Workflow (Live Combat)
+
+```
+The wizard's Conjure Animals spell summons 2 Dire Wolves
+
+STEP 1: Open sidebar → "👾 NPC Quick Create"
+STEP 2: Enter "Dire Wolf" → Beast → Large → CR 1
+STEP 3: HP/AC auto-fills (30/13) — overridable
+STEP 4: Add attack: "Bite" +5, "2d6+3" piercing, Melee
+STEP 5: Preview card shows: Dire Wolf · Large · Beast · CR 1 · AC 13 · HP 30
+STEP 6: Click "Create & Add to Combat"
+        → Enemy saved to campaign + combatant added to initiative tracker
+STEP 7: Fill name, change size to Medium → "Create & Add to Combat" again
+        → Second Dire Wolf appears in combat
+Total time per wolf: ~10 seconds
+Before: ~2 minutes navigating to Encounters → Bestiary → Quick Create → manually add to combat
+
+---
