@@ -7751,3 +7751,64 @@ Strategy:
 | 16 | DM Quick Reference | 12-section rules overlay accessible from any page |
 | **17** | **Encounter Launch Flow** | **One-click deploy of enemies as map tokens** |
 ---
+
+## Sprint 18/30 — Automated Initiative Roll (Updated: 2026-07-20 13:33)
+## Sprint 18/30 — Real-Play D&D Mechanics: Automated Initiative Roll & Combat Start (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 6 OF 10
+**Target:** Replace manual initiative entry with an automated d20 + DEX mod system that integrates with the Encounter Launch flow from Sprint 17.
+
+### Problem Solved
+Before this sprint, after deploying enemies to a map, the DM had to:
+1. Open the Initiative Tracker panel
+2. Manually click "Start Combat"
+3. Manually enter each combatant's initiative value
+4. Manually sort the turn order
+
+Now: After deploying → click "Roll Initiative" → animated d20 results appear → confirm → combat starts automatically with sorted turn order.
+
+### New Files Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/combat/initiative-engine.ts` | 135 | Pure utility functions: `getDexModifier()`, `rollInitiativeDie()`, `sortByInitiative()` (5e RAW tiebreaker), `buildCombatantFromToken()`, `buildCombatantsFromTokens()`, `getInitiativeRange()` |
+| `components/encounters/InitiativeRollOverlay.tsx` | 420 | Premium animated overlay with: d20 icon component, color-coded initiative tiers (gold/amber/violet/slate/rose), animated "rolling" spinner, sorted combatant list, per-combatant re-roll, confirm & start combat button, summary footer |
+
+### Files Modified (2)
+
+| File | Changes |
+|------|---------|
+| `EncounterLaunchModal.tsx` | Added `deployedTokenSources` state tracking. Modified `handleDeploy` to stop auto-navigating after deploy. Added "Roll Initiative" button to the deployed success state. Integrated `InitiativeRollOverlay` component. |
+
+### Initiative Roll System Features
+
+| Feature | Detail |
+|---------|--------|
+| **Auto-detect players** | Reads campaign characters and auto-creates combatant entries with their DEX scores |
+| **Auto-detect enemies** | Uses deployed token sources from sprint 17 (enemy names, type, HP) |
+| **D20 roll** | `Math.floor(Math.random() * 20) + 1` — proper 1d20 |
+| **DEX modifier** | `Math.floor((score - 10) / 2)` from character ability scores |
+| **5e RAW tiebreaker** | Initiative descending → DEX mod descending → alphabetical |
+| **Color-coded tiers** | ≥20 gold, ≥15 amber, ≥10 violet, ≥5 slate, <5 rose |
+| **Animated d20 SVG** | Custom SVG polygon with rotating animation during roll |
+| **Per-combatant re-roll** | Individual ↻ button for re-rolling a single combatant |
+| **Stats footer** | Highest/lowest/average initiative summary |
+| **Combat auto-start** | `createEncounterWithCombatants()` + `startCombat()` on confirm |
+
+### Quality Gates
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (no new code errors: 357 app-coded errors → all pre-existing parser config)
+- Git checkpoint: ✅ Sprint 18 saved
+- Architecture ledger: ✅ Updated
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 13 | Combat HP HUD | Floating HP management panel from Player Cards |
+| 14 | Loot Deposit Panel | Item/currency deposit with presets + undo |
+| 15 | Condition Quick-Toggle | 16-condition management with concentration tracker |
+| 16 | DM Quick Reference | 12-section rules overlay accessible from any page |
+| 17 | Encounter Launch Flow | One-click deploy of enemies as map tokens |
+| **18** | **Automated Initiative Roll** | **Animated d20 roll + 5e sorted turn order + combat auto-start** |
+---
