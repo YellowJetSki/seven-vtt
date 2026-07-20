@@ -8931,3 +8931,84 @@ Browser reconnects
 - Modified files: 4 (campaign-service.ts, useFirestoreEntitySync.ts, AppShell.tsx, ConnectionBanner.tsx)
 
 ---
+
+## Sprint 6/41 — Firebase & Login Phase (Cycle 4 of 10) (Updated: 2026-07-20 18:25)
+## Sprint 6/41 — Firebase & Login Phase (Complete)
+
+### Deliverables
+
+#### 1. Firestore Security Rules Hardened (`firestore.rules`)
+Added **3 missing subcollection paths** to the security rules:
+- `campaigns/{id}/dm-share/{shareDocId}` — DM pushes images/items to player screens in real-time. Players read via onSnapshot.
+- `campaigns/{id}/combatLog/{logEntryId}` — DM writes combat log entries, players read only.
+- `campaigns/{id}/sessions/{sessionId}/combatants/{combatantId}` — Explicit nested path (previously only covered by deep wildcard).
+
+All 13+ security rule paths now have explicit, audited access control:
+- **DM**: Full CRUD on all paths
+- **Player**: Read on all paths, write only on own character's gameplay fields (10-field whitelist)
+
+#### 2. Retry Exhaustion Tracking (`authStore.ts` + 3 sync hooks)
+**Added `syncExhausted` state** to `useAuthStore`:
+- When all 3 retry attempts fail in any sync hook (characters, combat, entities), calls `setSyncExhausted(true)`
+- When sync succeeds, `setFirebaseConnected(true)` also resets `syncExhausted` to `false`
+- `logout()` clears all connection state including `syncExhausted`
+- Persisted: only auth state, role, username, characterId (connection state is volatile)
+
+**Updated 3 hooks** to signal exhaustion:
+- `useFirestoreSync.ts` — `setSyncExhausted(true)` when `retryCountRef.current >= MAX_RETRIES`
+- `useFirestoreCombatSync.ts` — Same pattern
+- `useFirestoreEntitySync.ts` — Same pattern on both init failure AND watchdog timeout
+
+#### 3. Persistent Sync Failure Banner (`ConnectionBanner.tsx`)
+**Added 3rd state**: `"exhausted"` (amber, persistent)
+| State | Color | Dismiss | Message |
+|-------|:-----:|:-------:|---------|
+| connected | Emerald | Auto-dismiss 1.2s | "Synced" |
+| offline | Rose | While disconnected | "Connection lost" |
+| exhausted | Amber | **Persistent** | "Sync Unavailable" |
+
+Exhausted state features:
+- Amber ping ring animation around the dot
+- "Last successful sync X ago" with pending mutations count
+- Stays visible until sync is restored (either retry succeeds or page refresh)
+- Dot shows amber color consistently
+
+#### 4. Offline Queue Wiring (`useEntityMutations.ts` + `useCombatMutations.ts`)
+**`useEntityMutations.ts`** — Every entity write now enqueues to offline queue on failure:
+- `saveEnemy`, `deleteEnemy` — `{ type: "entity", action: "saveEnemy" }`
+- `saveEncounter`, `deleteEncounter` — `{ type: "entity", action: "saveEncounter" }`
+- `saveMap`, `deleteMap` — `{ type: "entity", action: "saveMap" }`
+- `saveEntry`, `deleteEntry` — `{ type: "entity", action: "saveJournal" }`
+
+**`useCombatMutations.ts`** — Combat writes now enqueue on failure:
+- Every `setActiveEncounter` call catches Firestore errors and calls `enqueueMutation("combat", "setActiveEncounter", ...)`
+- Includes mutation snapshot metadata for traceability
+
+### Architecture — State Flow (After Sprint 6)
+
+```
+Firestore connection fails for 3+ retries
+  └─ useFirestoreSync/useFirestoreCombatSync/useFirestoreEntitySync
+      └─ setSyncExhausted(true)
+          └─ ConnectionBanner shows amber "Sync Unavailable" (persistent)
+          └─ Entity/Combat mutations continue writing to Zustand AND offline queue
+
+Mutation fails (network blip)
+  └─ useCampaignWrite / useWriteCombat .catch()
+      └─ enqueueMutation(type, action, payload) → localStorage
+          └─ ConnectionBanner shows "X pending updates"
+
+Connection restores
+  └─ onSnapshot fires → setFirebaseConnected(true) → setSyncExhausted(false)
+      └─ ConnectionBanner shows emerald "Synced" (auto-dismiss 1.2s)
+      └─ useOfflineQueue drains pending mutations → auto-flush
+```
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2115 modules, identical to Sprint 5)
+- Vite build: ✅ Success, deployed to arkla.vercel.app
+- Git checkpoint: ✅ Sprint 6 saved
+- Files modified: **7** (firestore.rules, authStore.ts, useFirestoreSync.ts, useFirestoreCombatSync.ts, useFirestoreEntitySync.ts, useEntityMutations.ts, useCombatMutations.ts, ConnectionBanner.tsx)
+- Files created: **0** (all infrastructure improvements to existing files)
+
+---
