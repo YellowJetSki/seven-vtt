@@ -1,9 +1,10 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useFirestoreSync } from "@/hooks/useFirestoreSync";
 import { useFirestoreCombatSync } from "@/hooks/useFirestoreCombatSync";
 import { useFirestoreEntitySync } from "@/hooks/useFirestoreEntitySync";
 import { useAuthStore } from "@/stores/authStore";
-import { hasValidConfig } from "@/lib/firebase";
+import { onFirebaseAuthChanged, hasValidConfig } from "@/lib/firebase";
 import LoginPage from "./pages/LoginPage";
 import PlayerLoginPage from "./pages/PlayerLoginPage";
 import PlayerJoinPage from "./pages/PlayerJoinPage";
@@ -27,10 +28,36 @@ function FirestoreSyncGate() {
   return null;
 }
 
+function FirebaseAuthGate() {
+  const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
+  const role = useAuthStore((s) => s.role);
+  const login = useAuthStore((s) => s.login);
+
+  // Firebase Auth state listener — restores session on page refresh
+  useEffect(() => {
+    if (!hasValidConfig()) return;
+
+    const unsub = onFirebaseAuthChanged((user) => {
+      if (user && role === null) {
+        // Firebase restored a user session — auto-login via Zustand
+        // Use the email prefix as username (e.g., "MikeJello@arkla.vtt" → "MikeJello")
+        const emailName = user.email?.split("@")[0] || "DM";
+        login(emailName, "");
+        useAuthStore.getState().setFirebaseConnected(true);
+      }
+    });
+
+    return unsub;
+  }, [role, login]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <>
       <FirestoreSyncGate />
+      <FirebaseAuthGate />
 
     <Routes>
       {/* Public routes */}

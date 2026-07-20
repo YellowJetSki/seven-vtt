@@ -16,6 +16,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { loginFirebaseDm, hasValidConfig } from "@/lib/firebase";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ export default function LoginPage() {
   const role = useAuthStore((s) => s.role);
   const login = useAuthStore((s) => s.login);
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
+  const setFirebaseAuthLoading = useAuthStore((s) => s.setFirebaseAuthLoading);
+  const setFirebaseAuthError = useAuthStore((s) => s.setFirebaseAuthError);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +33,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [focusedField, setFocusedField] = useState<"username" | "password" | null>(null);
   const syncExhausted = useAuthStore((s) => s.syncExhausted);
+  const firebaseConfigOk = hasValidConfig();
 
   useEffect(() => {
     if (authState === "authenticated" && role === "dm") {
@@ -47,15 +51,31 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 400));
+    setFirebaseAuthLoading(true);
 
+    // Step 1: Verify credentials via local store (instant feedback)
     const success = login(username, password);
     if (!success) {
       setError("Invalid credentials. Please try again.");
       setIsSubmitting(false);
+      setFirebaseAuthLoading(false);
       return;
     }
 
+    // Step 2: Authenticate with Firebase Auth for persistent session
+    if (firebaseConfigOk) {
+      try {
+        await loginFirebaseDm(`${username}@arkla.vtt`, password);
+        setFirebaseAuthError(null);
+      } catch (fbErr) {
+        // Firebase auth failed but Zustand login succeeded — still allow access
+        console.warn("[Login] Firebase Auth failed (local login preserved):", fbErr);
+        setFirebaseAuthError("Campaign sync may not persist across page refresh.");
+      }
+    }
+
+    setIsSubmitting(false);
+    setFirebaseAuthLoading(false);
     navigate("/campaign/dashboard", { replace: true });
   };
 
@@ -148,7 +168,7 @@ export default function LoginPage() {
             >
               <div className="flex items-center gap-4 mb-6">
                 <img
-                  src="/AppIcon.svg"
+                  src="/AppIcon.png"
                   alt="STᚱ VTT"
                   className="w-11 h-11 sm:w-12 sm:h-12 drop-shadow-[0_0_24px_rgba(234,179,8,0.3)]"
                 />
@@ -226,7 +246,7 @@ export default function LoginPage() {
             <div className="lg:hidden text-center mb-10">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-4">
                 <img
-                  src="/AppIcon.svg"
+                  src="/AppIcon.png"
                   alt="STᚱ VTT"
                   className="w-10 h-10 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]"
                 />

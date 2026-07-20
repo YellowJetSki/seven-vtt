@@ -26,6 +26,7 @@ import SidebarBrand from "./SidebarBrand";
 import SidebarNavLink from "./SidebarNavLink";
 import SidebarFooter from "./SidebarFooter";
 import SyncHealthPanel from "@/components/ui/SyncHealthPanel";
+import ConnectedPlayersPanel from "@/components/ui/ConnectedPlayersPanel";
 
 interface NavItem {
   path: string;
@@ -154,6 +155,15 @@ export default function Sidebar() {
             )}
           </button>
         </div>
+
+        {/* ── CONNECTED PLAYERS ── */}
+        {sidebarOpen && (
+          <div className="px-3 pb-2">
+            <div className="border-t border-white/[0.04] pt-2">
+              <ConnectedPlayersPanel compact />
+            </div>
+          </div>
+        )}
 
         {/* ── SYNC HEALTH ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>

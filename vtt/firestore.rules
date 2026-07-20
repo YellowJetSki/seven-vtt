@@ -78,6 +78,13 @@ service cloud.firestore {
         allow write: if isDm();
       }
 
+      // ── Combat Active Subcollection ───────────────────────
+      // DM writes the active encounter. Players read only.
+      match /combat/active {
+        allow read: if isAuthenticated();
+        allow write: if isDm();
+      }
+
       // ── Combat Log Subcollection ──────────────────────────
       // DM writes log entries. Players read only.
       match /combatLog/{logEntryId} {
@@ -85,6 +92,12 @@ service cloud.firestore {
         allow create: if isDm();
         allow update: if isDm();
         allow delete: if isDm();
+      }
+
+      // ── Combat — Deep Wildcard (catches /log/{id}) ──────
+      match /combat/{document=**} {
+        allow read: if isAuthenticated();
+        allow write: if isDm();
       }
 
       // ── Maps / Battle Maps Subcollection ──────────────────
@@ -127,6 +140,16 @@ service cloud.firestore {
       match /sessions/{sessionId}/{document=**} {
         allow read: if isAuthenticated();
         allow write: if isDm();
+      }
+
+      // ── Presence Subcollection ────────────────────────────
+      // Players write heartbeat every 30s. DM reads to show connected players.
+      // Players can write their OWN presence document only.
+      match /presence/{charId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && charId == getCharId();
+        allow update: if isAuthenticated() && charId == getCharId();
+        allow delete: if isAuthenticated() && charId == getCharId();
       }
 
       // ── DM Share Subcollection ────────────────────────────
