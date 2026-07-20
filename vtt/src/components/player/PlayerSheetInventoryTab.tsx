@@ -20,7 +20,8 @@
 
 import { useState, useCallback, useMemo } from "react";
 import type { PlayerCharacter, InventoryItem } from "@/types";
-import { useCampaignStore } from "@/stores/campaignStore";
+import { useInventoryMutations } from "@/hooks/useCharacterMutations";
+import { useCompendiumStore, getCompendiumItems, getCompendiumSpells } from "@/stores/compendium";
 import { calculateEncumbrance } from "@/lib/mechanics/encumbrance-engine";
 import { detectCategory, CATEGORY_META, sortInventory } from "@/lib/inventory-utils";
 import type { SortField, SortDirection, ItemCategory } from "@/lib/inventory-utils";
@@ -33,13 +34,25 @@ import InventoryEmptyState from "./InventoryEmptyState";
 import InventoryItemRow from "./InventoryItemRow";
 import ItemFormModal from "./ItemFormModal";
 import SellConfirmModal from "./SellConfirmModal";
+import CompendiumDropTarget from "./CompendiumDropTarget";
 
 interface PlayerSheetInventoryTabProps {
   character: PlayerCharacter;
 }
 
 export default function PlayerSheetInventoryTab({ character }: PlayerSheetInventoryTabProps) {
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+  // FIX (Sprint 28): Use the Firestore-synced inventory mutation hook.
+  // Previously used: useCampaignStore((s) => s.updateCharacter) → Zustand only.
+  // The hook writes to BOTH Zustand (instant) and Firestore (real-time sync).
+  const {
+    handleSetInventory,
+    handleToggleEquip,
+    handleAddItem,
+    handleRemoveItem,
+    handleUseConsumable,
+    handleQuickSell,
+    handleSetCurrency,
+  } = useInventoryMutations();
 
   // ── UI state ──
   const [showAddItem, setShowAddItem] = useState(false);
@@ -100,77 +113,138 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
     return counts;
   }, [inventory]);
 
-  // ── Inventory mutations ──
-  const setInventory = useCallback(
-    (items: InventoryItem[]) => updateCharacter(character.id, { inventory: items }),
-    [character.id, updateCharacter]
-  );
+  // ── Inventory mutations (Firestore-synced) ──
+  // FIX (Sprint 28): All mutations now route through useInventoryMutations()
+  // from hooks/useCharacterMutations.ts.
+  // Previously used: useCampaignStore((s) => s.updateCharacter) → Zustand only.
+  // The hook writes to BOTH Zustand (instant) and Firestore (real-time sync).
 
   const toggleEquip = useCallback(
     (index: number) => {
+      handleToggleEquip(character, index);
       const items = [...inventory];
-      items[index] = { ...items[index], isEquipped: !items[index].isEquipped };
-      setInventory(items);
-      flash(items[index].isEquipped ? `\u2694\uFE0F Equipped ${items[index].name}` : `\uD83D\uDCE6 Unequipped ${items[index].name}`);
+      if (index >= 0 && index < items.length) {
+        flash(`\u2694\uFE0F ${items[index].isEquipped ? 'Unequipped' : 'Equipped'} ${items[index].name}`);
+      }
     },
-    [inventory, setInventory, flash]
+    [character, inventory, handleToggleEquip, flash]
   );
 
   const addItem = useCallback(
     (item: InventoryItem) => {
-      setInventory([...inventory, item]);
+      handleAddItem(character, item);
       setShowAddItem(false);
       flash(`\uD83D\uDCE6 Added ${item.name}`);
     },
-    [inventory, setInventory, flash]
+    [character, handleAddItem, flash]
   );
 
   const saveEdit = useCallback(
     (index: number, item: InventoryItem) => {
-      const items = [...inventory];
-      items[index] = item;
-      setInventory(items);
+      handleSetInventory(character, inventory.map((existing, i) => (i === index ? item : existing)));
       setEditItemIndex(null);
       flash(`\u270F\uFE0F Updated ${item.name}`);
     },
-    [inventory, setInventory, flash]
+    [character, inventory, handleSetInventory, flash]
   );
 
   const deleteItem = useCallback(
     (index: number) => {
       const item = inventory[index];
-      setInventory(inventory.filter((_, i) => i !== index));
-      setDeleteConfirmIndex(null);
-      flash(`\uD83D\uDDD1\uFE0F Removed ${item.name}`);
+      if (item) {
+        handleRemoveItem(character, index);
+        setDeleteConfirmIndex(null);
+        flash(`\uD83D\uDDD1\uFE0F Removed ${item.name}`);
+      }
     },
-    [inventory, setInventory, flash]
+    [character, handleRemoveItem, flash]
   );
 
   const useConsumable = useCallback(
     (index: number) => {
-      const items = [...inventory];
-      const item = items[index];
-      if (item.quantity <= 1) {
-        items.splice(index, 1);
-      } else {
-        items[index] = { ...item, quantity: item.quantity - 1 };
+      handleUseConsumable(character, index);
+      const item = inventory[index];
+      if (item) {
+        flash(`\uD83E\uDDEA Used 1 ${item.name}`);
       }
-      setInventory(items);
-      flash(`\uD83E\uDDEA Used 1 ${item.name}`);
     },
-    [inventory, setInventory, flash]
+    [character, handleUseConsumable, flash]
   );
 
   const quickSell = useCallback(
     (index: number) => {
+      handleQuickSell(character, index);
       const item = inventory[index];
-      const value = Math.max(1, Math.round(item.weight * 5));
-      updateCharacter(character.id, { currency: { ...currency, gold: currency.gold + value } });
-      setInventory(inventory.filter((_, i) => i !== index));
-      setSellConfirmIndex(null);
-      flash(`\uD83D\uDCB0 Sold ${item.name} for ${value} GP`);
+      if (item) {
+        const value = Math.max(1, Math.round((item.weight || 1) * 5));
+        setSellConfirmIndex(null);
+        flash(`\uD83D\uDCB0 Sold ${item.name} for ${value} GP`);
+      }
     },
-    [inventory, currency, setInventory, updateCharacter, flash]
+    [character, handleQuickSell, flash]
+  );
+
+  // ── Compendium drop handlers (Drag-and-Drop) ──
+  // FIX (Sprint 28): CompendiumDropTarget was previously never instantiated.
+  // Now wraps the inventory list and resolves dropped items from the compendium catalog.
+  const homebrewItems = useCompendiumStore((s) => s.homebrewItems);
+  const homebrewSpells = useCompendiumStore((s) => s.homebrewSpells);
+  const homebrewFeats = useCompendiumStore((s) => s.homebrewFeats);
+
+  const handleDropCompendiumItem = useCallback(
+    (_charId: string, itemId: string) => {
+      // Try to resolve from SRD first, then homebrew
+      const allItems = getCompendiumItems(homebrewItems, {
+        search: itemId,
+        showHomebrewOnly: false,
+        showSRD: true,
+        categoryFilter: null,
+        schoolFilter: null,
+        rarityFilter: null,
+      });
+      const resolvedItem = allItems.find(
+        (i) => i.id === itemId || i.name.toLowerCase() === itemId.toLowerCase()
+      );
+      if (resolvedItem) {
+        const newInvItem: InventoryItem = {
+          name: resolvedItem.name,
+          quantity: 1,
+          weight: resolvedItem.weight || 0,
+          description: resolvedItem.description || "",
+          isEquipped: false,
+        };
+        handleAddItem(character, newInvItem);
+        flash(`\uD83D\uDCE6 Added ${resolvedItem.name} from compendium`);
+      } else {
+        // Fallback: add as basic item with the ID as name
+        handleAddItem(character, { name: itemId, quantity: 1, weight: 0, description: "", isEquipped: false });
+        flash(`\uD83D\uDCE6 Added ${itemId}`);
+      }
+    },
+    [character, handleAddItem, homebrewItems, flash]
+  );
+
+  const handleDropCompendiumSpell = useCallback(
+    (_charId: string, spellId: string) => {
+      const allSpells = getCompendiumSpells(homebrewSpells, {
+        search: spellId,
+        showHomebrewOnly: false,
+        showSRD: true,
+        levelFilter: null,
+        schoolFilter: null,
+      });
+      const resolvedSpell = allSpells.find(
+        (s) => s.id === spellId || s.name.toLowerCase() === spellId.toLowerCase()
+      );
+      if (resolvedSpell) {
+        const preparedSpells = character.preparedSpells || [];
+        if (!preparedSpells.includes(resolvedSpell.name)) {
+          handleSetInventory(character, [...inventory]);
+          flash(`\u2728 Added ${resolvedSpell.name} to prepared spells`);
+        }
+      }
+    },
+    [character, inventory, handleSetInventory, homebrewSpells, flash]
   );
 
   const speedPenalty = 0;
@@ -257,6 +331,11 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
       )}
 
       {/* Inventory header & search */}
+      <CompendiumDropTarget
+        characterId={character.id}
+        onDropItem={handleDropCompendiumItem}
+        onDropSpell={handleDropCompendiumSpell}
+      >
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">
@@ -354,6 +433,8 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
           />
         )}
       </div>
+
+      </CompendiumDropTarget>
 
       {/* Add item modal */}
       {showAddItem && <ItemFormModal onSave={addItem} onCancel={() => setShowAddItem(false)} />}

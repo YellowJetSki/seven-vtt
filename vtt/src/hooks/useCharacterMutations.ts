@@ -14,7 +14,7 @@
 import { useCallback, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { setCharacter } from "@/lib/firestore-service";
-import type { PlayerCharacter, SpellLevel, SpellSlotsFull, SpellSlots } from "@/types";
+import type { PlayerCharacter, SpellLevel, SpellSlotsFull, SpellSlots, InventoryItem } from "@/types";
 import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 import { castSpell, restoreSlots } from "@/lib/mechanics/spell-slot-engine";
 
@@ -403,6 +403,179 @@ export function useConditionMutations() {
 }
 
 /**
+ * Hook providing all inventory-related mutations.
+ *
+ * These mutations write to BOTH Zustand (instant UI) and Firestore
+ * (real-time cross-device sync), ensuring that when a player equips
+ * an item or the DM deposits loot, the change propagates instantly
+ * to all connected tabs.
+ *
+ * FIX (Sprint 28): Created this dedicated hook to replace raw
+ * updateCharacter() calls in PlayerSheetInventoryTab, which were
+ * writing ONLY to Zustand and not to Firestore.
+ *
+ * Returns:
+ *   - handleSetInventory(char, items) — Replace full inventory array
+ *   - handleToggleEquip(char, index) — Toggle isEquipped on an item
+ *   - handleAddItem(char, item) — Add a new item
+ *   - handleEditItem(char, index, item) — Replace item at index
+ *   - handleRemoveItem(char, index) — Remove item at index
+ *   - handleUseConsumable(char, index) — Decrement/remove consumable
+ *   - handleQuickSell(char, index, currency) — Sell item for GP
+ *   - handleDropCompendiumItem(char, itemId) — Drop item from compendium
+ *   - handleDropCompendiumSpell(char, spellId) — Drop spell from compendium
+ *   - handleDropCompendiumFeat(char, featId) — Drop feat from compendium
+ *   - handleSetCurrency(char, currency) — Replace currency object
+ */
+export function useInventoryMutations() {
+  const write = useWriteCharacter();
+  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+
+  const handleSetInventory = useCallback(
+    (character: PlayerCharacter, items: InventoryItem[]) => {
+      write(character.id, { inventory: items } as Partial<PlayerCharacter>);
+    },
+    [write]
+  );
+
+  const handleToggleEquip = useCallback(
+    (character: PlayerCharacter, index: number) => {
+      const inventory = character.inventory || [];
+      const items = [...inventory];
+      if (index >= 0 && index < items.length) {
+        items[index] = { ...items[index], isEquipped: !items[index].isEquipped };
+        write(character.id, { inventory: items } as Partial<PlayerCharacter>);
+      }
+    },
+    [write]
+  );
+
+  const handleAddItem = useCallback(
+    (character: PlayerCharacter, item: InventoryItem) => {
+      const inventory = character.inventory || [];
+      write(character.id, { inventory: [...inventory, item] } as Partial<PlayerCharacter>);
+    },
+    [write]
+  );
+
+  const handleEditItem = useCallback(
+    (character: PlayerCharacter, index: number, item: InventoryItem) => {
+      const inventory = character.inventory || [];
+      const items = [...inventory];
+      if (index >= 0 && index < items.length) {
+        items[index] = { ...item };
+        write(character.id, { inventory: items } as Partial<PlayerCharacter>);
+      }
+    },
+    [write]
+  );
+
+  const handleRemoveItem = useCallback(
+    (character: PlayerCharacter, index: number) => {
+      const inventory = character.inventory || [];
+      const items = inventory.filter((_, i) => i !== index);
+      write(character.id, { inventory: items } as Partial<PlayerCharacter>);
+    },
+    [write]
+  );
+
+  const handleUseConsumable = useCallback(
+    (character: PlayerCharacter, index: number) => {
+      const inventory = character.inventory || [];
+      const items = [...inventory];
+      if (index >= 0 && index < items.length) {
+        const item = items[index];
+        if (item.quantity <= 1) {
+          items.splice(index, 1);
+        } else {
+          items[index] = { ...item, quantity: item.quantity - 1 };
+        }
+        write(character.id, { inventory: items } as Partial<PlayerCharacter>);
+      }
+    },
+    [write]
+  );
+
+  const handleQuickSell = useCallback(
+    (character: PlayerCharacter, index: number) => {
+      const inventory = character.inventory || [];
+      const currency = character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
+      if (index >= 0 && index < inventory.length) {
+        const item = inventory[index];
+        const value = Math.max(1, Math.round((item.weight || 1) * 5));
+        const updatedCurrency = { ...currency, gold: currency.gold + value };
+        write(character.id, {
+          inventory: inventory.filter((_, i) => i !== index),
+          currency: updatedCurrency,
+        } as Partial<PlayerCharacter>);
+      }
+    },
+    [write]
+  );
+
+  const handleDropCompendiumItem = useCallback(
+    (character: PlayerCharacter, itemId: string) => {
+      // Create a basic inventory item from the compendium item ID
+      // The UI should resolve the full item data from the compendium store
+      const inventory = character.inventory || [];
+      const newItem: InventoryItem = {
+        name: itemId, // Will be resolved by the caller
+        quantity: 1,
+        weight: 0,
+        description: "",
+        isEquipped: false,
+      };
+      write(character.id, { inventory: [...inventory, newItem] } as Partial<PlayerCharacter>);
+    },
+    [write]
+  );
+
+  const handleDropCompendiumSpell = useCallback(
+    (character: PlayerCharacter, spellId: string) => {
+      // Mark spell as known/prepared on the character
+      const preparedSpells = character.preparedSpells || [];
+      if (!preparedSpells.includes(spellId)) {
+        write(character.id, { preparedSpells: [...preparedSpells, spellId] } as Partial<PlayerCharacter>);
+      }
+    },
+    [write]
+  );
+
+  const handleDropCompendiumFeat = useCallback(
+    (character: PlayerCharacter, featId: string) => {
+      const activeFeats = character.activeFeats || [];
+      if (!activeFeats.find((f) => f.featId === featId)) {
+        write(character.id, {
+          activeFeats: [...activeFeats, { featId, featName: featId, isActive: true }],
+        } as Partial<PlayerCharacter>);
+      }
+    },
+    [write]
+  );
+
+  const handleSetCurrency = useCallback(
+    (character: PlayerCharacter, currencyVal: { copper: number; silver: number; electrum: number; gold: number; platinum: number }) => {
+      write(character.id, { currency: currencyVal } as Partial<PlayerCharacter>);
+    },
+    [write]
+  );
+
+  return {
+    handleSetInventory,
+    handleToggleEquip,
+    handleAddItem,
+    handleEditItem,
+    handleRemoveItem,
+    handleUseConsumable,
+    handleQuickSell,
+    handleDropCompendiumItem,
+    handleDropCompendiumSpell,
+    handleDropCompendiumFeat,
+    handleSetCurrency,
+  };
+}
+
+/**
  * Convenience hook that returns ALL character mutations.
  */
 export function useAllCharacterMutations() {
@@ -413,5 +586,6 @@ export function useAllCharacterMutations() {
     ...useAbilityMutations(),
     ...useInspirationMutation(),
     ...useConditionMutations(),
+    ...useInventoryMutations(),
   };
 }
