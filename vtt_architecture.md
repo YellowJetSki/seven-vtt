@@ -8698,3 +8698,54 @@ useAllCharacterMutations() — After Sprint 28:
 - ✅ Application fully functional — Compendium, SRD items, glass styling all verified in production
 
 ---
+
+## Sprint 2/41 — Global Navigation Phase (Updated: 2026-07-20 18:06)
+## Sprint 2/41 — Global Navigation Phase (Complete)
+
+### Navigation Audit — All Pages
+
+| Page | Route | AppShell | Sidebar Visible | MobileBottomNav | Status |
+|------|-------|:--------:|:---------------:|:---------------:|:------:|
+| Login | `/login` | ❌ (standalone) | N/A | N/A | ✅ Auth page |
+| Player Login | `/player` | ❌ (standalone) | N/A | N/A | ✅ Auth page |
+| Player Sheet | `/player/sheet` | ❌ (standalone) | N/A | N/A | ✅ Full-screen sheet |
+| Theatric | `/theatric` | ❌ (standalone) | N/A | N/A | ✅ Full-screen display |
+| DM Dashboard | `/campaign/dashboard` | ✅ | ✅ | ✅ | ✅ |
+| Player Cards | `/campaign/player-cards` | ✅ | ✅ | ✅ | ✅ |
+| Homebrew | `/campaign/homebrew` | ✅ | ✅ | ✅ | ✅ |
+| Bestiary & Encounters | `/campaign/encounters` | ✅ | ✅ | ✅ | ✅ |
+| **Battle Maps** | `/campaign/maps` | ✅ (3 states) | ✅ | ✅ | **🔧 Fixed** |
+| Journal | `/campaign/journal` | ✅ | ✅ | ✅ | ✅ |
+| Asset Gallery | `/campaign/assets` | ✅ | ✅ | ✅ | ✅ |
+| Settings | `/campaign/settings` | ✅ | ✅ | ✅ | ✅ |
+
+### Critical Bugs Fixed
+
+#### Bug 1: DmControlCenter never rendered on Battle Maps page
+- **Symptom**: When maps existed, the `useEffect` auto-set `showControlCenter=true`, but the component had **no rendering branch** for `showControlCenter=true && battleMaps.length > 0`. DmControlCenter was imported but never instantiated.
+- **Root cause**: The old code had `if (!showControlCenter || battleMaps.length === 0)` which covered only empty state + map list. When maps existed and `showControlCenter` was true, it fell through to the map list render (second return).
+- **Fix**: 
+  1. Removed problematic `useEffect` that auto-set `showControlCenter=true` (preventing DM from seeing the map list)
+  2. Rewrote to 3 clear conditional branches: `battleMaps.length === 0` (empty state), `!showControlCenter` (map list), and default (DM Control Center with "Back to Maps" button)
+  3. Fixed invisible character issue (caused Vercel build failure at line 234)
+
+#### Bug 2: Forced auto-entry into control center
+- **Symptom**: `useEffect(() => { if(battleMaps.length > 0 && !showControlCenter) setShowControlCenter(true) })` forced DM into control center on page load, skipping the map list view entirely.
+- **Fix**: Removed the effect. Now DMs see the map list first and click "Open Map" on individual cards to enter the control center.
+
+#### Bug 3: Rename callbacks duplicated
+- **Symptom**: The old file had inline `handleStartRename`, `handleSaveRename`, `handleCancelRename`, `handleDeleteConfirm` callbacks that were duplicated from the main function body.
+- **Fix**: Inlined the callbacks directly in JSX props for cleaner separation.
+
+### Navigation Verified Working
+
+- **Desktop (lg+)**: Sidebar is **always visible** — transitions between w-64 (full) and w-16 (collapsed). Never disappears.
+- **Mobile (< lg)**: All 8 routes in MobileBottomNav with horizontal scroll. Sidebar overlays with backdrop blur.
+- **Battle Maps page**: 3 distinct states all within AppShell — empty state with getting started guide, map list with grid cards, DM Control Center with back button.
+
+### Build Metrics
+- TypeScript: ✅ 0 errors (2112 modules)
+- Vite build: ✅ 6.70s, no warnings
+- Production URL: ✅ arkla.vercel.app
+
+---

@@ -8,7 +8,10 @@
  * - Map list grid with hover depth, inline rename, delete confirmation
  * - Seamless transition into DmControlCenter
  *
- * Integrates with campaignStore for CRUD operations.
+ * Three states:
+ * 1. Empty state — no maps created yet
+ * 2. Map list — maps exist, user hasn't entered a map
+ * 3. DM Control Center — user clicked "Open Map" on a card
  */
 
 import { useState, useCallback } from "react";
@@ -30,41 +33,11 @@ export default function BattleMaps() {
   const [editName, setEditName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  // Maps shown → user clicks "Open Map" on a MapCard to enter control center
-  // This prevents accidentally skipping the map list view
-
-  const handleCreateMap = useCallback(() => setShowCreator(true), []);
-  const handleCreatorClose = useCallback(() => setShowCreator(false), []);
-
-  const handleStartRename = useCallback((mapId: string, currentName: string) => {
-    setEditingMapId(mapId);
-    setEditName(currentName);
-  }, []);
-
-  const handleSaveRename = useCallback((mapId: string) => {
-    if (editName.trim()) {
-      updateBattleMap(mapId, { name: editName.trim() });
-    }
-    setEditingMapId(null);
-    setEditName("");
-  }, [editName, updateBattleMap]);
-
-  const handleCancelRename = useCallback(() => {
-    setEditingMapId(null);
-    setEditName("");
-  }, []);
-
-  const handleDeleteConfirm = useCallback((mapId: string) => {
-    removeBattleMap(mapId);
-    setConfirmDelete(null);
-  }, [removeBattleMap]);
-
-  /* ── EMPTY STATE (no maps created yet) ── */
+  /* ── Empty state (no maps created yet) ── */
   if (battleMaps.length === 0) {
     return (
       <AppShell>
         <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
-          {/* ── Hero Header (7-layer, matching Player Cards) ── */}
           <div className="mx-4 mt-4 relative rounded-2xl overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-[#181a2a]/90 via-[#12131e]/90 to-[#0c0d15]/95" />
             <div
@@ -106,7 +79,6 @@ export default function BattleMaps() {
             </div>
           </div>
 
-          {/* ── Content Area ── */}
           <div className="flex-1 mx-4 mb-4 overflow-y-auto scrollbar-gold" style={{ minHeight: 0 }}>
             <div className="max-w-4xl mx-auto space-y-4 pb-8 pt-4">
               <EmptyState
@@ -115,7 +87,7 @@ export default function BattleMaps() {
                 description="Create your first tactical map to unlock the DM Control Center with tokens, initiative tracking, and encounter tools."
               >
                 <button
-                  onClick={handleCreateMap}
+                  onClick={() => setShowCreator(true)}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 text-sm font-semibold active:scale-95 transition-all duration-200 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 hover:shadow-[0_0_24px_rgba(234,179,8,0.08)]"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,7 +97,6 @@ export default function BattleMaps() {
                 </button>
               </EmptyState>
 
-              {/* Getting Started Guide */}
               <div className="relative bg-gradient-to-b from-[#141520]/80 to-[#0f1019]/90 border border-white/[0.04] rounded-2xl p-4">
                 <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
                 <h3 className="text-[10px] uppercase tracking-widest text-gold-400/60 font-bold mb-3">
@@ -153,75 +124,88 @@ export default function BattleMaps() {
           </div>
         </div>
 
-        {/* Map Creator Modal */}
-        <MapCreatorModal isOpen={showCreator} onClose={handleCreatorClose} />
+        <MapCreatorModal isOpen={showCreator} onClose={() => setShowCreator(false)} />
       </AppShell>
     );
   }
 
-  /* ── MAP LIST (shown before entering full control center) ── */
-  return (
-    <AppShell>
-      <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
-        {/* Mini top bar for map management */}
-        <div className="shrink-0 border-b border-white/[0.04] bg-gradient-to-r from-[#14151f]/90 to-[#0f1019]/95 px-4 py-2 flex items-center justify-between z-10">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-black text-white/80 tracking-tight">Battle Maps</span>
-            <span className="text-[10px] text-surface-500 px-1.5 py-0.5 rounded bg-[#07080d] border border-white/[0.04]">
-              {battleMaps.length} map{battleMaps.length !== 1 ? "s" : ""}
-            </span>
+  /* ── Map list (maps exist, user hasn't entered the control center) ── */
+  if (!showControlCenter) {
+    return (
+      <AppShell>
+        <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
+          <div className="shrink-0 border-b border-white/[0.04] bg-gradient-to-r from-[#14151f]/90 to-[#0f1019]/95 px-4 py-2 flex items-center justify-between z-10">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black text-white/80 tracking-tight">Battle Maps</span>
+              <span className="text-[10px] text-surface-500 px-1.5 py-0.5 rounded bg-[#07080d] border border-white/[0.04]">
+                {battleMaps.length} map{battleMaps.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowCreator(true)}
+              className="px-3 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 active:scale-95 transition-all duration-150 flex items-center gap-1"
+            >
+              + New Map
+            </button>
           </div>
-          <button
-            onClick={() => setShowCreator(true)}
-            className="px-3 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 active:scale-95 transition-all duration-150 flex items-center gap-1"
-          >
-            + New Map
-          </button>
-        </div>
 
-        {/* Map List Grid */}
-        <div className="flex-1 overflow-y-auto scrollbar-gold" style={{ minHeight: 0 }}>
-          <div className="max-w-6xl mx-auto p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {battleMaps.map((map) => (
-                <MapCard
-                  key={map.id}
-                  map={map}
-                  isEditing={editingMapId === map.id}
-                  editName={editName}
-                  isConfirmingDelete={confirmDelete === map.id}
-                  onStartRename={() => handleStartRename(map.id, map.name)}
-                  onEditNameChange={setEditName}
-                  onSaveRename={() => handleSaveRename(map.id)}
-                  onCancelRename={handleCancelRename}
-                  onRequestDelete={() => setConfirmDelete(map.id)}
-                  onCancelDelete={() => setConfirmDelete(null)}
-                  onConfirmDelete={() => handleDeleteConfirm(map.id)}
-                  onSelect={() => setShowControlCenter(true)}
-                />
-              ))}
+          <div className="flex-1 overflow-y-auto scrollbar-gold" style={{ minHeight: 0 }}>
+            <div className="max-w-6xl mx-auto p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {battleMaps.map((map) => (
+                  <MapCard
+                    key={map.id}
+                    map={map}
+                    isEditing={editingMapId === map.id}
+                    editName={editName}
+                    isConfirmingDelete={confirmDelete === map.id}
+                    onStartRename={() => {
+                      setEditingMapId(map.id);
+                      setEditName(map.name);
+                    }}
+                    onEditNameChange={setEditName}
+                    onSaveRename={() => {
+                      if (editName.trim()) {
+                        updateBattleMap(map.id, { name: editName.trim() });
+                      }
+                      setEditingMapId(null);
+                      setEditName("");
+                    }}
+                    onCancelRename={() => {
+                      setEditingMapId(null);
+                      setEditName("");
+                    }}
+                    onRequestDelete={() => setConfirmDelete(map.id)}
+                    onCancelDelete={() => setConfirmDelete(null)}
+                    onConfirmDelete={() => {
+                      removeBattleMap(map.id);
+                      setConfirmDelete(null);
+                    }}
+                    onSelect={() => setShowControlCenter(true)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Map Creator Modal */}
-      <MapCreatorModal isOpen={showCreator} onClose={handleCreatorClose} />
-    </AppShell>
-  );
+        <MapCreatorModal isOpen={showCreator} onClose={() => setShowCreator(false)} />
+      </AppShell>
+    );
   }
 
-  /* ── DM CONTROL CENTER (map selected) ── */
+  /* ── DM Control Center (map selected, user entered the command bridge) ── */
   return (
     <AppShell>
       <div className="flex flex-col h-full" style={{ minHeight: "0", flex: 1 }}>
-        {/* Back to map list button */}
         <div className="shrink-0 border-b border-white/[0.04] bg-gradient-to-r from-[#14151f]/90 to-[#0f1019]/95 px-4 py-2 flex items-center z-10">
           <button
             onClick={() => setShowControlCenter(false)}
             className="flex items-center gap-1.5 text-[10px] font-semibold text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-95"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             <span>Back to Maps</span>
           </button>
         </div>
