@@ -29,6 +29,7 @@ import DmQuickReferenceOverlay from "@/components/ui/DmQuickReferenceOverlay";
 import DmPartyRestOverlay from "@/components/control-center/DmPartyRestOverlay";
 import DmCombatConditionBar from "@/components/control-center/DmCombatConditionBar";
 import DmQuickActionPopover from "@/components/control-center/DmQuickActionPopover";
+import DmNpcQuickCreatePopover from "@/components/control-center/DmNpcQuickCreatePopover";
 import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -47,6 +48,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setCombatConditions = useUIStore((s) => s.setCombatConditions);
   const showQuickActions = useUIStore((s) => s.showQuickActions);
   const setQuickActions = useUIStore((s) => s.setQuickActions);
+  const showNpcQuickCreate = useUIStore((s) => s.showNpcQuickCreate);
+  const setNpcQuickCreate = useUIStore((s) => s.setNpcQuickCreate);
   const role = useAuthStore((s) => s.role);
 
   // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
@@ -88,6 +91,16 @@ export default function AppShell({ children }: AppShellProps) {
     window.addEventListener("toggle-dm-quick-actions", handleToggleQuickActions);
     return () => window.removeEventListener("toggle-dm-quick-actions", handleToggleQuickActions);
   }, [handleToggleQuickActions]);
+
+  // ── Listen for NPC Quick Create toggle event ──
+  const handleToggleNpcQuickCreate = useCallback(() => {
+    setNpcQuickCreate(!showNpcQuickCreate);
+  }, [setNpcQuickCreate, showNpcQuickCreate]);
+
+  useEffect(() => {
+    window.addEventListener("toggle-dm-npc-quick-create", handleToggleNpcQuickCreate);
+    return () => window.removeEventListener("toggle-dm-npc-quick-create", handleToggleNpcQuickCreate);
+  }, [handleToggleNpcQuickCreate]);
 
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
@@ -172,6 +185,16 @@ export default function AppShell({ children }: AppShellProps) {
         <DmQuickActionPopover
           isOpen={showQuickActions}
           onClose={() => setQuickActions(false)}
+        />
+      )}
+
+      {/* ── DM NPC Quick Create Popover ──
+          Build a monster statblock and instantly add to combat
+          from ANY page — no navigation to Bestiary needed */}
+      {role === "dm" && (
+        <DmNpcQuickCreatePopover
+          isOpen={showNpcQuickCreate}
+          onClose={() => setNpcQuickCreate(false)}
         />
       )}
     </div>
