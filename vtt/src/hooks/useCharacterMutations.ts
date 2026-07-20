@@ -20,39 +20,56 @@ import { castSpell, restoreSlots } from "@/lib/mechanics/spell-slot-engine";
 
 /**
  * Writes a character update to both Zustand (instant) and Firestore (async).
- * Firestore write is fire-and-forget; errors are logged but not thrown,
- * because the onSnapshot listener will eventually reconcile state.
+ *
+ * Uses a microtask-based accumulator that merges rapid writes within a 50ms
+ * window into a SINGLE Firestore write. This prevents dropped mutations while
+ * still avoiding Firestore write spam during rapid HP/XP/spell slot changes.
+ *
+ * Example: Player clicks "-5 HP" 4 times rapidly
+ *   Write 1: Zustand hits 39, queues Firestore flush (50ms)
+ *   Write 2: Zustand hits 34, same queue (50ms not yet elapsed)
+ *   Write 3: Zustand hits 29, same queue
+ *   Write 4: Zustand hits 24, same queue
+ *   After 50ms: Firestore writes { hitPoints: { current: 24 } }
+ *
+ * All 4 Zustand writes go through instantly (no dropped mutations).
+ * Only 1 Firestore write occurs for all 4 rapid actions.
  */
 function useWriteCharacter() {
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
-  const pendingWrites = useRef<Set<string>>(new Set());
+  const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingIds = useRef<Set<string>>(new Set());
 
-  return useCallback(
-    (charId: string, updates: Partial<PlayerCharacter>) => {
-      // Prevent duplicate rapid writes to same character
-      if (pendingWrites.current.has(charId)) return;
-      pendingWrites.current.add(charId);
+  const flushWrites = useCallback(() => {
+    const charIds = Array.from(pendingIds.current);
+    pendingIds.current.clear();
+    pendingTimer.current = null;
 
-      // 1. Instant Zustand update
-      updateCharacter(charId, updates);
-
-      // 2. Async Firestore write
-      // We need the full updated character to write to Firestore.
-      // Since Zustand is synchronous, we read after set.
-      const state = useCampaignStore.getState();
+    // Fire a single Firestore write per character with the latest Zustand state
+    const state = useCampaignStore.getState();
+    for (const charId of charIds) {
       const fullChar = state.characters.find((c) => c.id === charId);
       if (fullChar) {
         setCharacter(FALLBACK_CAMPAIGN_ID, charId, fullChar).catch((err) => {
           console.warn(`[Firestore] Write failed for ${charId}:`, err);
         });
       }
+    }
+  }, []);
 
-      // Debounce rapid writes — clear after a tick
-      setTimeout(() => {
-        pendingWrites.current.delete(charId);
-      }, 50);
+  return useCallback(
+    (charId: string, updates: Partial<PlayerCharacter>) => {
+      // 1. Instant Zustand update — ALWAYS goes through
+      updateCharacter(charId, updates);
+
+      // 2. Queue Firestore flush (debounced per character ID)
+      pendingIds.current.add(charId);
+
+      if (!pendingTimer.current) {
+        pendingTimer.current = setTimeout(flushWrites, 50);
+      }
     },
-    [updateCharacter]
+    [updateCharacter, flushWrites]
   );
 }
 
@@ -71,44 +88,50 @@ export function useHpMutations() {
   const write = useWriteCharacter();
 
   const handleHpChange = useCallback(
-    (character: PlayerCharacter, delta: number) => {
-      const newHp = Math.max(0, Math.min(character.hitPoints.max, character.hitPoints.current + delta));
+    (character: PlayerCharacter, delta: number): { newHp: number; maxHp: number } => {
+      const hp = character.hitPoints || { current: 0, max: 0, temporary: 0 };
+      const newHp = Math.max(0, Math.min(hp.max, hp.current + delta));
       write(character.id, {
-        hitPoints: { ...character.hitPoints, current: newHp },
+        hitPoints: { ...hp, current: newHp },
       });
+      return { newHp, maxHp: hp.max };
     },
     [write]
   );
 
   const handleSetTempHp = useCallback(
-    (character: PlayerCharacter, amount: number) => {
+    (character: PlayerCharacter, amount: number): { tempHp: number } => {
+      const tempHp = Math.max(0, amount);
       write(character.id, {
-        temporaryHitPoints: Math.max(0, amount),
+        temporaryHitPoints: tempHp,
       });
+      return { tempHp };
     },
     [write]
   );
 
   const handleDeathSaveToggle = useCallback(
-    (character: PlayerCharacter, type: "successes" | "failures", index: number) => {
-      const current = character.deathSaves[type];
+    (character: PlayerCharacter, type: "successes" | "failures", index: number): { successes: number; failures: number } => {
+      const saves = character.deathSaves || { successes: 0, failures: 0 };
+      const current = saves[type];
       const newVal = current === index + 1 ? index : current <= index ? index + 1 : index;
       const clamped = Math.min(3, Math.max(0, newVal)) as 0 | 1 | 2 | 3;
+      const updatedSaves = { ...saves, [type]: clamped };
       write(character.id, {
-        deathSaves: {
-          ...character.deathSaves,
-          [type]: clamped,
-        },
+        deathSaves: updatedSaves,
       });
+      return updatedSaves;
     },
     [write]
   );
 
   const handleResetDeathSaves = useCallback(
-    (character: PlayerCharacter) => {
+    (character: PlayerCharacter): { successes: 0; failures: 0 } => {
+      const reset = { successes: 0 as const, failures: 0 as const };
       write(character.id, {
-        deathSaves: { successes: 0, failures: 0 },
+        deathSaves: reset,
       });
+      return reset;
     },
     [write]
   );
@@ -127,10 +150,12 @@ export function useXpMutations() {
   const write = useWriteCharacter();
 
   const handleAddXp = useCallback(
-    (character: PlayerCharacter, amount: number) => {
+    (character: PlayerCharacter, amount: number): { newXp: number } => {
+      const newXp = Math.max(0, (character.experiencePoints || 0) + amount);
       write(character.id, {
-        experiencePoints: character.experiencePoints + amount,
+        experiencePoints: newXp,
       });
+      return { newXp };
     },
     [write]
   );
@@ -159,15 +184,15 @@ export function useXpMutations() {
  * to SpellSlotsFull (engine format with {level, current, max}).
  */
 function toFullSlots(slots: SpellSlots): SpellSlotsFull {
-  const full: Partial<SpellSlotsFull> = {};
+  const full: SpellSlotsFull = {} as SpellSlotsFull;
   for (let lvl = 1 as SpellLevel; lvl <= 9; lvl++) {
     const key = `level${lvl}` as keyof SpellSlots;
     const pool = slots[key];
     if (pool) {
-      (full as any)[key] = { level: lvl, current: pool.current, max: pool.max };
+      (full as Record<string, unknown>)[key] = { level: lvl, current: pool.current, max: pool.max };
     }
   }
-  return full as SpellSlotsFull;
+  return full;
 }
 
 /**
@@ -189,27 +214,34 @@ export function useSpellSlotMutations() {
   const write = useWriteCharacter();
 
   const handleCastSpell = useCallback(
-    (character: PlayerCharacter, level: SpellLevel, upcast?: SpellLevel) => {
-      if (!character.spellSlots) return;
+    (character: PlayerCharacter, level: SpellLevel, upcast?: SpellLevel): { success: boolean; reason?: string } => {
+      if (!character.spellSlots) {
+        return { success: false, reason: "Character has no spell slots configured" };
+      }
       const fullSlots = toFullSlots(character.spellSlots);
       const result = castSpell(fullSlots, level, upcast);
       if (result.success) {
         write(character.id, {
           spellSlots: toStoredSlots(result.updatedSlots),
         });
+        return { success: true };
       }
+      return { success: false, reason: `No level ${level} slots remaining` };
     },
     [write]
   );
 
   const handleRestoreSlots = useCallback(
-    (character: PlayerCharacter, level?: SpellLevel) => {
-      if (!character.spellSlots) return;
+    (character: PlayerCharacter, level?: SpellLevel): { success: boolean; reason?: string } => {
+      if (!character.spellSlots) {
+        return { success: false, reason: "Character has no spell slots configured" };
+      }
       const fullSlots = toFullSlots(character.spellSlots);
       const updated = restoreSlots(fullSlots, level);
       write(character.id, {
         spellSlots: toStoredSlots(updated),
       });
+      return { success: true };
     },
     [write]
   );
@@ -257,10 +289,12 @@ export function useInspirationMutation() {
   const write = useWriteCharacter();
 
   const handleToggleInspiration = useCallback(
-    (character: PlayerCharacter) => {
+    (character: PlayerCharacter): { inspiration: boolean } => {
+      const newInspiration = !character.inspiration;
       write(character.id, {
-        inspiration: !character.inspiration,
+        inspiration: newInspiration,
       });
+      return { inspiration: newInspiration };
     },
     [write]
   );
