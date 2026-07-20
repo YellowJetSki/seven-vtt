@@ -5321,3 +5321,44 @@ campaigns/{campaignId}/dm-share/active
 - JS bundle: 1,452 KB (356 KB gzipped)
 - CSS bundle: 261 KB (29 KB gzipped)
 ---
+
+## Sprint 2/25 — Compendium Drawer Overhaul (Updated: 2026-07-20 10:04)
+## Sprint 2/25 — Premium UI/UX Phase: Compendium Drawer Overhaul (Complete)
+
+**Date:** 2026-07-20
+**Status:** Deployed to arkla.vercel.app
+
+### Architecture: Monolith → 8 Reusable Sub-Components
+
+**Before:** 1 monolithic component (`CompendiumDrawer.tsx` — 80 lines) that contained the toggle button, drawer panel, overlay, and all logic inline. `GlobalCompendium.tsx` (190 lines) contained search, tabs, filters, and results rendering.
+
+**After:** 8 extracted sub-components organized as a modular system:
+
+| File | Lines | Location | Purpose |
+|------|:-----:|:---------|---------|
+| `CompendiumToggleButton.tsx` | 50 | `components/ui/` | Floating book icon with animated close/open SVG + gold pulse dot |
+| `CompendiumHeader.tsx` | 45 | `components/ui/` | Icon container, gold title, "Reference Library" subtitle, close button |
+| `CompendiumSearchBar.tsx` | 65 | `components/ui/` | Premium search with focus state (gold glow, border, scale), animated clear |
+| `CompendiumTabBar.tsx` | 55 | `components/ui/` | Tab bar with gold pill indicator, emoji icons, optional count badges |
+| `CompendiumFilters.tsx` | 100 | `components/ui/` | Category chips with emoji icons, school chips, SRD toggle, flex-wrap |
+| `CompendiumCard.tsx` | 200 | `components/ui/` | Premium card with icon container, gradient bg, gold hover glow, drag hint |
+| `CompendiumResultList.tsx` | 75 | `components/ui/` | Scroll container, staggered entries, empty state, count footer |
+
+### Key Upgrades
+1. **Drawer width**: 384px → **420px** (more breathing room for content)
+2. **Multi-layer depth**: Gold edge light (left), bottom ambient glow, 3D shadow offset
+3. **Staggered entrance animations**: Header (0ms), TabBar (40ms), Search (60ms), Filters (80ms), Results (100ms)
+4. **Tab bar**: Pill-shaped active indicator with `bg-gold-500/8` fill
+5. **Category chips**: Emoji icons per category (⚔🛡🧪📜🪄💍), compact pill buttons
+6. **Search bar**: Focus state with `border-gold-500/35` + `shadow-[0_0_24px_rgba(234,179,8,0.03)]`
+7. **Cards**: 9x9 icon containers, gradient backgrounds, `hover:shadow-[0_4px_20px_rgba(234,179,8,0.04)]`
+8. **Drag hint**: ⠿ indicator on hover (opacity 0→100 transition)
+9. **Empty state**: Centered icon container, italic message, "Try adjusting filters" hint
+10. **Backdrop**: `bg-black/30 backdrop-blur-sm` (premium depth feel)
+
+### Build Metrics
+- TypeScript: 0 errors (2014 modules)
+- Build time: 7.77s local / 6.68s Vercel
+- JS bundle: 1,460 KB (357 KB gzipped)
+- CSS bundle: 264 KB (29 KB gzipped)
+---
