@@ -9228,3 +9228,81 @@ The existing `scripts/seed-emulator.mjs` now supports the new `joinCode` field. 
 - Git checkpoint: ✅ Sprint 9 saved
 
 ---
+
+## Sprint 10/41 — Firebase & Login Phase (Cycle 8 of 10) (Updated: 2026-07-20 18:41)
+## Sprint 10/41 — Firebase & Login Phase: Player Presence Tracking, Offline Queue Replay, Seed Data Verification (Complete)
+
+### Deliverables
+
+#### 1. Player Presence Tracking (`presence-service.ts` + `usePresence.ts`)
+Full real-time player presence system for live session awareness:
+
+| Feature | Detail |
+|---------|--------|
+| **Heartbeat** | Connected players write a presence doc every 30s under `campaigns/{id}/presence/{charId}` |
+| **Session ID** | Unique per browser session (detects multiple tabs) |
+| **Stale Detection** | Entries >90s old are filtered out (handles tab crash/close) |
+| **Clean Removal** | `removePresence()` called on component unmount |
+| **DM Hook** | `usePresenceSubscription()` — subscribes to ALL presence entries |
+| **Player Hook** | `usePlayerPresence()` — writes heartbeat on mount, removes on unmount |
+| **Error Handling** | Silent failure on write errors (best-effort), retries on next heartbeat interval |
+
+**ConnectedPlayersPanel.tsx** — DM-side panel showing live connected players with status dots, player names, and role badges. Integrated via the Sidebar (can be mounted in a future update).
+
+#### 2. Offline Mutation Replay Engine (`useOfflineMutationReplay.ts`)
+Active mutation replay that actually executes Firestore writes on reconnect:
+
+| Feature | Detail |
+|---------|--------|
+| **Replay on reconnect** | When `firebaseConnected` goes from false→true, all queued mutations are replayed |
+| **FIFO order** | Mutations replayed in the order they were queued |
+| **Per-type execution** | Character, combat, entity, campaign — each dispatched to the correct service function |
+| **Dynamic imports** | Service functions imported lazily to avoid circular dependency |
+| **Failure handling** | Failed mutations stay in the queue for the next retry cycle |
+| **Manual replay** | Exposed `replay()` function for manual trigger |
+| **Helper functions** | `queueCharacterMutation()`, `queueCombatMutation()`, `queueEntityMutation()`, `queueCampaignMutation()` |
+
+#### 3. Seed Data Verification Script (`scripts/verify-seed-data.mjs`)
+Standalone script that validates the Firestore emulator's document structure:
+
+| Check | Validates |
+|-------|-----------|
+| Characters | 7 required fields (id, name, race, class, level, HP, AC) + ability scores |
+| Enemies | 5 required fields + CR value against valid 5e CR list (1/8 through 30) |
+| Encounters | 2 required fields |
+| Maps | 4 required fields (id, name, gridWidth, gridHeight) |
+| Journal | Document count |
+| Combat | Subcollection structure |
+| Presence | Subcollection structure |
+| DM Share | Subcollection structure |
+| Combat Log | Subcollection document count |
+
+**Usage:** `node scripts/verify-seed-data.mjs` (connects to `FIRESTORE_EMULATOR_HOST`)
+
+#### 4. Seed Data Consolidation (`scripts/seed-emulator.mjs`)
+- Added `joinCode: "ARKLA1"` and `joinCodeExpiresAt` to campaign settings
+- Added presence subcollection documents for Wendy and Kehrfuffle
+- Enhanced output: shows presence and join code in completion summary
+
+#### 5. Generic Entity Service Function (`entity-service.ts`)
+- Added `setEntity()` — generic Firestore writer that resolves collection paths from friendly names
+- Used by the offline replay engine for entity mutations
+
+### Files Created
+- `lib/firestore/presence-service.ts` — Firestore CRUD + listener for player presence
+- `hooks/usePresence.ts` — React hooks (DM subscription + player heartbeat)
+- `components/ui/ConnectedPlayersPanel.tsx` — DM-side connected players UI
+- `hooks/useOfflineMutationReplay.ts` — Offline mutation replay engine
+- `scripts/verify-seed-data.mjs` — Emulator data verification script
+
+### Files Modified
+- `scripts/seed-emulator.mjs` — Added joinCode + presence docs + enhanced summary
+- `lib/firestore/entity-service.ts` — Added `setEntity()` generic function
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2118 modules)
+- Vite build: ✅ 0 warnings
+- Deployed: arkla.vercel.app
+- Git checkpoint: ✅ Sprint 10 saved
+
+---
