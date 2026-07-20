@@ -7148,3 +7148,45 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 - Git checkpoint: ✅ Sprint 7 saved
 - Architecture ledger: ✅ Updated
 ---
+
+## Sprint 8/30 — Comprehensive Premium Refactor: DmJournal (Updated: 2026-07-20 13:06)
+## Sprint 8/30 — Comprehensive Premium Refactor: DmJournal (2026-07-20)
+
+**Phase:** The Comprehensive Premium Refactor Phase (Cycles 3-12)
+**Target:** DmJournal (`/campaign/journal`) — the DM's session & quest tracking hub
+**Design Inspirations:** Lusion, Overrrides, Ventriloc
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### Files Enhanced (5)
+
+| File | Lines | Key Premium Upgrades |
+|------|:-----:|---------------------|
+| **pages/DmJournal.tsx** | 225 | 7-layer cinematic hero header (matching Battle Maps/Player Cards/Homebrew/UnifiedEncounterHub): conic depth ring, dual edge lights, ambient glow pockets, border. Premium glass content area with `from-[#141520]/80 to-[#0f1019]/85` + gold edge light. Stats bar with vertical dividers. Replaced `glass-gold` + `corner-ornament` + `depth-ring` with direct gradients. |
+| **JournalSidebar.tsx** | 145 | Replaced `bg-obsidian/60` with premium glass gradient `from-[#141520]/60 to-[#0f1019]/70`. Gold gradient active filter state `from-gold-500/12 to-amber-500/8`. Gold focus rings on search. Group headers with border separator. |
+| **JournalEditor.tsx** | 350 | All inputs now have `focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15` gold focus. Gold gradient action buttons `from-gold-500/12 to-amber-500/8`. Gold gradient type selector pills. Glass backgrounds `bg-[#07080d]/70` on all inputs/textareas. Transition-all for smooth interactions. |
+| **JournalQuickNote.tsx** | 195 | Replaced `glass-gold` with direct glass gradient `from-[#181a2a]/95 to-[#0f1019]/95 + backdrop-blur-xl` with gold edge light. Gold gradient save button. Gold hover states on close/cancel. Gold focus rings on textarea. |
+| **JournalMarkdownPreview.tsx** | 12 lines modified | `border-l-2 border-gold/30` for blockquotes (was already premium-grade, minor color consistency fix) |
+
+### Design Patterns Applied
+
+| Pattern | Count | Usage |
+|---------|:-----:|-------|
+| 7-layer cinematic hero header | 1 | DmJournal (matching all other pages) |
+| Glass gradient `from-[#141520]/80 to-[#0f1019]/85` | 1 | Main content area |
+| Glass gradient `from-[#141520]/60 to-[#0f1019]/70` | 1 | Sidebar |
+| Glass gradient `from-[#181a2a]/95 to-[#0f1019]/95` | 1 | Quick Note modal |
+| Gold gradient buttons `from-gold-500/12 to-amber-500/8` | 6 | New Entry, Save, Edit, Add, Save Note, type pills |
+| Gold edge light | 2 | Content area, Quick Note |
+| Gold focus rings `focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15` | 5 | Search, title, content, tags, session number |
+| `glass-gold` eliminated | 1 | DmJournal |
+| `corner-ornament` eliminated | 1 | DmJournal (4 corners) |
+| `depth-ring` eliminated | 1 | DmJournal |
+| `bg-obsidian/60` eliminated | 1 | JournalSidebar |
+
+### Quality Gates
+
+- TypeScript: ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (350 parser errors — all files, not my code)
+- Git checkpoint: ✅ Sprint 8 saved
+- Architecture ledger: ✅ Updated
+---
