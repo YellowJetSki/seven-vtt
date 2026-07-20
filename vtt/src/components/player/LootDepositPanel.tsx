@@ -163,7 +163,7 @@ export default function LootDepositPanel({ className = "" }: LootDepositPanelPro
     text: string;
     type: "success" | "info" | "warning";
   } | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showFlash = useCallback((text: string, type: "success" | "info" | "warning" = "success") => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);

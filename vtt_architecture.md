@@ -9459,3 +9459,96 @@ Added `ConnectedPlayersPanel` above SyncHealthPanel in the sidebar. DM can see l
 - Git checkpoint: ✅ Sprint 12 saved
 
 ---
+
+## Sprint 13/41 — Deep Exploration QA Phase (Cycle 1 of 7): Comprehensive Gap Analysis & Missing Features (Updated: 2026-07-20 18:49)
+## Sprint 13/41 — Deep Exploration QA Phase: Gap Analysis & Missing Features
+
+### Methodology
+Systematic audit of all test files (`vtt/src/__tests__/`) cross-referenced against all engine files (`vtt/src/lib/mechanics/`) and all page components (`vtt/src/pages/`). Identified engines with ZERO test coverage and features that DMs need for live-play but are missing from the VTT.
+
+### Engines with NO Test Coverage (GAP — 6 engines)
+
+| Engine | Tests | Risk Level | Description |
+|--------|:-----:|:----------:|-------------|
+| `character-derivations.ts` | **0** | 🔴 HIGH | Core stat derivation: `getAbilityMod`, `getProficiencyBonus`, `computeArmorClass`, `computeInitiative`, `computeProficiencyBonus`, `computeBestSkillMod`. Used by ALL character sheets. If AC or Init calc breaks, every PC breaks. |
+| `spell-slot-engine.ts` | **0** | 🔴 HIGH | Core spell slot math: `buildSpellSlots`, `castSpell`, `restoreSlots`, `tryCastSpell`, `endConcentration`. Used by SpellcastingManager, SpellSlotStatus, SpellSlotMeter. If casting breaks, all spellcasters (Wendy, Kehrfuffle) break. |
+| `spell-point-engine.ts` | **0** | 🟡 MEDIUM | DMG Spell Points variant: `slotsToSpellPoints`, `spendSpellPoints`, `getMaxSpellPoints`, `getUpcastCost`. Less critical but untested. |
+| `damage-type-engine.ts` | **0** | 🟡 MEDIUM | `resolveDamageType`, `applyDamageTypes`, `formatDamageType`. Used by AttackResolutionPopover. |
+| `initiative-engine.ts` | **0** | 🟡 MEDIUM | `rollInitiativeDie`, `sortByInitiative`, `buildCombatantFromToken`. Used by InitiativeRollOverlay. |
+| `stat-persistence.ts` | **0** | 🟢 LOW | `applyRaceToCharacter`, `applyClassToCharacter`. Supporting functions for character creation. |
+
+### Engines with MINIMAL Test Coverage (Incomplete)
+
+| Engine | Tests | Notes |
+|--------|:-----:|-------|
+| `encumbrance-engine.ts` | Some (in end-to-end smoke) | Tests exist but only 2: normal/overloaded capacity. Missing: variant encumbrance (light/heavy), speed penalties, coin weight calculation edge cases, armor/weapon weight mapping correctness. |
+| `attack-engine.ts` | Simulated (in combat QA) | Tests mock the HIGH-LEVEL flow but don't test `parseDiceExpression`, `rollDamageExpression`, `getEnemyAttacks` at the unit level. |
+
+### Pages with NO Auto-Testing Coverage (GAP — 9 pages)
+
+| Page | Test Coverage | Key Sub-Components |
+|------|:------------:|-------------------|
+| `AssetGallery.tsx` | **0** | AssetBrowser, category tabs, preview modal, copy actions |
+| `BattleMaps.tsx` | **0** | MapCreatorModal, MapCard, inline rename, delete confirmation, Getting Started guide |
+| `CampaignSettings.tsx` | **0** | CampaignInfoForm, XpSystemPicker, RaceClassRestrictions, DmNotesSection, JoinCodePanel, CampaignStatsDashboard |
+| `DmEnemies.tsx` | **0** | EnemyList, EnemyStatblock, EnemyQuickCreate, CR distribution badges, statblock read/edit |
+| `DmJournal.tsx` | **0** | JournalEditor, JournalSidebar, JournalQuickNote, MarkdownPreview, Pin/Unpin, Quick Note FAB |
+| `HomebrewPanel.tsx` | **0** | HomebrewManager, HomebrewTabs, HomebrewSearchBar, all Card/Form components, Export/Import |
+| `PlayerCards.tsx` | **0** | PlayerListHeader, PlayerCardCompact, PartyPowerMatrix, PlayerCardManager, LootDepositPanel, CombatHpHud, ConditionQuickToggle |
+| `UnifiedEncounterHub.tsx` | **0** | BestiaryPanel, EncounterComposer, EncounterLaunchModal, InitiativeRollOverlay |
+| `TheatricPage.tsx` | **0** | TheatricDisplay (Canvas), TheatricStatusBar, TheatricWaitingState, TheatricConnectionIndicator |
+
+### Missing D&D 5.5e Live-Play Features — COMPILED LIST
+
+These are high-practical-value features identified through systematic audit of what a DM and PCs need during a live session that are NOT currently built:
+
+---
+
+#### 🔴 Critical (Must-Have for Live Session)
+
+| # | Feature | Category | Description | Affected Roles |
+|:-:|---------|----------|-------------|:--------------:|
+| F1 | **Attack Resolution Popover** | Combat (Planned) | ✅ Already built (Sprint 19) in `AttackResolutionPopover.tsx` — integrated into TokenHpPopover. NO TEST COVERAGE. QA needed. | DM |
+| F2 | **Damage Type System** | Combat (Planned) | ✅ Already built (Sprnt 20) in `damage-type-engine.ts`. NO TEST COVERAGE. QA needed for vulnerability/immunity logic. | DM |
+| F3 | **Multi-Target AoE Damage** | Combat (Planned) | ✅ Already built (Sprnt 21) in `MultiTargetAoEPopover.tsx` + `aoe-damage-engine.ts`. NO TEST COVERAGE. QA needed for batch HP updates. | DM |
+| F4 | **Spell Slot Engine correctness** | Player Sheet | `spell-slot-engine.ts` — critical for spellcasting class integrity. No tests. | PC |
+| F5 | **Character Derivations integrity** | Player Sheet | `character-derivations.ts` — AC, PB, Init, Speed auto-calc. No tests. | PC/DM |
+
+#### 🟡 Medium (DM Efficiency Multipliers)
+
+| # | Feature | Category | Description |
+|:-:|---------|----------|:-----------:|
+| F6 | **Initiative roster summary** | DM Combat | A compact view of all combatant initiatives in one place, not needing to scroll. Currently the Initiative Tracker shows one row at a time. |
+| F7 | **Concentration tracking on combatants** | DM Combat | Visual indicator on a token/combatant row when they are concentrating on a spell. ConcentrationTracker exists but is PC-facing only. |
+| F8 | **Resource fullness indicator (spell slots per caster)** | DM Quick View | DM needs to see "Wendy has 2/3 L1 slots, 1/2 L2 slots" without opening the PC sheet. |
+| F9 | **Token hover reveals name + HP** | Battle Map | Currently need to click the token to open popover. Hover should show a tooltip with name, HP bar, and AC. |
+| F10 | **Zoom to fit (fit all tokens)** | Battle Map | One-button to zoom the canvas to show all placed tokens. |
+| F11 | **Spell point variant toggle per character** | Player Sheet | DM can toggle individual characters between slot-based and spell-point-based casting. (Engine exists, UI does not) |
+
+#### 🟢 Low (Quality of Life)
+
+| # | Feature | Category | Description |
+|:-:|---------|----------|:-----------:|
+| F12 | **Natural 1 / Natural 20 visual** | Combat Log | When an attack rolls 1 or 20, the combat log should have a critical miss/hit indicator. |
+| F13 | **Sort initiative by type** | DM Combat | Toggle to group by Player/Enemy instead of descending init. |
+| F14 | **Token label density toggle** | Battle Map | Show/hide all token labels at once (already partially exists for DM view). |
+| F15 | **Quick-roll damage without attack** | DM Tool | Enter damage directly (e.g., "14 fire") without going through the full attack flow. Useful for environmental effects. |
+
+### QA Action Plan for Remaining Sprints (14-19)
+
+| Sprint | Target | Effort |
+|:------:|--------|:------:|
+| 14 | `character-derivations.ts` — AC, PB, Init, Speed unit tests | 1 day |
+| 15 | `spell-slot-engine.ts` — cast, restore, concentration tests | 1 day |
+| 16 | Homebrew panel CRUD — create/edit/delete/export/import sanity | 1 day |
+| 17 | Theatric Display — canvas load states, DM sync, camera controls | 1 day |
+| 18 | Attack resolution + damage type engine end-to-end | 2 days |
+| 19 | Multi-target AoE + initiative engine + stat persistence | 2 days |
+
+### Strict Compliance
+- ✅ NO dice rollers logged
+- ✅ NO occult/undead/demonic elements logged
+- ✅ Placeholder lore uses Arkla campaign (Wendy, Kehrfuffle)
+- ✅ NO mention of 'Tick race' or 'Food machine'
+
+---
