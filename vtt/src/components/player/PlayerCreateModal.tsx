@@ -91,6 +91,7 @@ function createBlankCharacter(): PlayerCharacter {
     allies: "",
     characterNotes: "",
     isHomebrew: false,
+    spentHitDice: 0,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
