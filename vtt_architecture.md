@@ -6580,3 +6580,80 @@ origin (token's pre-drag cell)                ghost (cursor position)
 | Premium design tokens | ✅ Gold drop target, gold dashed trail, gold ghost border, gold coordinate readout |
 
 ---
+
+## Sprint 23/25 — Premium Battlemap Overhaul: Initiative & Turn Order System (Updated: 2026-07-20 11:52)
+## Sprint 23/25 — Premium Battlemap Overhaul: Initiative & Turn Order System (2026-07-20)
+
+**Phase:** Premium Battlemap Overhaul Phase (Cycle 3 of 5)
+**Target:** Integrate a highly visible Initiative & Turn Order system directly into the map UI, featuring clear active-turn markers and dynamic visual highlighting of the current actor.
+
+---
+
+### New Files Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/canvas/initiative-renderer.ts` | ~280 | Canvas-side initiative renderer: `drawTurnBanner()` — gold glass banner above current combatant showing "⚔ [Name]'s Turn" with round number; `drawNextUpIndicator()` — pulsing amber dot above next-in-order combatant; `drawDeadMarker()` — red X overlay on dead/downed tokens; `drawStatusChip()` — small colored chip below token for concentration/status; `renderInitiativeOverlay()` — orchestrator that calls all render functions with animation time sync. |
+| `components/maps/InitiativeOverlay.tsx` | ~280 | DOM-based HUD overlay that floats on top of the canvas. Features: compact turn order list (auto-scrolls to current), gold pulse indicator on current turn, amber pulse on next-up, dead combatants with strikethrough + 💀 icon, compact HP bar per line, status effect count badges, phase badge (Prep/Active/Paused/Completed), round counter, Next/Prev turn buttons wired to combatStore. |
+
+### Files Modified (4)
+
+| File | Key Changes |
+|------|-------------|
+| `lib/canvas/token-renderer.ts` | Added `isCurrentTurn` parameter to `drawToken()` — enhanced gold glow ring (20px blur, animated) + pulsing extra ring outside the token + gold-bold border + gold label text (`#fde047`). Added `activeTurnTokenId` parameter to `drawTokens()` for pass-through. |
+| `lib/canvas/lighting-renderer.ts` | Added `activeEncounter` and `activeTurnTokenId` to `CanvasRenderState`. New rendering layer 7: initiative overlays (turn banner, next-up dots, dead markers, concentration chips) rendered AFTER tokens and BEFORE drag preview. Calls `renderInitiativeOverlay()` with token position map. Only renders when `phase === "active"` and `dmView === true`. |
+| `components/maps/CanvasMapView.tsx` | Added `activeEncounter`, `onNextTurn`, `onPrevTurn` props. Derived `activeTurnTokenId` from encounter state. Integrated `InitiativeOverlay` component floating top-right on canvas. Passed combat flow callbacks to overlay. Added `viewOnly` mode (for theatric display). |
+| `components/control-center/DmControlCenter.tsx` | Added `useCombatStore` imports for `nextTurn` and `prevTurn`. Passed `activeEncounter`, `onNextTurn`, `onPrevTurn` to CanvasMapView. |
+
+### Initiative Overlay Architecture (Dual Rendering)
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Canvas (60fps RAF loop)                                     │
+│  ├─ Tokens drawn with activeTurnTokenId highlighting         │
+│  │  └─ Current turn token: gold glow ring + pulsing border   │
+│  ├─ Initiative Overlay rendered on canvas:                   │
+│  │  ├─ drawTurnBanner → "R3 ⚔ Bob's Turn" above token       │
+│  │  ├─ drawNextUpIndicator → pulsing amber dot on next token │
+│  │  ├─ drawDeadMarker → red X on dead tokens                 │
+│  │  └─ drawStatusChip → "🧘 Conc" below concentrating tokens │
+│  └─ Drag preview (layer 8)                                   │
+│                                                              │
+│  DOM (z-30, positioned top-right)                            │
+│  └─ InitiativeOverlay HUD:                                   │
+│     ├─ Header: [R3] [⚔ Active] [◄ Prev] [► Next]           │
+│     ├─ Combatant list with auto-scroll to current            │
+│     │  ├─ Current: gold pulse dot + gold border + HP bar     │
+│     │  ├─ Next: amber pulse dot                              │
+│     │  ├─ Dead: strikethrough + 💀 + reduced opacity         │
+│     │  └─ Status effects: "+2" badge                         │
+│     └─ Foot: [1/5] combatant counter                         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Token Visual States on Canvas (Cycle 23)
+
+| State | Visual Indicator | Canvas Effect |
+|-------|-----------------|---------------|
+| **Current Turn** | Gold glow ring + pulsing expanding ring | `shadowColor: #eab308/0.4-0.6`, `shadowBlur: 20`, 3px gold border, pulsing outer ring `sin(time*4)*2+4`, `#fde047` label |
+| **Selected** | Standard gold glow | `shadowBlur: 16`, `#FFD700` border, animated pulse via `sin(time*3)` |
+| **Player** | Subtle gold aura | `shadowColor: #FFD700/0.1`, `shadowBlur: 6` |
+| **Enemy** | Red border | `TYPE_BORDER.enemy = "#ff4444"` |
+| **Dead** | Red X overlay | `drawDeadMarker()` renders "╳" in `rgba(239,68,68,0.6)` |
+| **Concentrating** | Violet chip | `drawStatusChip("🧘 Conc")` in `#a78bfa` |
+| **Ghosted** | 15% opacity fill | `hexToRgba(color, 0.15)` when `!visible && dmView` |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (2033 modules) |
+| Vite production build | ✅ **9.38s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.20s build |
+| New files | 2 (`initiative-renderer.ts` 280 lines, `InitiativeOverlay.tsx` 280 lines) |
+| Modified files | 4 (token-renderer.ts, lighting-renderer.ts, CanvasMapView.tsx, DmControlCenter.tsx) |
+| Component isolation | ✅ All files < 300 lines, single responsibility |
+| No breaking changes | ✅ All new props optional, backward compatible |
+| Premium design tokens | ✅ Gold glass banners, amber pulse dots, gold pulse indicators, red death markers |
+
+---
