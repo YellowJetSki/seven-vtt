@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Condition Quick-Toggle Overlay (Real-Play D&D Mechanics, Sprint 15)
+ * STᚱ VTT — Condition Quick-Toggle Overlay (Sprint 26: Firestore Sync Fix)
  *
  * A DM-facing rapid condition management tool for the Player Cards page.
  * Allows the DM to apply/remove conditions on any character in 1-2 clicks.
@@ -16,13 +16,19 @@
  *
  * Architecture:
  * - Reads characters + conditions from campaignStore
- * - Writes condition state via campaignStore.updateCharacter()
+ * - Writes condition state via useConditionMutations() — which writes
+ *   to BOTH Zustand (instant) AND Firestore (cross-device sync).
  * - Uses the shared CONDITION data from condition-data for styling
  * - Mounted on PlayerCards page via PlayerList
+ *
+ * FIX (Sprint 26): Previously used raw updateCharacter() which only
+ * wrote to Zustand. Now uses useConditionMutations() which writes to
+ * BOTH Zustand and Firestore, ensuring conditions sync across devices.
  */
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useConditionMutations } from "@/hooks/useCharacterMutations";
 import { CONDITIONS } from "@/types";
 import type { ConditionId } from "@/types";
 import ConditionDots from "./ConditionDots";
@@ -89,7 +95,12 @@ function getConditionBg(conditionId: ConditionId): string {
 
 export default function ConditionQuickToggle({ className = "" }: ConditionToggleProps) {
   const characters = useCampaignStore((s) => s.characters);
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+  const {
+    handleToggleCondition: handleToggleConditionMutation,
+    handleClearAllConditions,
+    handleSetConcentration: handleSetConcentrationMutation,
+    handleBreakConcentration: handleBreakConcentrationMutation,
+  } = useConditionMutations();
 
   // ── State ──
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
@@ -126,13 +137,12 @@ export default function ConditionQuickToggle({ className = "" }: ConditionToggle
     (conditionId: ConditionId) => {
       if (!selectedCharId || !selectedChar) return;
 
-      const current = selectedChar.conditions as ConditionId[];
+      const current = (selectedChar.conditions ?? []) as ConditionId[];
       const isActive = current.includes(conditionId);
-      const next = isActive
-        ? current.filter((c) => c !== conditionId)
-        : [...current, conditionId];
 
-      updateCharacter(selectedCharId, { conditions: next });
+      // Write to BOTH Zustand (instant) AND Firestore (cross-device sync)
+      handleToggleConditionMutation(selectedChar, conditionId);
+
       showFlash(
         isActive
           ? `\u2716 Removed ${CONDITIONS[conditionId]?.name || conditionId}`
@@ -140,7 +150,7 @@ export default function ConditionQuickToggle({ className = "" }: ConditionToggle
         isActive ? "info" : "success"
       );
     },
-    [selectedCharId, selectedChar, updateCharacter, showFlash]
+    [selectedCharId, selectedChar, handleToggleConditionMutation, showFlash]
   );
 
   // ── Clear all conditions on the selected character ──
@@ -148,36 +158,29 @@ export default function ConditionQuickToggle({ className = "" }: ConditionToggle
     if (!selectedCharId || !selectedChar) return;
     const count = selectedChar.conditions.length;
     if (count === 0) return;
-    updateCharacter(selectedCharId, { conditions: [] });
+    handleClearAllConditions(selectedChar);
     showFlash(`\u2728 Cleared ${count} condition${count > 1 ? "s" : ""}`, "warning");
-  }, [selectedCharId, selectedChar, updateCharacter, showFlash]);
+  }, [selectedCharId, selectedChar, handleClearAllConditions, showFlash]);
 
   // ── Set concentration ──
   const handleSetConcentration = useCallback(
     (spellName?: string) => {
       if (!selectedCharId || !selectedChar) return;
-      const current = (selectedChar.conditions as ConditionId[]).filter(
-        (c) => c !== "concentration"
-      );
-      const next = [...current, "concentration"];
-      updateCharacter(selectedCharId, { conditions: next });
+      handleSetConcentrationMutation(selectedChar, spellName);
       showFlash(
         `\uD83D\uDD11 ${selectedChar.name.split(" ")[0]} concentrating${spellName ? `: ${spellName}` : ""}`,
         "success"
       );
     },
-    [selectedCharId, selectedChar, updateCharacter, showFlash]
+    [selectedCharId, selectedChar, handleSetConcentrationMutation, showFlash]
   );
 
   // ── Break concentration ──
   const handleBreakConcentration = useCallback(() => {
     if (!selectedCharId || !selectedChar) return;
-    const next = (selectedChar.conditions as ConditionId[]).filter(
-      (c) => c !== "concentration"
-    );
-    updateCharacter(selectedCharId, { conditions: next });
+    handleBreakConcentrationMutation(selectedChar);
     showFlash(`\u26A0 Concentration broken on ${selectedChar.name.split(" ")[0]}`, "warning");
-  }, [selectedCharId, selectedChar, updateCharacter, showFlash]);
+  }, [selectedCharId, selectedChar, handleBreakConcentrationMutation, showFlash]);
 
   // ── Add custom buff ──
   const handleAddBuff = useCallback(() => {

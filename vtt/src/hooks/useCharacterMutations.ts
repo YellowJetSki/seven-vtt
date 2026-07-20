@@ -303,6 +303,106 @@ export function useInspirationMutation() {
 }
 
 /**
+ * Condition ID type for mutation context.
+ */
+export type ConditionMutationId = string;
+
+/**
+ * Hook providing all condition-related mutations.
+ *
+ * These mutations write to BOTH Zustand (instant UI) and Firestore
+ * (real-time cross-device sync), ensuring conditions applied by
+ * the DM instantly propagate to player tabs.
+ *
+ * Returns:
+ *   - handleToggleCondition(char, conditionId) — Add or remove a condition
+ *   - handleSetConditions(char, conditionIds) — Replace all conditions (used for clear-all)
+ *   - handleSetConcentration(char, spellName?) — Set concentration condition
+ *   - handleBreakConcentration(char) — Remove concentration condition
+ *
+ * FIX (Sprint 26): Created this dedicated hook to replace raw
+ * updateCharacter() calls in ConditionQuickToggle and ConditionManager,
+ * which were writing ONLY to Zustand and not to Firestore.
+ */
+export function useConditionMutations() {
+  const write = useWriteCharacter();
+
+  const handleToggleCondition = useCallback(
+    (
+      character: PlayerCharacter,
+      conditionId: ConditionMutationId
+    ): { conditions: string[]; wasAdded: boolean } => {
+      const current = Array.isArray(character.conditions) ? character.conditions : [];
+      const isActive = current.includes(conditionId);
+      const next = isActive
+        ? current.filter((c) => c !== conditionId)
+        : [...current, conditionId];
+
+      write(character.id, { conditions: next } as Partial<PlayerCharacter>);
+      return { conditions: next, wasAdded: !isActive };
+    },
+    [write]
+  );
+
+  const handleSetConditions = useCallback(
+    (
+      character: PlayerCharacter,
+      conditionIds: ConditionMutationId[]
+    ): { conditions: string[] } => {
+      const next = [...conditionIds];
+      write(character.id, { conditions: next } as Partial<PlayerCharacter>);
+      return { conditions: next };
+    },
+    [write]
+  );
+
+  const handleClearAllConditions = useCallback(
+    (character: PlayerCharacter): { conditions: string[] } => {
+      write(character.id, { conditions: [] } as Partial<PlayerCharacter>);
+      return { conditions: [] };
+    },
+    [write]
+  );
+
+  const handleSetConcentration = useCallback(
+    (
+      character: PlayerCharacter,
+      spellName?: string
+    ): { conditions: string[] } => {
+      const current = Array.isArray(character.conditions) ? character.conditions : [];
+      if (current.includes("concentration")) {
+        return { conditions: current };
+      }
+      const next = [...current, "concentration"];
+      write(character.id, { conditions: next } as Partial<PlayerCharacter>);
+      return { conditions: next };
+    },
+    [write]
+  );
+
+  const handleBreakConcentration = useCallback(
+    (character: PlayerCharacter): { conditions: string[] } => {
+      const current = Array.isArray(character.conditions) ? character.conditions : [];
+      const next = current.filter((c) => c !== "concentration");
+      if (next.length === current.length) {
+        return { conditions: current }; // No change
+      }
+      write(character.id, { conditions: next } as Partial<PlayerCharacter>);
+      return { conditions: next };
+    },
+    [write]
+  );
+
+  return {
+    handleToggleCondition,
+    handleSetConditions,
+    handleClearAllConditions,
+    handleSetConcentration,
+    handleBreakConcentration,
+  };
+}
+
+/**
  * Convenience hook that returns ALL character mutations.
  */
 export function useAllCharacterMutations() {
@@ -312,5 +412,6 @@ export function useAllCharacterMutations() {
     ...useSpellSlotMutations(),
     ...useAbilityMutations(),
     ...useInspirationMutation(),
+    ...useConditionMutations(),
   };
 }

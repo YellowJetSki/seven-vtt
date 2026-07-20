@@ -16,7 +16,7 @@
 import { useState, useMemo, useCallback } from "react";
 import type { PlayerCharacter } from "@/types/character";
 import type { ConditionId } from "@/types/condition-types";
-import { useCampaignStore } from "@/stores/campaignStore";
+import { useConditionMutations } from "@/hooks/useCharacterMutations";
 import {
   computeConditionModifiers,
   applyConditionSpeed,
@@ -41,7 +41,10 @@ export default function ConditionManager({
   showModifiers = true,
   onClose,
 }: ConditionManagerProps) {
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+  const {
+    handleToggleCondition: toggleConditionMutation,
+    handleClearAllConditions: clearAllConditionsMutation,
+  } = useConditionMutations();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<ConditionId | null>(null);
 
@@ -84,27 +87,17 @@ export default function ConditionManager({
     });
   }, [allConditions, search, activeFilter, activeSet]);
 
-  // ── Toggle Condition ──
+  // ── Toggle Condition (writes to BOTH Zustand + Firestore) ──
   const toggleCondition = useCallback(
     (conditionId: string) => {
-      const current = Array.isArray(character.conditions) ? character.conditions : [];
-      const next = activeSet.has(conditionId as ConditionId)
-        ? current.filter((c) => c !== conditionId)
-        : [...current, conditionId];
-      updateCharacter(character.id, {
-        conditions: next,
-        updatedAt: Date.now(),
-      } as Partial<PlayerCharacter>);
+      toggleConditionMutation(character, conditionId);
     },
-    [character.id, character.conditions, activeSet, updateCharacter]
+    [character, toggleConditionMutation]
   );
 
   const clearAll = useCallback(() => {
-    updateCharacter(character.id, {
-      conditions: [],
-      updatedAt: Date.now(),
-    } as Partial<PlayerCharacter>);
-  }, [character.id, updateCharacter]);
+    clearAllConditionsMutation(character);
+  }, [character, clearAllConditionsMutation]);
 
   // ── Summary Badges ──
   const hasActive = activeIds.length > 0;
