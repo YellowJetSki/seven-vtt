@@ -10,14 +10,17 @@
  * │  Fixed min-w   │   flex-grow             │  Animated    │
  * └────────────────────────────────────────────────────────┘
  *
- * Cycle 21 Enhancement: Token HP Popover (rapid HP adjustment)
- * Cycle 22 Enhancement: Token Drag-and-Drop (smooth repositioning)
- *   - Canvas relays onMoveToken to useDmControlCenter.handleMoveToken
- *   - useTokenMutations.moveToken writes to Zustand + Firestore
- *   - Drag preview rendered directly on canvas by CanvasMapView
+ * Cycle 21: Token HP Popover (rapid HP adjustment)
+ * Cycle 22: Token Drag-and-Drop (smooth repositioning)
+ * Cycle 23: Initiative & Turn Order system on the map
+ *   - Canvas renders turn banners, next-up indicators, dead markers
+ *   - InitiativeOverlay HUD floats on top of canvas
+ *   - Next/Prev turn buttons wired to combatStore flow actions
+ *   - Active combatant token glows gold on the canvas
  */
 
 import { useCallback, useState } from "react";
+import { useCombatStore } from "@/stores/combatStore";
 import CanvasMapView from "@/components/maps/CanvasMapView";
 import DmToolbar from "./DmToolbar";
 import ControlCenterSidebar from "./ControlCenterSidebar";
@@ -32,6 +35,10 @@ import type { MapToken } from "@/types";
 export default function DmControlCenter() {
   const state = useDmControlCenter();
   const [showSharePicker, setShowSharePicker] = useState(false);
+
+  // ── Cycle 23: Combat flow actions ──
+  const nextTurn = useCombatStore((s) => s.nextTurn);
+  const prevTurn = useCombatStore((s) => s.prevTurn);
 
   /**
    * Enhanced canvas token click: opens HP popover + inspector.
@@ -81,6 +88,9 @@ export default function DmControlCenter() {
             mapData={state.activeMap}
             tokens={state.activeTokens}
             dmView={state.isDmView}
+            activeEncounter={state.activeEncounter}
+            onNextTurn={nextTurn}
+            onPrevTurn={prevTurn}
             onTokenClick={(token) => handleCanvasTokenClick(token)}
             onCellClick={state.handleCellClick}
             onMoveToken={state.handleMoveToken}

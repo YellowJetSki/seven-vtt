@@ -2,7 +2,8 @@
  * STᚱ VTT — Canvas Battle Map (Premium)
  *
  * Canvas-based battle map renderer using HTML5 Canvas API.
- * Handles map image, grid, fog of war, dynamic lighting, and token rendering.
+ * Handles map image, grid, fog of war, dynamic lighting, token rendering,
+ * drag-and-drop preview, and initiative/turn order overlays.
  *
  * Architecture:
  *   ┌──────────────────────────────────────────┐
@@ -12,28 +13,36 @@
  *   │  ├─ Grid overlay                         │
  *   │  ├─ Fog of war                           │
  *   │  ├─ Dynamic lighting                     │
- *   │  ├─ Tokens (excl. dragged)               │
- *   │  └─ Drag preview (ghost + drop target)   │
+ *   │  ├─ Tokens (with turn highlighting)      │
+ *   │  ├─ Initiative overlays                  │
+ *   │  └─ Drag preview                         │
  *   ├──────────────────────────────────────────┤
  *   │  ZoomControls (z-20)                     │
- *   └──MapViewControls (z-20)                  │
+ *   │  MapViewControls (z-20)                  │
+ *   │  InitiativeOverlay HUD (z-30)            │
+ *   └──────────────────────────────────────────┘
  *
- * Cycle 22 Enhancement (Premium Battlemap Overhaul):
+ * Cycle 22 Enhancement:
  *   - FULL token drag-and-drop integration using useTokenDrag hook
  *   - Drag preview rendering: ghost token, drop target, drag trail, coordinates
- *   - Animation frame loop for selected token pulse effect
- *   - Smart pan/drag conflict detection: dragging token vs dragging canvas
- *   - Map edge boundary clamping for token positions
- *   - Coordinate passes to DmControlCenter for HP popover
+ *
+ * Cycle 23 Enhancement:
+ *   - Initiative & Turn Order system integrated directly into the map UI
+ *   - Current turn combatant gets gold glow ring + animated border
+ *   - InitiativeOverlay HUD floats on top of canvas showing turn order
+ *   - Active token ID passed for dynamic turn highlighting
+ *   - Initiative overlay renders turn banners, next-up indicators, dead overlays
  */
 
 import { useRef, useEffect, useCallback, useState, forwardRef, useImperativeHandle } from "react";
-import type { LightSource, WallSegment, MapToken, BattleMap } from "@/types";
+import type { LightSource, WallSegment, MapToken, BattleMap, CombatEncounter } from "@/types";
 import { renderCanvas, type CanvasRenderState } from "@/lib/canvas/lighting-renderer";
 import { setupCanvas } from "@/lib/canvas/token-renderer";
 import { useTokenDrag } from "@/hooks/useTokenDrag";
+import { useCombatStore } from "@/stores/combatStore";
 import ZoomControls from "./ZoomControls";
 import MapViewControls from "./MapViewControls";
+import InitiativeOverlay from "./InitiativeOverlay";
 
 export interface CanvasMapHandle {
   recenter: () => void;
@@ -45,7 +54,7 @@ export interface CanvasMapHandle {
   zoomOut: () => void;
 }
 
-interface CanvasMapViewProps {
+export interface CanvasMapViewProps {
   mapData: BattleMap;
   tokens: MapToken[];
   lights?: LightSource[];
@@ -55,16 +64,29 @@ interface CanvasMapViewProps {
   onCellClick?: (gridX: number, gridY: number) => void;
   /** Called when a token drag completes with final snapped grid position */
   onMoveToken?: (tokenId: string, gridX: number, gridY: number) => void;
+  /** Active combat encounter for initiative overlay */
+  activeEncounter?: CombatEncounter | null;
+  /** Called when the DM clicks Next/Prev turn from the initiative overlay */
+  onNextTurn?: () => void;
+  onPrevTurn?: () => void;
+  /** View-only mode for theatric display */
+  viewOnly?: boolean;
 }
 
 const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   mapData, tokens, lights = [], walls = [], dmView = true,
   onTokenClick, onCellClick, onMoveToken,
+  activeEncounter, onNextTurn, onPrevTurn, viewOnly = false,
 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
+
+  // ── Derived active turn token ID ──
+  const activeTurnTokenId = activeEncounter?.phase === "active"
+    ? activeEncounter.combatants[activeEncounter.currentCombatantIndex]?.id ?? null
+    : null;
 
   // ── Canvas render state (ref for mutable updates without re-renders) ──
   const stateRef = useRef<CanvasRenderState>({
@@ -73,6 +95,8 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     lights: [], walls, tokens, fogVisible: new Set(), fogExplored: new Set(),
     zoom: 1, panX: 0, panY: 0, showGrid: true, showFog: !dmView, dmView,
     time: 0, dragPreview: null,
+    activeEncounter: activeEncounter,
+    activeTurnTokenId: activeTurnTokenId,
   });
 
   // ── React state for UI controls ──
@@ -80,6 +104,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   const [showFog, setShowFog] = useState(!dmView);
   const [isDmView, setIsDmView] = useState(dmView);
   const [zoom, setZoom] = useState(1);
+  const [showInitiativeOverlay, setShowInitiativeOverlay] = useState(true);
   const [isCanvasDragging, setIsCanvasDragging] = useState(false);
   const isCanvasDraggingRef = useRef(false);
 
@@ -92,19 +117,23 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     handleMouseDown: handleTokenDragDown,
     handleMouseMove: handleTokenDragMove,
     handleMouseUp: handleTokenDragUp,
-  } = useTokenDrag({
-    tokens,
-    gridSize: mapData.gridSize,
-    onMoveToken: (tokenId, gridX, gridY) => {
-      onMoveToken?.(tokenId, gridX, gridY);
-    },
-    onTokenClick: (token) => {
-      onTokenClick?.(token);
-    },
-    onCellClick: (gridX, gridY) => {
-      onCellClick?.(gridX, gridY);
-    },
-  });
+  } = useTokenDrag(
+    viewOnly
+      ? { tokens: [], gridSize: mapData.gridSize } // Disable drag in view-only mode
+      : {
+          tokens,
+          gridSize: mapData.gridSize,
+          onMoveToken: (tokenId, gridX, gridY) => {
+            onMoveToken?.(tokenId, gridX, gridY);
+          },
+          onTokenClick: (token) => {
+            onTokenClick?.(token);
+          },
+          onCellClick: (gridX, gridY) => {
+            onCellClick?.(gridX, gridY);
+          },
+        }
+  );
 
   // ── Sync drag preview state to canvas render state ──
   useEffect(() => {
@@ -141,7 +170,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     img.onload = () => { stateRef.current.image = img; };
   }, [mapData.imageUrl]);
 
-  // ── Animation loop (60fps pulse on selected tokens) ──
+  // ── Animation loop (60fps pulse on selected/active tokens) ──
   const renderFrame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -155,6 +184,8 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
       gridColor: mapData.gridColor || "#808080", gridOpacity: mapData.gridOpacity ?? 0.4,
       tokens, showGrid, showFog, dmView: isDmView,
       time: elapsed,
+      activeEncounter,
+      activeTurnTokenId,
     });
 
     const dpr = window.devicePixelRatio || 1;
@@ -162,7 +193,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     renderCanvas(ctx, canvas, stateRef.current);
 
     animFrameRef.current = requestAnimationFrame(renderFrame);
-  }, [mapData, tokens, showGrid, showFog, isDmView]);
+  }, [mapData, tokens, showGrid, showFog, isDmView, activeEncounter, activeTurnTokenId]);
 
   // ── Start/stop animation loop ──
   useEffect(() => {
@@ -186,7 +217,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   // ── Mouse handlers ──
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
+    if (viewOnly || e.button !== 0) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -194,35 +225,33 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
 
-    // Try token hit first (for drag)
     const hit = handleTokenDragDown(
       canvasX, canvasY,
       stateRef.current.panX, stateRef.current.panY, stateRef.current.zoom
     );
 
     if (hit) {
-      // Token hit — don't start canvas pan
       isCanvasDraggingRef.current = false;
       return;
     }
 
-    // No token hit — start canvas pan
     isCanvasDraggingRef.current = true;
     setIsCanvasDragging(true);
     dragStart.current = {
       x: e.clientX - stateRef.current.panX,
       y: e.clientY - stateRef.current.panY,
     };
-  }, [handleTokenDragDown]);
+  }, [handleTokenDragDown, viewOnly]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (viewOnly) return;
+
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
 
-    // Try token drag move first
     const dragConsumed = handleTokenDragMove(
       canvasX, canvasY,
       stateRef.current.panX, stateRef.current.panY, stateRef.current.zoom
@@ -230,21 +259,21 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
 
     if (dragConsumed) return;
 
-    // Fall back to canvas pan
     if (isCanvasDraggingRef.current) {
       stateRef.current.panX = e.clientX - dragStart.current.x;
       stateRef.current.panY = e.clientY - dragStart.current.y;
     }
-  }, [handleTokenDragMove]);
+  }, [handleTokenDragMove, viewOnly]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    if (viewOnly) return;
+
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
 
-    // Try token drag end first
     const dragConsumed = handleTokenDragUp(
       canvasX, canvasY,
       stateRef.current.panX, stateRef.current.panY, stateRef.current.zoom
@@ -254,7 +283,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     setIsCanvasDragging(false);
 
     if (dragConsumed) return;
-  }, [handleTokenDragUp]);
+  }, [handleTokenDragUp, viewOnly]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
@@ -262,8 +291,6 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     stateRef.current.zoom = n;
     setZoom(n);
   }, []);
-
-  const updateAndRender = useCallback((fn: () => void) => { fn(); }, []);
 
   // ── Imperative handle ──
   useImperativeHandle(ref, () => ({
@@ -278,25 +305,44 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
 
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-obsidian" style={{ minHeight: "400px" }}>
+      {/* ── Canvas layer ── */}
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 ${isCanvasDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`absolute inset-0 ${isCanvasDragging ? 'cursor-grabbing' : viewOnly ? 'cursor-default' : 'cursor-grab'}`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
       />
-      <ZoomControls zoom={zoom}
-        onZoomIn={() => { const n = Math.min(4, zoom * 1.25); stateRef.current.zoom = n; setZoom(n); }}
-        onZoomOut={() => { const n = Math.max(0.25, zoom * 0.8); stateRef.current.zoom = n; setZoom(n); }}
-      />
-      <MapViewControls
-        showFog={showFog} isDmView={isDmView} showGrid={showGrid}
-        onToggleFog={() => { const n = !showFog; setShowFog(n); stateRef.current.showFog = n; }}
-        onToggleDmView={() => { const n = !isDmView; setIsDmView(n); stateRef.current.dmView = n; stateRef.current.showFog = !n; setShowFog(!n); }}
-        onToggleGrid={() => { const n = !showGrid; setShowGrid(n); stateRef.current.showGrid = n; }}
-      />
+
+      {/* ── Zoom controls (bottom-left) ── */}
+      {!viewOnly && (
+        <ZoomControls zoom={zoom}
+          onZoomIn={() => { const n = Math.min(4, zoom * 1.25); stateRef.current.zoom = n; setZoom(n); }}
+          onZoomOut={() => { const n = Math.max(0.25, zoom * 0.8); stateRef.current.zoom = n; setZoom(n); }}
+        />
+      )}
+
+      {/* ── Map view controls (bottom-left, above zoom) ── */}
+      {!viewOnly && (
+        <MapViewControls
+          showFog={showFog} isDmView={isDmView} showGrid={showGrid}
+          onToggleFog={() => { const n = !showFog; setShowFog(n); stateRef.current.showFog = n; }}
+          onToggleDmView={() => { const n = !isDmView; setIsDmView(n); stateRef.current.dmView = n; stateRef.current.showFog = !n; setShowFog(!n); }}
+          onToggleGrid={() => { const n = !showGrid; setShowGrid(n); stateRef.current.showGrid = n; }}
+        />
+      )}
+
+      {/* ── Initiative overlay (top-right) ── */}
+      {!viewOnly && dmView && showInitiativeOverlay && (
+        <InitiativeOverlay
+          visible={true}
+          onNextTurn={() => onNextTurn?.()}
+          onPrevTurn={() => onPrevTurn?.()}
+          activeCombatantId={activeTurnTokenId}
+        />
+      )}
     </div>
   );
 });

@@ -3,15 +3,21 @@
  *
  * Canvas rendering for map tokens with premium visual states:
  *   - Selected token: Gold glow ring + animated pulse
+ *   - Current turn token: Enhanced gold glow + pulsing border
  *   - DM-only visibility: Ghosted tokens when in DM view
  *   - HP bars: Color-coded (green/amber/red) with background
  *   - Status markers: Colored dots around the token
  *   - Label rendering with shadow for readability
+ *   - Type-based icons inside token circle
  *
- * Cycle 22 Enhancement (Premium Battlemap Overhaul):
+ * Cycle 22 Enhancement:
  *   - Ghost token rendering during drag (handled by drag-renderer.ts)
  *   - Enhanced selected state with animated pulse border
  *   - Token type icon integrated into the token circle
+ *
+ * Cycle 23 Enhancement:
+ *   - Current turn token highlighting (gold glow + animated border)
+ *   - Active token ID passed via drawTokens for turn highlighting
  */
 
 import type { MapToken } from "@/types";
@@ -43,12 +49,6 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function getHpColor(ratio: number): string {
-  if (ratio > 0.5) return "#44cc44";
-  if (ratio > 0.25) return "#ffaa00";
-  return "#ff4444";
-}
-
 function getHpBarColor(ratio: number): string {
   if (ratio > 0.5) return "rgba(68, 204, 68, 0.8)";
   if (ratio > 0.25) return "rgba(255, 170, 0, 0.8)";
@@ -63,7 +63,8 @@ export function drawToken(
   gridSize: number,
   isSelected: boolean = false,
   isDmView: boolean = true,
-  time: number = 0
+  time: number = 0,
+  isCurrentTurn: boolean = false
 ): void {
   const tx = token.x * gridSize + gridSize / 2;
   const ty = token.y * gridSize + gridSize / 2;
@@ -72,9 +73,14 @@ export function drawToken(
 
   ctx.save();
 
-  // ── Outer glow (selected or player) ──
-  if (isSelected) {
-    // Animated pulse ring
+  // ── Outer glow ──
+  if (isCurrentTurn) {
+    // Enhanced glow for current turn combatant
+    const pulse = Math.sin(time * 3) * 0.2 + 0.4;
+    ctx.shadowColor = hexToRgba("#eab308", pulse);
+    ctx.shadowBlur = 20;
+  } else if (isSelected) {
+    // Standard selected glow
     const pulse = Math.sin(time * 3) * 0.15 + 0.35;
     ctx.shadowColor = hexToRgba("#FFD700", pulse);
     ctx.shadowBlur = 16;
@@ -88,29 +94,45 @@ export function drawToken(
   ctx.arc(tx, ty, radius, 0, Math.PI * 2);
 
   if (showGhosted) {
-    // Ghosted token (invisible to players, visible to DM)
     ctx.fillStyle = hexToRgba(token.color || "#4a9eff", 0.15);
     ctx.fill();
     ctx.strokeStyle = hexToRgba(TYPE_BORDER[token.type] || "#808080", 0.2);
     ctx.lineWidth = 1;
     ctx.stroke();
   } else {
-    // Normal token
     ctx.fillStyle = token.color || "#4a9eff";
     ctx.fill();
 
-    // Border with type-based color
-    ctx.strokeStyle = isSelected
-      ? "#FFD700"
-      : (TYPE_BORDER[token.type] || "#808080");
-    ctx.lineWidth = isSelected ? 3 : 2;
+    // Border
+    if (isCurrentTurn) {
+      ctx.strokeStyle = "#eab308";
+      ctx.lineWidth = 3;
+    } else if (isSelected) {
+      ctx.strokeStyle = "#FFD700";
+      ctx.lineWidth = 3;
+    } else {
+      ctx.strokeStyle = TYPE_BORDER[token.type] || "#808080";
+      ctx.lineWidth = 2;
+    }
     ctx.stroke();
 
-    // Token icon (small emoji/text centered)
+    // Extra ring for current turn
+    if (isCurrentTurn) {
+      const ringPulse = Math.sin(time * 4) * 2 + 4;
+      ctx.beginPath();
+      ctx.arc(tx, ty, radius + ringPulse, 0, Math.PI * 2);
+      ctx.strokeStyle = hexToRgba("#eab308", 0.15);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Token icon
     const icon = token.icon || TYPE_ICON[token.type] || "✦";
     ctx.font = `${radius * 0.7}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#ffffff";
     ctx.fillText(icon, tx, ty + 0.5);
   }
 
@@ -119,12 +141,10 @@ export function drawToken(
   // ── Label ──
   ctx.save();
   if (!showGhosted) {
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = isCurrentTurn ? "#fde047" : "#ffffff";
     ctx.font = `bold ${Math.max(9, gridSize * 0.18)}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "bottom";
-
-    // Shadow for readability
     ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
     ctx.shadowBlur = 4;
     ctx.fillText(token.label, tx, ty - radius - 2);
@@ -138,17 +158,17 @@ export function drawToken(
     const barY = ty + radius + 4;
     const hpRatio = Math.max(0, Math.min(1, token.hp.current / token.hp.max));
 
-    // Background
+    ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
     ctx.beginPath();
     ctx.roundRect(tx - barWidth / 2, barY, barWidth, barHeight, 2);
     ctx.fill();
 
-    // Fill
     ctx.fillStyle = getHpBarColor(hpRatio);
     ctx.beginPath();
     ctx.roundRect(tx - barWidth / 2, barY, barWidth * hpRatio, barHeight, 2);
     ctx.fill();
+    ctx.restore();
   }
 
   // ── Status markers ──
@@ -160,7 +180,6 @@ export function drawToken(
       const dx = Math.cos(angle) * (radius + 7);
       const dy = Math.sin(angle) * (radius + 7);
 
-      // Map condition name to color
       let dotColor = "#eab308";
       switch (marker.toLowerCase()) {
         case "poisoned": dotColor = "#22c55e"; break;
@@ -181,7 +200,6 @@ export function drawToken(
       ctx.arc(tx + dx, ty + dy, dotRadius, 0, Math.PI * 2);
       ctx.fillStyle = dotColor;
       ctx.fill();
-      // Dot border
       ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
       ctx.lineWidth = 0.5;
       ctx.stroke();
@@ -191,6 +209,7 @@ export function drawToken(
 
 /**
  * Render all visible tokens on the canvas.
+ * Accepts an optional activeTurnTokenId for highlighting the current combatant.
  */
 export function drawTokens(
   ctx: CanvasRenderingContext2D,
@@ -198,12 +217,13 @@ export function drawTokens(
   gridSize: number,
   dmView: boolean,
   selectedTokenId?: string,
-  time: number = 0
+  time: number = 0,
+  activeTurnTokenId?: string | null
 ): void {
   for (const token of tokens) {
-    // Skip invisible tokens if not in DM view
     if (!token.visible && !dmView) continue;
-    drawToken(ctx, token, gridSize, token.id === selectedTokenId, dmView, time);
+    const isCurrentTurn = token.id === activeTurnTokenId;
+    drawToken(ctx, token, gridSize, token.id === selectedTokenId, dmView, time, isCurrentTurn);
   }
 }
 
@@ -222,7 +242,6 @@ export function setupCanvas(canvas: HTMLCanvasElement, container: HTMLElement): 
   resize();
   window.addEventListener("resize", resize);
 
-  // Apply DPR scale
   const ctx = canvas.getContext("2d");
   if (ctx) {
     const dpr = window.devicePixelRatio || 1;

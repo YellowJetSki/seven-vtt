@@ -1,7 +1,7 @@
 /**
  * STᚱ VTT — Canvas Renderer (Premium)
  *
- * Main canvas rendering pipeline: map background → grid → fog → lighting → tokens → drag preview.
+ * Main canvas rendering pipeline.
  *
  * Rendering order (bottom → top):
  *   1. Background fill
@@ -9,16 +9,21 @@
  *   3. Grid overlay
  *   4. Fog of war
  *   5. Dynamic lighting
- *   6. Tokens
- *   7. Drag preview (ghost + drop target + trail + coordinate readout)
+ *   6. Tokens (with active turn highlighting)
+ *   7. Initiative overlays (turn banner, next-up, dead markers, status chips)
+ *   8. Drag preview (ghost + drop target + trail + coordinate readout)
  *
  * Cycle 22 Enhancement (Premium Battlemap Overhaul):
  *   - DragPreviewState integration for rendering ghost tokens while dragging
- *   - drawGhostToken, drawDropTarget, drawDragTrail, drawCoordinateReadout
- *   - Animation time passed through for token pulse animation
+ *
+ * Cycle 23 Enhancement (Premium Battlemap Overhaul):
+ *   - Initiative overlay rendering directly on the canvas
+ *   - ActiveTurnTokenId for dynamic turn highlighting on tokens
+ *   - Turn banners, next-up indicators, dead markers, concentration chips
+ *   - InitiativeOverlayState integration for canvas initiative rendering
  */
 
-import type { LightSource, WallSegment, MapToken } from "@/types";
+import type { LightSource, WallSegment, MapToken, CombatEncounter } from "@/types";
 import { drawGrid } from "./grid-renderer";
 import { applyFogOfWar, applyDynamicLighting } from "./fog-renderer";
 import { drawTokens } from "./token-renderer";
@@ -30,6 +35,10 @@ import {
   drawCoordinateReadout,
   type DragPreviewState,
 } from "./drag-renderer";
+import {
+  renderInitiativeOverlay,
+  type InitiativeOverlayState,
+} from "./initiative-renderer";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -61,6 +70,10 @@ export interface CanvasRenderState {
   dragTokenLabel?: string;
   /** The size multiplier of the token being dragged */
   dragTokenSize?: number;
+  /** Current initiative/combat encounter for turn overlay rendering */
+  activeEncounter?: CombatEncounter | null;
+  /** Token ID of the currently active turn combatant */
+  activeTurnTokenId?: string | null;
 }
 
 // ── Renderer ─────────────────────────────────────────────
@@ -75,6 +88,7 @@ export function renderCanvas(
     lights, walls, tokens, fogVisible, fogExplored,
     zoom, panX, panY, showGrid, showFog, dmView,
     time = 0, dragPreview, dragTokenColor, dragTokenLabel, dragTokenSize,
+    activeEncounter, activeTurnTokenId,
   } = state;
 
   const mapWidth = gridWidth * gridSize;
@@ -116,9 +130,25 @@ export function renderCanvas(
   const visibleTokens = draggedTokenId
     ? tokens.filter((t) => t.id !== draggedTokenId)
     : tokens;
-  drawTokens(ctx, visibleTokens, gridSize, dmView, undefined, time);
+  drawTokens(ctx, visibleTokens, gridSize, dmView, undefined, time, activeTurnTokenId);
 
-  // ── 7. Drag preview overlay ──
+  // ── 7. Initiative overlay ──
+  if (activeEncounter && activeEncounter.phase === "active" && dmView) {
+    const initState: InitiativeOverlayState = {
+      activeEncounter: activeEncounter,
+      time,
+      dmView,
+    };
+    // Build token position map for initiative overlay
+    const tokenPositions = tokens.map((t) => ({
+      gridX: t.x,
+      gridY: t.y,
+      id: t.id,
+    }));
+    renderInitiativeOverlay(ctx, tokenPositions, initState, gridSize);
+  }
+
+  // ── 8. Drag preview overlay ──
   if (dragPreview && dragPreview.isDragging && dragPreview.activeTokenId) {
     const { ghostGridX, ghostGridY, originGridX, originGridY } = dragPreview;
 
