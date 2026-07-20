@@ -53,10 +53,10 @@ export default function Header() {
 
         {/* ── LEFT GROUP ── */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Hamburger — animated bars */}
+          {/* Hamburger — hidden on mobile (bottom nav handles navigation) */}
           <button
             onClick={toggleSidebar}
-            className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-white/[0.04] text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90 group"
+            className="hidden lg:flex relative items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-white/[0.04] text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90 group"
             aria-label={hamburgerLabel}
             title={hamburgerLabel}
           >
