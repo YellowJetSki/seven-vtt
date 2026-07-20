@@ -1,17 +1,15 @@
 /**
- * STᚱ VTT — Enemy Statblock (Full 5e-Style Display)
+ * STᚱ VTT — Enemy Statblock (Full 5e-Style Display, Premium Glass)
  *
- * Complete D&D 5e monster statblock following the official format.
- * Supports read-only display and inline editing.
- *
- * Section order (official):
- *   Name, Size/Type/Alignment
- *   Armor Class, Hit Points, Speed
- *   STR/DEX/CON/INT/WIS/CHA
- *   Saving Throws, Skills
- *   Damage Resistances, Immunities
- *   Condition Immunities, Senses, Languages, CR
- *   Traits, Actions, Reactions, Legendary Actions
+ * Complete D&D 5e monster statblock following official format.
+ * Features:
+ *   - Direct glass gradient modal (replaced glass-gold)
+ *   - Gold edge light + corner ornaments
+ *   - Gold-accented stat cards with tier-based color coding
+ *   - Full read/edit toggle with structural data management
+ *   - Premium ability score grid, saving throws, skills
+ *   - Attacks, traits, actions, reactions, legendary actions
+ *   - Two-step delete with confirmation
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -32,7 +30,6 @@ const CREATURE_TYPES: CreatureType[] = [
 
 const SIZES: CreatureSize[] = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"];
 
-// ── Ability Modifier ──
 function getMod(score: number): string {
   const mod = Math.floor((score - 10) / 2);
   return mod >= 0 ? `+${mod}` : `${mod}`;
@@ -42,7 +39,6 @@ function getModNumber(score: number): number {
   return Math.floor((score - 10) / 2);
 }
 
-// ── CR display ──
 function formatCr(cr: number): string {
   if (cr === 0) return "0";
   if (cr === 0.125) return "1/8";
@@ -51,7 +47,6 @@ function formatCr(cr: number): string {
   return String(cr);
 }
 
-// ── CR XP table ──
 function crToXp(cr: number): string {
   const xpMap: Record<number, number> = {
     0: 10, 0.125: 25, 0.25: 50, 0.5: 100, 1: 200, 2: 450, 3: 700,
@@ -86,7 +81,6 @@ export default function EnemyStatblock({ enemy, onSave, onDelete, onClose }: Ene
     onClose();
   }, [enemy.id, onDelete, onClose]);
 
-  // Proficiency bonus by CR
   const profBonus = useMemo(() => {
     if (enemy.challengeRating <= 4) return 2;
     if (enemy.challengeRating <= 8) return 3;
@@ -103,23 +97,25 @@ export default function EnemyStatblock({ enemy, onSave, onDelete, onClose }: Ene
   }, [enemy.abilities.wisdom, enemy.skills.perception, profBonus]);
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="glass-gold rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden border border-gold/10 shadow-2xl shadow-gold-500/5"
+        className="relative bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/90 border border-gold-500/15 rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.55),0_8px_24px_rgba(0,0,0,0.3)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
+        {/* Gold edge light */}
+        <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
+        <div className="corner-ornament corner-tl corner-gold" />
+        <div className="corner-ornament corner-tr corner-gold" />
+        <div className="corner-ornament corner-bl corner-gold" />
+        <div className="corner-ornament corner-br corner-gold" />
 
         {/* ── Header ── */}
-        <div className="shrink-0 px-5 py-3 border-b border-gold/10">
+        <div className="shrink-0 px-5 py-3 border-b border-gold-500/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-lg">👾</span>
               <div>
-                <h2 className="text-base font-black text-gold tracking-tight">{enemy.name}</h2>
+                <h2 className="text-base font-black text-gold-400 tracking-tight">{enemy.name}</h2>
                 <p className="text-[10px] text-surface-500">
                   {enemy.size} {enemy.type}
                 </p>
@@ -145,34 +141,27 @@ export default function EnemyStatblock({ enemy, onSave, onDelete, onClose }: Ene
         </div>
 
         {/* ── Body (scrollable) ── */}
-        <div className="overflow-y-auto p-5 space-y-4 text-[11px] leading-relaxed">
+        <div className="overflow-y-auto scrollbar-gold p-5 space-y-4 text-[11px] leading-relaxed">
           {isEditing ? (
-            <EditView
-              edited={edited}
-              setEdited={setEdited}
-            />
+            <EditView edited={edited} setEdited={setEdited} />
           ) : (
-            <ReadView
-              enemy={enemy}
-              profBonus={profBonus}
-              passivePerception={passivePerception}
-            />
+            <ReadView enemy={enemy} profBonus={profBonus} passivePerception={passivePerception} />
           )}
         </div>
 
         {/* ── Footer ── */}
-        <div className="shrink-0 px-5 py-3 border-t border-gold/10 flex items-center justify-between">
+        <div className="shrink-0 px-5 py-3 border-t border-gold-500/10 flex items-center justify-between">
           {isEditing ? (
             <div className="flex gap-2 w-full">
               <button
                 onClick={() => { setEdited({ ...enemy }); setIsEditing(false); }}
-                className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-surface-400 hover:text-surface-200 border border-white/[0.06] hover:border-white/[0.12] active:scale-95 transition-all"
+                className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-surface-400 hover:text-surface-200 border border-white/[0.06] hover:border-white/[0.12] active:scale-95 transition-all duration-150"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="ml-auto px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all"
+                className="ml-auto px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 transition-all duration-150"
               >
                 💾 Save Changes
               </button>
@@ -181,7 +170,7 @@ export default function EnemyStatblock({ enemy, onSave, onDelete, onClose }: Ene
             <div className="flex gap-2">
               <button
                 onClick={() => setDeleteConfirm(true)}
-                className="px-3 py-1.5 rounded-lg text-[10px] border border-red-500/15 text-red-400 hover:bg-red-500/10 active:scale-95 transition-all"
+                className="px-3 py-1.5 rounded-lg text-[10px] border border-red-500/15 text-red-400 hover:bg-red-500/10 active:scale-95 transition-all duration-150"
               >
                 🗑 Delete
               </button>
@@ -190,7 +179,7 @@ export default function EnemyStatblock({ enemy, onSave, onDelete, onClose }: Ene
                   <span className="text-[9px] text-red-400/70">Confirm?</span>
                   <button
                     onClick={handleDelete}
-                    className="px-2 py-1 rounded-lg text-[9px] font-bold bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 active:scale-95 transition-all"
+                    className="px-2 py-1 rounded-lg text-[9px] font-bold bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 active:scale-95 transition-all duration-150"
                   >
                     Yes, Delete
                   </button>
@@ -216,22 +205,22 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
     <>
       {/* AC / HP / Speed */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl bg-gold-500/8 border border-gold/10 p-3 text-center">
+        <div className="rounded-xl bg-gradient-to-br from-gold-500/10 to-amber-500/5 border border-gold-500/15 p-3 text-center">
           <div className="text-[9px] uppercase tracking-wider text-surface-500 mb-1">Armor Class</div>
           <div className="text-2xl font-black text-cyan-300">{enemy.armorClass}</div>
         </div>
-        <div className="rounded-xl bg-gold-500/8 border border-gold/10 p-3 text-center">
+        <div className="rounded-xl bg-gradient-to-br from-gold-500/10 to-amber-500/5 border border-gold-500/15 p-3 text-center">
           <div className="text-[9px] uppercase tracking-wider text-surface-500 mb-1">Hit Points</div>
           <div className="text-2xl font-black text-green-400">{enemy.hitPoints.max}</div>
         </div>
-        <div className="rounded-xl bg-gold-500/8 border border-gold/10 p-3 text-center">
+        <div className="rounded-xl bg-gradient-to-br from-gold-500/10 to-amber-500/5 border border-gold-500/15 p-3 text-center">
           <div className="text-[9px] uppercase tracking-wider text-surface-500 mb-1">Speed</div>
           <div className="text-2xl font-black text-surface-200">{enemy.speed}ft</div>
         </div>
       </div>
 
       {/* Ability Scores */}
-      <div className="rounded-xl bg-obsidian-mid/60 border border-white/[0.04] p-3">
+      <div className="rounded-xl bg-gradient-to-b from-[#0c0d15]/80 to-[#08090e]/90 border border-white/[0.04] p-3">
         <div className="grid grid-cols-6 gap-1">
           {ABILITY_LABELS.map((abl, i) => (
             <div key={abl} className="text-center">
@@ -243,9 +232,9 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
         </div>
       </div>
 
-      {/* Attacks (structured from EnemyCreator) */}
+      {/* Attacks */}
       {enemy.attacks && enemy.attacks.length > 0 && (
-        <div className="rounded-xl bg-obsidian-mid/60 border border-white/[0.04] p-3">
+        <div className="rounded-xl bg-gradient-to-b from-[#0c0d15]/80 to-[#08090e]/90 border border-white/[0.04] p-3">
           <div className="text-[9px] uppercase tracking-wider text-surface-600 font-bold mb-2">Attacks</div>
           <div className="space-y-1.5">
             {enemy.attacks.map((att) => (
@@ -255,9 +244,7 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
                 <span className="text-surface-500">{att.damageDice} {att.damageType}</span>
                 <span className="text-surface-600">{att.range}</span>
                 {att.properties.length > 0 && (
-                  <span className="text-[8px] text-surface-600">
-                    {att.properties.join(", ")}
-                  </span>
+                  <span className="text-[8px] text-surface-600">{att.properties.join(", ")}</span>
                 )}
               </div>
             ))}
@@ -267,7 +254,7 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
 
       {/* CR / XP / PB */}
       <div className="flex items-center gap-3 text-[10px]">
-        <span className="px-2 py-0.5 rounded bg-gold-500/10 border border-gold/15 text-gold-400 font-semibold">
+        <span className="px-2 py-0.5 rounded bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 font-semibold">
           CR {formatCr(enemy.challengeRating)}
         </span>
         <span className="text-surface-500">{crToXp(enemy.challengeRating)} XP</span>
@@ -329,9 +316,21 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
         </div>
       )}
 
-      {/* Senses & Languages */}
-      {enemy.senses && <div><span className="text-[9px] uppercase tracking-wider text-surface-500 font-bold">Senses</span><p className="text-[11px] text-surface-300 mt-0.5">{enemy.senses}</p></div>}
-      {enemy.languages && <div><span className="text-[9px] uppercase tracking-wider text-surface-500 font-bold">Languages</span><p className="text-[11px] text-surface-300 mt-0.5">{enemy.languages}</p></div>}
+      {/* Senses */}
+      {enemy.senses && (
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-surface-500 font-bold">Senses</span>
+          <p className="text-[11px] text-surface-300 mt-0.5">{enemy.senses}</p>
+        </div>
+      )}
+
+      {/* Languages */}
+      {enemy.languages && (
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-surface-500 font-bold">Languages</span>
+          <p className="text-[11px] text-surface-300 mt-0.5">{enemy.languages}</p>
+        </div>
+      )}
 
       {/* Traits */}
       {enemy.traits && (
@@ -344,7 +343,7 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
       {/* Actions */}
       {enemy.actions && (
         <div>
-          <h3 className="text-[9px] uppercase tracking-wider text-gold-500/60 font-bold mb-1 border-b border-gold/10 pb-1">Actions</h3>
+          <h3 className="text-[9px] uppercase tracking-wider text-gold-500/60 font-bold mb-1 border-b border-gold-500/10 pb-1">Actions</h3>
           <p className="text-[11px] text-surface-200 whitespace-pre-wrap leading-relaxed mt-1">{enemy.actions}</p>
         </div>
       )}
@@ -394,32 +393,32 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
 
   return (
     <div className="space-y-3">
-      {/* Row 1: Name */}
+      {/* Row 1: Name + Type + Size */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Name</label>
           <input value={edited.name} onChange={(e) => update("name", e.target.value)}
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold/25" />
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all" />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Type</label>
             <select value={edited.type} onChange={(e) => update("type", e.target.value as CreatureType)}
-              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 appearance-none cursor-pointer">
+              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 appearance-none cursor-pointer focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all">
               {CREATURE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Size</label>
             <select value={edited.size} onChange={(e) => update("size", e.target.value as CreatureSize)}
-              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 appearance-none cursor-pointer">
+              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 appearance-none cursor-pointer focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all">
               {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Row 2: AC / HP / Speed / CR */}
+      {/* Row 2: AC / CR / HP / Speed */}
       <div className="grid grid-cols-4 gap-2">
         {(["armorClass", "challengeRating"] as const).map((key) => (
           <div key={key}>
@@ -428,20 +427,20 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
             </label>
             <input type="number" value={edited[key]} min={1} max={30}
               onChange={(e) => update(key, Math.max(1, parseFloat(e.target.value) || 1))}
-              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold/25" />
+              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all" />
           </div>
         ))}
         <div>
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">HP</label>
           <input type="number" value={edited.hitPoints.max} min={1}
             onChange={(e) => update("hitPoints", { ...edited.hitPoints, max: Math.max(1, parseInt(e.target.value) || 1), current: Math.max(1, parseInt(e.target.value) || 1) })}
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold/25" />
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all" />
         </div>
         <div>
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Speed</label>
           <input type="number" value={edited.speed} min={0} max={120}
             onChange={(e) => update("speed", Math.max(0, parseInt(e.target.value) || 30))}
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold/25" />
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1.5 text-[11px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all" />
         </div>
       </div>
 
@@ -454,7 +453,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
               <div className="text-[8px] uppercase font-bold text-surface-500 mb-0.5">{ABILITY_SHORT[i]}</div>
               <input type="number" value={edited.abilities[abl]} min={1} max={30}
                 onChange={(e) => updateAbility(abl, Math.max(1, Math.min(30, parseInt(e.target.value) || 10)))}
-                className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-1 py-1 text-center text-[11px] text-surface-200 focus:outline-none focus:border-gold/25" />
+                className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-1 py-1 text-center text-[11px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all" />
               <div className="text-[8px] text-surface-600 mt-0.5">{getMod(edited.abilities[abl])}</div>
             </div>
           ))}
@@ -468,7 +467,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
           {ABILITY_LABELS.map((abl) => (
             <input key={abl} type="number" value={(edited.savingThrows as any)[abl] ?? ""} placeholder="—"
               onChange={(e) => updateSave(abl, e.target.value ? parseInt(e.target.value) : 0)}
-              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-1 py-1 text-center text-[10px] text-surface-200 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-1 py-1 text-center text-[10px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
           ))}
         </div>
       </div>
@@ -482,20 +481,20 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
               <span className="text-[8px] text-surface-500 w-10 text-right truncate">{skill}</span>
               <input type="number" value={(edited.skills as any)[skill] ?? ""} placeholder="—"
                 onChange={(e) => updateSkill(skill, e.target.value ? parseInt(e.target.value) : 0)}
-                className="flex-1 bg-[#07080d]/70 border border-white/[0.06] rounded px-1 py-0.5 text-center text-[9px] text-surface-200 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+                className="flex-1 bg-[#07080d]/70 border border-white/[0.06] rounded px-1 py-0.5 text-center text-[9px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Text areas for traits, actions, etc. */}
+      {/* Text areas */}
       {(["traits", "actions", "reactions", "legendaryActions"] as const).map((field) => (
         <div key={field}>
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">{field}</label>
           <textarea value={(edited as any)[field] || ""} rows={3}
             onChange={(e) => update(field, e.target.value)}
             placeholder={`Describe ${field.toLowerCase()}...`}
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold/25 placeholder:text-surface-700 resize-y min-h-[48px]" />
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700 resize-y min-h-[48px]" />
         </div>
       ))}
 
@@ -505,17 +504,17 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Senses</label>
           <input value={edited.senses || ""} onChange={(e) => update("senses", e.target.value)}
             placeholder="Darkvision 60ft, Passive Perception 12"
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
         </div>
         <div>
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Languages</label>
           <input value={edited.languages || ""} onChange={(e) => update("languages", e.target.value)}
             placeholder="Common, Goblin"
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
         </div>
       </div>
 
-      {/* Resistances / Immunities (comma-separated) */}
+      {/* Resistances / Immunities */}
       <div className="grid grid-cols-3 gap-2">
         {(["damageResistances", "damageImmunities", "conditionImmunities"] as const).map((field) => (
           <div key={field}>
@@ -525,7 +524,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
             <input value={(edited as any)[field]?.join(", ") || ""}
               onChange={(e) => update(field, e.target.value ? e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean) : [])}
               placeholder="fire, poison"
-              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1 text-[9px] text-surface-200 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+              className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1 text-[9px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
           </div>
         ))}
       </div>

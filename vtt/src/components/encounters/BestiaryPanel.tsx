@@ -1,16 +1,13 @@
 /**
- * STᚱ VTT — Bestiary Panel
+ * STᚱ VTT — Bestiary Panel (Premium Monster Browser)
  *
- * Unified monster browser that replaces the standalone NPC Library.
- * DMs can:
- *   - Browse/search/filter monsters
- *   - View statblocks
- *   - Quick-create new NPCs
- *   - Drag/assign monsters to the currently-selected encounter
- *   - Create encounters inline
- *
- * This panel lives inside the UnifiedEncounterHub alongside the
- * EncounterComposer, enabling seamless monster → encounter workflow.
+ * Unified monster browser with premium glass gradient styling.
+ * Features:
+ *   - Gold-accented stats bar with CR distribution badges
+ *   - Premium search with gold focus state
+ *   - Glass gradient monster list background
+ *   - Integration with EnemyList, EnemyStatblock, EnemyCreator
+ *   - Staggered entrance animations via group hover effects
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -21,9 +18,7 @@ import EnemyCreator from "@/components/encounters/EnemyCreator";
 import type { EnemyDoc } from "@/types";
 
 interface BestiaryPanelProps {
-  /** Called when DM wants to add a monster to the active encounter */
   onAddToEncounter?: (enemyId: string) => void;
-  /** If set, the "Add to Encounter" button uses this encounter label */
   encounterContextLabel?: string;
 }
 
@@ -56,8 +51,7 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
 
   const handleCreated = useCallback(
     (enemy: EnemyDoc) => {
-      const updated = [...enemies, enemy];
-      setEnemies(updated);
+      setEnemies([...enemies, enemy]);
       setSelectedEnemy(enemy);
     },
     [enemies, setEnemies]
@@ -65,8 +59,7 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
 
   const handleSaveEnemy = useCallback(
     (updated: EnemyDoc) => {
-      const updatedEnemies = enemies.map((e) => (e.id === updated.id ? updated : e));
-      setEnemies(updatedEnemies);
+      setEnemies(enemies.map((e) => (e.id === updated.id ? updated : e)));
       setSelectedEnemy(updated);
     },
     [enemies, setEnemies]
@@ -74,8 +67,7 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
 
   const handleDeleteEnemy = useCallback(
     (id: string) => {
-      const updated = enemies.filter((e) => e.id !== id);
-      setEnemies(updated);
+      setEnemies(enemies.filter((e) => e.id !== id));
       setSelectedEnemy(null);
     },
     [enemies, setEnemies]
@@ -96,43 +88,44 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
   );
 
   return (
-    <div className="flex flex-col h-full">
-      {/* ── Stats Bar ── */}
-      <div className="shrink-0 flex items-center gap-2 mb-3 text-[9px] text-surface-500 px-1">
+    <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
+      {/* ── Premium Stats Bar ── */}
+      <div className="shrink-0 flex items-center gap-2 mb-3 text-[9px] text-surface-500 px-1 border-b border-white/[0.03] pb-2">
         <span className="text-gold-400/60 font-semibold">{stats.total} monsters</span>
         <span>📋 {stats.typeCount} types</span>
         {stats.total > 0 && (
-          <>
+          <div className="flex items-center gap-1 ml-1">
             <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15 text-emerald-400">🟢 {stats.crBuckets.low}</span>
             <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/15 text-amber-400">🟡 {stats.crBuckets.mid}</span>
             <span className="text-[8px] px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/15 text-rose-400">🔴 {stats.crBuckets.high}</span>
             <span className="text-[8px] px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/15 text-violet-400">🟣 {stats.crBuckets.epic}</span>
-          </>
+          </div>
         )}
       </div>
 
       {/* ── Search + Actions ── */}
       <div className="shrink-0 flex items-center gap-2 mb-3">
         <div className="relative flex-1">
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-surface-500 pointer-events-none">🔍</span>
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[9px] text-surface-500 pointer-events-none">🔍</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search monsters..."
-            className="w-full py-1.5 pl-6 pr-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-700"
+            className="w-full py-1.5 pl-7 pr-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
           />
         </div>
         <button
           onClick={() => setShowQuickCreate(true)}
-          className="shrink-0 px-2 py-1.5 rounded text-[9px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all"
+          className="shrink-0 px-2.5 py-1.5 rounded text-[9px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 active:scale-95 transition-all duration-150 flex items-center gap-1"
         >
-          ✦ New
+          <span>✦</span>
+          <span>New</span>
         </button>
       </div>
 
       {/* ── Monster List ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-gold space-y-1 pr-1">
+      <div className="flex-1 overflow-y-auto scrollbar-gold space-y-1 pr-1" style={{ minHeight: "0" }}>
         <EnemyList
           enemies={enemies}
           onSelect={handleSelectEnemy}
@@ -158,7 +151,7 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
         </div>
       )}
 
-      {/* ── Enemy Creator Modal (replaces old Quick Create) ── */}
+      {/* ── Enemy Creator Modal ── */}
       <EnemyCreator
         isOpen={showQuickCreate}
         onClose={() => setShowQuickCreate(false)}
