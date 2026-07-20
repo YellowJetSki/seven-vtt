@@ -1,14 +1,16 @@
 /**
- * STᚱ VTT — Encounter Composer (Premium Glass)
+ * STᚱ VTT — Encounter Composer (Premium v3.0 Glass Command Center)
  *
- * Unified encounter builder with premium glass gradient styling.
+ * Unified encounter builder with premium Lusion-grade styling.
  * Features:
  *   - Premium glass gradient encounter cards with hover elevation
  *   - Gold-accented selected state with edge light
  *   - Difficulty badge with color-coded styling
  *   - Inline create/populate form with staggered entrance
  *   - Live XP, CR, and party difficulty calculations
- *   - Launch encounter button with emerald gradient
+ *   - Launch encounter button with emerald gradient glow
+ *   - Gold gradient tab bar with pill indicator
+ *   - 0 dependencies on glass-gold / corner-ornament / depth-ring
  *
  * Sits alongside BestiaryPanel inside UnifiedEncounterHub.
  */
@@ -161,10 +163,12 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
 
   return (
     <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
-      {/* ── Encounter Selector Header ── */}
+      {/* ═══════════════════════════════════════════════════
+          HEADER: Encounter Selector
+          ═══════════════════════════════════════════════════ */}
       <div className="shrink-0 flex items-center justify-between mb-3 pb-2 border-b border-white/[0.03]">
         <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/60">Encounters</h3>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <span className="text-[9px] text-surface-500 tabular-nums">{encounters.length}</span>
           <button
             onClick={() => setIsCreating(!isCreating)}
@@ -176,16 +180,20 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
         </div>
       </div>
 
-      {/* ── Create Encounter Form ── */}
+      {/* ═══════════════════════════════════════════════════
+          CREATE ENCOUNTER FORM (Expanding)
+          ═══════════════════════════════════════════════════ */}
       {isCreating && (
-        <div className="shrink-0 mb-3 p-3 rounded-xl bg-gradient-to-b from-[#14151f]/80 to-[#0f1019]/90 border border-gold-500/15 space-y-2 animate-in slide-in-from-top-2 duration-200">
+        <div
+          className="shrink-0 relative mb-3 p-3 rounded-xl bg-gradient-to-b from-[#14151f]/80 to-[#0f1019]/90 border border-gold-500/15 space-y-2 animate-in slide-in-from-top-2 duration-200"
+        >
           <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none" />
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Encounter name..."
-            className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
+            className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
             onKeyDown={(e) => e.key === "Enter" && handleCreateNew()}
           />
           <input
@@ -193,12 +201,12 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             placeholder="Description (optional)"
-            className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
+            className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
           />
           <select
             value={newEnv}
             onChange={(e) => setNewEnv(e.target.value)}
-            className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-surface-400 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 appearance-none cursor-pointer transition-all"
+            className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-surface-400 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 appearance-none cursor-pointer transition-all"
           >
             {ENV_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -222,23 +230,27 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
         </div>
       )}
 
-      {/* ── Encounter List ── */}
+      {/* ═══════════════════════════════════════════════════
+          ENCOUNTER LIST (Scrollable)
+          ═══════════════════════════════════════════════════ */}
       <div className="flex-1 overflow-y-auto scrollbar-gold space-y-1.5 pr-1" style={{ minHeight: "0" }}>
         {encounters.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gold-500/8 border border-gold-500/10 flex items-center justify-center mb-3">
-              <span className="text-lg">⚔</span>
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden mb-3">
+              <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 to-amber-500/5" />
+              <div className="absolute inset-0 rounded-2xl border border-gold-500/20" />
+              <span className="absolute inset-0 flex items-center justify-center text-lg drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]">⚔</span>
             </div>
             <p className="text-[10px] text-surface-500 mb-2">No encounters yet</p>
             <button
               onClick={() => setIsCreating(true)}
-              className="text-[9px] text-gold-400 underline underline-offset-2 hover:text-gold-300 transition-colors"
+              className="text-[9px] text-gold-400 hover:text-gold-300 transition-colors underline underline-offset-4 decoration-gold-500/30 hover:decoration-gold-500/60"
             >
               Create one
             </button>
           </div>
         ) : (
-          encounters.map((enc) => {
+          encounters.map((enc, idx) => {
             const isSelected = enc.id === selectedEncounterId;
             const totalEnemies = enc.enemyGroups.reduce((s, g) => s + g.count, 0);
 
@@ -251,8 +263,9 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
                     ? "bg-gradient-to-b from-gold-500/10 to-gold-500/5 border border-gold-500/25 shadow-[0_0_12px_rgba(234,179,8,0.04)]"
                     : "bg-gradient-to-b from-[#14151f]/60 to-[#0f1019]/70 border border-white/[0.04] hover:border-white/[0.10] hover:-translate-y-0.5"
                 }`}
+                style={{ animation: `slide-in-up 0.35s ease-out ${idx * 60}ms both` }}
               >
-                {/* Top gold edge for selected */}
+                {/* Gold edge light for selected */}
                 <div className={`absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent transition-all duration-300 ${
                   isSelected ? "via-gold-500/25" : ""
                 }`} />
@@ -260,16 +273,16 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
                 <div className="flex items-start gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`text-[11px] font-semibold truncate ${isSelected ? "text-gold-400" : "text-surface-200"}`}>
+                      <span className={`text-[11px] font-semibold truncate ${isSelected ? "text-gold-400" : "text-surface-200 group-hover:text-gold-200 transition-colors"}`}>
                         {enc.name}
                       </span>
                       {enc.isActive && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.4)]" title="Active" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.4)] animate-pulse-soft" title="Active" />
                       )}
                     </div>
 
                     <div className="flex items-center gap-2 mt-1 text-[9px] text-surface-500">
-                      <span>{totalEnemies} enemy{totalEnemies !== 1 ? "ies" : "y"}</span>
+                      <span className="tabular-nums">{totalEnemies} enemy{totalEnemies !== 1 ? "ies" : "y"}</span>
                       <span>·</span>
                       <span>{enc.environment}</span>
                       {enc.isActive && <span className="text-emerald-400 text-[8px]">Active</span>}
@@ -291,7 +304,9 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
         )}
       </div>
 
-      {/* ── Selected Encounter Detail Panel ── */}
+      {/* ═══════════════════════════════════════════════════
+          SELECTED ENCOUNTER DETAIL PANEL
+          ═══════════════════════════════════════════════════ */}
       {selectedEncounter && (
         <div className="shrink-0 mt-3 pt-3 border-t border-white/[0.04] space-y-3">
           {/* Difficulty + Stats Bar */}
@@ -300,12 +315,12 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
               <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold ${getDifficultyColor(difficulty.rating)}`}>
                 {getDifficultyLabel(difficulty.rating)}
               </span>
-              <span className="text-[9px] text-gold-400/60">{difficulty.totalXp.toLocaleString()} XP</span>
-              <span className="text-[9px] text-surface-500">Adj: {difficulty.adjustedXp.toLocaleString()}</span>
+              <span className="text-[9px] text-gold-400/60 tabular-nums">{difficulty.totalXp.toLocaleString()} XP</span>
+              <span className="text-[9px] text-surface-500 tabular-nums">Adj: {difficulty.adjustedXp.toLocaleString()}</span>
               {difficulty.crRange.min > 0 && (
-                <span className="text-[9px] text-rose-400">CR {difficulty.crRange.min}–{difficulty.crRange.max}</span>
+                <span className="text-[9px] text-rose-400 tabular-nums">CR {difficulty.crRange.min}–{difficulty.crRange.max}</span>
               )}
-              <span className="text-[9px] text-surface-500">· Party: {partySize}×Lv.{avgLevel}</span>
+              <span className="text-[9px] text-surface-500 tabular-nums">· Party: {partySize}×Lv.{avgLevel}</span>
             </div>
           )}
 
@@ -323,6 +338,7 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
                   <div
                     key={group.enemyId}
                     className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gradient-to-b from-[#14151f]/50 to-[#0f1019]/60 border border-white/[0.04]"
+                    style={{ animation: "slide-in-up 0.25s ease-out both" }}
                   >
                     <span className="flex-1 text-[10px] text-surface-300 truncate">
                       {doc?.name ?? "Unknown"} <span className="text-surface-600">{crDisplay}</span>
