@@ -5829,3 +5829,58 @@ For Sprint 11, target a feature flow for thorough quality assurance:
 - Inventory CRUD (add, equip, use, sell, delete items)
 - Skills & proficiency toggling with Firestore sync
 ---
+
+## Sprint 11/25 — Feature QA & Testing: Level-Up Engine (Updated: 2026-07-20 10:41)
+## Sprint 11/25 — Feature QA & Testing: Level-Up Engine Validation
+
+### Target
+Level-Up Engine (`lib/mechanics/level-up-engine.ts` + `components/player/LevelUpPanel.tsx`) — the most complex mechanical flow that had NOT been tested.
+
+### Critical Bugs Found & Fixed
+
+| # | Bug | Location | Type | Fix |
+|:-:|-----|----------|:----:|-----|
+| 1 | **Half caster slot progression wrong** — Paladin Lv2 was getting full caster Lv4 slots (4/3/0) instead of (2/0/0) | `getHalfSlots()` | 🔴 RAW violation | Rewrote to use PHB Multiclass Spellcaster table: `effectiveCasterLevel = ceil(characterLevel / 2)` |
+| 2 | **Third caster slot progression wrong** — EK Lv3 was getting full caster Lv9 slots | `getThirdSlots()` | 🔴 RAW violation | Rewrote to use `ceil(characterLevel / 3)` |
+| 3 | **spentHitDice reset** on level up — was `spentHitDice: 0` instead of preserving | `applyLevelUp()` | 🔴 Data loss | Changed to `spentHitDice: character.spentHitDice ?? 0` |
+| 4 | **New spell slot level not initialized** — unlocking Lv3 slots set `max` but left `current` as `undefined` | `applyLevelUp()` | 🟡 Undefined state | Added `else if (newMax > 0)` branch that initializes `{ current: newMax, max: newMax }` |
+| 5 | **Extra Attack given to ALL classes at Lv5** — Rogue was incorrectly getting Extra Attack | `computeLevelUpPreview()` | 🔴 RAW violation | Changed from `[5].includes(newLevel)` to only Fighter getting Extra Attack at 11 and 20 |
+
+### Test Suite Created
+
+| File | Lines | Coverage |
+|------|:-----:|----------|
+| `src/__tests__/level-up-engine.test.ts` | 420+ | 10 test suites, 38+ test cases |
+
+| Suite | Tests | Validates |
+|-------|:-----:|-----------|
+| detectCasterType | 15 | All 14 classes + unknown |
+| getSlotsForLevel | 25+ | Full/Half/Third caster RAW tables, non-caster null |
+| getProficiencyBonus | 20 | All 20 levels match PHB |
+| getHitDieType | 14 | All 14 classes + fallback |
+| isAsiLevel | 20 | All 20 levels, only 4/8/12/16/19 = true |
+| computeLevelUpPreview | 10 | HP gain, PB, ASI, slots, Extra Attack, cantrips |
+| applyLevelUp | 6 | HP application, spentHitDice preservation, slot init |
+| Edge Cases | 5 | Martial Archetype, PB thresholds, non-caster null, cantrip rules, min HP |
+| getClassFeatures | 4 | Fighter/Wizard features, unknown class, empty level |
+| getGenericFeatures | 3 | Class features, slot progression for casters/non-casters |
+
+### Build Metrics
+
+| Metric | Value |
+|--------|:-----:|
+| TypeScript errors | ✅ **0** (2033 modules) |
+| Vite build | ✅ **9.60s** |
+| Deployed | ✅ `vtt-five.vercel.app` |
+| Test file created | ✅ `src/__tests__/level-up-engine.test.ts` (420+ lines) |
+| Test script added | ✅ `npm run test:unit` (root package.json) |
+| Critical bugs fixed | **5** (2 RAW violations, 1 data loss, 1 undefined state, 1 incorrect class feature) |
+
+### Feature QA Complete — Ready for Sprint 12
+
+Next target suggestions for the Feature QA & Testing Phase (Sprint 12-15):
+- **Rest & Recovery** — Short Rest/Long Rest with hit dice spending edge cases
+- **Encounter CR calculator** — Multi-party, mixed CR edge cases
+- **Inventory CRUD** — Equip/use/sell with encumbrance and state persistence
+- **Firestore sync resilience** — Offline queue, race conditions, conflict resolution
+---
