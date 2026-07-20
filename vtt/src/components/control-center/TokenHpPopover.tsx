@@ -23,8 +23,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useCombatStore } from "@/stores/combatStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 import AttackResolutionPopover from "@/components/encounters/AttackResolutionPopover";
-import type { MapToken } from "@/types";
+import type { MapToken, PlayerCharacter } from "@/types";
 
 // ── Type Definitions ──
 
@@ -111,6 +112,39 @@ export default function TokenHpPopover({
   const matchingCombatant = combatants.find(
     (c) => c.name.toLowerCase() === token.label.toLowerCase()
   ) || null;
+
+  // ── Death Save tracking for player tokens at 0 HP ──
+  const [deathSaveSuccesses, setDeathSaveSuccesses] = useState(0);
+  const [deathSaveFailures, setDeathSaveFailures] = useState(0);
+  const [deathSaveStabilized, setDeathSaveStabilized] = useState(false);
+  const [deathSaveDead, setDeathSaveDead] = useState(false);
+  const [deathSaveRolling, setDeathSaveRolling] = useState(false);
+
+  const isPlayerAtZero = token.type === "player" && hpCurrent <= 0;
+
+  // Try to read character's death saves from campaign store
+  const characters = useCampaignStore((s) => s.characters);
+  const matchingCharacter = characters.find(
+    (c: PlayerCharacter) => c.name.toLowerCase() === token.label.toLowerCase()
+  );
+
+  // Sync death saves from character sheet when available
+  useEffect(() => {
+    if (matchingCharacter && matchingCharacter.deathSaves) {
+      setDeathSaveSuccesses(matchingCharacter.deathSaves.successes ?? 0);
+      setDeathSaveFailures(matchingCharacter.deathSaves.failures ?? 0);
+      const succ = matchingCharacter.deathSaves.successes ?? 0;
+      const fail = matchingCharacter.deathSaves.failures ?? 0;
+      setDeathSaveStabilized(succ >= 3);
+      setDeathSaveDead(fail >= 3);
+    } else {
+      // Reset when no matching character or new token
+      setDeathSaveSuccesses(0);
+      setDeathSaveFailures(0);
+      setDeathSaveStabilized(false);
+      setDeathSaveDead(false);
+    }
+  }, [matchingCharacter, hpCurrent]);
 
   // Sync with token prop changes
   useEffect(() => {
@@ -199,6 +233,64 @@ export default function TokenHpPopover({
 
   const hpRatio = hpMax > 0 ? hpCurrent / hpMax : 1;
   const typeIcon = TYPE_ICONS[token.type] ?? "✦";
+
+  // ── Death Save handlers (defined here after applyHp to avoid forward-ref issue) ──
+  const handleAutoRollDeathSave = useCallback(() => {
+    setDeathSaveRolling(true);
+    const roll = Math.floor(Math.random() * 20) + 1;
+
+    setTimeout(() => {
+      if (roll === 20) {
+        // Natural 20: regain 1 HP and consciousness
+        applyHp(1);
+        setDeathSaveSuccesses(0);
+        setDeathSaveFailures(0);
+        setDeathSaveStabilized(false);
+      } else if (roll >= 10) {
+        // Success
+        const newSuccesses = deathSaveSuccesses + 1;
+        setDeathSaveSuccesses(newSuccesses);
+        if (newSuccesses >= 3) {
+          setDeathSaveStabilized(true);
+        }
+      } else if (roll === 1) {
+        // Natural 1: 2 failures
+        const newFailures = deathSaveFailures + 2;
+        setDeathSaveFailures(newFailures);
+        if (newFailures >= 3) {
+          setDeathSaveDead(true);
+        }
+      } else {
+        // Failure
+        const newFailures = deathSaveFailures + 1;
+        setDeathSaveFailures(newFailures);
+        if (newFailures >= 3) {
+          setDeathSaveDead(true);
+        }
+      }
+      setDeathSaveRolling(false);
+    }, 600);
+  }, [deathSaveSuccesses, deathSaveFailures, applyHp]);
+
+  const handleToggleDeathSaveSuccess = useCallback((index: number) => {
+    const newSucc = index < deathSaveSuccesses ? index : index + 1;
+    setDeathSaveSuccesses(newSucc);
+    if (newSucc >= 3) { setDeathSaveStabilized(true); setDeathSaveDead(false); }
+    else { setDeathSaveStabilized(false); }
+  }, [deathSaveSuccesses]);
+
+  const handleToggleDeathSaveFailure = useCallback((index: number) => {
+    const newFail = index < deathSaveFailures ? index : index + 1;
+    setDeathSaveFailures(newFail);
+    if (newFail >= 3) { setDeathSaveDead(true); setDeathSaveStabilized(false); }
+  }, [deathSaveFailures]);
+
+  const handleStabilize = useCallback(() => {
+    setDeathSaveSuccesses(3);
+    setDeathSaveFailures(0);
+    setDeathSaveStabilized(true);
+    setDeathSaveDead(false);
+  }, []);
 
   // Clamp position to viewport
   const clampedLeft = Math.max(8, Math.min(position.left, window.innerWidth - 340));
@@ -343,9 +435,151 @@ export default function TokenHpPopover({
             </button>
           </div>
 
+          {/* ── Death Saves (player at 0 HP only) ── */}
+          {isPlayerAtZero && !deathSaveStabilized && !deathSaveDead && (
+            <div className="space-y-2 pt-1 border-t border-white/[0.04]" style={{ animation: "slide-in-up 0.2s ease-out 0.14s both" }}>
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-rose-500 font-medium flex items-center gap-1">
+                  <span>💀</span> Death Saves
+                </span>
+                {/* Status badge */}
+                <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-medium ${
+                  deathSaveStabilized ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/15" :
+                  deathSaveDead ? "text-rose-400 bg-rose-500/10 border border-rose-500/15" :
+                  "text-amber-400 bg-amber-500/8 border border-amber-500/15"
+                }`}>
+                  {deathSaveStabilized ? "Stable" : deathSaveDead ? "Dead" : "Rolling"}
+                </span>
+              </div>
+
+              {/* Success circles */}
+              <div className="flex items-center gap-2">
+                <span className="text-[8px] text-surface-600 w-10">Success</span>
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <button
+                      key={`succ-${i}`}
+                      onClick={() => handleToggleDeathSaveSuccess(i)}
+                      className={`w-5 h-5 rounded-full border transition-all duration-200 flex items-center justify-center ${
+                        i < deathSaveSuccesses
+                          ? "bg-emerald-500/25 border-emerald-500/50 text-emerald-400"
+                          : "bg-[#0c0d15] border-white/[0.06] text-surface-700 hover:border-emerald-500/20"
+                      }`}
+                      title={`Toggle success ${i + 1}`}
+                    >
+                      {i < deathSaveSuccesses && (
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Failure circles */}
+              <div className="flex items-center gap-2">
+                <span className="text-[8px] text-surface-600 w-10">Failure</span>
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <button
+                      key={`fail-${i}`}
+                      onClick={() => handleToggleDeathSaveFailure(i)}
+                      className={`w-5 h-5 rounded-full border transition-all duration-200 flex items-center justify-center ${
+                        i < deathSaveFailures
+                          ? "bg-rose-500/25 border-rose-500/50 text-rose-400"
+                          : "bg-[#0c0d15] border-white/[0.06] text-surface-700 hover:border-rose-500/20"
+                      }`}
+                      title={`Toggle failure ${i + 1}`}
+                    >
+                      {i < deathSaveFailures && (
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-1.5">
+                <button
+                  onClick={handleAutoRollDeathSave}
+                  disabled={deathSaveRolling}
+                  className="flex-1 px-2 py-1.5 rounded-lg text-[8px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/15 hover:bg-amber-500/15 hover:border-amber-500/25 disabled:opacity-40 disabled:cursor-not-allowed active:scale-90 transition-all duration-150 flex items-center justify-center gap-1"
+                >
+                  {deathSaveRolling ? (
+                    <>
+                      <svg className="w-2.5 h-2.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Rolling...
+                    </>
+                  ) : (
+                    <>
+                      <span>🎲</span> Roll Death Save
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleStabilize}
+                  className="px-2 py-1.5 rounded-lg text-[8px] font-bold bg-emerald-500/8 text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/12 hover:border-emerald-500/20 active:scale-90 transition-all duration-150"
+                  title="Manually stabilize (3 successes)"
+                >
+                  Stabilize
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Stabilized/Revived notification ── */}
+          {isPlayerAtZero && deathSaveStabilized && (
+            <div className="pt-1 border-t border-white/[0.04]" style={{ animation: "slide-in-up 0.2s ease-out 0.14s both" }}>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">✅</span>
+                  <div>
+                    <span className="text-[9px] font-bold text-emerald-400">Stabilized</span>
+                    <p className="text-[7px] text-surface-600">3 successes — alive but unconscious</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setDeathSaveStabilized(false); setDeathSaveSuccesses(0); setDeathSaveFailures(0); }}
+                  className="text-[8px] px-1.5 py-1 rounded text-surface-500 hover:text-gold-400 hover:bg-gold-500/5 transition-all"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Dead notification ── */}
+          {isPlayerAtZero && deathSaveDead && (
+            <div className="pt-1 border-t border-white/[0.04]" style={{ animation: "slide-in-up 0.2s ease-out 0.14s both" }}>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-rose-500/5 border border-rose-500/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">💀</span>
+                  <div>
+                    <span className="text-[9px] font-bold text-rose-400">Dead</span>
+                    <p className="text-[7px] text-surface-600">3 failures — death confirmed</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setDeathSaveDead(false); setDeathSaveSuccesses(0); setDeathSaveFailures(0); }}
+                  className="text-[8px] px-1.5 py-1 rounded text-surface-500 hover:text-rose-400 hover:bg-rose-500/5 transition-all"
+                >
+                  Revive
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ── Roll Attack (combat only) ── */}
           {activeEncounter && matchingCombatant && (
-            <div style={{ animation: "slide-in-up 0.2s ease-out 0.14s both" }}>
+            <div style={{ animation: "slide-in-up 0.2s ease-out 0.18s both" }}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
