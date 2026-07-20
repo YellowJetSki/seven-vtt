@@ -90,10 +90,6 @@ export async function deleteMapToken(
 
 /**
  * Listens for real-time changes to all map tokens for a given map.
- * Returns an unsubscribe function.
- */
-/**
- * Listens for real-time changes to all map tokens for a given map.
  *
  * OPTIMIZATION (Sprint 6): Added `cancelled` guard to prevent callback
  * after unsubscribe. Added error listener for subscription failures.
