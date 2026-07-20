@@ -56,7 +56,8 @@ export default function Header() {
           {/* Hamburger — hidden on mobile (bottom nav handles navigation) */}
           <button
             onClick={toggleSidebar}
-            className="hidden lg:flex relative items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-white/[0.04] text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90 group"
+            className="relative items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-white/[0.04] text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90 group"
+            style={{ display: isDesktop ? 'flex' : 'none' }}
             aria-label={hamburgerLabel}
             title={hamburgerLabel}
           >
