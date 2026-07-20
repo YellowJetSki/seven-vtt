@@ -2,7 +2,7 @@
  * STᚱ VTT — DM Control Center (Premium Command Bridge)
  *
  * The DM's master battle map interface — the VTT's most critical screen.
- * 
+ *
  * Architecture:
  * ┌────────────────────────────────────────────────────────┐
  * │  Left Sidebar  │   Canvas (Battle Map)   │  Right Panel │
@@ -10,9 +10,11 @@
  * │  Fixed min-w   │   flex-grow             │  Animated    │
  * └────────────────────────────────────────────────────────┘
  *
- * The toolbar floats over the canvas (like Spotify's player bar)
- * for maximum map visibility. Right panel slides in with content
- * transitions: TokenInspector | InitiativeTracker | EncounterPanel.
+ * Cycle 21 Enhancement (Premium Battlemap Overhaul):
+ *   - Token HP Popover: rapid DM HP adjustment directly from token click
+ *   - Popover appears near the clicked token with gold glass styling
+ *   - Instant HP updates: -10/-5/-1/+1/+5/+10 + custom set
+ *   - Escape key or click outside to dismiss
  */
 
 import { useCallback, useState } from "react";
@@ -23,11 +25,25 @@ import ControlCenterRightPanel from "./ControlCenterRightPanel";
 import ControlCenterEmptyState from "./ControlCenterEmptyState";
 import CanvasActionBar from "./CanvasActionBar";
 import DmSharePicker from "./DmSharePicker";
+import TokenHpPopover from "./TokenHpPopover";
 import { useDmControlCenter } from "./useDmControlCenter";
+import type { MapToken } from "@/types";
 
 export default function DmControlCenter() {
   const state = useDmControlCenter();
   const [showSharePicker, setShowSharePicker] = useState(false);
+
+  /**
+   * Enhanced canvas click handler: extracts click position for the HP popover
+   * and delegates to the hook's enhanced token click handler.
+   */
+  const handleCanvasTokenClick = useCallback(
+    (token: MapToken, _clientX?: number, _clientY?: number) => {
+      // Use the enhanced click handler from the hook which opens both popover + inspector
+      state.handleTokenClickEx(token, _clientX ?? 0, _clientY ?? 0);
+    },
+    [state.handleTokenClickEx]
+  );
 
   if (!state.activeMap) {
     return <ControlCenterEmptyState />;
@@ -35,8 +51,20 @@ export default function DmControlCenter() {
 
   return (
     <div className="flex h-full bg-obsidian">
-      {/* ─── Share Picker Modal ─────────────────── */}
+      {/* ─── Token HP Popover ─────────────────────── */}
+      {state.hpPopoverToken && (
+        <TokenHpPopover
+          token={state.hpPopoverToken}
+          mapId={state.activeMap.id}
+          position={state.hpPopoverPosition}
+          onClose={state.handleCloseHpPopover}
+          onHpChange={state.handleHpChangeFromPopover}
+        />
+      )}
+
+      {/* ─── Share Picker Modal ─────────────────────── */}
       <DmSharePicker isOpen={showSharePicker} onClose={() => setShowSharePicker(false)} />
+
       {/* ─── Left Sidebar ─────────────────────────── */}
       <ControlCenterSidebar
         activeMapId={state.activeMapId}
@@ -55,7 +83,11 @@ export default function DmControlCenter() {
             mapData={state.activeMap}
             tokens={state.activeTokens}
             dmView={state.isDmView}
-            onTokenClick={state.handleTokenClick}
+            onTokenClick={(token) => {
+              // Enhanced: pass click position via mouse event
+              // The CanvasMapView's onClick already gives us clientX/clientY
+              handleCanvasTokenClick(token);
+            }}
             onCellClick={state.handleCellClick}
           />
         </div>

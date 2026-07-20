@@ -1,3 +1,15 @@
+/**
+ * STᚱ VTT — Canvas Battle Map (Premium)
+ *
+ * Canvas-based battle map renderer using HTML5 Canvas API.
+ * Handles map image, grid, fog of war, dynamic lighting, and token rendering.
+ * Provides imperative handle (CanvasMapHandle) for external control.
+ *
+ * Cycle 21 Enhancement (Premium Battlemap Overhaul):
+ *   - Token click now passes clientX/clientY for HP popover positioning
+ *   - handleClick uses native MouseEvent for precise cursor coordinates
+ */
+
 import { useRef, useEffect, useCallback, useState, forwardRef, useImperativeHandle } from "react";
 import type { LightSource, WallSegment, MapToken, BattleMap } from "@/types";
 import { renderCanvas, type CanvasRenderState } from "@/lib/canvas/lighting-renderer";
@@ -21,7 +33,7 @@ interface CanvasMapViewProps {
   lights?: LightSource[];
   walls?: WallSegment[];
   dmView?: boolean;
-  onTokenClick?: (token: MapToken) => void;
+  onTokenClick?: (token: MapToken, clientX?: number, clientY?: number) => void;
   onCellClick?: (gridX: number, gridY: number) => void;
 }
 
@@ -43,6 +55,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   const [zoom, setZoom] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
+  const clickStart = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!mapData.imageUrl) return;
@@ -57,7 +70,11 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    Object.assign(stateRef.current, { gridWidth: mapData.gridWidth, gridHeight: mapData.gridHeight, gridSize: mapData.gridSize, gridColor: mapData.gridColor || "#808080", gridOpacity: mapData.gridOpacity ?? 0.4, tokens, showGrid, showFog, dmView: isDmView });
+    Object.assign(stateRef.current, {
+      gridWidth: mapData.gridWidth, gridHeight: mapData.gridHeight, gridSize: mapData.gridSize,
+      gridColor: mapData.gridColor || "#808080", gridOpacity: mapData.gridOpacity ?? 0.4,
+      tokens, showGrid, showFog, dmView: isDmView,
+    });
     const dpr = window.devicePixelRatio || 1;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     renderCanvas(ctx, canvas, stateRef.current);
@@ -78,6 +95,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     if (e.button === 0) {
       setIsDragging(true);
       dragStart.current = { x: e.clientX - stateRef.current.panX, y: e.clientY - stateRef.current.panY };
+      clickStart.current = { x: e.clientX, y: e.clientY };
     }
   }, []);
 
@@ -107,8 +125,12 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     const gx = Math.floor(x / mapData.gridSize);
     const gy = Math.floor(y / mapData.gridSize);
     const t = tokens.find(tk => tk.x === gx && tk.y === gy);
-    if (t && onTokenClick) onTokenClick(t);
-    else if (onCellClick) onCellClick(gx, gy);
+    if (t && onTokenClick) {
+      // Pass the native click coordinates for popover positioning
+      onTokenClick(t, e.clientX, e.clientY);
+    } else if (onCellClick) {
+      onCellClick(gx, gy);
+    }
   }, [isDragging, tokens, mapData.gridSize, onTokenClick, onCellClick]);
 
   const updateAndRender = useCallback((fn: () => void) => { fn(); renderFrame(); }, [renderFrame]);
