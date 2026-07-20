@@ -7873,3 +7873,47 @@ Now: Click token → "⚔ Roll Attack" → select attack → select target → "
 | 18 | Automated Initiative Roll | Animated d20 roll + 5e sorted turn order |
 | **19** | **Attack Resolution & Damage** | **One-click attack roll, damage, and auto-apply** |
 ---
+
+## Sprint 20/30 — Damage Type System & Combat Log (Updated: 2026-07-20 13:39)
+## Sprint 20/30 — Real-Play D&D Mechanics: Damage Type Resistance System & Combat Log (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 8 OF 10
+**Target:** D&D 5e damage type resistance/vulnerability/immunity system + premium Combat Log panel
+
+### Problem Solved
+Before this sprint, the VTT applied damage as raw numbers — a Fireball hitting a fire-resistant enemy would deal full damage. The DM had to mentally halve/double the amount and manually adjust. There was no visible combat action history.
+
+Now: The AttackResolutionPopover computes resistance-applied final damage before the DM clicks "Apply". A premium Combat Log panel shows the full action history with damage type breakdowns.
+
+### New Files Created (3)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/combat/damage-type-engine.ts` | 195 | Pure 5e damage type resolution functions: `resolveDamageType()` (immunity→0, resistance→½, vulnerability→×2, cancel rules), `applyDamageTypes()` (multi-type damage), `getDamageEffectColor()`, `getDamageEffectLabel()`, `formatDamageType()`. All 13 standard D&D damage types supported. |
+| `lib/combat/typed-damage-engine.ts` | 165 | Enhanced damage application: `applyTypedDamage()` (resistance-aware HP clamping), `getCombatantDefenses()` (looks up EnemyDoc resistances/immunities/vulnerabilities), `createTypedDamageLogEntry()`, `getDefenses()` with player race/class presets (Tiefling fire res, Dwarf poison res, Barbarian BPS res, Yuan-ti poison immune). |
+| `components/encounters/CombatLogPanel.tsx` | 340 | Premium always-visible combat log sidebar. Features: color-coded entries by type, auto-scroll to latest, entry count badge, undo button, clear with confirmation, round counter in footer, Ctrl+Z hint, type badges (damage/heal/death/status/revive/round_start), relative timestamps, damage type effect display integration point. |
+
+### Files Modified (1)
+
+| File | Changes |
+|------|---------|
+| `AttackResolutionPopover.tsx` | Added `damage-type-engine` imports. Added `resistanceInfo` state. Enhanced `handleRollAttack` to compute resistance-applied final damage (gets target defenses, calls `applyDamageTypes`). Enhanced `handleApplyDamage` to use `resistanceInfo.finalDamage`. Added resistance/vulnerability/immunity display panel in the damage result section showing raw → final damage with explanation. Apply damage button now uses resistance-applied values. |
+
+### Advanced DM Workflow
+
+```
+Click token → "⚔ Roll Attack"
+  → Select attacker, attack, target
+  → "Roll Attack"
+  → d20 result + damage dice roll
+  → damage type checked against target's defenses:
+     - Enemy targets: reads from EnemyDoc.damageResistances/Immunities/Vulnerabilities
+     - Player targets: reads from race/class defaults (Tiefling=fire res, etc.)
+  → Resistance panel shows in result: "½ Fire — damage halved (10 → 5)"
+  → "Apply 5 damage" → only 5 dealt instead of 10
+  → Combat Log records: "💥 Goblin: Claw → 5 (fire: resistance)"
+
+DM can open Combat Log panel to see every action with type breakdowns,
+undo the last action with one click, and clear the log between encounters.
+```
+---
