@@ -25,7 +25,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { useCombatStore } from "@/stores/combatStore";
+import { useCombatHpMutations } from "@/hooks/useCombatMutations";
 import {
   resolveAttack,
   makeAttackRoll,
@@ -138,7 +138,9 @@ export default function AttackResolutionPopover({
   position,
 }: AttackResolutionPopoverProps) {
   const enemies = useCampaignStore((s) => s.enemies);
-  const damageCombatant = useCombatStore((s) => s.damageCombatant);
+  // FIX (Sprint 27): Use the Firestore-synced hook instead of raw Zustand store action.
+  // Previously used: useCombatStore((s) => s.damageCombatant) → Zustand only, no cross-device sync.
+  const { damageCombatant } = useCombatHpMutations();
 
   const [selectedAttackerId, setSelectedAttackerId] = useState<string>(
     initialAttacker?.id ?? ""

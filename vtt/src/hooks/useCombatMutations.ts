@@ -23,6 +23,8 @@ import { useCallback, useRef } from "react";
 import { useCombatStore } from "@/stores/combatStore";
 import { setActiveEncounter } from "@/lib/firestore-service";
 import type { CombatEncounter, Combatant, CombatLogEntry, CombatantHP } from "@/types";
+import type { AoEDamageResult } from "@/lib/combat/aoe-damage-engine";
+import { buildAoEHPUpdates, createAoELogEntry } from "@/lib/combat/aoe-damage-engine";
 import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 import { generateId, clampHP, createLogEntry } from "@/stores/combat/combat-helpers";
 
@@ -134,7 +136,57 @@ export function useCombatHpMutations() {
     [write]
   );
 
-  return { damageCombatant, healCombatant, setTempHP };
+  /**
+   * Apply AoE damage to multiple combatants at once.
+   * Writes to BOTH Zustand (instant) and Firestore (cross-device sync).
+   *
+   * FIX (Sprint 27): Added this function to the Firestore-synced hook.
+   * Previously, MultiTargetAoEPopover used the raw Zustand store action
+   * which did NOT sync to Firestore.
+   */
+  const aoeDamageCombatants = useCallback(
+    (
+      actorId: string,
+      actorName: string,
+      spellName: string,
+      damage: number,
+      damageType: string,
+      result: AoEDamageResult
+    ) => {
+      write((enc) => {
+        const updates = buildAoEHPUpdates(result);
+
+        let combatants = [...enc.combatants];
+        const logEntries: CombatLogEntry[] = [];
+
+        for (const update of updates) {
+          combatants = mapCombatants(combatants, update.combatantId, {
+            hitPoints: update.hitPoints,
+            isDead: update.isDead,
+          });
+        }
+
+        const aoeEntry = createAoELogEntry(
+          actorId,
+          actorName,
+          spellName,
+          damage,
+          damageType,
+          result
+        );
+        logEntries.push(aoeEntry);
+        logEntries.push(...result.deathEntries);
+
+        return {
+          ...enc,
+          combatants,
+        };
+      });
+    },
+    [write]
+  );
+
+  return { damageCombatant, healCombatant, setTempHP, aoeDamageCombatants };
 }
 
 /**

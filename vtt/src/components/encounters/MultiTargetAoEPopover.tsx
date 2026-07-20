@@ -22,7 +22,8 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { useCombatStore } from "@/stores/combatStore";
+import { useCombatHpMutations } from "@/hooks/useCombatMutations";
+import type { AoEDamageResult } from "@/lib/combat/aoe-damage-engine";
 import {
   computeAoEDamage,
   type AoETargetResult,
@@ -57,7 +58,9 @@ export default function MultiTargetAoEPopover({
   position,
 }: MultiTargetAoEPopoverProps) {
   const enemies = useCampaignStore((s) => s.enemies);
-  const aoeDamageCombatants = useCombatStore((s) => s.aoeDamageCombatants);
+  // FIX (Sprint 27): Use the Firestore-synced hook instead of raw Zustand store action.
+  // Previously used: useCombatStore((s) => s.aoeDamageCombatants) → Zustand only, no cross-device sync.
+  const { aoeDamageCombatants } = useCombatHpMutations();
 
   const [selectedTargetIds, setSelectedTargetIds] = useState<Set<string>>(new Set());
   const [damageAmount, setDamageAmount] = useState<string>("28"); // Fireball average
