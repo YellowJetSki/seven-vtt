@@ -28,6 +28,7 @@ interface DmToolbarProps {
   onBack: () => void;
   onShare?: () => void;
   onAoEDamage?: () => void;
+  onRest?: () => void;
 }
 
 export default function DmToolbar({
@@ -44,7 +45,7 @@ export default function DmToolbar({
   onAddPlayerToken,
   onAddEnemyToken,
   onBack,
-  onShare, onAoEDamage,
+  onShare, onAoEDamage, onRest,
 }: DmToolbarProps) {
   const isActive = (mode: PlacementMode) => placementMode === mode;
 
@@ -128,6 +129,21 @@ export default function DmToolbar({
           ⌖
         </button>
       </div>
+
+      {/* Rest button */}
+      {onRest && (
+        <>
+          <ToolbarDivider />
+          <button
+            onClick={onRest}
+            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-emerald-400 hover:border-emerald-500/15 hover:bg-emerald-500/5 transition-all duration-150 font-medium flex items-center gap-1"
+            title="Apply Short or Long Rest to the party"
+          >
+            <span>😴</span>
+            <span>Rest</span>
+          </button>
+        </>
+      )}
 
       {/* Right: Theatric launcher + Share + AoE */}
       <div className="flex items-center gap-2 shrink-0">

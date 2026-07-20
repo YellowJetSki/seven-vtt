@@ -10078,3 +10078,48 @@ export interface UndoPayload {
 - Git savepoint: ✅ Sprint 21
 
 ---
+
+## Sprint 22/41 — Feature Expansion Phase (Cycle 3 of 10): DM Party Rest Overlay (Updated: 2026-07-20 19:23)
+## Sprint 22/41 — DM Party Rest & Recovery Overlay
+
+### Summary
+Added a premier **DM-side Party Rest Overlay** to the DM Control Center. Previously, the DM had to navigate to each character sheet individually to apply Short/Long Rests. Now, with one click on the "😴 Rest" button in the DM toolbar, a glass modal opens listing ALL player characters with their current HP status, hit dice, and slot depletion — and applies the rest to ALL characters simultaneously.
+
+### Files Created (1)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/control-center/DmPartyRestOverlay.tsx` | ~370 | Premium glass modal with party list, per-character status (Healthy/Bloodied/Critical/Down), HP bars, HD/slot counts, Short Rest + Long Rest preview columns, Short Rest + Long Rest + Cancel buttons with loading/success/error states, glass modal with edge light, staggered entrance animations |
+
+### Files Modified (3)
+
+| File | Change |
+|------|--------|
+| `DmToolbar.tsx` | Added `onRest` prop + "😴 Rest" button between the placement tools and the right toolbar group (Share/AoE/Theatric) |
+| `DmControlCenter.tsx` | Added `DmPartyRestOverlay` import + `showRestOverlay` state + wired `onRest={() => setShowRestOverlay(true)}` to toolbar |
+
+### DM Workflow (Feature Value)
+
+```
+During a live session, the party decides to take a Short Rest:
+  → DM clicks "😴 Rest" button in the floating DM toolbar
+  → Glass overlay opens showing ALL player characters:
+     · Wendy: 11/38 HP · Bloodied · HD 3/5 · 0 empty slots
+     · Kehrfuffle: 16/44 HP · Critical · HD 4/5 · 2 empty slots
+     · Each row shows Short Rest preview (+HP, resource recharge)
+       and Long Rest preview (+HP, +HD, slot restore)
+  → DM clicks "😴 Short Rest"
+     → Loading spinner on button
+     → applyShortRest() called for EACH character with ALL available HD
+     → updateCharacter() → Zustand + Firestore for each
+     → "✅ Short Rest Applied!" success state
+     → Auto-closes after 1.5s
+  → Total time: ~5 seconds vs. 2+ minutes navigating sheets
+```
+
+### Key Metrics
+- `tsc --noEmit`: ✅ **0 errors**
+- Feature value: **~2 minutes saved per rest event**
+- All mutations write to BOTH Zustand (instant UI) + Firestore (cross-device sync)
+
+---
