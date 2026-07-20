@@ -153,7 +153,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
                 <AssetBrowser
                   category="map"
                   onSelect={(asset: AssetEntry) => {
-                    setImageUrl(asset.svg);
+                    setImageUrl(asset.imageUrl || asset.svg);
                     setImageError(false);
                     setShowGallery(false);
                   }}

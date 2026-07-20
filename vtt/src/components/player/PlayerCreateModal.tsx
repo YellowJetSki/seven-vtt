@@ -447,7 +447,8 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
                 currentId={selectedAssetId ?? undefined}
                 onSelect={(asset: AssetEntry) => {
                   setSelectedAssetId(asset.id);
-                  setImageUrl(asset.svg);
+                  // Use PNG imageUrl if available, fall back to SVG
+                  setImageUrl(asset.imageUrl || asset.svg);
                   setImagePreviewError(false);
                   setShowGallery(false);
                 }}

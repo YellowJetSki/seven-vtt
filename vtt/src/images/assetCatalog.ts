@@ -26,6 +26,8 @@ export interface AssetEntry {
   type: "portrait" | "token" | "map" | "item";
   /** SVG string — inline for zero-latency rendering */
   svg: string;
+  /** Optional PNG image URL (from public/images/) */
+  imageUrl?: string | null;
   /** Dominant color for placeholder bg */
   color: string;
   /** Suggested usage */
@@ -536,4 +538,75 @@ export function getAssetsByCategory(category: AssetCategory): AssetEntry[] {
 
 export function getAssetById(id: string): AssetEntry | undefined {
   return ALL_ASSETS.find((a) => a.id === id);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PNG Asset References (from /public/images/ via Vite public dir)
+// ═══════════════════════════════════════════════════════════════
+// These PNG files are real campaign assets from the images/ directory.
+// They're served at runtime via /images/{category}/{filename}.
+// The imageUrl field provides the path; components can load them as
+// <img src={asset.imageUrl} /> for premium-quality artwork.
+
+export const PNG_ASSETS: AssetEntry[] = [
+  // ── Items ──
+  { id: "pitem-accordion-01", label: "Accordion", category: "item", type: "item", imageUrl: "/images/items/accordion_item.png", svg: "", color: "#78350f", tags: ["item", "instrument", "trade good"] },
+  { id: "pitem-chauzy-map-01", label: "Chauzy's Map", category: "item", type: "item", imageUrl: "/images/items/chauzy_map_item.png", svg: "", color: "#1e293b", tags: ["item", "map", "quest"] },
+  { id: "pitem-duku-belt-01", label: "Duku's Belt", category: "item", type: "item", imageUrl: "/images/items/duku_belt_item.png", svg: "", color: "#78350f", tags: ["item", "belt", "armor"] },
+  { id: "pitem-tudul-ring-01", label: "Tudul's Ring", category: "item", type: "item", imageUrl: "/images/items/tudul_ring_item.png", svg: "", color: "#fbbf24", tags: ["item", "ring", "magic"] },
+  { id: "pitem-t-pin-01", label: "T-Pin", category: "item", type: "item", imageUrl: "/images/items/t_pin_item.png", svg: "", color: "#94a3b8", tags: ["item", "pin", "tool"] },
+  { id: "pitem-wendy-belt-01", label: "Wendy's Belt", category: "item", type: "item", imageUrl: "/images/items/wendy_belt_item.png", svg: "", color: "#78350f", tags: ["item", "belt", "armor"] },
+  { id: "pitem-wendy-parents-01", label: "Wendy's Parents", category: "item", type: "item", imageUrl: "/images/items/wendy_parents_item.png", svg: "", color: "#047857", tags: ["item", "photo", "quest"] },
+  { id: "pitem-wendy-resto-01", label: "Wendy's Restorative", category: "item", type: "item", imageUrl: "/images/items/wendy_resto_item.png", svg: "", color: "#059669", tags: ["item", "potion", "consumable"] },
+
+  // ── Portraits ──
+  { id: "pport-kehrfuffle-01", label: "Kehrfuffle", category: "portrait", type: "portrait", imageUrl: "/images/portraits/kehrfuffle_portrait.png", svg: "", color: "#7c3aed", tags: ["portrait", "character", "kehrfuffle"] },
+  { id: "pport-strider-01", label: "Strider", category: "portrait", type: "portrait", imageUrl: "/images/portraits/strider_portrait.png", svg: "", color: "#059669", tags: ["portrait", "character", "strider"] },
+  { id: "pport-toern-01", label: "Toern", category: "portrait", type: "portrait", imageUrl: "/images/portraits/toern_portrait.png", svg: "", color: "#d97706", tags: ["portrait", "character", "toern"] },
+  { id: "pport-wendy-01", label: "Wendy", category: "portrait", type: "portrait", imageUrl: "/images/portraits/wendy_portrait.png", svg: "", color: "#dc2626", tags: ["portrait", "character", "wendy"] },
+
+  // ── Tokens (Battle Map Icons) ──
+  { id: "ptoken-bengo-01", label: "Bengo", category: "token", type: "token", imageUrl: "/images/tokens/bengo_bm.png", svg: "", color: "#65a30d", tags: ["token", "npc", "bengo"] },
+  { id: "ptoken-geepo-01", label: "Geepo", category: "token", type: "token", imageUrl: "/images/tokens/geepo_bm.png", svg: "", color: "#2563eb", tags: ["token", "npc", "geepo"] },
+  { id: "ptoken-hansel-01", label: "Hansel", category: "token", type: "token", imageUrl: "/images/tokens/hansel_bm.png", svg: "", color: "#d97706", tags: ["token", "npc", "hansel"] },
+  { id: "ptoken-heago-01", label: "Heago", category: "token", type: "token", imageUrl: "/images/tokens/heago_bm.png", svg: "", color: "#7c3aed", tags: ["token", "npc", "heago"] },
+  { id: "ptoken-jewl-01", label: "Jewl", category: "token", type: "token", imageUrl: "/images/tokens/jewl_bm.png", svg: "", color: "#ec4899", tags: ["token", "npc", "jewl"] },
+  { id: "ptoken-kehrfuffle-01", label: "Kehrfuffle", category: "token", type: "token", imageUrl: "/images/tokens/kehrfuffle_bm.png", svg: "", color: "#7c3aed", tags: ["token", "npc", "kehrfuffle"] },
+  { id: "ptoken-kort-01", label: "Kort", category: "token", type: "token", imageUrl: "/images/tokens/kort_bm.png", svg: "", color: "#dc2626", tags: ["token", "npc", "kort"] },
+  { id: "ptoken-leeta-01", label: "Leeta", category: "token", type: "token", imageUrl: "/images/tokens/leeta_bm.png", svg: "", color: "#fbbf24", tags: ["token", "npc", "leeta"] },
+  { id: "ptoken-pavel-01", label: "Pavel", category: "token", type: "token", imageUrl: "/images/tokens/pavel_bm.png", svg: "", color: "#2563eb", tags: ["token", "npc", "pavel"] },
+  { id: "ptoken-scant-01", label: "Scant", category: "token", type: "token", imageUrl: "/images/tokens/scant_bm.png", svg: "", color: "#65a30d", tags: ["token", "npc", "scant"] },
+  { id: "ptoken-scorpio-01", label: "Scorpio", category: "token", type: "token", imageUrl: "/images/tokens/scorpio_bm.png", svg: "", color: "#dc2626", tags: ["token", "creature", "scorpio"] },
+  { id: "ptoken-screwbeard-01", label: "Screwbeard", category: "token", type: "token", imageUrl: "/images/tokens/screwbeard_bm.png", svg: "", color: "#d97706", tags: ["token", "npc", "screwbeard"] },
+  { id: "ptoken-strider-01", label: "Strider", category: "token", type: "token", imageUrl: "/images/tokens/strider_bm.png", svg: "", color: "#059669", tags: ["token", "npc", "strider"] },
+  { id: "ptoken-toern-01", label: "Toern", category: "token", type: "token", imageUrl: "/images/tokens/toern_bm.png", svg: "", color: "#d97706", tags: ["token", "npc", "toern"] },
+  { id: "ptoken-wendy-01", label: "Wendy", category: "token", type: "token", imageUrl: "/images/tokens/wendy_bm.png", svg: "", color: "#dc2626", tags: ["token", "npc", "wendy"] },
+
+  // ── Maps (Battle Map Thumbnails) ──
+  { id: "pmap-boathouse-01", label: "Boathouse", category: "map", type: "map", imageUrl: "/images/maps/boathouse_enc.png", svg: "", color: "#1e293b", tags: ["map", "boathouse", "encounter"] },
+  { id: "pmap-prison-01", label: "Prison", category: "map", type: "map", imageUrl: "/images/maps/prison_enc.png", svg: "", color: "#334155", tags: ["map", "prison", "encounter"] },
+  { id: "pmap-scorpion-01", label: "Scorpion Desert", category: "map", type: "map", imageUrl: "/images/maps/scorpion_enc.png", svg: "", color: "#78350f", tags: ["map", "desert", "encounter"] },
+  { id: "pmap-screwbeard-cave-01", label: "Screwbeard's Cave", category: "map", type: "map", imageUrl: "/images/maps/screwbeard_cave_enc.png", svg: "", color: "#1c1917", tags: ["map", "cave", "encounter"] },
+  { id: "pmap-tutorial-forest-01", label: "Tutorial Forest", category: "map", type: "map", imageUrl: "/images/maps/tutorial_forest_enc.png", svg: "", color: "#065f46", tags: ["map", "forest", "tutorial"] },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// Enhanced Helpers for SVG + PNG Unified Access
+// ═══════════════════════════════════════════════════════════════
+
+/** Get ALL assets for a category — both inline SVG and PNG */
+export function getAllAssetsForCategory(category: AssetCategory): AssetEntry[] {
+  const svgAssets = getAssetsByCategory(category);
+  const pngAssets = PNG_ASSETS.filter((a) => a.category === category);
+  return [...svgAssets, ...pngAssets];
+}
+
+/** Get an asset by ID — searches both SVG and PNG catalogs */
+export function findAsset(id: string): AssetEntry | undefined {
+  return ALL_ASSETS.find((a) => a.id === id) ?? PNG_ASSETS.find((a) => a.id === id);
+}
+
+/** Check if an asset has a PNG image available */
+export function hasImage(asset: AssetEntry): boolean {
+  return asset.imageUrl != null && asset.imageUrl.length > 0;
 }

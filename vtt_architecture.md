@@ -4970,3 +4970,70 @@ DM clicks "⚙ Manage" on player card
 | Dice rollers | ✅ **0** (all averages, physical dice mandate) |
 
 ---
+
+## Sprint 1/4 — Asset Pipeline Migration (2026-07-20) (Updated: 2026-07-20 08:39)
+## Sprint 1/4 — Asset Pipeline Migration: PNG File References & Unified Asset Browser (2026-07-19)
+**Date:** 2026-07-20
+**Phase:** DM Tools, Assets & Encounter — Cycle 1 of 4
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Files (3)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `vtt/src/images/png-asset-catalog.ts` | 95 | Standalone catalog of 32 PNG assets from `/images/` directory, with category indexing (`getPngAssets`, `getPngAssetById`, `getPngAssetByName`) |
+| `scripts/migrate-images.mjs` | 40 | CLI script to copy PNGs from root `/images/` into `public/images/{items,portraits,tokens,maps}/` for Vite static serving |
+| `public/images/README.md` | 5 | Documentation for asset directory structure |
+
+#### Files Modified (4)
+| File | Key Changes |
+|------|-------------|
+| `vtt/src/images/assetCatalog.ts` | Added `imageUrl?: string` to `AssetEntry` interface. Appended 32 PNG asset entries as `PNG_ASSETS[]`. Added 3 new helper functions: `getAllAssetsForCategory()` (SVG + PNG), `findAsset()`, `hasImage()`. |
+| `vtt/src/components/ui/AssetBrowser.tsx` | Complete rewrite to support dual SVG + PNG rendering. PNG assets display as `<img>` with CSS fallback, SVG assets display inline. Green indicator dot on PNG assets. `getAllAssetsForCategory()` replaces `ALL_ASSETS.filter()`. |
+| `vtt/src/pages/AssetGallery.tsx` | Updated to show PNG assets alongside SVGs in the gallery grid and preview modal. Category tabs now count both sources. `getAllAssetsForCategory()` replaces `getAssetsByCategory()`. Preview modal shows PNG/SVG type badge. |
+| `vtt/src/components/player/PlayerCreateModal.tsx` | Updated `onSelect` to use `asset.imageUrl || asset.svg` for PNG-compatible portrait selection. |
+| `vtt/src/components/maps/MapCreatorModal.tsx` | Updated `onSelect` to use `asset.imageUrl || asset.svg` for PNG-compatible map thumbnail selection. |
+
+### Asset Inventory (32 PNG files)
+
+| Category | Count | Example Files |
+|----------|:-----:|---------------|
+| **Portraits** | 4 | kehrfuffle_portrait, strider_portrait, toern_portrait, wendy_portrait |
+| **Tokens** | 15 | bengo_bm, geepo_bm, hansel_bm, heago_bm, jewl_bm, kehrfuffle_bm, kort_bm, leeta_bm, pavel_bm, scant_bm, scorpio_bm, screwbeard_bm, strider_bm, toern_bm, wendy_bm |
+| **Maps** | 5 | boathouse_enc, prison_enc, scorpion_enc, screwbeard_cave_enc, tutorial_forest_enc |
+| **Items** | 8 | accordion_item, chauzy_map_item, duku_belt_item, tudul_ring_item, t_pin_item, wendy_belt_item, wendy_parents_item, wendy_resto_item |
+
+### Architecture: PNG Asset Pipeline
+
+```
+/images/ (source)                             /public/images/ (Vite static)
+├── *_portrait.png ──► migrate-images.mjs ──► /public/images/portraits/
+├── *_bm.png        ──► migrate-images.mjs ──► /public/images/tokens/
+├── *_enc.png       ──► migrate-images.mjs ──► /public/images/maps/
+└── *_item.png      ──► migrate-images.mjs ──► /public/images/items/
+                                                      │
+                                                      ▼
+                                             assetCatalog.ts
+                                             ├── AssetEntry.imageUrl = "/images/{cat}/{file}"
+                                             ├── getAllAssetsForCategory() → SVG + PNG
+                                             └── findAsset() → SVG or PNG by ID
+                                                      │
+                                                      ▼
+                                             AssetBrowser.tsx
+                                             ├── Shows <img> for PNG, SVG inline
+                                             ├── Green dot indicator for PNG assets
+                                             └── Fallback to SVG on image load error
+```
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** (2005 modules) |
+| Vite production build | ✅ **7.32s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.59s build |
+| Asset Gallery renders | ✅ at `/campaign/assets` — all 4 category tabs visible |
+| PlayerCreateModal portrait picker | ✅ Uses `imageUrl || svg` for PNG support |
+| MapCreatorModal map picker | ✅ Uses `imageUrl || svg` for PNG support |
+| ESLint hygiene | 287 parser errors — all pre-existing ESLint config issue (TSX/JS mismatch), not code errors. `tsc` = 0 errors. |
+---

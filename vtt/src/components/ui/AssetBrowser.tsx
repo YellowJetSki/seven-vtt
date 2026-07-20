@@ -1,29 +1,29 @@
 /**
- * STᚱ VTT — Asset Browser
+ * STᚱ VTT — Asset Browser (SVG + PNG)
  *
  * A searchable, filterable, gallery-style component that lets DMs
  * browse and select built-in visual assets for:
- * - Player character portraits
- * - Battle-map token icons
- * - Battle-map thumbnails
- * - Item/spell icons
+ *   - Player character portraits
+ *   - Battle-map token icons
+ *   - Battle-map thumbnails
+ *   - Item/spell icons
  *
- * Integrates with the AssetCatalog (src/images/assetCatalog.ts)
- * which provides ~30 premium fantasy SVG assets.
+ * Supports BOTH inline SVG assets (zero-latency) and PNG imageUrl
+ * assets (from /public/images/). PNG assets are prioritized when
+ * available, with SVG as fallback on load failure.
  *
  * Usage:
  *   <AssetBrowser
  *     category="portrait"
- *     onSelect={(asset) => setImage(asset.svg)}
+ *     onSelect={(asset) => setImage(asset.svg || asset.imageUrl)}
  *   />
  *
- * The DM can also paste an external URL, which will be passed
- * through unchanged (the existing imageUrl pattern in forms).
+ * The DM can also paste an external URL via the URL mode toggle.
  */
 
 import { useState, useMemo } from "react";
 import {
-  ALL_ASSETS,
+  getAllAssetsForCategory,
   type AssetCategory,
   type AssetEntry,
 } from "@/images/assetCatalog";
@@ -41,7 +41,7 @@ interface AssetBrowserProps {
   onUrlSubmit?: (url: string) => void;
 }
 
-const CATEGORY_LABELS: Record<AssetCategory, string> = {
+const CATEGORY_LABELS: Record<string, string> = {
   portrait: "Character Portraits",
   token: "Token Icons",
   map: "Battle Maps",
@@ -61,11 +61,12 @@ export default function AssetBrowser({
   const [showUrl, setShowUrl] = useState(false);
   const [urlInput, setUrlInput] = useState("");
 
+  // ── Assets: SVG + PNG combined ──
   const assets = useMemo(() => {
-    const filtered = ALL_ASSETS.filter((a) => a.category === category);
-    if (!search && !selectedTag) return filtered;
+    const all = getAllAssetsForCategory(category);
+    if (!search && !selectedTag) return all;
 
-    return filtered.filter((a) => {
+    return all.filter((a) => {
       const matchesSearch =
         !search ||
         a.label.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,10 +76,10 @@ export default function AssetBrowser({
     });
   }, [category, search, selectedTag]);
 
-  // Extract unique tags from this category
+  // ── Tags ──
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    ALL_ASSETS.filter((a) => a.category === category).forEach((a) =>
+    getAllAssetsForCategory(category).forEach((a) =>
       a.tags.forEach((t) => tagSet.add(t))
     );
     return Array.from(tagSet).sort();
@@ -93,10 +94,10 @@ export default function AssetBrowser({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Header row */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">
-          {CATEGORY_LABELS[category]}
+          {CATEGORY_LABELS[category] ?? category}
         </p>
         <p className="text-[9px] text-surface-500">{assets.length} assets</p>
       </div>
@@ -186,31 +187,51 @@ export default function AssetBrowser({
       <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 max-h-60 overflow-y-auto scrollbar-gold pr-1">
         {assets.map((asset) => {
           const isSelected = asset.id === currentId;
+          const hasPng = asset.imageUrl != null && asset.imageUrl.length > 0;
+
           return (
             <button
               key={asset.id}
               onClick={() => onSelect(asset)}
-              className={`
-                relative group flex flex-col items-center gap-1 p-2 rounded-xl
-                transition-all duration-150 active:scale-95
-                ${
-                  isSelected
-                    ? "bg-gold-500/10 border border-gold-500/25 shadow-[0_0_8px_rgba(234,179,8,0.08)]"
-                    : "bg-[#0c0d15] border border-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.02]"
-                }
-              `}
+              className={`relative group flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-150 active:scale-95 ${
+                isSelected
+                  ? "bg-gold-500/10 border border-gold-500/25 shadow-[0_0_8px_rgba(234,179,8,0.08)]"
+                  : "bg-[#0c0d15] border border-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.02]"
+              }`}
               title={asset.label}
             >
-              {/* SVG preview */}
+              {/* Preview: PNG image or SVG inline */}
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden"
-                style={{ backgroundColor: `${asset.color}15` }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-cover bg-center"
+                style={{
+                  backgroundColor: `${asset.color}15`,
+                  ...(hasPng ? { backgroundImage: `url(${asset.imageUrl})` } : {}),
+                }}
               >
-                <div
-                  className="w-8 h-8"
-                  dangerouslySetInnerHTML={{ __html: asset.svg }}
-                />
+                {hasPng ? (
+                  <img
+                    src={asset.imageUrl!}
+                    alt={asset.label}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      // Fallback to SVG if PNG fails
+                      const el = e.currentTarget;
+                      el.style.display = "none";
+                      const parent = el.parentElement;
+                      if (parent) {
+                        parent.style.backgroundImage = "none";
+                      }
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-8 h-8"
+                    dangerouslySetInnerHTML={{ __html: asset.svg }}
+                  />
+                )}
               </div>
+
               {/* Label */}
               <span
                 className={`text-[7px] text-center leading-tight truncate w-full ${
@@ -219,6 +240,11 @@ export default function AssetBrowser({
               >
                 {asset.label}
               </span>
+
+              {/* PNG indicator dot */}
+              {hasPng && (
+                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_3px_rgba(52,211,153,0.4)]" />
+              )}
             </button>
           );
         })}
@@ -227,7 +253,7 @@ export default function AssetBrowser({
       {/* Empty state */}
       {assets.length === 0 && (
         <div className="text-center py-6">
-          <p className="text-xs text-surface-500">No assets match your search</p>
+          <p className="text-xs text-surface-500">No assets found</p>
           <button
             onClick={() => {
               setSearch("");

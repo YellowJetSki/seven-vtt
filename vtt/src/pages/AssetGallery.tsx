@@ -19,7 +19,8 @@ import { useState, useCallback, useMemo } from "react";
 import AppShell from "@/components/layout/AppShell";
 import {
   ALL_ASSETS,
-  getAssetsByCategory,
+  PNG_ASSETS,
+  getAllAssetsForCategory,
   type AssetCategory,
   type AssetEntry,
 } from "@/images/assetCatalog";
@@ -35,11 +36,12 @@ function AssetPreview({ asset, onClose }: { asset: AssetEntry; onClose: () => vo
   const [copied, setCopied] = useState(false);
 
   const handleCopySvg = useCallback(() => {
-    navigator.clipboard.writeText(asset.svg).then(() => {
+    const text = asset.imageUrl ?? asset.svg;
+    navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
-  }, [asset.svg]);
+  }, [asset.svg, asset.imageUrl]);
 
   const handleCopyId = useCallback(() => {
     navigator.clipboard.writeText(asset.id).then(() => {
@@ -57,15 +59,26 @@ function AssetPreview({ asset, onClose }: { asset: AssetEntry; onClose: () => vo
         {/* Preview */}
         <div className="flex items-center justify-center mb-4">
           <div
-            className="w-32 h-32 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: `${asset.color}15` }}
+            className="w-32 h-32 rounded-2xl flex items-center justify-center bg-cover bg-center overflow-hidden"
+            style={{ backgroundColor: `${asset.color}15`, ...(asset.imageUrl ? { backgroundImage: `url(${asset.imageUrl})` } : {}) }}
           >
-            <div className="w-28 h-28" dangerouslySetInnerHTML={{ __html: asset.svg }} />
+            {asset.imageUrl ? (
+              <img src={asset.imageUrl} alt={asset.label} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-28 h-28" dangerouslySetInnerHTML={{ __html: asset.svg }} />
+            )}
           </div>
         </div>
 
         <h3 className="text-lg font-bold text-white/90 text-center">{asset.label}</h3>
-        <p className="text-xs text-surface-500 text-center mt-1 capitalize">{asset.category} asset</p>
+        <p className="text-xs text-surface-500 text-center mt-1 capitalize flex items-center justify-center gap-2">
+          {asset.category} asset
+          {asset.imageUrl && (
+            <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 font-mono">
+              PNG
+            </span>
+          )}
+        </p>
 
         {/* Tags */}
         <div className="flex flex-wrap justify-center gap-1.5 mt-3">
@@ -112,7 +125,17 @@ export default function AssetGallery() {
   const [previewAsset, setPreviewAsset] = useState<AssetEntry | null>(null);
 
   const assets = useMemo(() => {
-    const filtered = getAssetsByCategory(activeCategory);
+    const filtered = getAllAssetsForCategory(activeCategory);
+    // Include PNG assets for this category
+    const pngAssets = PNG_ASSETS.filter((a) => a.category === activeCategory);
+    filtered.push(...pngAssets);
+    // Deduplicate by id
+    const seen = new Set<string>();
+    return filtered.filter((a) => {
+      if (seen.has(a.id)) return false;
+      seen.add(a.id);
+      return true;
+    });
     if (!search) return filtered;
     return filtered.filter(
       (a) =>
@@ -191,15 +214,20 @@ export default function AssetGallery() {
                   <button
                     key={asset.id}
                     onClick={() => setPreviewAsset(asset)}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-[#0c0d15] border border-white/[0.04] hover:border-gold-500/15 hover:bg-white/[0.02] transition-all active:scale-95 group"
+                    className="relative flex flex-col items-center gap-1.5 p-2 rounded-xl bg-[#0c0d15] border border-white/[0.04] hover:border-gold-500/15 hover:bg-white/[0.02] transition-all active:scale-95 group"
                     title={asset.label}
                   >
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${asset.color}15` }}
+                      className="w-10 h-10 rounded-lg flex items-center justify-center bg-cover bg-center"
+                      style={{ backgroundColor: `${asset.color}15`, ...(asset.imageUrl ? { backgroundImage: `url(${asset.imageUrl})` } : {}) }}
                     >
-                      <div className="w-8 h-8" dangerouslySetInnerHTML={{ __html: asset.svg }} />
+                      {asset.imageUrl ? (
+                        <img src={asset.imageUrl} alt={asset.label} className="w-full h-full object-cover rounded-lg" loading="lazy" />
+                      ) : (
+                        <div className="w-8 h-8" dangerouslySetInnerHTML={{ __html: asset.svg }} />
+                      )}
                     </div>
+                    {asset.imageUrl && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_3px_rgba(52,211,153,0.4)]" />}
                     <span className="text-[7px] text-surface-500 group-hover:text-surface-400 text-center leading-tight truncate w-full">
                       {asset.label}
                     </span>
