@@ -19,6 +19,7 @@ import PlayerCardCompact from "./PlayerCardCompact";
 import PartyPowerMatrix from "./PartyPowerMatrix";
 import PlayerSheet from "./PlayerSheet";
 import LootDepositPanel from "./LootDepositPanel";
+import ConditionQuickToggle from "./ConditionQuickToggle";
 import type { PlayerCharacter } from "@/types";
 
 export default function PlayerList() {
@@ -28,6 +29,7 @@ export default function PlayerList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMatrix, setShowMatrix] = useState(false);
   const [showLootPanel, setShowLootPanel] = useState(false);
+  const [showConditionsPanel, setShowConditionsPanel] = useState(false);
 
   const handleOpenSheet = useCallback((char: PlayerCharacter) => {
     setActiveSheetChar(char);
@@ -57,6 +59,8 @@ export default function PlayerList() {
         showMatrix={showMatrix}
         showLootPanel={showLootPanel}
         onToggleLootPanel={() => setShowLootPanel((s) => !s)}
+        showConditionsPanel={showConditionsPanel}
+        onToggleConditionsPanel={() => setShowConditionsPanel((s) => !s)}
       />
 
       {/* Party Power Matrix — collapsible */}
@@ -70,6 +74,13 @@ export default function PlayerList() {
       {showLootPanel && characters.length > 0 && (
         <div className="mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
           <LootDepositPanel />
+        </div>
+      )}
+
+      {/* Condition Quick-Toggle Panel — collapsible */}
+      {showConditionsPanel && characters.length > 0 && (
+        <div className="mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+          <ConditionQuickToggle />
         </div>
       )}
 

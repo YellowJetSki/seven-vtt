@@ -18,6 +18,8 @@ interface PlayerListHeaderProps {
   showMatrix: boolean;
   showLootPanel?: boolean;
   onToggleLootPanel?: () => void;
+  showConditionsPanel?: boolean;
+  onToggleConditionsPanel?: () => void;
 }
 
 export default function PlayerListHeader({
@@ -27,6 +29,8 @@ export default function PlayerListHeader({
   showMatrix,
   showLootPanel = false,
   onToggleLootPanel,
+  showConditionsPanel = false,
+  onToggleConditionsPanel,
 }: PlayerListHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -72,6 +76,24 @@ export default function PlayerListHeader({
           >
             <span>\uD83D\uDCE6</span>
             <span>Loot</span>
+          </button>
+        )}
+
+        {/* Conditions toggle — only show when characters exist */}
+        {characterCount > 0 && onToggleConditionsPanel && (
+          <button
+            onClick={onToggleConditionsPanel}
+            className={`
+              flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-semibold
+              transition-all duration-200 active:scale-95
+              ${showConditionsPanel
+                ? "bg-gold-500/10 border border-gold/15 text-gold-400 shadow-[0_0_8px_rgba(234,179,8,0.03)]"
+                : "text-surface-500 border border-transparent hover:text-surface-300 hover:bg-white/[0.03]"
+              }
+            `}
+          >
+            <span>\uD83D\uDCA1</span>
+            <span>Status</span>
           </button>
         )}
       </div>
