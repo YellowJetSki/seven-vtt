@@ -12,6 +12,7 @@ import { useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { setCharacter } from "@/lib/firestore-service";
 import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
+import LevelUpPanel from "./LevelUpPanel";
 import type { PlayerCharacter } from "@/types";
 
 interface PlayerCardManagerProps {
@@ -41,6 +42,7 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
   const [level, setLevel] = useState(character.level);
   const [playerName, setPlayerName] = useState(character.playerName || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLevelUpPanel, setShowLevelUpPanel] = useState(false);
 
   const handleSave = useCallback(() => {
     updateCharacter(character.id, {
@@ -69,12 +71,6 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
     removeCharacter(character.id);
     onClose();
   }, [character.id, removeCharacter, onClose]);
-
-  const handleLevelUp = useCallback(() => {
-    const newLevel = Math.min(20, character.level + 1);
-    updateCharacter(character.id, { level: newLevel });
-    setLevel(newLevel);
-  }, [character.id, character.level, updateCharacter]);
 
   if (!isOpen) return null;
 
@@ -166,11 +162,11 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
           {/* Quick Actions Row */}
           <div className="flex gap-2">
             <button
-              onClick={handleLevelUp}
+              onClick={() => setShowLevelUpPanel(true)}
               disabled={character.level >= 20}
               className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/12 active:scale-95 transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              + Level Up
+              ⬆ Level Up Details
             </button>
             <button
               onClick={handleDuplicate}
@@ -226,6 +222,14 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
             Save Changes
           </button>
         </div>
+
+        {/* Level-Up Panel */}
+        {showLevelUpPanel && (
+          <LevelUpPanel
+            character={character}
+            onClose={() => setShowLevelUpPanel(false)}
+          />
+        )}
       </div>
     </div>
   );

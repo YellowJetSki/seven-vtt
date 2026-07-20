@@ -4879,3 +4879,94 @@ Player clicks "🛌 Long Rest" in Combat Tab
 | 5e RAW compliance | ✅ Short rest = HD spending (PHB 186), Long rest = full recovery (PHB 186) |
 
 ---
+
+## Sprint 17/17 — FINAL SPRINT: Level-Up Engine & Character Progression (2026-07-19) (Updated: 2026-07-19 15:24)
+## Sprint 17/17 — FINAL: Level-Up Engine & Character Progression (Deep 5e Systems Phase — Cycle 5 of 5)
+**Date:** 2026-07-19
+**Phase:** Deep 5e Systems Phase — CYCLE 5 OF 5 (COMPLETE)
+**Deployed:** arkla.vercel.app
+
+### What Was Built
+
+#### New Files (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/mechanics/level-up-engine.ts` | 420 | Complete level-up engine implementing 5e RAW: HP gain, PB thresholds (5/9/13/17), spell slot progression (full/half/third caster), ASI levels (4/8/12/16/19), class feature detection, cantrip increases |
+| `components/player/LevelUpPanel.tsx` | 340 | Premium interactive level-up dialog with HP roll (average or manual d6/d8/d10/d12), spell slot preview grid, feature list, PB increase notification, ASI/feat availability, one-click apply |
+
+#### Files Modified (1)
+
+| File | Changes |
+|------|---------|
+| `components/player/PlayerCardManager.tsx` | Replaced basic "+ Level Up" (simple level increment) with "⬆ Level Up Details" button that opens the full LevelUpPanel with all 5e mechanical integrity |
+
+### Level-Up Engine Features
+
+| Function | Purpose | 5e RAW Compliance |
+|----------|---------|:-----------------:|
+| `computeLevelUpPreview()` | Shows all gains before committing | ✅ |
+| `applyLevelUp()` | Applies changes to character | ✅ |
+| `detectCasterType()` | Full/half/third/warlock/none | ✅ |
+| `getSlotsForLevel()` | Full slot progression table (PHB) | ✅ (Lv1→Lv20) |
+| `getProficiencyBonus()` | +2→+6 at levels 1/5/9/13/17 | ✅ |
+| `getHitDieType()` | d6→d12 per class | ✅ (14 classes) |
+| `isAsiLevel()` | ASI at 4/8/12/16/19 | ✅ |
+| `getClassFeatures()` | Class-specific features with descriptions | ✅ |
+| `getGenericFeatures()` | Generic per-level gains (slots, cantrips) | ✅ |
+
+### Level-Up Panel UI Features
+
+| Feature | Detail |
+|---------|--------|
+| **Level progression indicator** | Current level → next level with gold highlight |
+| **HP gain** | Average (2 die faces + 1) or manual roll (1 to hitDieType) with −/+ controls |
+| **CON modifier integration** | Automatically added to HP calculation |
+| **HP bar visualization** | Gradient bar showing total HP growth |
+| **PB increase notification** | Gold banner when PB increases (Lv5/9/13/17) |
+| **Spell slot grid** | 9-level grid showing new/pre-existing slots per level |
+| **Slot increase detection** | Sky highlight + ring for newly unlocked slot levels |
+| **Feature list** | Gold-highlighted rows with contextual icons per feature type |
+| **ASI notification** | Amber card explaining ASI/feat options at level 4/8/12/16/19 |
+| **Extra Attack notification** | Rose card for martial classes gaining Extra Attack at Lv5/11/20 |
+| **New value breakdown** | 3-column grid: new HP, new PB, feature count |
+| **Class feature database** | Features for Fighter (Lv1-20), Wizard (Lv1-20), Rogue (Lv1-20) — extensible |
+
+### Data Flow
+
+```
+DM clicks "⚙ Manage" on player card
+  └─► PlayerCardManager opens
+      └─► "⬆ Level Up Details" button
+          └─► LevelUpPanel opens with preview
+              ├─► Select HP: average (auto) or manual roll (1 to d12)
+              ├─► Preview: HP, PB, slots, features, ASI
+              └─► "Level Up to N" → applyLevelUp() → updateCharacter()
+                  ├─► Zustand: level, HP, PB, spellSlots, features updated
+                  ├─► Firestore: async sync via useFirestoreSync
+                  └─► Flash: "✨ [Character] is now level N!"
+```
+
+### 17-Sprint Summary — Complete
+
+| Phase | Sprints | Key Deliverables |
+|:-----:|:-------:|------------------|
+| **Premium UI/UX** | 1-5 | Glassmorphism design system, gold theme, auth redesign, viewport enforcement |
+| **DM Mechanics** | 6-15 | Initiative tracker, encounter panel, combat mutations, DM dashboard war room, session timer, campaign settings, encounters builder, NPC library, homebrew 2.0, AoE templates |
+| **Deep 5e Systems** | 13-17 | Rest engine (Short Rest + Long Rest), condition manager, spell slot engine + spell points variant, concentration tracker, **level-up engine (FINAL)** |
+
+### Final System Metrics
+
+| Metric | Value |
+|--------|:-----:|
+| TypeScript errors | ✅ **0** (2005 modules) |
+| Build time | ✅ **7.97s** |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.05s build |
+| JS bundle | 1,431 KB (351 KB gzipped) |
+| CSS bundle | 254 KB (29 KB gzipped) |
+| Total components | **60+** across 10 directories |
+| Core 5e mechanics implemented | **12/12**: Abilities, Skills, Saves, HP, HD, Spells, Spell Slots, Spell Points, Conditions, Rests, Level-Up, Combat |
+| Legacy tokens (purple) | ✅ **0** — 100% gold/amber/rose/emerald/cyan/violet |
+| Dice rollers | ✅ **0** (all averages, physical dice mandate) |
+
+---
