@@ -1,31 +1,29 @@
 /**
- * STᚱ VTT — Loading Spinner (Premium Gold)
+ * STᚱ VTT — Loading Spinner (Premium Lusion Edition v3)
  *
  * Multi-variant loading indicator with:
  * - Inline (sm/md/lg) spinning arc with dash animation
- * - Section-level with shimmer label
- * - Gold glow ring depth effect
+ * - Section-level padded block for page/section loads
+ * - Gold glow ring depth (3-layer blur)
  * - Duolingo/Spotify-grade smooth arc animation
+ * - Staggered bouncing dots below arc
+ * - Shimmer gradient text label
+ * - Edge light accent on section variant
+ * - Consistent glass gradient backgrounds
  */
 
 interface LoadingSpinnerProps {
-  /** Size variant */
   size?: "sm" | "md" | "lg";
-  /** Optional text label below spinner */
   label?: string;
-  /** Variant: "inline" (default) for embedded, "section" for padded block */
   variant?: "inline" | "section";
-  /** Custom className override */
   className?: string;
 }
 
 const sizeConfig = {
-  sm: { svg: "h-4 w-4", outer: "w-8 h-8", stroke: 3, radius: 8 },
-  md: { svg: "h-7 w-7", outer: "w-14 h-14", stroke: 3, radius: 10 },
-  lg: { svg: "h-10 w-10", outer: "w-20 h-20", stroke: 3.5, radius: 12 },
+  sm: { svg: "h-4 w-4", outer: "w-8 h-8", stroke: 3, radius: 8, dots: "h-2" },
+  md: { svg: "h-7 w-7", outer: "w-14 h-14", stroke: 3, radius: 10, dots: "h-3" },
+  lg: { svg: "h-10 w-10", outer: "w-20 h-20", stroke: 3.5, radius: 12, dots: "h-4" },
 };
-
-const staggerDots = ["", "animation-delay-[0.32s]", "animation-delay-[0.64s]"];
 
 export default function LoadingSpinner({
   size = "md",
@@ -38,12 +36,15 @@ export default function LoadingSpinner({
 
   const spinner = (
     <div className={`flex flex-col items-center justify-center gap-2 relative ${className}`}>
-      {/* Outer glow ring — layered depth */}
+      {/* 3-layer glow ring depth */}
       <div
-        className={`absolute ${cfg.outer} rounded-full bg-gold-500/[0.04] blur-[16px]`}
+        className={`absolute ${cfg.outer} rounded-full bg-gold-500/[0.04] blur-[16px] animate-pulse-soft`}
       />
       <div
         className={`absolute ${cfg.outer} rounded-full bg-gold-500/[0.02] blur-[8px]`}
+      />
+      <div
+        className={`absolute ${cfg.outer} rounded-full bg-gold-500/5 blur-[4px]`}
       />
 
       {/* SVG arc spinner */}
@@ -79,11 +80,11 @@ export default function LoadingSpinner({
       </div>
 
       {/* Staggered bouncing dots */}
-      <div className="flex items-center gap-1.5 h-3">
-        {staggerDots.map((delay, i) => (
+      <div className={`flex items-center gap-1.5 ${cfg.dots}`}>
+        {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className={`w-1 h-1 rounded-full bg-gold-400/70 animate-loading-dot-bounce ${delay}`}
+            className="w-1 h-1 rounded-full bg-gold-400/70 animate-loading-dot-bounce"
             style={{ animationDelay: `${i * 0.32}s` }}
           />
         ))}
@@ -102,7 +103,11 @@ export default function LoadingSpinner({
 
   if (variant === "section") {
     return (
-      <div className="flex items-center justify-center w-full py-12">
+      <div className="relative flex items-center justify-center w-full py-12 overflow-hidden group">
+        {/* Edge light */}
+        <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/10 to-transparent" />
+        {/* Bottom edge light */}
+        <div className="absolute bottom-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/10 to-transparent" />
         {spinner}
       </div>
     );

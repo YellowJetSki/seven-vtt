@@ -1,29 +1,25 @@
 /**
- * STᚱ VTT — Premium Empty State (Lusion-Grade)
+ * STᚱ VTT — Premium Empty State (Lusion-Grade v3)
  *
- * Multi-depth empty state with:
+ * Multi-depth premium empty state with:
  * - Animated icon container with ambient glow ring
- * - Gradient text headings
- * - Floating ambient particles (3 drifting dots)
- * - Staggered entrance animation
- * - Gold rune divider
+ * - Gold gradient text headings with drop-shadow
+ * - Floating ambient particles (3/5/2 by variant)
+ * - Staggered entrance animation (icon→title→desc→rune→action)
+ * - Gold rune divider with gradient line
  * - Action button area with hover glow
+ * - Edge light + glass gradient consistent with design system
+ * - 3 variants: default (hero-padded), compact, hero (large)
  */
 
 import type { ReactNode } from "react";
 
 interface EmptyStateProps {
-  /** Emoji icon (default: 📭) */
   icon?: string;
-  /** Large heading */
   title: string;
-  /** Supporting description */
   description?: string;
-  /** Optional CTA or children */
   action?: ReactNode;
-  /** Alternative to action */
   children?: ReactNode;
-  /** Size variant */
   variant?: "default" | "compact" | "hero";
 }
 
@@ -68,7 +64,10 @@ export default function EmptyState({
   const v = variants[variant];
 
   return (
-    <div className={`flex flex-col items-center justify-center ${v.wrapper} relative overflow-hidden select-none`}>
+    <div className={`flex flex-col items-center justify-center ${v.wrapper} relative overflow-hidden select-none group`}>
+      {/* Edge light */}
+      <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gold-500/15 to-transparent" />
+
       {/* Depth layer 1: Ambient glow behind icon */}
       <div
         className={`absolute ${v.glowSize} rounded-full bg-gold-500/[0.04] blur-[40px] pointer-events-none animate-empty-glow-pulse`}
@@ -88,16 +87,18 @@ export default function EmptyState({
             left: `${30 + Math.random() * 40}%`,
             animationDelay: `${i * 0.8}s`,
             animationDuration: `${3 + Math.random() * 2}s`,
-            "--drift-x": `${(Math.random() - 0.5) * 40}px`,
-          } as React.CSSProperties}
+          }}
         />
       ))}
 
       {/* Depth layer 3: Icon container with glow ring */}
       <div
-        className={`relative ${v.iconContainer} rounded-2xl bg-gradient-to-br from-gold-500/8 to-amber-500/5 
+        className={`relative ${v.iconContainer} rounded-2xl bg-gradient-to-br from-gold-500/8 to-amber-500/5
           border border-gold/10 flex items-center justify-center mb-4
           shadow-[0_0_30px_rgba(234,179,8,0.04)]
+          group-hover:shadow-[0_0_40px_rgba(234,179,8,0.08)]
+          group-hover:border-gold/20
+          transition-all duration-500
           animate-empty-float-core`}
       >
         {/* Inner glow dot */}
@@ -112,7 +113,7 @@ export default function EmptyState({
 
       {/* Depth layer 4: Title with gold gradient */}
       <h3
-        className={`${v.titleSize} font-black mb-1.5 animate-slide-in-up`}
+        className={`${v.titleSize} font-black mb-1.5 animate-slide-in-up text-center`}
         style={{
           background: "linear-gradient(135deg, #fde047 0%, #eab308 50%, #d97706 100%)",
           WebkitBackgroundClip: "text",
