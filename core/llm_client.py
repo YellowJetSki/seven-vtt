@@ -321,7 +321,7 @@ class DeepSeekAgent:
                         total_sprint_content += final_content + f"\n\n**--- END OF SPRINT {run_idx} ---**\n\n"
                         usage_data = chunk["usage"]
                     elif chunk["type"] == "chunk":
-                        yield {"type": "chunk", "content": total_sprint_content + chunk["content"]}
+                        yield {"type": "chunk", "content": chunk["content"]}
                     else:
                         yield chunk
             
