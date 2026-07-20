@@ -1,10 +1,12 @@
 /**
- * ST R VTT - Battle Maps (Map Management + DM Control Center)
+ * STᚱ VTT — Battle Maps (Premium DM Map Management + Control Center)
  *
- * Complete battle map workflow:
- * 1. Empty state -> Create Map button opens MapCreatorModal
- * 2. Map list management (rename, delete) from the map list view
- * 3. DmControlCenter launches when a map is active
+ * Complete battle map workflow with premium design:
+ * - Lusion-grade 7-layer hero header matching Player Cards
+ * - Premium empty state with getting started guide
+ * - Extracted MapCard component (previously inline)
+ * - Map list grid with hover depth, inline rename, delete confirmation
+ * - Seamless transition into DmControlCenter
  *
  * Integrates with campaignStore for CRUD operations.
  */
@@ -14,8 +16,8 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import AppShell from "@/components/layout/AppShell";
 import DmControlCenter from "@/components/control-center/DmControlCenter";
 import MapCreatorModal from "@/components/maps/MapCreatorModal";
+import MapCard from "@/components/maps/MapCard";
 import EmptyState from "@/components/ui/EmptyState";
-import Button from "@/components/ui/Button";
 
 export default function BattleMaps() {
   const battleMaps = useCampaignStore((s) => s.battleMaps);
@@ -35,13 +37,8 @@ export default function BattleMaps() {
     }
   }, [battleMaps.length, showControlCenter]);
 
-  const handleCreateMap = useCallback(() => {
-    setShowCreator(true);
-  }, []);
-
-  const handleCreatorClose = useCallback(() => {
-    setShowCreator(false);
-  }, []);
+  const handleCreateMap = useCallback(() => setShowCreator(true), []);
+  const handleCreatorClose = useCallback(() => setShowCreator(false), []);
 
   const handleStartRename = useCallback((mapId: string, currentName: string) => {
     setEditingMapId(mapId);
@@ -66,47 +63,79 @@ export default function BattleMaps() {
     setConfirmDelete(null);
   }, [removeBattleMap]);
 
+  /* ── EMPTY STATE ── */
   if (!showControlCenter || battleMaps.length === 0) {
     return (
       <AppShell>
-        <div className="flex flex-col h-full">
-          {/* ── Header ── */}
-          <div className="shrink-0 glass-gold rounded-2xl m-4 p-4 relative overflow-hidden">
-            <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-            <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
-            <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
-            <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
-            <div className="depth-ring absolute inset-0 opacity-20" />
-            <div className="relative z-10">
-              <h1 className="text-2xl font-black text-gold tracking-tight drop-shadow-[0_0_12px_rgba(234,179,8,0.15)]">
-                Battle Maps
-              </h1>
-              <p className="text-surface-400 text-sm mt-1">Tactical command center for your encounters</p>
-              <div className="rune-gold mt-3 w-full max-w-md">* * *</div>
+        <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
+          {/* ── Hero Header (7-layer, matching Player Cards) ── */}
+          <div className="mx-4 mt-4 relative rounded-2xl overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#181a2a]/90 via-[#12131e]/90 to-[#0c0d15]/95" />
+            <div
+              className="absolute inset-0 opacity-[0.04] bg-[conic-gradient(from_0deg,transparent_0%,rgba(234,179,8,0.4)_15%,transparent_30%,rgba(234,179,8,0.2)_50%,transparent_70%,rgba(234,179,8,0.15)_85%,transparent_100%)]"
+              style={{ animation: "spin 30s linear infinite" }}
+            />
+            <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 group-hover:via-gold-500/40 to-transparent transition-all duration-700" />
+            <div className="absolute bottom-0 left-[20%] right-[20%] h-px bg-gradient-to-r from-transparent via-gold-500/0 group-hover:via-gold-500/15 to-transparent transition-all duration-700 pointer-events-none" />
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-gold-500/[0.06] rounded-full blur-[80px] pointer-events-none group-hover:bg-gold-500/[0.08] transition-all duration-700" />
+            <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-amber-500/[0.04] rounded-full blur-[60px] pointer-events-none" />
+            <div className="absolute inset-0 rounded-2xl border border-white/[0.06] pointer-events-none" />
+
+            <div className="relative z-10 p-5 sm:p-7">
+              <div className="flex items-start gap-4">
+                <div className="relative shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 to-amber-500/5" />
+                  <div className="absolute inset-0 rounded-xl border border-gold-500/20" />
+                  <div className="absolute inset-2 bg-gold-500/10 rounded-lg blur-[4px]" />
+                  <span className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl drop-shadow-[0_0_12px_rgba(234,179,8,0.4)]">
+                    🗺
+                  </span>
+                </div>
+
+                <div className="min-w-0 pt-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                    Battle Maps
+                  </h1>
+                  <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
+                    Tactical command center for your encounters
+                  </p>
+                  <div className="flex items-center gap-3 mt-3 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/60 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse-soft" />
+                      Map Control
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* ── Empty State ── */}
-          <div className="flex-1 mx-4 mb-4 overflow-y-auto">
-            <div className="max-w-4xl mx-auto space-y-4 pb-8">
+          {/* ── Content Area ── */}
+          <div className="flex-1 mx-4 mb-4 overflow-y-auto scrollbar-gold" style={{ minHeight: 0 }}>
+            <div className="max-w-4xl mx-auto space-y-4 pb-8 pt-4">
               <EmptyState
-                icon="map"
-                title="No Battle Maps"
+                icon="🗺"
+                title="No Battle Maps Yet"
                 description="Create your first tactical map to unlock the DM Control Center with tokens, initiative tracking, and encounter tools."
               >
-                <div className="flex gap-3 mt-4">
-                  <Button variant="gold" size="lg" onClick={handleCreateMap}>
-                    Create Map
-                  </Button>
-                </div>
+                <button
+                  onClick={handleCreateMap}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 text-sm font-semibold active:scale-95 transition-all duration-200 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 hover:shadow-[0_0_24px_rgba(234,179,8,0.08)]"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Create Map</span>
+                </button>
               </EmptyState>
 
-              {/* Quick start guides */}
-              <div className="glass-gold rounded-2xl p-4 border border-gold/5">
+              {/* Getting Started Guide */}
+              <div className="relative bg-gradient-to-b from-[#141520]/80 to-[#0f1019]/90 border border-white/[0.04] rounded-2xl p-4">
+                <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
                 <h3 className="text-[10px] uppercase tracking-widest text-gold-400/60 font-bold mb-3">
                   Getting Started
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="bg-[#07080d] rounded-xl p-3 border border-white/[0.04]">
                     <div className="text-lg mb-1">1</div>
                     <div className="text-[10px] font-semibold text-surface-300">Create a Map</div>
@@ -134,183 +163,54 @@ export default function BattleMaps() {
     );
   }
 
-  // ── Map List Manager (shown before entering full control center) ──
+  /* ── MAP LIST (shown before entering full control center) ── */
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-obsidian">
-      {/* Mini top bar for map management */}
-      <div className="shrink-0 glass-gold border-b border-gold/10 px-4 py-2 flex items-center justify-between z-10">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-black text-gold">Battle Maps</span>
-          <span className="text-[10px] text-surface-500 px-1.5 py-0.5 rounded bg-[#07080d]">
-            {battleMaps.length} map{battleMaps.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
+    <AppShell>
+      <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
+        {/* Mini top bar for map management */}
+        <div className="shrink-0 border-b border-white/[0.04] bg-gradient-to-r from-[#14151f]/90 to-[#0f1019]/95 px-4 py-2 flex items-center justify-between z-10">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-black text-white/80 tracking-tight">Battle Maps</span>
+            <span className="text-[10px] text-surface-500 px-1.5 py-0.5 rounded bg-[#07080d] border border-white/[0.04]">
+              {battleMaps.length} map{battleMaps.length !== 1 ? "s" : ""}
+            </span>
+          </div>
           <button
             onClick={() => setShowCreator(true)}
-            className="px-3 py-1 rounded-lg text-[10px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all duration-150 flex items-center gap-1"
+            className="px-3 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 hover:border-gold-500/30 active:scale-95 transition-all duration-150 flex items-center gap-1"
           >
             + New Map
           </button>
         </div>
-      </div>
 
-      {/* Main content: map list grid */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {battleMaps.map((map) => (
-              <MapCard
-                key={map.id}
-                map={map}
-                isEditing={editingMapId === map.id}
-                editName={editName}
-                isConfirmingDelete={confirmDelete === map.id}
-                onStartRename={() => handleStartRename(map.id, map.name)}
-                onEditNameChange={setEditName}
-                onSaveRename={() => handleSaveRename(map.id)}
-                onCancelRename={handleCancelRename}
-                onRequestDelete={() => setConfirmDelete(map.id)}
-                onCancelDelete={() => setConfirmDelete(null)}
-                onConfirmDelete={() => handleDeleteConfirm(map.id)}
-                onSelect={() => setShowControlCenter(true)}
-              />
-            ))}
+        {/* Map List Grid */}
+        <div className="flex-1 overflow-y-auto scrollbar-gold" style={{ minHeight: 0 }}>
+          <div className="max-w-6xl mx-auto p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {battleMaps.map((map) => (
+                <MapCard
+                  key={map.id}
+                  map={map}
+                  isEditing={editingMapId === map.id}
+                  editName={editName}
+                  isConfirmingDelete={confirmDelete === map.id}
+                  onStartRename={() => handleStartRename(map.id, map.name)}
+                  onEditNameChange={setEditName}
+                  onSaveRename={() => handleSaveRename(map.id)}
+                  onCancelRename={handleCancelRename}
+                  onRequestDelete={() => setConfirmDelete(map.id)}
+                  onCancelDelete={() => setConfirmDelete(null)}
+                  onConfirmDelete={() => handleDeleteConfirm(map.id)}
+                  onSelect={() => setShowControlCenter(true)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Map Creator Modal */}
       <MapCreatorModal isOpen={showCreator} onClose={handleCreatorClose} />
-    </div>
-  );
-}
-
-// ── Inline MapCard Component ──────────────────────────────────
-interface MapCardProps {
-  map: import("@/types").BattleMap;
-  isEditing: boolean;
-  editName: string;
-  isConfirmingDelete: boolean;
-  onStartRename: () => void;
-  onEditNameChange: (val: string) => void;
-  onSaveRename: () => void;
-  onCancelRename: () => void;
-  onRequestDelete: () => void;
-  onCancelDelete: () => void;
-  onConfirmDelete: () => void;
-  onSelect: () => void;
-}
-
-function MapCard({
-  map, isEditing, editName, isConfirmingDelete,
-  onStartRename, onEditNameChange, onSaveRename, onCancelRename,
-  onRequestDelete, onCancelDelete, onConfirmDelete, onSelect,
-}: MapCardProps) {
-  const gridTotalCells = map.gridWidth * map.gridHeight;
-  const gridDimFt = `${map.gridWidth * 5}ft x ${map.gridHeight * 5}ft`;
-
-  return (
-    <div className="group glass-gold rounded-2xl overflow-hidden border border-gold/5 hover:border-gold/15 transition-all duration-200 hover:shadow-[0_0_15px_rgba(234,179,8,0.03)]">
-      <div className="corner-ornament corner-tl corner-gold" />
-      <div className="corner-ornament corner-tr corner-gold" />
-
-      {/* Image preview */}
-      <div className="h-28 bg-[#07080d] relative overflow-hidden">
-        {map.imageUrl ? (
-          <img
-            src={map.imageUrl}
-            alt={map.name}
-            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-300"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="text-2xl opacity-30">map</div>
-              <div className="text-[8px] text-surface-700 mt-1">No preview</div>
-            </div>
-          </div>
-        )}
-        {/* Gradient overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b12] via-transparent to-transparent" />
-      </div>
-
-      {/* Content */}
-      <div className="p-3 space-y-2">
-        {/* Name */}
-        {isEditing ? (
-          <div className="flex gap-1">
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => onEditNameChange(e.target.value)}
-              className="flex-1 py-1 px-2 rounded text-[10px] bg-[#07080d] border border-gold/20 text-gold-200 focus:outline-none"
-              autoFocus
-              onKeyDown={(e) => { if (e.key === "Enter") onSaveRename(); if (e.key === "Escape") onCancelRename(); }}
-            />
-            <button onClick={onSaveRename} className="text-[9px] px-1.5 py-0.5 rounded bg-gold-500/10 text-gold-400">Save</button>
-            <button onClick={onCancelRename} className="text-[9px] px-1.5 py-0.5 rounded text-surface-500">X</button>
-          </div>
-        ) : (
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-gold-200 truncate max-w-[180px]">{map.name}</h3>
-              <div className="text-[9px] text-surface-500 mt-0.5">{gridDimFt} &middot; {gridTotalCells.toLocaleString()} cells</div>
-            </div>
-          </div>
-        )}
-
-        {/* Stats row */}
-        <div className="flex items-center justify-between text-[8px] text-surface-600">
-          <div className="flex gap-2">
-            <span>{map.gridSize}px cells</span>
-            {map.notes && <span>&middot; Has notes</span>}
-          </div>
-          <span>Created {new Date(map.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-1.5 pt-1">
-          <button
-            onClick={onSelect}
-            className="flex-1 py-1.5 rounded-lg text-[9px] font-bold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all duration-150"
-          >
-            Open Map
-          </button>
-          <button
-            onClick={onStartRename}
-            className="px-2 py-1.5 rounded-lg text-[9px] text-surface-500 hover:text-surface-300 hover:bg-gold-500/10 active:scale-95 transition-all duration-150"
-            title="Rename"
-          >
-            Rename
-          </button>
-          {isConfirmingDelete ? (
-            <div className="flex gap-1">
-              <button
-                onClick={onConfirmDelete}
-                className="px-2 py-1.5 rounded-lg text-[9px] bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/15 active:scale-95 transition-all duration-150"
-              >
-                Delete
-              </button>
-              <button
-                onClick={onCancelDelete}
-                className="px-2 py-1.5 rounded-lg text-[9px] text-surface-500 hover:text-surface-300 active:scale-95 transition-all"
-              >
-                No
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={onRequestDelete}
-              className="px-2 py-1.5 rounded-lg text-[9px] text-surface-500 hover:text-rose-400 hover:bg-rose-500/10 active:scale-95 transition-all duration-150"
-              title="Delete"
-            >
-              Delete
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+    </AppShell>
   );
 }

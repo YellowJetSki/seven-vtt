@@ -1,9 +1,16 @@
 /**
- * ST R VTT - Map Creator Modal
+ * STᚱ VTT — Map Creator Modal (Premium Glass)
  *
- * Full map creation form for the DM.
- * Fields: name, image URL (with live preview), grid dimensions,
- * grid size (5ft default), image fit, notes.
+ * Premium full-featured map creation form for the DM.
+ * Features:
+ * - Glass gradient modal with gold edge light + corner ornaments
+ * - Live image preview with error handling
+ * - Gallery toggle for local PNG battle map assets
+ * - Grid dimension controls (width/height/size)
+ * - Image fit selector (cover/contain/stretch)
+ * - Notes field for terrain/encounter descriptions
+ * - Escape key dismiss + click-outside close
+ * - Auto-fills map name from selected asset label
  *
  * Integrates with campaignStore.addBattleMap().
  * All maps start with sensible defaults for a standard 5e encounter.
@@ -21,12 +28,13 @@ interface MapCreatorModalProps {
   onClose: () => void;
 }
 
-const DEFAULT_GRID_W = 40;  // 40x30 = 200ft x 150ft standard encounter
+const DEFAULT_GRID_W = 40;
 const DEFAULT_GRID_H = 30;
-const DEFAULT_GRID_SIZE = 50; // 50px per cell
+const DEFAULT_GRID_SIZE = 50;
 
 export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProps) {
   const addBattleMap = useCampaignStore((s) => s.addBattleMap);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -47,6 +55,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
     setImageFit("cover");
     setNotes("");
     setImageError(false);
+    setShowGallery(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -85,26 +94,38 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, handleClose]);
 
+  // Close on click outside
+  const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === overlayRef.current) handleClose();
+  }, [handleClose]);
+
   if (!isOpen) return null;
 
   const imageHasUrl = imageUrl.trim().length > 0;
   const isValid = name.trim().length > 0 && gridWidth >= 1 && gridHeight >= 1 && gridSize >= 10;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="glass-gold rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col relative overflow-hidden border border-gold/10 shadow-2xl shadow-gold-500/5">
+    <div
+      ref={overlayRef}
+      onClick={handleOverlayClick}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+    >
+      <div className="relative bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/90 border border-gold-500/15 rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.55),0_8px_24px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-4 duration-300">
+        {/* Gold edge light */}
+        <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
+
         {/* Corner ornaments */}
-        <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-bl corner-gold corner-gold-glow" />
-        <div className="corner-ornament corner-br corner-gold corner-gold-glow" />
+        <div className="corner-ornament corner-tl corner-gold" />
+        <div className="corner-ornament corner-tr corner-gold" />
+        <div className="corner-ornament corner-bl corner-gold" />
+        <div className="corner-ornament corner-br corner-gold" />
 
         {/* Header */}
-        <div className="shrink-0 p-4 pb-3 border-b border-gold/10">
+        <div className="shrink-0 p-4 pb-3 border-b border-gold-500/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg">🗺</span>
-              <h2 className="text-sm font-black text-gold tracking-tight">Create Battle Map</h2>
+              <h2 className="text-sm font-black text-gold-400 tracking-tight">Create Battle Map</h2>
             </div>
             <button
               onClick={handleClose}
@@ -117,7 +138,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto scrollbar-gold p-4 space-y-4">
           {/* Map Name */}
           <div className="space-y-1.5">
             <label className="text-[10px] uppercase tracking-wider text-gold-400/60 flex items-center gap-1">
@@ -128,7 +149,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Goblin Ambush, Cragmaw Hideout..."
-              className="w-full py-2 px-3 rounded-lg text-sm font-semibold bg-[#07080d] border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+              className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
               autoFocus
             />
           </div>
@@ -150,20 +171,18 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
             </div>
 
             {showGallery ? (
-              <div className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3">
-                {/* PNG Battle Map Assets — local images from /images/ */}
+              <div className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3 space-y-3">
                 <BattleMapAssetPanel
                   onSelect={(asset: AssetEntry) => {
                     setImageUrl(asset.imageUrl || asset.svg);
                     setImageError(false);
                     setShowGallery(false);
-                    // Auto-fill map name from asset label
                     if (!name.trim()) {
                       setName(asset.label);
                     }
                   }}
                 />
-                <div className="mt-2 pt-2 border-t border-white/[0.04]">
+                <div className="pt-3 border-t border-white/[0.04]">
                   <AssetBrowser
                     category="map"
                     onSelect={(asset: AssetEntry) => {
@@ -186,8 +205,8 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
                   type="text"
                   value={imageUrl}
                   onChange={(e) => { setImageUrl(e.target.value); setImageError(false); }}
-                  placeholder="/images/maps/boathouse_enc.png or https://example.com/map.jpg"
-                  className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
+                  placeholder="/images/maps/boathouse_enc.png or https://..."
+                  className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
                 />
                 {/* Live Preview */}
                 {imageHasUrl && (
@@ -240,29 +259,29 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
             <label className="text-[10px] uppercase tracking-wider text-gold-400/60">Grid Dimensions</label>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="text-[8px] text-surface-600">Width (cells)</label>
+                <label className="text-[8px] text-surface-600 mb-0.5 block">Width (cells)</label>
                 <input
                   type="number"
                   min={1}
                   max={200}
                   value={gridWidth}
                   onChange={(e) => setGridWidth(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
-                  className="w-full py-1.5 px-2 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15"
+                  className="w-full py-1.5 px-2 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
                 />
               </div>
               <div className="flex-1">
-                <label className="text-[8px] text-surface-600">Height (cells)</label>
+                <label className="text-[8px] text-surface-600 mb-0.5 block">Height (cells)</label>
                 <input
                   type="number"
                   min={1}
                   max={200}
                   value={gridHeight}
                   onChange={(e) => setGridHeight(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
-                  className="w-full py-1.5 px-2 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15"
+                  className="w-full py-1.5 px-2 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
                 />
               </div>
               <div className="flex-1">
-                <label className="text-[8px] text-surface-600">Cell Size (px)</label>
+                <label className="text-[8px] text-surface-600 mb-0.5 block">Cell Size (px)</label>
                 <input
                   type="number"
                   min={10}
@@ -270,7 +289,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
                   step={10}
                   value={gridSize}
                   onChange={(e) => setGridSize(Math.max(10, Math.min(200, parseInt(e.target.value) || 50)))}
-                  className="w-full py-1.5 px-2 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15"
+                  className="w-full py-1.5 px-2 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
                 />
               </div>
             </div>
@@ -287,13 +306,13 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Terrain notes, encounter layout, lighting conditions..."
               rows={2}
-              className="w-full py-1.5 px-3 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-surface-400 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-none"
+              className="w-full py-1.5 px-3 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-surface-400 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-none transition-all"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 p-4 pt-3 border-t border-gold/10 flex items-center justify-between">
+        <div className="shrink-0 p-4 pt-3 border-t border-gold-500/10 flex items-center justify-between">
           <div className="text-[9px] text-surface-600">
             {gridWidth * gridHeight} cells | {(gridWidth * 5)}ft x {(gridHeight * 5)}ft
           </div>
