@@ -87,17 +87,23 @@ export default function ConditionManager({
   // ── Toggle Condition ──
   const toggleCondition = useCallback(
     (conditionId: string) => {
-      const current = character.conditions || [];
+      const current = Array.isArray(character.conditions) ? character.conditions : [];
       const next = activeSet.has(conditionId as ConditionId)
         ? current.filter((c) => c !== conditionId)
         : [...current, conditionId];
-      updateCharacter(character.id, { conditions: next } as any);
+      updateCharacter(character.id, {
+        conditions: next,
+        updatedAt: Date.now(),
+      } as Partial<PlayerCharacter>);
     },
     [character.id, character.conditions, activeSet, updateCharacter]
   );
 
   const clearAll = useCallback(() => {
-    updateCharacter(character.id, { conditions: [] } as any);
+    updateCharacter(character.id, {
+      conditions: [],
+      updatedAt: Date.now(),
+    } as Partial<PlayerCharacter>);
   }, [character.id, updateCharacter]);
 
   // ── Summary Badges ──

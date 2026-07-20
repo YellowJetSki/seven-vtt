@@ -77,6 +77,8 @@ export interface ConditionModifiers {
  * Pure function — no side effects, no state.
  */
 export function computeConditionModifiers(conditionIds: string[]): ConditionModifiers {
+  // Guard against undefined/null — important for cross-sync state integrity
+  const safeIds = Array.isArray(conditionIds) ? conditionIds : [];
   const modifiers: ConditionModifiers = {
     speedMultiplier: 1,
     speedReduction: 0,
@@ -106,7 +108,10 @@ export function computeConditionModifiers(conditionIds: string[]): ConditionModi
     effectSummary: [],
   };
 
-  const validIds = conditionIds.filter((id): id is ConditionId => !!CONDITIONS[id as ConditionId]);
+  const validIds = safeIds.filter((id): id is ConditionId => !!CONDITIONS[id as ConditionId]);
+
+  // Use a Set to deduplicate effect summary strings
+  const summarySet = new Set<string>();
 
   for (const id of validIds) {
     const c = CONDITIONS[id];
@@ -126,9 +131,9 @@ export function computeConditionModifiers(conditionIds: string[]): ConditionModi
       modifiers.speedMultiplier = Math.min(modifiers.speedMultiplier, 0.5);
     }
     if (c.setsSpeed === 0) {
-      modifiers.effectSummary.push("Speed reduced to 0");
+      summarySet.add("Speed reduced to 0");
     } else if (c.halvesSpeed) {
-      modifiers.effectSummary.push("Speed halved");
+      summarySet.add("Speed halved");
     }
 
     // ── Attack Roll Effects ──
@@ -144,16 +149,16 @@ export function computeConditionModifiers(conditionIds: string[]): ConditionModi
       }
     }
     if (c.appliesDisadvantageTo.includes("attack_rolls")) {
-      modifiers.effectSummary.push("Disadvantage on attack rolls");
+      summarySet.add("Disadvantage on attack rolls");
     }
     if (c.appliesAdvantageTo.includes("attack_rolls")) {
-      modifiers.effectSummary.push("Advantage on attack rolls");
+      summarySet.add("Advantage on attack rolls");
     }
 
     // ── Saving Throw Effects ──
     if (c.appliesDisadvantageTo.includes("saving_throws")) {
       modifiers.savingThrowMod = "disadvantage";
-      modifiers.effectSummary.push("Disadvantage on saving throws");
+      summarySet.add("Disadvantage on saving throws");
     }
     if (c.appliesAdvantageTo.includes("saving_throws")) {
       if (modifiers.savingThrowMod === "disadvantage") {
@@ -161,13 +166,13 @@ export function computeConditionModifiers(conditionIds: string[]): ConditionModi
       } else {
         modifiers.savingThrowMod = "advantage";
       }
-      modifiers.effectSummary.push("Advantage on saving throws");
+      summarySet.add("Advantage on saving throws");
     }
 
     // ── Ability Check Effects ──
     if (c.appliesDisadvantageTo.includes("ability_checks")) {
       modifiers.abilityCheckMod = "disadvantage";
-      modifiers.effectSummary.push("Disadvantage on ability checks");
+      summarySet.add("Disadvantage on ability checks");
     }
     if (c.appliesAdvantageTo.includes("ability_checks")) {
       if (modifiers.abilityCheckMod === "disadvantage") {
@@ -175,49 +180,53 @@ export function computeConditionModifiers(conditionIds: string[]): ConditionModi
       } else {
         modifiers.abilityCheckMod = "advantage";
       }
-      modifiers.effectSummary.push("Advantage on ability checks");
+      summarySet.add("Advantage on ability checks");
     }
 
     // ── Auto-fails ──
     if (c.autoFailsSaves.length > 0) {
       modifiers.autoFailSaves = [...new Set([...modifiers.autoFailSaves, ...c.autoFailsSaves])];
-      modifiers.effectSummary.push(`Auto-fail ${c.autoFailsSaves.join(", ")} saves`);
+      summarySet.add(`Auto-fail ${c.autoFailsSaves.join(", ")} saves`);
     }
     if (c.autoFailsAbilityChecks.length > 0) {
       modifiers.autoFailChecks = [...new Set([...modifiers.autoFailChecks, ...c.autoFailsAbilityChecks])];
-      modifiers.effectSummary.push(`Auto-fail ${c.autoFailsAbilityChecks.join(", ")} checks`);
+      summarySet.add(`Auto-fail ${c.autoFailsAbilityChecks.join(", ")} checks`);
     }
 
     // ── Action / Bonus / Reaction ──
     if (c.preventsActions) {
       modifiers.canTakeActions = false;
-      modifiers.effectSummary.push("Cannot take actions");
+      summarySet.add("Cannot take actions");
     }
     if (c.preventsBonusActions) {
       modifiers.canTakeBonusActions = false;
-      modifiers.effectSummary.push("Cannot take bonus actions");
+      summarySet.add("Cannot take bonus actions");
     }
     if (c.preventsReactions) {
       modifiers.canTakeReactions = false;
-      modifiers.effectSummary.push("Cannot take reactions");
+      summarySet.add("Cannot take reactions");
     }
 
     // ── Concentration ──
-    if (c.name === "Incapacitated" || c.name === "Unconscious" || c.name === "Stunned" || c.name === "Petrified" || c.name === "Paralyzed") {
+    // Breaks concentration: Incapacitated, Stunned, Petrified, Paralyzed, Unconscious
+    if (["incapacitated", "stunned", "petrified", "paralyzed", "unconscious"].includes(c.id)) {
       modifiers.canConcentrate = false;
     }
 
     // ── Speech ──
-    if (c.name === "Petrified" || c.name === "Unconscious" || c.name === "Stunned") {
+    if (["petrified", "unconscious", "stunned"].includes(c.id)) {
       modifiers.canSpeak = false;
     }
 
     // ── Special States ──
-    if (c.name === "Unconscious") modifiers.isUnconscious = true;
-    if (c.name === "Petrified") modifiers.isPetrified = true;
-    if (c.name === "Paralyzed") modifiers.isParalyzed = true;
-    if (c.name === "Stunned") modifiers.isStunned = true;
+    if (c.id === "unconscious") modifiers.isUnconscious = true;
+    if (c.id === "petrified") modifiers.isPetrified = true;
+    if (c.id === "paralyzed") modifiers.isParalyzed = true;
+    if (c.id === "stunned") modifiers.isStunned = true;
   }
+
+  // Convert deduplicated Set back to array
+  modifiers.effectSummary = [...summarySet];
 
   return modifiers;
 }
@@ -237,9 +246,10 @@ export interface ModifiedSpeed {
  * Applies condition speed modifiers to a character's base speed.
  */
 export function applyConditionSpeed(
-  baseSpeed: { walk: number; fly?: number; swim?: number; climb?: number; burrow?: number },
+  baseSpeed: { walk: number; fly?: number; swim?: number; climb?: number; burrow?: number } | undefined,
   modifiers: ConditionModifiers
 ): ModifiedSpeed {
+  const safeSpeed = baseSpeed || { walk: 30 };
   const notes: string[] = [];
 
   const modifySpeed = (base: number | undefined): number | undefined => {
@@ -263,11 +273,11 @@ export function applyConditionSpeed(
   };
 
   return {
-    walk: modifySpeed(baseSpeed.walk) ?? 30,
-    fly: modifySpeed(baseSpeed.fly),
-    swim: modifySpeed(baseSpeed.swim),
-    climb: modifySpeed(baseSpeed.climb),
-    burrow: modifySpeed(baseSpeed.burrow),
+    walk: modifySpeed(safeSpeed.walk) ?? 30,
+    fly: modifySpeed(safeSpeed.fly),
+    swim: modifySpeed(safeSpeed.swim),
+    climb: modifySpeed(safeSpeed.climb),
+    burrow: modifySpeed(safeSpeed.burrow),
     notes,
   };
 }
@@ -288,7 +298,7 @@ export function applyConditionsToDerivations(
   character: PlayerCharacter,
   baseDerivations: CharacterDerivations
 ): ConditionAdjustedDerivations {
-  const conditionModifiers = computeConditionModifiers(character.conditions || []);
+  const conditionModifiers = computeConditionModifiers(character.conditions);
   const modifiedSpeed = applyConditionSpeed(baseDerivations.speed, conditionModifiers);
 
   const summaries = conditionModifiers.effectSummary;
@@ -350,7 +360,8 @@ export interface ConditionDetail {
  * Returns full condition detail including mechanical effects for display.
  */
 export function getConditionDetails(conditionId: ConditionId): ConditionDetail | null {
-  const info = CONDITIONS[conditionId];
+  if (!conditionId) return null;
+  const info = CONDITIONS[conditionId as ConditionId];
   if (!info) return null;
 
   const effects: string[] = [];
