@@ -40,6 +40,14 @@ interface InitiativeCombatantRowProps {
   onToggleDead: (id: string) => void;
   onAddEffect: (id: string, effect: string) => void;
   onRemoveEffect: (id: string, effectId: string) => void;
+  /** Spell name this combatant is concentrating on (if any) */
+  concentrationSpell?: string | null;
+  /** Called to set concentration (spellName, optional DC override) */
+  onSetConcentration?: (id: string, spellName: string, dcOverride?: number) => void;
+  /** Called to break concentration */
+  onBreakConcentration?: (id: string) => void;
+  /** Called when a concentrating combatant takes damage — triggers concentration check prompt */
+  onConcentrationCheck?: (damage: number) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -80,11 +88,19 @@ export default function InitiativeCombatantRow(props: InitiativeCombatantRowProp
     onToggleDead,
     onAddEffect,
     onRemoveEffect,
+    concentrationSpell,
+    onSetConcentration,
+    onBreakConcentration,
+    onConcentrationCheck,
   } = props;
 
   const [quickHpInput, setQuickHpInput] = useState("");
   const [effectInput, setEffectInput] = useState("");
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showConcentrationInput, setShowConcentrationInput] = useState(false);
+  const [concentrationSpellInput, setConcentrationSpellInput] = useState("");
+  const [concentrationDCOverride, setConcentrationDCOverride] = useState(10);
+  const [showDCOverride, setShowDCOverride] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
   const grabHandleRef = useRef<HTMLDivElement>(null);
 
@@ -132,11 +148,49 @@ export default function InitiativeCombatantRow(props: InitiativeCombatantRowProp
 
   const applyHpPreset = useCallback(
     (amount: number) => {
-      if (amount > 0) onDamage(c.id, amount);
-      else onHeal(c.id, Math.abs(amount));
+      if (amount > 0) {
+        onDamage(c.id, amount);
+        // If this combatant is concentrating and taking damage, prompt concentration check
+        if (c.isConcentrating && onConcentrationCheck) {
+          onConcentrationCheck(amount);
+        }
+      } else {
+        onHeal(c.id, Math.abs(amount));
+      }
     },
-    [c.id, onDamage, onHeal]
+    [c.id, onDamage, onHeal, c.isConcentrating, onConcentrationCheck]
   );
+
+  // ── Concentration Handlers ──
+  const handleSetConcentration = useCallback(() => {
+    if (concentrationSpellInput.trim() && onSetConcentration) {
+      onSetConcentration(
+        c.id,
+        concentrationSpellInput.trim(),
+        showDCOverride ? concentrationDCOverride : undefined
+      );
+      setShowConcentrationInput(false);
+      setConcentrationSpellInput("");
+    }
+  }, [c.id, concentrationSpellInput, showDCOverride, concentrationDCOverride, onSetConcentration]);
+
+  const handleToggleConcentrationInput = useCallback(() => {
+    if (c.isConcentrating) {
+      // Currently concentrating — break it
+      if (onBreakConcentration) {
+        onBreakConcentration(c.id);
+      }
+    } else {
+      // Not concentrating — show input
+      setShowConcentrationInput(true);
+      setConcentrationSpellInput("");
+    }
+  }, [c.isConcentrating, c.id, onBreakConcentration]);
+
+  const handleCloseConcentrationInput = useCallback(() => {
+    setShowConcentrationInput(false);
+    setConcentrationSpellInput("");
+  }, []);
 
   const addEffect = useCallback(() => {
     const effect = effectInput.trim();
@@ -145,6 +199,13 @@ export default function InitiativeCombatantRow(props: InitiativeCombatantRowProp
       setEffectInput("");
     }
   }, [effectInput, c.id, onAddEffect]);
+
+  // Get concentration spell name from prop or status effects
+  const concentrationEffectName = concentrationSpell ||
+    c.statusEffects.find((e) => e.effect.toLowerCase().includes("concentrating"))?.effect;
+  const concentrationSpellLabel = concentrationEffectName
+    ? concentrationEffectName.replace(/^concentrating\s*/i, "").trim()
+    : null;
 
   // HP calculations
   const { current, max, temporary } = c.hitPoints;
@@ -248,6 +309,18 @@ export default function InitiativeCombatantRow(props: InitiativeCombatantRowProp
             </span>
           )}
 
+          {/* Concentration badge */}
+          {c.isConcentrating && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleToggleConcentrationInput(); }}
+              className="text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0 bg-gold-500/12 text-gold-400 border border-gold-500/15 hover:bg-gold-500/20 hover:border-gold-500/25 transition-all duration-150 flex items-center gap-1"
+              title={concentrationSpellLabel ? `Concentrating on: ${concentrationSpellLabel}` : "Click to break concentration"}
+            >
+              <span>🕯️</span>
+              <span className="max-w-[50px] truncate">{concentrationSpellLabel || "???"}</span>
+            </button>
+          )}
+
           {/* Status effect dots */}
           {c.statusEffects.length > 0 && (
             <div className="flex items-center gap-0.5 shrink-0">
@@ -327,6 +400,21 @@ export default function InitiativeCombatantRow(props: InitiativeCombatantRowProp
             className="w-20 text-center py-0.5 rounded text-[9px] font-mono bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600"
           />
 
+          {/* Concentration toggle */}
+          {onSetConcentration && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleToggleConcentrationInput(); }}
+              className={`px-1.5 py-0.5 rounded text-[9px] font-bold border active:scale-95 transition-all duration-150 flex items-center gap-1 ${
+                c.isConcentrating
+                  ? "bg-gold-500/12 border-gold-500/20 text-gold-400 hover:bg-gold-500/20"
+                  : "bg-violet-500/8 border-violet-500/8 text-violet-400/70 hover:bg-violet-500/15 hover:text-violet-400"
+              }`}
+            >
+              <span>🕯️</span>
+              <span>{c.isConcentrating ? "Break" : "Focus"}</span>
+            </button>
+          )}
+
           {/* Dead toggle */}
           <button
             onClick={(e) => {
@@ -342,6 +430,61 @@ export default function InitiativeCombatantRow(props: InitiativeCombatantRowProp
             {c.isDead ? "Revive" : "Kill"}
           </button>
         </div>
+
+        {/* ── Concentration Inline Input ── */}
+        {showConcentrationInput && (
+          <div
+            className="mt-1.5 pl-5 flex items-center gap-1.5"
+            style={{ animation: "slide-in-up 0.15s ease-out both" }}
+          >
+            <span className="text-[9px] text-surface-500 shrink-0">🕯️</span>
+            <input
+              type="text"
+              value={concentrationSpellInput}
+              onChange={(e) => setConcentrationSpellInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.stopPropagation(); handleSetConcentration(); }
+                if (e.key === "Escape") { e.stopPropagation(); handleCloseConcentrationInput(); }
+              }}
+              placeholder="Spell name (e.g. Haste)"
+              className="flex-1 px-2 py-1 rounded text-[9px] font-mono bg-[#07080d] border border-violet-500/25 text-violet-300 placeholder:text-surface-600 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20"
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowDCOverride(!showDCOverride); }}
+              className={`text-[7px] px-1 py-0.5 rounded font-bold border transition-all ${
+                showDCOverride ? "bg-violet-500/10 border-violet-500/20 text-violet-400" : "bg-white/[0.03] border-white/[0.06] text-surface-500"
+              }`}
+            >
+              DC
+            </button>
+            {showDCOverride && (
+              <input
+                type="number"
+                value={concentrationDCOverride}
+                onChange={(e) => setConcentrationDCOverride(Math.max(8, Math.min(30, parseInt(e.target.value) || 10)))}
+                className="w-10 px-1 py-0.5 rounded text-[9px] font-mono bg-[#07080d] border border-violet-500/20 text-violet-300 text-center focus:outline-none"
+                min={8}
+                max={30}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleSetConcentration(); }}
+              disabled={!concentrationSpellInput.trim()}
+              className="px-2 py-1 rounded text-[8px] font-bold bg-violet-500/12 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 hover:border-violet-500/30 disabled:opacity-40 disabled:cursor-not-allowed active:scale-90 transition-all duration-150"
+            >
+              Set
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCloseConcentrationInput(); }}
+              className="px-2 py-1 rounded text-[8px] font-bold bg-white/[0.03] text-surface-500 border border-white/[0.06] hover:text-surface-300 active:scale-90 transition-all duration-150"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

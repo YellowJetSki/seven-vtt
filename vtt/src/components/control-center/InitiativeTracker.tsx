@@ -30,6 +30,7 @@ import { useCombatStore } from "@/stores/combatStore";
 import InitiativeHeader from "./InitiativeHeader";
 import InitiativeCombatantRow from "./InitiativeCombatantRow";
 import InitiativeEmptyState from "./InitiativeEmptyState";
+import ConcentrationCheckPopover from "./ConcentrationCheckPopover";
 
 interface InitiativeTrackerProps {
   encounter: CombatEncounter;
@@ -58,6 +59,23 @@ export default function InitiativeTracker({
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const dragOverIdx = useRef<number | null>(null);
   const [sortMode, setSortMode] = useState<"initiative" | "grouped">("initiative");
+
+  // ── Concentration Tracking State ──
+  const [concentrationState, setConcentrationState] = useState<{
+    combatantId: string;
+    spellName: string;
+    dcOverride?: number;
+  } | null>(null);
+  const [concentrationCheckDamage, setConcentrationCheckDamage] = useState<number>(0);
+  const [showConcentrationCheck, setShowConcentrationCheck] = useState(false);
+  const [showConcentrationSet, setShowConcentrationSet] = useState(false);
+  const [concentrationCombatantId, setConcentrationCombatantId] = useState<string | null>(null);
+
+  // Get the combatant currently being focused
+  const concentrationCombatant = useMemo(() => {
+    if (concentrationCombatantId === null) return null;
+    return encounter.combatants.find((c) => c.id === concentrationCombatantId) ?? null;
+  }, [encounter.combatants, concentrationCombatantId]);
 
   // Track current turn combatant by ID (not sorted index) for robust highlighting
   const currentTurnCombatantId = useMemo(() => {
@@ -133,6 +151,54 @@ export default function InitiativeTracker({
     setSortMode((prev) => (prev === "initiative" ? "grouped" : "initiative"));
   }, []);
 
+  // ── Concentration Handlers ──
+  const handleSetConcentration = useCallback(
+    (combatantId: string, spellName: string, dcOverride?: number) => {
+      setConcentrationState({ combatantId, spellName, dcOverride });
+      setConcentrationCombatantId(null);
+      setShowConcentrationSet(false);
+    },
+    []
+  );
+
+  const handleBreakConcentration = useCallback((combatantId: string) => {
+    setConcentrationState((prev) => {
+      if (prev?.combatantId === combatantId) return null;
+      return prev;
+    });
+  }, []);
+
+  const handleConcentrationCheck = useCallback((damage: number) => {
+    setConcentrationCheckDamage(damage);
+    setShowConcentrationCheck(true);
+  }, []);
+
+  const handleCloseConcentrationCheck = useCallback(() => {
+    setShowConcentrationCheck(false);
+    setConcentrationCheckDamage(0);
+  }, []);
+
+  const handleSetConcentrationFromRow = useCallback(
+    (id: string, spellName: string, dcOverride?: number) => {
+      handleSetConcentration(id, spellName, dcOverride);
+    },
+    [handleSetConcentration]
+  );
+
+  const handleBreakConcentrationFromRow = useCallback(
+    (id: string) => {
+      handleBreakConcentration(id);
+    },
+    [handleBreakConcentration]
+  );
+
+  const handleConcentrationCheckFromRow = useCallback(
+    (damage: number) => {
+      handleConcentrationCheck(damage);
+    },
+    [handleConcentrationCheck]
+  );
+
   // Drag ghost state for visual feedback
   const dragGhost = useMemo(() => {
     if (dragIdx === null) return null;
@@ -204,6 +270,10 @@ export default function InitiativeTracker({
               onToggleDead={toggleDead}
               onAddEffect={addStatusEffect}
               onRemoveEffect={removeStatusEffect}
+              concentrationSpell={concentrationState?.combatantId === c.id ? concentrationState.spellName : null}
+              onSetConcentration={handleSetConcentrationFromRow}
+              onBreakConcentration={handleBreakConcentrationFromRow}
+              onConcentrationCheck={handleConcentrationCheckFromRow}
             />
           </div>
         ))}
@@ -221,6 +291,30 @@ export default function InitiativeTracker({
             </span>
           </div>
         </div>
+      )}
+
+      {/* ── Concentration Check Popover ── */}
+      {showConcentrationCheck && concentrationCombatant && (
+        <ConcentrationCheckPopover
+          combatant={concentrationCombatant}
+          damageAmount={concentrationCheckDamage}
+          mode="check"
+          onSetConcentration={handleSetConcentration}
+          onBreakConcentration={handleBreakConcentration}
+          onClose={handleCloseConcentrationCheck}
+        />
+      )}
+
+      {/* ── Concentration Set Popover (triggered from row button) ── */}
+      {showConcentrationSet && concentrationCombatant && (
+        <ConcentrationCheckPopover
+          combatant={concentrationCombatant}
+          damageAmount={0}
+          mode="set_initial"
+          onSetConcentration={handleSetConcentration}
+          onBreakConcentration={handleBreakConcentration}
+          onClose={() => { setShowConcentrationSet(false); setConcentrationCombatantId(null); }}
+        />
       )}
     </div>
   );

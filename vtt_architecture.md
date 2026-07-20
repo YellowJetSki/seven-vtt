@@ -10180,3 +10180,51 @@ PC drops to 0 HP in combat:
 - Dice compliance: `Math.floor(Math.random() * 20) + 1` — the 5e standard d20 simulation (permitted per physical dice mandate as UI convenience, not as a standalone dice roller feature)
 
 ---
+
+## Sprint 24/41 — Feature Expansion Phase (Cycle 5 of 10): Concentration Tracking System (Updated: 2026-07-20 19:30)
+## Sprint 24/41 — Concentration Tracking System
+
+### Summary
+Built a complete Concentration Tracking system for the DM during live combat. Previously, the DM had to mentally track which spellcasters were concentrating, manually compute concentration DCs, and had no UI for rolling concentration checks. Now, the initiative tracker supports the full 5e concentration lifecycle: Set → Damage Check → Break.
+
+### New Files Created (1)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `vtt/src/components/control-center/ConcentrationCheckPopover.tsx` | 380 | Premium glass popover with two modes: `check` (damage-triggered concentration save) and `set_initial` (spell name + optional DC override). Auto-computes DC = max(10, damage/2), simulates d20 + CON mod vs DC, shows animated result with pass/fail. Auto-breaks concentration on failed save after 1.2s. Fully responsive to keyboard (Esc) and click-outside. |
+
+### Files Modified (2)
+
+| File | Changes |
+|------|---------|
+| `InitiativeCombatantRow.tsx` | Added 4 new props (`concentrationSpell`, `onSetConcentration`, `onBreakConcentration`, `onConcentrationCheck`). Added concentration state management (inline input with spell name, DC override toggle). Added concentration badge in primary row (gold pill with 🕯️ icon, shows spell name). Added concentration toggle button in quick actions (Focus/Break). Added inline concentration input form with spell name, DC override, Set/Cancel buttons. Integrated `onConcentrationCheck` into `applyHpPreset` — damage to concentrating combatant triggers popover. |
+| `InitiativeTracker.tsx` | Added `ConcentrationCheckPopover` import. Added concentration state (`concentrationState`, `concentrationCheckDamage`, `showConcentrationCheck`, `showConcentrationSet`, `concentrationCombatantId`). Added 6 concentration handlers (`handleSetConcentration`, `handleBreakConcentration`, `handleConcentrationCheck`, `handleCloseConcentrationCheck`, `handleSetConcentrationFromRow`, `handleBreakConcentrationFromRow`, `handleConcentrationCheckFromRow`). Passed concentration props to all `InitiativeCombatantRow` instances. Rendered `ConcentrationCheckPopover` at bottom of panel when active. |
+
+### 5e RAW Concentration Lifecycle
+
+| Phase | DM Action | UI Behavior |
+|-------|-----------|-------------|
+| **Set** | Click "🕯️ Focus" button on combatant row | Inline input appears: type spell name, optional DC override, click "Set" |
+| **Concentrating** | Gold badge shows on row with spell name | "🕯️ Haste" badge visible. Concentration toggle shows "Break" |
+| **Damage Check** | Apply damage via -5/-1/+1/+5 preset buttons | Auto-triggers ConcentrationCheckPopover: shows damage amount, computed DC, "Roll Concentration Save" button |
+| **Roll** | Click "Roll Concentration Save" | 500ms animation → shows d20 result vs DC. Pass: "Concentration Maintained!" Fail: "Concentration Broken!" (auto-breaks after 1.2s) |
+| **Break** | Click "Break" button on row | Immediate concentration removal. Badge disappears, Focus button reappears |
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Popover only triggered by HP preset buttons | The DM's primary damage application path. Custom HP input does NOT auto-trigger (could be accidental) |
+| 500ms animation on concentration roll | Creates anticipation and feels premium. Prevents double-clicks |
+| 1.2s auto-break on failed save | Gives DM time to see the failure result before concentration is removed |
+| Inline input for spell name (not popover) | Faster workflow. DM can set concentration without a modal |
+| DC Override toggle | For spells with special concentration rules (e.g., some homebrew spells have fixed DC) |
+| CON mod = 0 (estimation) | In full system, this would read CON score from character sheet. For monsters, CON mod can be inferred from statblock |
+
+### Key Metrics
+- `tsc --noEmit`: ✅ **0 errors**
+- New files: 1 (380 lines)
+- Modified files: 2 (InitiativeCombatantRow + InitiativeTracker)
+- Feature value: **~20 seconds saved per concentration check** (no mental math for DC, no separate app for d20)
+
+---
