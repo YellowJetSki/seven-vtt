@@ -191,6 +191,11 @@ function toFullSlots(slots: SpellSlots): SpellSlotsFull {
     const pool = slots[key as keyof SpellSlots];
     if (pool) {
       fullAny[key] = { level: lvl, current: pool.current, max: pool.max };
+    } else {
+      // FIXED (Sprint 17): Ensure all 9 levels are always initialized.
+      // Without this, castSpell on high-level slots (e.g., Lv7+) returns
+      // undefined pool error when the character simply hasn't unlocked them yet.
+      fullAny[key] = { level: lvl, current: 0, max: 0 };
     }
   }
   return full;

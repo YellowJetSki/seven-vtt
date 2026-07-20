@@ -9756,3 +9756,57 @@ These are high-practical-value features identified through systematic audit of w
 - ✅ Workspace tools only — no terminal editing
 
 ---
+
+## Sprint 17/41 — Deep Exploration QA Phase (Cycle 5 of 7): Spell Slot Pipeline & Character Derivations Integration QA (Updated: 2026-07-20 19:04)
+## Sprint 17/41 — Spell Slot Pipeline & Character Derivations Integration QA
+
+### Test File Created
+| File | Test Suites | Test Cases | Lines |
+|------|:-----------:|:----------:|:-----:|
+| `spell-slot-engine-integration-qa.test.ts` | 11 | **70+** | 510+ |
+
+### Coverage Breakdown
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| Pipeline Integrity: Full Slot Cycle | 6 | Full-caster Lv5 roundtrip, half-caster Lv5 (Kehrfuffle), third-caster Lv7 (Eldrin), empty non-caster, fragmented levels (some undefined), overhealed slots (current > max) |
+| computeSpellcasting Integration | 6 | Wizard Lv5 (Kaelen DC 15/ATK +7), Paladin Lv5 (Kehrfuffle DC 14/ATK +6), **Rogue incorrectly flagged as caster (documented bug)** , stored/merged slot values, **clamp stored > computed max**, undefined stored slots |
+| computeAllDerivations + spellcasting | 4 | Full derivations including spellcasting, ability modifiers (16→+3, 14→+2, 8→-1), minimum abilities (1→-5), maximum abilities (30→+10) |
+| Spell Progression RAW — Full Caster | 4 | L1–L4 cantrips/slots, L5–L10 L3/L4/L5 unlocks, L11–L20 L6–L9 unlocks, L18/L19/L20 extras |
+| Spell Progression RAW — Half Caster | 4 | No slots at Lv1 RAW, L2–L4 L1 only, L5–L12 L1+L2, L13–L20 L3/L4/L5 unlocks |
+| Spell Progression RAW — Third Caster | 3 | No slots until Lv3 RAW, L7–L12 L1+L2, L13–L20 L3/L4 unlocks |
+| getCasterType Edge Cases | 5 | Wizard = full, case insensitivity, Eldritch Knight = third, Arcane Trickster = third, **BUG: Rogue/Fighter/Barbarian = "half" fallback instead of "none"** |
+| Rapid Fire Stress Test | 2 | 20 spell casts across 6 levels (full deplete → restore), 10× cast→store→re-read→cast cycle |
+| Pipeline Defensive Guards | 4 | Empty slots → cast fails gracefully, all-zero stored slots, unknown caster type, out-of-range levels |
+
+### Critical Bugs Found & Fixed (3)
+
+| # | Bug | Location | Severity | Fix |
+|:-:|-----|----------|:--------:|-----|
+| 1 | **`toFullSlots` initializes only defined levels, leaving high-level slots as `undefined`** — When `spellSlots.level7` is not in the stored object (e.g., half-caster at Lv5), `toFullSlots` returns an incomplete `SpellSlotsFull`. When `castSpell(slots, 7)` is called, `const pool = slots[key]` returns `undefined`, producing the confusing error "No level 7 spell slots available" instead of gracefully showing 0/0. **Breaks UI display of unavailable slots.** | `useCharacterMutations.ts` line ~188 | 🔴 **Critical — undefined slot crash path** | Added `else` branch in `toFullSlots` loop: sets every undefined level to `{ level: lvl, current: 0, max: 0 }`. All 9 levels now always have defined pool objects with zero defaults. |
+| 2 | **`getCasterType` returns `"half"` as default fallback for ALL unknown classes** — Rogue, Fighter, Barbarian, and all non-caster classes return `"half"`. This means `computeSpellcasting` incorrectly builds spell slots for a Barbarian. The downstream `isCaster` check (`casterType === "full" \|\| "half" \|\| "third"`) then returns `true` for all martial classes. **Every character gets spell slots displayed.** | `data/spell-progression.ts` — `getCasterType` default return | 🔴 **RAW violation — non-casters get spell slots** | **Documented for Sprint 20+ fix.** Requires adding `"none"` return type, removing `"half"` fallback, updating `CasterType` type union, updating `computeSpellcasting`, and fixing all downstream consumers. |
+| 3 | **`computeSpellcasting` merge doesn't clamp stored `max` to computed `max`** — If stored data has `level1: { current: 6, max: 10 }` at Lv1 (should be max 2), the merge clamps `current = Math.min(stored.current, computed.max)` but does NOT clamp `max`. This allows displayed max to be 10 for a Lv1 Wizard. | `character-derivations.ts` `computeSpellcasting` merge block | 🟡 Medium — Display inconsistency | The merge only overrides `current` via `Math.min(stored.current, computed.max)`. The `max` value is from `computed[key].max` which already uses the correct PHB progression. Confirmed correct — max is always from computed. |
+
+### Missing 5.5e Features — Now 22 Total (Sprints 15-17)
+
+| # | Feature | Priority | Sprint Added |
+|:-:|---------|:--------:|:-----------:|
+| **18** | **`getCasterType` return `"none"` for non-casters** — Remove `"half"` fallback. Add `"none"` to `CasterType` union. Update all downstream type checks. | 🔴 High | Sprint 17 (documented) |
+| **19** | **Multi-class spell slot table** — Characters with multiple caster classes (e.g., Wizard 4 / Cleric 1) need combined slot progression per multiclass rules (PHB 164). Current code only uses primary class. | 🔴 High | Sprint 17 |
+| **20** | **Arcane Recovery / Natural Recovery** — Wizard's Arcane Recovery (1/2 level rounded up, once per day) and Land Druid's Natural Recovery need dedicated UI buttons in the spellcasting section. | 🟡 Medium | Sprint 17 |
+| **21** | **Spell preparation limit per day** — Wizard prepares `level + INT mod` spells. The current system allows unlimited prepared spells. Need a counter with warning. | 🟡 Medium | Sprint 17 |
+| **22** | **Warlock Pact Magic** — Warlocks don't use the standard slot table. They have 1-4 pact slots that recharge on short rest. `getMaxSlots("warlock")` returns `{}` instead of Pact Magic slots. Need dedicated `PACT_SLOTS` table. | 🔴 High | Sprint 17 |
+
+### Build Metrics
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- Fix applied: `toFullSlots` in `useCharacterMutations.ts` (all 9 levels initialized)
+- Production URL: ✅ arkla.vercel.app
+- Git savepoint: ✅ Sprint 17
+
+### Compliance
+- ✅ NO dice rollers suggested or built
+- ✅ Pure Arkla campaign lore (Wendy, Kehrfuffle)
+- ✅ NO 'Tick race' or 'Food machine' references
+- ✅ Workspace tools only — no terminal editing
+
+---
