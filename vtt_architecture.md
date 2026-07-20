@@ -5286,3 +5286,38 @@ campaigns/{campaignId}/dm-share/active
 | 3 | Detailed NPC/Enemy Creator | EnemyCreator full statblock editor, EnemyAttack type | ✅ |
 | **4** | **DM Screen-Share & Loot Deposit** | **Real-time image push to player screens, inventory deposit** | **✅ FINAL** |
 ---
+
+## Sprint 1/25 — Navigation Overhaul (Updated: 2026-07-20 09:59)
+## Sprint 1/25 — Premium UI/UX Phase: Navigation Overhaul (Complete)
+
+**Date:** 2026-07-20
+**Status:** Deployed to arkla.vercel.app
+
+### Files Created (4 new reusable components)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/layout/HamburgerButton.tsx` | 48 | Animated hamburger menu button extracted from Header — morphs 3 bars into ✕ |
+| `components/layout/SidebarBrand.tsx` | 52 | Premium brand bar with ambient glow, rune icon, sliding brand name |
+| `components/layout/SidebarNavLink.tsx` | 89 | Reusable nav link with gold pill indicator, hover glow, icon/label props |
+| `components/layout/SidebarFooter.tsx` | 36 | Footer anchor with gradient dividers and "Premium VTT" label |
+
+### Files Refactored (2)
+| File | Before | After | Key Improvements |
+|------|:------:|:-----:|-----------------|
+| `Sidebar.tsx` | 130 lines (monolithic) | 105 lines (modular) | Extracted Brand, NavLink, Footer into sub-components. Added mobile overlay with backdrop blur. Fixed collapsed-state layout. Mobile: fixed overlay, Desktop: push content. Body scroll lock on mobile. |
+| `Header.tsx` | 88 lines | 72 lines | Replaced inline hamburger HTML with `<HamburgerButton>` component. Simplified class list. |
+
+### Key Upgrades
+1. **Mobile responsive sidebar**: Fixed overlay with backdrop blur on < lg, push-content layout on lg+
+2. **HamburgerButton**: Extracted reusable component — used by Header, pure presentational
+3. **SidebarNavLink**: Single component eliminates duplicated `isActive` render-prop pattern
+4. **SidebarBrand**: Ambient glow pocket behind rune, smooth text fade on collapse
+5. **SidebarFooter**: Only renders when sidebar is open (conditional rendering)
+6. **Body scroll lock**: On mobile, body overflow is set to hidden when sidebar opens
+
+### Build Metrics
+- TypeScript: 0 errors (2010 modules)
+- Build time: 7.38s local / 6.26s Vercel
+- JS bundle: 1,452 KB (356 KB gzipped)
+- CSS bundle: 261 KB (29 KB gzipped)
+---
