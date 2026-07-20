@@ -15,17 +15,19 @@
  * transitions: TokenInspector | InitiativeTracker | EncounterPanel.
  */
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import CanvasMapView from "@/components/maps/CanvasMapView";
 import DmToolbar from "./DmToolbar";
 import ControlCenterSidebar from "./ControlCenterSidebar";
 import ControlCenterRightPanel from "./ControlCenterRightPanel";
 import ControlCenterEmptyState from "./ControlCenterEmptyState";
 import CanvasActionBar from "./CanvasActionBar";
+import DmSharePicker from "./DmSharePicker";
 import { useDmControlCenter } from "./useDmControlCenter";
 
 export default function DmControlCenter() {
   const state = useDmControlCenter();
+  const [showSharePicker, setShowSharePicker] = useState(false);
 
   if (!state.activeMap) {
     return <ControlCenterEmptyState />;
@@ -33,6 +35,8 @@ export default function DmControlCenter() {
 
   return (
     <div className="flex h-full bg-obsidian">
+      {/* ─── Share Picker Modal ─────────────────── */}
+      <DmSharePicker isOpen={showSharePicker} onClose={() => setShowSharePicker(false)} />
       {/* ─── Left Sidebar ─────────────────────────── */}
       <ControlCenterSidebar
         activeMapId={state.activeMapId}
@@ -73,6 +77,7 @@ export default function DmControlCenter() {
               onAddPlayerToken={state.handleAddPlayerToken}
               onAddEnemyToken={state.handleAddEnemyToken}
               onBack={state.handleGoBack}
+              onShare={() => setShowSharePicker(true)}
             />
           </div>
         </div>

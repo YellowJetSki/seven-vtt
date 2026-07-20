@@ -5202,3 +5202,87 @@ These attacks are compatible with the existing `CombatEntity` system (Sprints 8-
 | **3** | **Detailed NPC/Enemy Creator** | **EnemyCreator full statblock editor, EnemyAttack type, statblock display** |
 | 4 (next) | DM Screen-Share Override & Loot Deposit | Firebase image sharing + inventory deposit |
 ---
+
+## Sprint 4/4 — DM Screen-Share Override & Loot Deposit (2026-07-20) (Updated: 2026-07-20 08:58)
+## Sprint 4/4 — FINAL: DM Screen-Share Override & Loot Deposit (2026-07-20)
+**Date:** 2026-07-20
+**Phase:** DM Tools, Assets & Encounter — Cycle 4 of 4 (FINAL)
+**Deployed:** arkla.vercel.app
+
+### Mission
+Build a real-time image sharing mechanic using Firebase onSnapshot state. The DM selects an image/map and forces a dismissable fullscreen modal to appear on all active player screens. Tied into the inventory system so the DM can deposit the shared item into a specific player's inventory.
+
+### New Files Created (4)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/firestore/share-service.ts` | 95 | Firebase Firestore service for DM share state CRUD + real-time listener. Document: `campaigns/{id}/dm-share/active` with `DmSharePayload` type (imageUrl, title, description, type, inventoryPayload, targetPlayerId, isDismissed). Functions: `setDmShare()`, `dismissDmShare()`, `listenDmShare()`, `clearDmShare()`. |
+| `components/control-center/DmSharePicker.tsx` | 210 | DM-side modal for pushing images to player screens. Features: URL input with live preview, title, description, type selector (image/map/item/handout), target player dropdown, inventory deposit toggle (name/qty/weight/desc), Send/Dismiss/Deposit buttons. Real-time sync via `listenDmShare()`. |
+| `components/player/PlayerShareReveal.tsx` | 120 | Player-side fullscreen overlay that appears when DM pushes an image. Features: fullscreen image with cinematic gradient overlays, type badge, title, description, inventory deposit notification, "Tap to Dismiss" button via `dismissDmShare()`. Uses `listenDmShare()` onSnapshot listener. |
+
+### Files Modified (4)
+
+| File | Type | Key Changes |
+|------|------|-------------|
+| `lib/firestore-service.ts` | 🔧 Re-exported | Added export of `setDmShare`, `dismissDmShare`, `listenDmShare`, `clearDmShare` and `DmSharePayload` type from new share-service module |
+| `pages/PlayerSheetPage.tsx` | 🔧 Updated | Added `PlayerShareReveal` component as the first element inside the main container — all player tabs now listen for DM share pushes |
+| `components/control-center/DmToolbar.tsx` | 🔧 Enhanced | Added `onShare` prop and "Share" button in the right toolbar group (next to Theatric launcher) |
+| `components/control-center/DmControlCenter.tsx` | 🔧 Updated | Added `useState` for `showSharePicker`, `DmSharePicker` modal integration, and `onShare` callback passed to `DmToolbar` |
+
+### Architecture — Real-Time Share Flow
+
+```
+DM clicks "Share" in DmToolbar
+  └─► DmSharePicker opens
+      ├─► DM enters image URL, title, description, type
+      ├─► Optionally: fills inventory deposit form
+      ├─► Optionally: selects target player
+      └─► "Send to Players" → setDmShare(payload)
+          └─► Firestore: sets document campaigns/{id}/dm-share/active
+              └─► onSnapshot triggers on ALL player tabs (via PlayerShareReveal.listenDmShare)
+                  └─► PlayerShareReveal shows fullscreen overlay
+                      ├─► Image with cinematic gradients
+                      ├─► Title + type badge
+                      ├─► Inventory deposit notification (if applicable)
+                      └─► "Tap to Dismiss" → dismissDmShare()
+
+DM can also:
+  ├─► "Dismiss on Players" → sets isDismissed=true → hides on all screens
+  └─► "Deposit to Target" → writes inventory item to character's inventory array
+```
+
+### Firestore Document Structure
+```
+campaigns/{campaignId}/dm-share/active
+├── id: "active"
+├── imageUrl: string
+├── title: string
+├── description: string
+├── type: "image" | "map" | "item" | "handout"
+├── sharedAt: number (timestamp)
+├── sharedBy: string (DM username)
+├── isDismissed: boolean
+├── inventoryPayload?: { name, quantity, weight, description }
+└── targetPlayerId?: string
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** (2006 modules) |
+| Vite production build | ✅ **6.89s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, built in 35s |
+| ESLint hygiene | 295 errors — all pre-existing parser config issue (TSX/JS mismatch), no new code errors |
+| New files | 3 (share-service.ts, DmSharePicker.tsx, PlayerShareReveal.tsx) |
+| Modified files | 4 (firestore-service.ts, PlayerSheetPage.tsx, DmToolbar.tsx, DmControlCenter.tsx) |
+
+### 4-Sprint DM Tools, Assets & Encounter Phase — Complete
+
+| Sprint | Cycle | Deliverable | Status |
+|:------:|:-----:|-------------|:------:|
+| 1 | Asset Pipeline Migration | 32 PNG assets cataloged, SVG/PNG dual rendering | ✅ |
+| 2 | NPC & Encounter Tab Merger | UnifiedEncounterHub, BestiaryPanel + EncounterComposer | ✅ |
+| 3 | Detailed NPC/Enemy Creator | EnemyCreator full statblock editor, EnemyAttack type | ✅ |
+| **4** | **DM Screen-Share & Loot Deposit** | **Real-time image push to player screens, inventory deposit** | **✅ FINAL** |
+---

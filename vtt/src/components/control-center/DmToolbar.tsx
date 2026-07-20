@@ -26,6 +26,7 @@ interface DmToolbarProps {
   onAddPlayerToken: () => void;
   onAddEnemyToken: () => void;
   onBack: () => void;
+  onShare?: () => void;
 }
 
 export default function DmToolbar({
@@ -42,6 +43,7 @@ export default function DmToolbar({
   onAddPlayerToken,
   onAddEnemyToken,
   onBack,
+  onShare,
 }: DmToolbarProps) {
   const isActive = (mode: PlacementMode) => placementMode === mode;
 
@@ -126,8 +128,17 @@ export default function DmToolbar({
         </button>
       </div>
 
-      {/* Right: Theatric launcher */}
+      {/* Right: Theatric launcher + Share */}
       <div className="flex items-center gap-2 shrink-0">
+        {onShare && (
+          <button
+            onClick={onShare}
+            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-cyan-400 hover:border-cyan-500/15 hover:bg-cyan-500/5 transition-all duration-150 font-medium"
+            title="Share image to player screens"
+          >
+            Share
+          </button>
+        )}
         <LaunchTheatricButton />
       </div>
     </div>

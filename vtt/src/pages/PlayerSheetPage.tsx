@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import PlayerSheet from "@/components/player/PlayerSheet";
+import PlayerShareReveal from "@/components/player/PlayerShareReveal";
 
 export default function PlayerSheetPage() {
   const navigate = useNavigate();
@@ -97,6 +98,9 @@ export default function PlayerSheetPage() {
           </div>
         </div>
       </div>
+
+      {/* ── DM Share Reveal (fullscreen overlay for DM image pushes) ── */}
+      <PlayerShareReveal />
 
       {/* ── Player Sheet (full-screen modal) ── */}
       <div className="flex-1 overflow-hidden animate-in fade-in duration-500 delay-200">

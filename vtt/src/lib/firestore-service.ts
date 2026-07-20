@@ -18,3 +18,5 @@ export {
   listenActiveEncounter,
   addLogEntry, getRecentLogEntries, listenCombatLog, clearCombatLog,
 } from "./firestore/combat-service";
+export { setDmShare, dismissDmShare, listenDmShare, clearDmShare } from "./firestore/share-service";
+export type { DmSharePayload } from "./firestore/share-service";
