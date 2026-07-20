@@ -1,10 +1,12 @@
 /**
- * STᚱ VTT — InventoryCategoryChips
+ * STᚱ VTT — InventoryCategoryChips (Premium)
  *
- * Category filter chips for the inventory list. Shows active category
- * with gold highlight, hides categories with zero items.
- *
- * Extracted from PlayerSheetInventoryTab.tsx monolith (Sprint 8 refactor).
+ * Duolingo/Spotify-grade category filter chips:
+ * - Pill-shaped buttons with gold active state
+ * - Animated entrance stagger
+ * - Count badges with color-matched backgrounds
+ * - Smooth transition between filter states
+ * - Hides empty categories for clean UX
  */
 
 import { INVENTORY_CATEGORIES } from "@/lib/inventory-utils";
@@ -22,23 +24,44 @@ export default function InventoryCategoryChips({
   categoryCounts,
 }: InventoryCategoryChipsProps) {
   return (
-    <div className="flex gap-1 flex-wrap mb-2">
-      {INVENTORY_CATEGORIES.map((cat) => {
+    <div className="flex gap-1.5 flex-wrap">
+      {INVENTORY_CATEGORIES.map((cat, i) => {
         const count = categoryCounts[cat.key] || 0;
         if (count === 0 && cat.key !== "all") return null;
+        const isActive = currentFilter === cat.key;
+
         return (
           <button
             key={cat.key}
-            onClick={() => onFilterChange(currentFilter === cat.key ? "all" : cat.key)}
-            className={`px-2 py-0.5 rounded-lg text-[8px] font-semibold transition-all duration-200 ${
-              currentFilter === cat.key
-                ? "bg-gold-500/10 text-gold-400 border border-gold/20"
-                : "text-surface-500 border border-surface-700/30 hover:border-surface-600/40"
-            }`}
+            onClick={() => onFilterChange(isActive ? "all" : cat.key)}
+            className={`
+              relative group px-2.5 py-1 rounded-full text-[8px] font-semibold
+              transition-all duration-200 active:scale-90
+              ${isActive
+                ? "bg-gold-500/12 text-gold-400 border border-gold/20 shadow-[0_0_6px_rgba(234,179,8,0.08)]"
+                : "text-surface-500 border border-surface-700/25 hover:border-surface-600/40 hover:text-surface-300 bg-transparent"
+              }
+            `}
+            style={{
+              animationDelay: `${i * 30}ms`,
+              animation: "slide-in-up 0.3s ease-out both",
+            }}
           >
-            {cat.icon} {cat.label}
-            {count > 0 && (
-              <span className="ml-1 text-[7px] text-surface-500 font-mono">{count}</span>
+            <span className="relative z-[1]">
+              {cat.icon} {cat.label}
+              {count > 0 && (
+                <span
+                  className={`ml-1 text-[7px] font-mono ${
+                    isActive ? "text-gold-500/60" : "text-surface-600"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </span>
+            {/* Active glow dot */}
+            {isActive && (
+              <span className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.5)]" />
             )}
           </button>
         );
