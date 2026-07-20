@@ -2,20 +2,14 @@
  * STᚱ VTT — Player Card Compact (DM Command Hub — Premium Refactor)
  *
  * A premium, data-rich player hub for the DM-facing party roster.
- * IDENTICAL layout to the player-facing sheet for visual consistency.
- *
- * Now uses shared sub-components (CharacterHpGauge, CharacterStatBadge, ConditionDots)
- * for a unified codebase between player and DM views.
- *
  * Features:
- * - **Live stat strip**: AC (large gold), HP (color-coded with gauge), Init, Speed, PB
- * - **Condition dots**: Small color-coded dots for active conditions (no text clutter)
- * - **HP gauge with controls**: -10/-5/-1/+1/+5/↺ with glow feedback
- * - **Manage gear** (⚙): modal for delete/duplicate/edit/level-up
- * - **Hover elevation**: 3D card lift + gold edge glow + directional light sweep
- * - **Sprint 1 refactor**: ~120 lines → uses CharacterHpGauge, CharacterStatBadge, ConditionDots
- *
- * Zero purple tokens. Color system: gold-amber, emerald, rose, surface.
+ * - Multi-layer glass composition (void bg → edge light → glow → content)
+ * - Hover elevation lift with shadow depth + gold edge glow
+ * - Directional hover glow sweep from top-right
+ * - Shared CharacterHpGauge, CharacterStatBadge, ConditionDots
+ * - Manage gear button (⚙) with fade-in on hover
+ * - Live stat strip: AC (large gold), HP, Init, Speed, PB
+ * - Touch-friendly targets (44px+)
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -62,7 +56,7 @@ export default function PlayerCardCompact({
     <>
       <div
         onClick={() => onOpen(c)}
-        className="group relative bg-gradient-to-b from-[#191b2b]/70 to-[#12131e]/85 rounded-xl border border-white/[0.04] p-3.5 sm:p-4 cursor-pointer active:scale-[0.97] transition-all duration-200 touch-manipulation shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_30px_rgba(234,179,8,0.03)] hover:border-gold-500/12 hover:-translate-y-0.5"
+        className="group relative bg-gradient-to-b from-[#191b2b]/70 to-[#12131e]/85 rounded-xl border border-white/[0.04] p-3.5 sm:p-4 cursor-pointer active:scale-[0.97] transition-all duration-200 ease-out touch-manipulation shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_30px_rgba(234,179,8,0.03)] hover:border-gold-500/12 hover:-translate-y-0.5"
       >
         {/* Top gold edge line */}
         <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-gold-500/0 to-transparent group-hover:via-gold-500/15 transition-all duration-500" />

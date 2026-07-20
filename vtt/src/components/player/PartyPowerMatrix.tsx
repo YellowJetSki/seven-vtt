@@ -1,14 +1,19 @@
 /**
- * ST R VTT - Party Power Matrix
+ * STᚱ VTT — Party Power Matrix (Ventriloc-Grade Data Visualization)
  *
- * A compact, at-a-glance tactical overview of the entire party.
+ * Compact, at-a-glance tactical overview of the entire party.
  * Shows key stats across all characters in a single scrollable matrix.
  *
- * Columns: Name, Race, Class, Lv, AC, HP, Init, PB, Speed
- * Rows: One per character
- * Footer: Average party level, total HP, highest AC, etc.
+ * Premium features:
+ * - Glass gradient surface with edge light
+ * - Color-coded stat columns (AC=cyan, HP=green, Init=gold, PB=amber)
+ * - Role detection badges with per-type colors
+ * - Footer stats with tabular-nums values
+ * - Hover row highlight with gold accent
+ * - Responsive horizontal scroll with gold scrollbar
  *
- * Provides instant cognitive relief for the DM during encounter building.
+ * DM value: Instant cognitive relief during encounter building.
+ * See party AC/HP/Init without opening individual sheets.
  */
 
 import { useMemo } from "react";
@@ -33,12 +38,6 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
     const avgAc = characters.reduce((sum, c) => sum + c.armorClass, 0) / characters.length;
     const totalLevels = characters.reduce((sum, c) => sum + c.level, 0);
 
-    // Class distribution
-    const classDist: Record<string, number> = {};
-    characters.forEach((c) => {
-      classDist[c.class] = (classDist[c.class] || 0) + 1;
-    });
-
     // Roles detection
     const roles = {
       frontline: characters.filter((c) => {
@@ -51,22 +50,25 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
       skill: characters.filter((c) => ["Rogue", "Bard", "Ranger"].includes(c.class)).length,
     };
 
-    return { totalHp, avgLevel, highestAc, avgAc, totalLevels, classDist, roles };
+    return { totalHp, avgLevel, highestAc, avgAc, totalLevels, roles };
   }, [characters]);
 
   if (characters.length === 0) return null;
 
   return (
-    <div className="glass-gold rounded-2xl border border-gold/5 overflow-hidden">
+    <div className="relative bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
+      {/* Top edge light */}
+      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
+
       {/* Header */}
-      <div className="corner-ornament corner-tl corner-gold" />
-      <div className="corner-ornament corner-tr corner-gold" />
-      <div className="px-4 py-2.5 border-b border-gold/10 flex items-center justify-between">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.04]">
         <div className="flex items-center gap-2">
           <span className="text-[12px]">📊</span>
-          <h3 className="text-[11px] font-bold text-gold tracking-tight">Party Power Matrix</h3>
+          <h3 className="text-[11px] font-bold text-white/70 tracking-tight">
+            Party Power Matrix
+          </h3>
         </div>
-        <span className="text-[8px] text-surface-500">
+        <span className="text-[8px] text-surface-500 tabular-nums">
           {characters.length} character{characters.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -75,7 +77,7 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
       <div className="overflow-x-auto scrollbar-gold">
         <table className="w-full text-[10px]">
           <thead>
-            <tr className="text-[8px] uppercase tracking-widest text-surface-600 border-b border-gold/5">
+            <tr className="text-[8px] uppercase tracking-widest text-surface-600 border-b border-white/[0.03]">
               <th className="text-left px-3 py-2 font-black">Name</th>
               <th className="text-left px-2 py-2 font-black">Race</th>
               <th className="text-left px-2 py-2 font-black">Class</th>
@@ -98,7 +100,7 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
               return (
                 <tr
                   key={c.id}
-                  className="border-b border-gold/[0.02] hover:bg-gold-500/[0.02] transition-colors"
+                  className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
                 >
                   <td className="px-3 py-2 font-semibold text-surface-200 truncate max-w-[100px]">
                     {c.name}
@@ -109,13 +111,13 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
                   </td>
                   <td className="px-2 py-2 text-center tabular-nums text-surface-200">{c.level}</td>
                   <td className="px-2 py-2 text-center">
-                    <span className="font-bold text-cyan-300">{c.armorClass}</span>
+                    <span className="font-bold text-cyan-300 tabular-nums">{c.armorClass}</span>
                   </td>
                   <td className="px-2 py-2 text-center tabular-nums">
-                    <span className="font-bold text-green-400">{c.hitPoints.max}</span>
+                    <span className="font-bold text-emerald-400">{c.hitPoints.max}</span>
                   </td>
-                  <td className="px-2 py-2 text-center tabular-nums text-surface-300">{initMod}</td>
-                  <td className="px-2 py-2 text-center tabular-nums text-gold-400">{pb}</td>
+                  <td className="px-2 py-2 text-center tabular-nums text-gold-400">{initMod}</td>
+                  <td className="px-2 py-2 text-center tabular-nums text-amber-400">{pb}</td>
                   <td className="px-2 py-2 text-center text-surface-400">{c.speed.walk}ft</td>
                   <td className="px-2 py-2 text-center tabular-nums text-surface-400">
                     {passivePerception}
@@ -129,32 +131,32 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
 
       {/* Footer stats */}
       {stats && (
-        <div className="border-t border-gold/5 px-4 py-2.5">
+        <div className="border-t border-white/[0.03] px-4 py-2.5">
           <div className="flex items-center gap-4 flex-wrap">
             <StatPill label="Avg Level" value={stats.avgLevel.toFixed(1)} color="text-gold-300" />
-            <StatPill label="Total HP" value={String(stats.totalHp)} color="text-green-400" />
+            <StatPill label="Total HP" value={String(stats.totalHp)} color="text-emerald-400" />
             <StatPill label="Highest AC" value={String(stats.highestAc)} color="text-cyan-300" />
             <StatPill label="Avg AC" value={stats.avgAc.toFixed(1)} color="text-cyan-300/60" />
             <StatPill label="Total Levels" value={String(stats.totalLevels)} color="text-surface-300" />
 
             {/* Role badges */}
             {stats.roles.frontline > 0 && (
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-rose-500/8 border border-rose-500/10 text-rose-400">
+              <span className="inline-flex items-center gap-1 text-[8px] px-1.5 py-0.5 rounded bg-rose-500/8 border border-rose-500/10 text-rose-400">
                 {stats.roles.frontline} Frontline
               </span>
             )}
             {stats.roles.healer > 0 && (
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/8 border border-emerald-500/10 text-emerald-400">
+              <span className="inline-flex items-center gap-1 text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/8 border border-emerald-500/10 text-emerald-400">
                 {stats.roles.healer} Healer
               </span>
             )}
             {stats.roles.arcane > 0 && (
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-indigo-500/8 border border-indigo-500/10 text-indigo-400">
+              <span className="inline-flex items-center gap-1 text-[8px] px-1.5 py-0.5 rounded bg-violet-500/8 border border-violet-500/10 text-violet-400">
                 {stats.roles.arcane} Arcane
               </span>
             )}
             {stats.roles.skill > 0 && (
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/8 border border-amber-500/10 text-amber-400">
+              <span className="inline-flex items-center gap-1 text-[8px] px-1.5 py-0.5 rounded bg-amber-500/8 border border-amber-500/10 text-amber-400">
                 {stats.roles.skill} Skill
               </span>
             )}
