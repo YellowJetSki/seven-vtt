@@ -9306,3 +9306,77 @@ Standalone script that validates the Firestore emulator's document structure:
 - Git checkpoint: ✅ Sprint 10 saved
 
 ---
+
+## Sprint 11/41 — Firebase & Login Phase (Cycle 9 of 10 — FINAL) (Updated: 2026-07-20 18:45)
+## Sprint 11/41 — Firebase & Login Phase FINAL: Cross-Device Auth, Security Rules, Branding (Complete)
+
+### Deliverables
+
+#### 1. Firebase Auth Integration (`LoginPage.tsx`)
+**Before:** LoginPage used Zustand-only `login()` (hardcoded credentials `MikeJello`/`Jello1`). Session did NOT survive page refresh.
+
+**After:** Added `loginFirebaseDm()` call during login. Two-layer auth:
+- **Layer 1 (Fast):** Zustand store `login()` — instant credential check, immediate navigation
+- **Layer 2 (Persistent):** Firebase Auth `signInWithEmailAndPassword` — session survives page refresh via `onAuthStateChanged`
+- Graceful fallback: if Firebase Auth fails but Zustand login succeeds, user still gets access with a warning
+
+#### 2. Firebase Auth `onAuthStateChanged` Listener (`App.tsx`)
+Added `FirebaseAuthGate` component that:
+- Mounts `onFirebaseAuthChanged` listener on app boot
+- On page refresh with valid Firebase session: auto-restores Zustand auth state
+- Sets `firebaseConnected = true` for downstream synchronization hooks
+- Cleans up listener on unmount
+
+#### 3. Full Security Rules Audit + Expansion (`firestore.rules`)
+| Path Added | Access | Justification |
+|------------|--------|---------------|
+| `/combat/active` | DM-write, Auth-read | Combat encounter sync across devices |
+| `/combat/{document=**}` | DM-write, Auth-read | Deep wildcard for combat log subcollection |
+| `/presence/{charId}` | Auth-create/update/delete OWN, Auth-read all | Player heartbeat, DM sees connected players |
+
+All existing rules remain unchanged. New rules follow the same `isAuthenticated()` + `isDm()` pattern.
+
+#### 4. Cross-Device Login Chain (Complete Flow)
+```
+DM logs in on Laptop:
+  1. LoginPage → Zustand login (instant) + Firebase Auth (persistent)
+  2. FirebaseAuthGate listens → restores on page refresh
+  3. App boots → characters load from Firestore → campaign ready
+
+Player logs in on Tablet:
+  1. PlayerLoginPage → select character → enter name → Zustand login
+  2. usePlayerPresence fires heartbeat → written to Firestore /presence/{charId}
+  3. DM sees player appear in ConnectedPlayersPanel (sidebar)
+
+Both devices now share same Firestore campaign data in real-time.
+```
+
+#### 5. Branding Asset Migration (`AppIcon.svg` → `AppIcon.png`)
+All 6 references updated:
+| File | Before | After |
+|------|--------|-------|
+| `index.html` (favicon + apple-touch-icon) | `AppIcon.svg` | `AppIcon.png` |
+| `index.html` (og:image) | `AppIcon.svg` | `AppIcon.png` |
+| `Header.tsx` | `AppIcon.svg` | `AppIcon.png` |
+| `SidebarBrand.tsx` | `AppIcon.svg` | `AppIcon.png` |
+| `LoginPage.tsx` (2 instances) | `AppIcon.svg` | `AppIcon.png` |
+| `PlayerLoginPage.tsx` | `AppIcon.svg` | `AppIcon.png` |
+
+#### 6. Connected Players Panel Integration (`Sidebar.tsx`)
+Added `ConnectedPlayersPanel` above SyncHealthPanel in the sidebar. DM can see live player heartbeat status without navigating to another page.
+
+### Files Modified (6)
+- `vtt/index.html` — favicon + og:image → `AppIcon.png`
+- `vtt/src/pages/LoginPage.tsx` — Firebase Auth integration (2-layer auth)
+- `vtt/src/App.tsx` — `FirebaseAuthGate` with `onFirebaseAuthChanged`
+- `vtt/src/components/layout/Sidebar.tsx` — ConnectedPlayersPanel mount
+- `vtt/firestore.rules` — Added combat active, combat deep wildcard, presence
+- `vtt/src/pages/PlayerLoginPage.tsx` — `AppIcon.png` reference
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2121 modules)
+- Vite build: ✅ 7.24s, 0 warnings
+- Deployed: arkla.vercel.app
+- Git checkpoint: ✅ Sprint 11 saved
+
+---
