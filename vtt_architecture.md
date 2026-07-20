@@ -6479,3 +6479,104 @@ Viewport clamping: left = max(8, min(pos.left, window.innerWidth - 340))
 | = 0% | `bg-rose-500` | `text-rose-500` | Dead |
 
 ---
+
+## Sprint 22/25 — Premium Battlemap Overhaul: Smooth Token Drag-and-Drop (Updated: 2026-07-20 11:45)
+## Sprint 22/25 — Premium Battlemap Overhaul: Smooth Token Drag-and-Drop (2026-07-20)
+
+**Phase:** Premium Battlemap Overhaul Phase (Cycle 2 of 5)
+**Target:** Implement smooth, unrestricted token drag-and-drop for the DM — instant repositioning regardless of turn order, with visual drag preview, grid snapping, and real-time sync.
+
+---
+
+### New Files Created (1)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/canvas/drag-renderer.ts` | ~195 | Canvas rendering for drag-and-drop visual feedback: `drawDropTarget()` — gold-highlighted destination cell with corner accents; `drawDragTrail()` — dashed gold line from origin to ghost; `drawGhostToken()` — semi-transparent token following cursor with gold dashed border; `drawCoordinateReadout()` — `(x, y)` pill near the ghost token. All premium Lusion-grade visuals. |
+
+### Files Modified (4)
+
+| File | Key Changes |
+|------|-------------|
+| `lib/canvas/token-renderer.ts` | **Enhanced token drawing**: Gold glow ring on selected tokens (animated pulse via `time` parameter), `hexToRgba` fill for ghosted invisible tokens, type-based border colors (player=gold, enemy=red, npc=green), status marker colors mapped to condition types (12 conditions mapped to distinct colors), token icon rendering inside circle, rounded HP bar corners, shadow for label readability. |
+| `lib/canvas/lighting-renderer.ts` | **Drag preview layer**: Added `DragPreviewState` integration to render state. New rendering order: tokens (excl. dragged) → drag preview (drop target → trail → ghost token → coordinate readout). Drag preview rendered DURING the canvas transform so coordinates are pixel-perfect. |
+| `components/maps/CanvasMapView.tsx` | **Full drag integration**: Integrated `useTokenDrag` hook with canvas mouse handlers. Smart pan/drag detection: token hit starts a drag, no hit starts canvas pan. 60fps animation loop via `requestAnimationFrame` for selected token pulse. Drag preview state synced to render state. `onMoveToken` prop forwarded to parent. New `cursor-grab`/`cursor-grabbing` classes for cursor feedback. |
+| `components/control-center/DmControlCenter.tsx` | **Drag relay**: Passed `onMoveToken={state.handleMoveToken}` to `CanvasMapView`. Removed old `handleMouseDown/Move/Up` canvas event handlers (now fully managed by CanvasMapView). |
+
+### Architecture — Token Drag-and-Drop Data Flow
+
+```
+DM mousedown on canvas
+  └─► CanvasMapView.handleMouseDown(e)
+      ├─► useTokenDrag.handleMouseDown(canvasX, canvasY, panX, panY, zoom)
+      │   ├─► hitTestToken() → circle collision detection (reverse iterator)
+      │   ├─► Hit? → store activeTokenId, offset, start position
+      │   └─► No hit? → start canvas pan
+      └─► isCanvasDraggingRef = false (token drag) / true (canvas pan)
+
+DM moves mouse
+  └─► CanvasMapView.handleMouseMove(e)
+      ├─► useTokenDrag.handleMouseMove()
+      │   ├─► DRAG_THRESHOLD (5px) → prevents accidental drags
+      │   ├─► Past threshold → snapToGrid(mapX, mapY) → {gridX, gridY}
+      │   ├─► Clamp to map boundaries (0 to gridWidth)
+      │   └─► setDragState({ gridX, gridY, isDragging: true })
+      │
+      ├─► useEffect syncs dragState → stateRef.dragPreview
+      │   ├─► dragPreview = { ghostGridX, ghostGridY, originGridX, originGridY }
+      │   └─► stateRef.dragTokenColor, dragTokenLabel, dragTokenSize
+      │
+      └─► Canvas renders (60fps RAF loop):
+          ├─► drawTokens(all except dragged token)
+          ├─► drawDropTarget(ghostGridX, ghostGridY, gridSize)
+          ├─► drawDragTrail(origin, ghost, gridSize)
+          ├─► drawGhostToken(color, ghostGridX, ghostGridY, gridSize)
+          └─► drawCoordinateReadout(ghostGridX, ghostGridY, gridSize)
+
+DM releases mouse
+  └─► CanvasMapView.handleMouseUp(e)
+      ├─► useTokenDrag.handleMouseUp()
+      │   ├─► If clicked (no drag) → fire onTokenClick()
+      │   └─► If dragged → fire onMoveToken(tokenId, gridX, gridY)
+      │       └─► DmControlCenter → useDmControlCenter.handleMoveToken()
+      │           └─► useTokenMutations.moveToken()
+      │               ├─► Zustand: updateMapToken() (instant UI)
+      │               └─► Firestore: setMapToken() (async, real-time sync)
+      │
+      └─► Reset drag state → dragPreview = null → canvas re-renders clean
+```
+
+### Drag Preview Visual Layer
+
+```
+Rendered on canvas (post-transform, pixel-perfect coordinates):
+
+origin (token's pre-drag cell)                ghost (cursor position)
+    ┌────────┐                                    ┌────────┐
+    │        │     ─ ─ ─ (dashed gold trail) ─ ─ ─│        │
+    │   🛡   │────────────────────────────────────▶│   🛡   │
+    │        │     (origin → ghost trail line)     │  40%   │
+    └────────┘                                    └────────┘
+                                                   opacity
+                                                    (x, y)
+                                                ┌───readout──┐
+                                                │  (15, 8)   │
+                                                └────────────┘
+                               Gold corner accents
+                               on the drop target cell
+```
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (2033 modules) |
+| Vite production build | ✅ **7.76s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.55s build |
+| New files | 1 (`drag-renderer.ts` — 195 lines, single purpose) |
+| Modified files | 4 (token-renderer.ts, lighting-renderer.ts, CanvasMapView.tsx, DmControlCenter.tsx) |
+| Component isolation | ✅ Each file < 300 lines, single responsibility |
+| No breaking changes | ✅ UseTokenDrag hook preserves existing API, CanvasMapView uses optional props |
+| Premium design tokens | ✅ Gold drop target, gold dashed trail, gold ghost border, gold coordinate readout |
+
+---
