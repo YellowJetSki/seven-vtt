@@ -243,6 +243,28 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
         </div>
       </div>
 
+      {/* Attacks (structured from EnemyCreator) */}
+      {enemy.attacks && enemy.attacks.length > 0 && (
+        <div className="rounded-xl bg-obsidian-mid/60 border border-white/[0.04] p-3">
+          <div className="text-[9px] uppercase tracking-wider text-surface-600 font-bold mb-2">Attacks</div>
+          <div className="space-y-1.5">
+            {enemy.attacks.map((att) => (
+              <div key={att.id} className="flex items-center gap-2 text-[10px]">
+                <span className="text-surface-200 font-semibold">{att.name}</span>
+                <span className="text-gold-400">+{att.attackBonus}</span>
+                <span className="text-surface-500">{att.damageDice} {att.damageType}</span>
+                <span className="text-surface-600">{att.range}</span>
+                {att.properties.length > 0 && (
+                  <span className="text-[8px] text-surface-600">
+                    {att.properties.join(", ")}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* CR / XP / PB */}
       <div className="flex items-center gap-3 text-[10px]">
         <span className="px-2 py-0.5 rounded bg-gold-500/10 border border-gold/15 text-gold-400 font-semibold">

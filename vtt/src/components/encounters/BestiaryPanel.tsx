@@ -17,7 +17,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import EnemyList from "@/components/encounters/EnemyList";
 import EnemyStatblock from "@/components/encounters/EnemyStatblock";
-import EnemyQuickCreate from "@/components/encounters/EnemyQuickCreate";
+import EnemyCreator from "@/components/encounters/EnemyCreator";
 import type { EnemyDoc } from "@/types";
 
 interface BestiaryPanelProps {
@@ -158,8 +158,8 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
         </div>
       )}
 
-      {/* ── Quick Create Modal ── */}
-      <EnemyQuickCreate
+      {/* ── Enemy Creator Modal (replaces old Quick Create) ── */}
+      <EnemyCreator
         isOpen={showQuickCreate}
         onClose={() => setShowQuickCreate(false)}
         onCreated={handleCreated}

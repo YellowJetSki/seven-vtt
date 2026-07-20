@@ -5123,3 +5123,82 @@ All CR calculations use the existing lib/mechanics/encounter-cr.ts engine.
 - `pages/Encounters.tsx` — No longer imported by router (but preserved as file for reference)
 - Sidebar had duplicate nav items — now single "Bestiary & Encounters"
 ---
+
+## Sprint 3/4 — Detailed NPC/Enemy Creator Overhaul (2026-07-20) (Updated: 2026-07-20 08:53)
+## Sprint 3/4 — Detailed NPC/Enemy Creator Overhaul (2026-07-20)
+**Date:** 2026-07-20
+**Phase:** DM Tools, Assets & Encounter — Cycle 3 of 4
+**Deployed:** arkla.vercel.app
+
+### Mission
+Overhaul the NPC/Enemy creation suite to be as robust as the Player creator. Enemies now have full stat blocks (Ability Scores, AC, Speed) and the ability to attach specific attacks using the unified item object structure.
+
+### Files Created (1)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/encounters/EnemyCreator.tsx` | ~520 | Full statblock editor replacing EnemyQuickCreate. Sections: Basic Info (name, type, size, speed, CR, AC, HP, PB, XP), Ability Scores (6 ability cards with inline edit, Standard Array, Roll 4d6), Attacks (add/edit/remove structured attacks using EnemyAttack type), Defenses (tag-based damage resistances, immunities, condition immunities), Senses & Languages, Traits & Abilities (traits, actions, reactions, special abilities, legendary actions). |
+
+### Files Modified (3)
+
+| File | Type | Key Changes |
+|------|------|-------------|
+| `types/enemy.ts` | 🔧 Enhanced | Added `EnemyAttack` interface (id, name, attackBonus, damageDice, damageType, isMelee, isRanged, range, properties, description). Added `attacks?: EnemyAttack[]` field to `EnemyDoc`. |
+| `components/encounters/BestiaryPanel.tsx` | 🔧 Updated | Replaced `EnemyQuickCreate` import/usage with new `EnemyCreator` component. |
+| `components/encounters/EnemyStatblock.tsx` | 🔧 Updated | Added "Attacks" section that renders structured attacks when present. Shows attack name, bonus, damage, range, and properties per attack. |
+
+### EnemyCreator Features vs EnemyQuickCreate (Before/After)
+
+| Feature | EnemyQuickCreate (Before) | EnemyCreator (After) |
+|---------|:------------------------:|:--------------------:|
+| Name, Type, Size | ✅ | ✅ Enhanced |
+| CR, AC, HP | ✅ | ✅ + Auto-fill from CR, avg AC/HP display |
+| Speed | ❌ | ✅ |
+| Ability Scores (6) | ❌ (hardcoded 10s) | ✅ Inline edit, Standard Array, Roll 4d6 |
+| Attack Manager | ❌ | ✅ Add/edit/remove structured attacks |
+| Damage Resistances/Immunities | ❌ | ✅ TagInput with autocomplete |
+| Condition Immunities | ❌ | ✅ TagInput |
+| Senses | ❌ | ✅ |
+| Languages | ❌ | ✅ |
+| Traits/Actions/Reactions | ❌ (only textarea strings) | ✅ Dedicated sections |
+| Special/Legendary Actions | ❌ | ✅ |
+| PB + XP display | ❌ | ✅ Auto-computed from CR |
+| Edit mode (existing enemy) | ❌ | ✅ |
+| Save to store | ✅ | ✅ Enhanced with edit mode |
+
+### Attack Structure (Unified Entity Integration)
+```
+EnemyAttack (new type)
+├── id, name
+├── attackBonus: number    → e.g. +7
+├── damageDice: string     → e.g. "2d6"
+├── damageType: string     → e.g. "slashing"
+├── isMelee / isRanged     → booleans
+├── range: string          → e.g. "5 ft" or "60/120 ft"
+├── properties: string[]   → e.g. ["Finesse", "Light"]
+└── description?: string
+```
+
+These attacks are compatible with the existing `CombatEntity` system (Sprints 8-12) for future combat tab injection.
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`npx tsc --noEmit`) | ✅ **0 errors** (2004 modules) |
+| Vite production build | ✅ **7.12s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, built in 40s |
+| ESLint hygiene | 291 errors — all pre-existing parser config issue (TSX/JS mismatch), no new code errors |
+| `EnemyCreator.tsx` created | ✅ Full statblock editor with all 10 sections |
+| `EnemyAttack` type added | ✅ Structured attack compatible with CombatEntity |
+| Attacks display in statblock | ✅ Added to EnemyStatblock renderer |
+| BestiaryPanel uses EnemyCreator | ✅ Replaces old EnemyQuickCreate |
+
+### 4-Sprint Progress
+| Sprint | Cycle | Deliverable |
+|:------:|:-----:|-------------|
+| 1 | Asset Pipeline Migration | 32 PNG assets cataloged, SVG/PNG dual rendering |
+| 2 | NPC & Encounter Tab Merger | UnifiedEncounterHub page, BestiaryPanel + EncounterComposer |
+| **3** | **Detailed NPC/Enemy Creator** | **EnemyCreator full statblock editor, EnemyAttack type, statblock display** |
+| 4 (next) | DM Screen-Share Override & Loot Deposit | Firebase image sharing + inventory deposit |
+---
