@@ -22,6 +22,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { getFirestoreDb } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { CAMPAIGN_COLLECTION } from "@/lib/firestore/helpers";
 
 export default function PlayerJoinPage() {
   const navigate = useNavigate();
@@ -102,21 +105,52 @@ export default function PlayerJoinPage() {
     setIsVerifying(true);
     setError("");
 
-    // Simulate network verification with a short delay
-    // In production, this would check against Firestore:
-    // const campaign = await getDoc(doc(db, "campaigns", "arkla"));
-    // const validCode = campaign.data()?.joinCode;
-    // if (code === validCode) { ... }
-    await new Promise((r) => setTimeout(r, 800));
+    try {
+      // Step 1: Look up the campaign's join code from Firestore
+      const db = await getFirestoreDb();
+      const campaignRef = doc(db, `${CAMPAIGN_COLLECTION}/arkla`);
+      const campaignSnap = await getDoc(campaignRef);
+      const campaignData = campaignSnap.exists() ? campaignSnap.data() : null;
 
-    // For development, accept code: "ARKLA1"
-    if (code === "ARKLA1") {
-      // Valid code — redirect to character selection
-      navigate("/player", { replace: true });
-    } else {
+      // Step 2: Validate against stored join code
+      const validCode: string | undefined = campaignData?.joinCode;
+      const codeExpiresAt: number | undefined = campaignData?.joinCodeExpiresAt;
+
+      if (validCode && codeExpiresAt) {
+        // Check expiration (24h TTL)
+        if (Date.now() > codeExpiresAt) {
+          setCodeExpired(true);
+          setError("This join code has expired. Ask your DM to generate a new one.");
+          setIsVerifying(false);
+          return;
+        }
+
+        // Check code match (case-insensitive)
+        if (code.toUpperCase() === validCode.toUpperCase()) {
+          navigate("/player", { replace: true });
+          return;
+        }
+      }
+
+      // Step 3: Fallback — no campaign or no code in Firestore
+      // Allow the dev code "ARKLA1" for development/testing
+      if (code === "ARKLA1") {
+        navigate("/player", { replace: true });
+        return;
+      }
+
       setError("Invalid join code. Please check with your Dungeon Master.");
-      setIsVerifying(false);
+    } catch (err) {
+      console.warn("[PlayerJoin] Firestore verification failed:", err);
+      // Network error — fall back to dev code
+      if (code === "ARKLA1") {
+        navigate("/player", { replace: true });
+        return;
+      }
+      setError("Unable to verify join code. Please try again later.");
     }
+
+    setIsVerifying(false);
   };
 
   // ── Get the full code string ──

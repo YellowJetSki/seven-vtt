@@ -5,6 +5,7 @@ import { useFirestoreCombatSync } from "@/hooks/useFirestoreCombatSync";
 import { useFirestoreEntitySync } from "@/hooks/useFirestoreEntitySync";
 import { useAuthStore } from "@/stores/authStore";
 import { onFirebaseAuthChanged, hasValidConfig } from "@/lib/firebase";
+import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import LoginPage from "./pages/LoginPage";
 import PlayerLoginPage from "./pages/PlayerLoginPage";
 import PlayerJoinPage from "./pages/PlayerJoinPage";
@@ -58,6 +59,7 @@ export default function App() {
     <>
       <FirestoreSyncGate />
       <FirebaseAuthGate />
+      <ConnectionBanner />
 
     <Routes>
       {/* Public routes */}

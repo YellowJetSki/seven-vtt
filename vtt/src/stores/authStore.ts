@@ -20,7 +20,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { hasValidConfig, loginFirebaseDm as firebaseLogin } from "@/lib/firebase";
+import { hasValidConfig, loginFirebaseDm as firebaseLogin, logoutFirebase } from "@/lib/firebase";
 import type { AuthState, UserRole } from "@/types";
 
 const STORAGE_KEY = "str-vtt-auth";
@@ -92,6 +92,10 @@ export const useAuthStore = create<AuthStateShape & AuthActions>()(
       },
 
       logout: () => {
+        // Also sign out from Firebase Auth for cross-device session termination
+        if (hasValidConfig()) {
+          logoutFirebase().catch(() => {}); // Best-effort Firebase sign out
+        }
         set({
           state: "unauthenticated",
           role: null,

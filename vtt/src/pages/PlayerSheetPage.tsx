@@ -18,6 +18,7 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import PlayerSheet from "@/components/player/PlayerSheet";
 import PlayerShareReveal from "@/components/player/PlayerShareReveal";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { usePlayerPresence } from "@/hooks/usePresence";
 
 export default function PlayerSheetPage() {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ export default function PlayerSheetPage() {
   const logout = useAuthStore((s) => s.logout);
 
   const character = characters.find((c) => c.id === characterId);
+
+  // ── Player presence heartbeat (broadcast to DM when viewing sheet) ──
+  usePlayerPresence();
 
   // ── Loading: persisted login, awaiting Firestore sync ──
   if (!character && characterId && !firebaseConnected && !syncExhausted) {
