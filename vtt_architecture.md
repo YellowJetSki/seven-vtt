@@ -7668,3 +7668,86 @@ A floating glass modal overlay with 12 collapsible sections:
 | 15 | Condition Quick-Toggle | 16-condition management with concentration |
 | **16** | **DM Quick Reference** | **12-section overlay accessible from any page** |
 ---
+
+## Sprint 17/30 — Encounter Launch Modal (Updated: 2026-07-20 13:29)
+## Sprint 17/30 — Real-Play D&D Mechanics: Encounter Launch Flow (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 5 OF 10
+**Target:** Bridge the gap between the Encounters page and Battle Maps — enable one-click deployment of encounter monsters as map tokens on a selected battle map
+**Tabletop Value:** Eliminates the multi-step workflow of manually placing enemy tokens. DMs can go from "I want to run this encounter" to "all enemies are on the grid" in seconds.
+
+### New Component: `EncounterLaunchModal.tsx` (390 lines)
+
+A premium modal that handles the encounter-to-map deployment pipeline:
+
+| Feature | Detail |
+|---------|--------|
+| **Map selector** | Lists available battle maps with grid dimensions |
+| **Auto-placement algorithm** | Spreads enemy tokens across the upper-right quadrant of the map grid |
+| **Size-aware placement** | Respects creature size (Tiny→Medium=2 cells, Large=3, Huge=4, Gargantuan=5) |
+| **Color-coded tokens** | Per creature type: Humanoid=amber, Beast=red, Dragon=rose, Undead=violet, etc. |
+| **HP integration** | Sets token HP from enemy doc's max hit points |
+| **Deploy progress** | Animated progress bar during token creation |
+| **Success animation** | Ping animation + auto-redirect to Battle Maps |
+| **Error handling** | Try/catch wrapper + retry button |
+| **Empty maps workflow** | When no maps exist, navigates directly to Battle Maps to create one |
+| **Single-map auto-deploy** | When exactly 1 map exists, auto-selects it (ready for quick launch) |
+
+### Files Modified (1)
+
+| File | Changes |
+|------|---------|
+| `EncounterComposer.tsx` | Added `EncounterLaunchModal` import + state + integration. Replaced direct navigation on "Launch" with modal flow. Launch now checks for existing maps first. |
+
+### Deploy Algorithm (`calculateTokenPlacements`)
+
+```
+Input: enemyGroups[], enemies[], targetMap
+Output: Array of { enemyId, tokens: [{x, y}] }
+
+Strategy:
+  1. Place enemies in upper-right quadrant (x: 50% across, y: 10% down)
+  2. Each enemy group gets a cluster of 3 columns wide
+  3. Groups spaced 4 cells apart horizontally
+  4. Individual tokens within a group spread in rows of 3
+  5. Respects creature size for minimum cell spacing
+  6. Clamped to map boundaries to prevent overflow
+```
+
+### Token Color Mapping
+
+| Creature Type | Color | Hex |
+|---------------|-------|:---:|
+| Humanoid | Amber | `#f59e0b` |
+| Beast | Red | `#ef4444` |
+| Dragon | Rose | `#e11d48` |
+| Undead | Violet | `#8b5cf6` |
+| Fiend | Red-600 | `#dc2626` |
+| Celestial | Gold | `#fde047` |
+| Fey | Violet | `#a78bfa` |
+| Giant | Orange | `#f97316` |
+| Monstrosity | Lime | `#84cc16` |
+| Construct | Slate | `#94a3b8` |
+| Elemental | Cyan | `#06b6d4` |
+| Ooze | Green | `#22c55e` |
+| Plant | Emerald | `#15803d` |
+| Aberration | Purple | `#a855f7` |
+| Custom | Stone | `#78716c` |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (355 parser errors — all pre-sprint, +1 from new file)
+- Git checkpoint: ✅ Sprint 17 saved
+- Architecture ledger: ✅ Updated
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 13 | Combat HP HUD | Floating HP management panel from Player Cards |
+| 14 | Loot Deposit Panel | Item/currency deposit with presets + undo |
+| 15 | Condition Quick-Toggle | 16-condition management with concentration tracker |
+| 16 | DM Quick Reference | 12-section rules overlay accessible from any page |
+| **17** | **Encounter Launch Flow** | **One-click deploy of enemies as map tokens** |
+---
