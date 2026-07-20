@@ -224,25 +224,24 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* ── DM QUICK REFERENCE TOGGLE ── */}
-        <div className={`px-2 pb-2 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+        {/* ── DM COMBAT WRAP-UP TOGGLE (Sprint 29) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button
             onClick={() => {
-              // Dispatch a custom event that the AppShell will catch
-              window.dispatchEvent(new CustomEvent("toggle-dm-quickref"));
+              window.dispatchEvent(new CustomEvent("toggle-dm-combat-wrapup"));
             }}
             className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-gold-500/8 hover:border-gold/10 ${
               sidebarOpen
                 ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
                 : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
             }`}
-            title="DM Quick Reference"
-            aria-label="Toggle DM Quick Reference"
+            title="Combat Wrap-Up — XP, Loot, Condition Clearing"
+            aria-label="Toggle Combat Wrap-Up"
           >
-            <span className="text-sm">📋</span>
+            <span className="text-sm">🏆</span>
             {sidebarOpen && (
               <span className="text-[9px] text-surface-400 hover:text-gold-400 transition-colors truncate">
-                Quick Reference
+                Combat Wrap-Up
               </span>
             )}
           </button>

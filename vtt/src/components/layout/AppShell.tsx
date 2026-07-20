@@ -30,6 +30,7 @@ import DmPartyRestOverlay from "@/components/control-center/DmPartyRestOverlay";
 import DmCombatConditionBar from "@/components/control-center/DmCombatConditionBar";
 import DmQuickActionPopover from "@/components/control-center/DmQuickActionPopover";
 import DmNpcQuickCreatePopover from "@/components/control-center/DmNpcQuickCreatePopover";
+import DmCombatWrapUpOverlay from "@/components/control-center/DmCombatWrapUpOverlay";
 import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -50,6 +51,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setQuickActions = useUIStore((s) => s.setQuickActions);
   const showNpcQuickCreate = useUIStore((s) => s.showNpcQuickCreate);
   const setNpcQuickCreate = useUIStore((s) => s.setNpcQuickCreate);
+  const showCombatWrapUp = useUIStore((s) => s.showCombatWrapUp);
+  const setCombatWrapUp = useUIStore((s) => s.setCombatWrapUp);
   const role = useAuthStore((s) => s.role);
 
   // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
@@ -101,6 +104,16 @@ export default function AppShell({ children }: AppShellProps) {
     window.addEventListener("toggle-dm-npc-quick-create", handleToggleNpcQuickCreate);
     return () => window.removeEventListener("toggle-dm-npc-quick-create", handleToggleNpcQuickCreate);
   }, [handleToggleNpcQuickCreate]);
+
+  // ── Listen for combat wrap-up toggle event ──
+  const handleToggleCombatWrapUp = useCallback(() => {
+    setCombatWrapUp(!showCombatWrapUp);
+  }, [setCombatWrapUp, showCombatWrapUp]);
+
+  useEffect(() => {
+    window.addEventListener("toggle-dm-combat-wrapup", handleToggleCombatWrapUp);
+    return () => window.removeEventListener("toggle-dm-combat-wrapup", handleToggleCombatWrapUp);
+  }, [handleToggleCombatWrapUp]);
 
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
@@ -195,6 +208,16 @@ export default function AppShell({ children }: AppShellProps) {
         <DmNpcQuickCreatePopover
           isOpen={showNpcQuickCreate}
           onClose={() => setNpcQuickCreate(false)}
+        />
+      )}
+
+      {/* ── DM Combat Wrap-Up Overlay ──
+          Encounter resolution: XP awards, loot distribution, condition clearing,
+          combat stats summary — all in one place after combat ends */}
+      {role === "dm" && (
+        <DmCombatWrapUpOverlay
+          isOpen={showCombatWrapUp}
+          onClose={() => setCombatWrapUp(false)}
         />
       )}
     </div>

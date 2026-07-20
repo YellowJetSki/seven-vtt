@@ -34,6 +34,7 @@ interface UIState {
   showCombatConditions: boolean;
   showQuickActions: boolean;
   showNpcQuickCreate: boolean;
+  showCombatWrapUp: boolean;
 }
 
 interface UIActions {
@@ -55,6 +56,8 @@ interface UIActions {
   setQuickActions: (show: boolean) => void;
   /** Set DM NPC Quick Create overlay visibility */
   setNpcQuickCreate: (show: boolean) => void;
+  /** Set DM Combat Wrap-Up overlay visibility */
+  setCombatWrapUp: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -74,6 +77,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showCombatConditions: false,
   showQuickActions: false,
   showNpcQuickCreate: false,
+  showCombatWrapUp: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -90,6 +94,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setCombatConditions: (show: boolean) => set({ showCombatConditions: show }),
   setQuickActions: (show: boolean) => set({ showQuickActions: show }),
   setNpcQuickCreate: (show: boolean) => set({ showNpcQuickCreate: show }),
+  setCombatWrapUp: (show: boolean) => set({ showCombatWrapUp: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
