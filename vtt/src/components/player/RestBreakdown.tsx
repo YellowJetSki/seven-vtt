@@ -92,7 +92,16 @@ export default function RestBreakdown({ character, onClose, initialMode = "short
     [availHd]
   );
 
-  const conMod = useMemo(() => Math.floor((character.constitution - 10) / 2), [character.constitution]);
+  const conMod = useMemo(
+    () => Math.floor((character.constitution - 10) / 2),
+    [character.constitution]
+  );
+
+  // Average heal per die (used for display only — actual heal from engine)
+  const avgHealPerDie = useMemo(
+    () => Math.max(1, Math.floor(hitDieType / 2) + 1 + conMod),
+    [hitDieType, conMod]
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -196,7 +205,7 @@ export default function RestBreakdown({ character, onClose, initialMode = "short
                 </button>
               </div>
               <div className="flex items-center gap-1.5 text-[9px] text-surface-500">
-                <span>Avg heal per die: <strong className="text-emerald-400">{Math.floor(hitDieType / 2) + 1 + Math.max(0, conMod)}</strong></span>
+                <span>Avg heal per die: <strong className="text-emerald-400">{avgHealPerDie}</strong></span>
                 <span className="text-surface-700">·</span>
                 <span>CON: {conMod >= 0 ? `+${conMod}` : conMod}</span>
               </div>

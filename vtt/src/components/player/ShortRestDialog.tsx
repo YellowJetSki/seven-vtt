@@ -16,6 +16,7 @@ import {
   computeHitDieType,
   computeHitDiceTotal,
   computeAvailableHitDice,
+  computeAvgHpPerDie,
   type RestSummary,
 } from "@/lib/mechanics/rest-engine";
 import { useCampaignStore } from "@/stores/campaignStore";
@@ -85,9 +86,12 @@ export default function ShortRestDialog({
   const totalHd = useMemo(() => computeHitDiceTotal(character), [character]);
   const availHd = useMemo(() => computeAvailableHitDice(character), [character]);
   const conMod = useMemo(() => Math.floor((character.constitution - 10) / 2), [character.constitution]);
-  const avgHealPerDie = Math.max(1, Math.floor(hdType / 2) + 1 + conMod);
+  const avgHealPerDie = useMemo(
+    () => computeAvgHpPerDie(hdType, conMod),
+    [hdType, conMod]
+  );
 
-  // ── Live preview ──
+  // ── Live preview (uses engine for consistency) ──
   const summary = useMemo<RestSummary>(
     () =>
       computeShortRestSummary(character, {
@@ -97,12 +101,9 @@ export default function ShortRestDialog({
     [character, hdToSpend, availHd]
   );
 
-  // ── HP preview ──
-  const newHp = Math.min(
-    character.hitPoints.max,
-    character.hitPoints.current + hdToSpend * avgHealPerDie
-  );
-  const hpHealed = newHp - character.hitPoints.current;
+  // ── HP preview (derived from engine summary, not recalculated) ──
+  const newHp = character.hitPoints.current + summary.hpHealed;
+  const hpHealed = summary.hpHealed;
 
   // ── Handle spend ──
   const handleSpend = useCallback(() => {

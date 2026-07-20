@@ -109,14 +109,14 @@ export function computeShortRestSummary(
   const totalHd = computeHitDiceTotal(character);
   const availHd = options.availableHitDice ?? computeAvailableHitDice(character);
 
-  // Hits from hit dice (average: die/2 + 1 + CON mod)
+  // Hits from hit dice (average: die/2 + 1 + CON mod, minimum 1)
   const conMod = getAbilityMod(character.constitution);
-  const avgHpPerDie = Math.floor(hitDieType / 2) + 1 + conMod;
+  const avgHpPerDie = computeAvgHpPerDie(hitDieType, conMod);
   const diceToSpend = Math.min(options.hitDiceToSpend, availHd);
-  const hitDiceHp = diceToSpend * Math.max(1, avgHpPerDie);
+  const hitDiceHp = diceToSpend * avgHpPerDie;
 
   // HP cap: can't exceed max HP
-  const missingHp = character.hitPoints.max - character.hitPoints.current;
+  const missingHp = Math.max(0, character.hitPoints.max - character.hitPoints.current);
   const hpHealed = Math.min(missingHp, hitDiceHp);
 
   // Class resources that recharge on short rest
@@ -279,8 +279,12 @@ export function applyLongRest(character: PlayerCharacter): Partial<PlayerCharact
 
 // ── Ability Modifier Helper ───────────────────────────────────
 
-function getAbilityMod(score: number): number {
+export function getAbilityMod(score: number): number {
   return Math.floor((score - 10) / 2);
+}
+
+export function computeAvgHpPerDie(hitDieType: number, conMod: number): number {
+  return Math.max(1, Math.floor(hitDieType / 2) + 1 + conMod);
 }
 
 // ── Feature Detection ─────────────────────────────────────────
