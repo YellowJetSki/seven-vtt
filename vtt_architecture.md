@@ -5633,3 +5633,76 @@ Vite chunk warning eliminated. No more dynamic import overhead.
 | 6 | Firebase listener architecture | 6 service/hook files | N/A (architectural fix) |
 | **7** | **PlayerSheetSpellsTab monolith** | **6 new files, 1 refactored** | **445 lines** |
 ---
+
+## Sprint 8/25 — Monolith Refactor: PlayerSheetInventoryTab (Updated: 2026-07-20 10:28)
+## Sprint 8/25 — Monolith Refactor: PlayerSheetInventoryTab (460 lines → 195 lines)
+
+### Target
+`PlayerSheetInventoryTab.tsx` — the next largest player monolith at 460 lines.
+
+### Refactoring Results
+
+| Metric | Before | After | Improvement |
+|--------|:------:|:-----:|:-----------:|
+| PlayerSheetInventoryTab.tsx | 460 lines | 195 lines | **−58%** |
+| New sub-components created | 0 inline | 4 reusable | **+4** |
+| New lib modules created | 0 | 1 | **+1** |
+| Import dependency fixes | 3 files | updated | **+3** |
+
+### New Sub-Components Created (4)
+
+| Component | File | Lines | Purpose |
+|-----------|------|:-----:|---------|
+| `InventoryCategoryChips` | `components/player/InventoryCategoryChips.tsx` | 45 | Category filter chips with count badges, hides empty categories |
+| `InventorySortControls` | `components/player/InventorySortControls.tsx` | 40 | Sort by name/weight/category + asc/desc toggle |
+| `InventoryEmptyState` | `components/player/InventoryEmptyState.tsx` | 45 | Contextual empty states for filters vs genuinely empty |
+| `FlashMessageToast` | `components/ui/FlashMessageToast.tsx` | 35 | Reusable toast notification (previously duplicated inline in multiple tabs) |
+
+### New Utility Module (1)
+
+| Module | File | Lines | Purpose |
+|--------|------|:-----:|---------|
+| `lib/inventory-utils` | `lib/inventory-utils.ts` | 95 | `detectCategory()`, `categoryIcon()`, `CATEGORY_META`, `INVENTORY_CATEGORIES`, `sortInventory()`, types |
+
+### Import Cleanup (3 files fixed)
+
+| File | Old Import Path | New Import Path |
+|------|:-------------:|:--------------:|
+| `InventoryItemRow.tsx` | `"./PlayerSheetInventoryTab"` | `"@/lib/inventory-utils"` |
+| `ItemFormModal.tsx` | `"./PlayerSheetInventoryTab"` | `"@/lib/inventory-utils"` |
+| `SellConfirmModal.tsx` | `"./PlayerSheetInventoryTab"` | `"@/lib/inventory-utils"` |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript errors | ✅ **0 (2024 modules)** |
+| Vite build | ✅ **9.87s**, 0 errors, 0 warnings |
+| Production URL | ✅ **arkla.vercel.app** |
+| Console errors | ✅ **0** (only Firestore deprecation, benign) |
+| Monolith reduction | ✅ 460 → 195 lines (−58%) |
+| New reusable components | ✅ 4 new files |
+| Cross-file import fixes | ✅ 3 downstream files updated |
+
+### Code Optimization Phase Progress (Cycles 6-8)
+
+| Sprint | Target | Files Created | Lines Eliminated |
+|:------:|--------|:-------------:|:----------------:|
+| 6 | Firebase listener architecture | 0 (architectural) | N/A |
+| 7 | PlayerSheetSpellsTab monolith | 6 new files | 445 lines |
+| **8** | **PlayerSheetInventoryTab monolith** | **5 new files** | **265 lines** |
+
+### Remaining Large Files (Next Targets)
+
+| File | Lines | Priority |
+|------|:-----:|:--------:|
+| PlayerSheetCombatTab.tsx | 577 | 🔴 Highest |
+| PlayerCreateModal.tsx | 524 | 🔴 High |
+| LevelUpPanel.tsx | 457 | 🟡 Medium |
+| PlayerSheetRulesTab.tsx | 455 | 🟡 Medium |
+| SpellcastingManager.tsx | 410 | 🟡 Medium |
+| RestBreakdown.tsx | 397 | 🟢 Low |
+| ConditionBanner.tsx | 360 | 🟢 Low |
+| ConditionManager.tsx | 350 | 🟢 Low |
+| CharacterStatsPanel.tsx | 360 | 🟢 Low |
+---

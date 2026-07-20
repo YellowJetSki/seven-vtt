@@ -7,7 +7,7 @@
  */
 
 import type { InventoryItem } from "@/types";
-import { detectCategory, categoryIcon } from "./PlayerSheetInventoryTab";
+import { detectCategory, categoryIcon } from "@/lib/inventory-utils";
 
 interface SellConfirmModalProps {
   item: InventoryItem;

@@ -13,7 +13,7 @@
 
 import { useState } from "react";
 import type { InventoryItem, EncumbranceState } from "@/types";
-import { detectCategory, categoryIcon } from "./PlayerSheetInventoryTab";
+import { detectCategory, categoryIcon } from "@/lib/inventory-utils";
 
 interface InventoryItemRowProps {
   item: InventoryItem;
