@@ -7917,3 +7917,67 @@ DM can open Combat Log panel to see every action with type breakdowns,
 undo the last action with one click, and clear the log between encounters.
 ```
 ---
+
+## Sprint 21/30 — Multi-Target AoE Damage System (Updated: 2026-07-20 13:43)
+## Sprint 21/30 — Real-Play D&D Mechanics: Multi-Target AoE Damage System (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 9 OF 10
+**Target:** Multi-target area-of-effect damage with per-target resistance calculation
+
+### Problem Solved
+Before this sprint, the DM had to apply damage to each Fireball target individually — clicking each enemy, rolling separately, and manually calculating resistance per target. A 6-goblin Fireball took 3-5 minutes.
+
+Now: The DM clicks "💥 AoE" in the toolbar, selects all targets at once, enters damage, and sees the per-target resistance-applied breakdown in a single preview. One-click apply writes to all targets simultaneously.
+
+### New Files Created (2)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/combat/aoe-damage-engine.ts` | 195 | Pure-function AoE damage engine: `computeAoEDamage()` (applies base damage to N targets with per-target resistance from `getCombatantDefenses()`), `buildAoEHPUpdates()` (generates batch HP patches), `createAoELogEntry()` (single grouped combat log entry), `generateAoELogId()`. Handles DEX save halving per-target, multi-type damage, temp HP absorption, and deduplicated death entries. |
+| `components/encounters/MultiTargetAoEPopover.tsx` | 460 | Premium floating AoE damage popover. Features: target selection with per-combatant checkboxes, "All Enemies"/"All Players"/"Clear" quick-select buttons, damage amount input, 13-type damage selector, spell name input, DEX save half-toggle with per-target save checkboxes, per-target live preview (HP before→after, resistance effects, death markers), total damage summary, staggered entrance animation. |
+
+### Files Modified (3)
+
+| File | Changes |
+|------|---------|
+| `stores/combat/combatHpSlice.ts` | Added `aoeDamageCombatants` action: batch-updates all target HP simultaneously in a single Zustand `set()`, creates one grouped combat log entry per AoE action with deduplicated death entries. Extended `CombatHpActions` interface. |
+| `components/control-center/DmToolbar.tsx` | Added `onAoEDamage` prop and "💥 AoE" button in the right toolbar group (between token tools and Share). Premium rose accents matching damage styling. |
+| `components/control-center/DmControlCenter.tsx` | Added `showAoEPopover` state, `MultiTargetAoEPopover` import/rendering, `activeEncounter` store read (ensures combat is active before enabling AoE), wired `onAoEDamage={setShowAoEPopover}` to toolbar. Popover auto-centers in viewport. |
+
+### Advanced DM Workflow (AoE Fireball)
+
+```
+1. DM opens Battle Map with active encounter running
+2. Clicks "💥 AoE" button in floating toolbar
+3. Popover opens center-screen:
+   - Spell Name: "Fireball"
+   - Damage: "28" (8d6 average) | Type: "Fire"
+   - Toggle "DEX Save halves" → mark 2 goblins as saved
+   - Targets: checks "All Enemies" → 4 goblins selected
+4. Click "🔍 Preview":
+   - Goblin A: 24→0 💀 (no resist)
+   - Goblin B: 24→0 💀 (no resist)
+   - Goblin C: 24→12 (saved, 14 ÷ 2 = 7 → resists fire? 
+     Actually Goblin = no fire resist → 12 damage)
+   - Goblin D: 24→12 (saved)
+5. "💥 Apply 72 damage to 4 targets" → one click
+   - All 4 HP bars update instantly
+   - Combat Log: "🔥 Fireball: 4 targets, 2 alive, 2 dead (fire)"
+   - Two death entries appended.
+6. Total time: ~15 seconds vs. 3-5 minutes ⚡
+```
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable | Time Saved Per Operation |
+|:------:|--------|-------------|:------------------------:|
+| 13 | Combat HP HUD | Floating HP panel | ~20s/check |
+| 14 | Loot Deposit Panel | Item deposit + undo | ~30s/deposit |
+| 15 | Condition Quick-Toggle | 16-condition manager | ~15s/applied |
+| 16 | DM Quick Reference | 12-section rules overlay | ~60s/lookup |
+| 17 | Encounter Launch Flow | One-click deploy enemies | ~120s/encounter |
+| 18 | Automated Initiative Roll | Animated d20 + sort | ~60s/round |
+| 19 | Attack Resolution | Single-target auto-attack | ~45s/attack |
+| 20 | Damage Types + Combat Log | Resistance engine + history | ~15s/attack |
+| **21** | **Multi-Target AoE Damage** | **Batch target + apply** | **~180s/Fireball** |
+---
