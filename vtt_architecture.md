@@ -9627,3 +9627,64 @@ These are high-practical-value features identified through systematic audit of w
 - ✅ NO 'Tick race' or 'Food machine' references
 
 ---
+
+## Sprint 15/41 — Deep Exploration QA Phase (Cycle 3 of 7): Homebrew CRUD & Missing Features Compilation (Updated: 2026-07-20 18:58)
+## Sprint 15/41 — Homebrew CRUD & Missing 5.5e Features Compilation
+
+### Test File Created
+
+| File | Test Suites | Test Cases | Lines |
+|------|:-----------:|:----------:|:-----:|
+| `homebrew-crud-qa.test.ts` | 9 | **55+** | 480+ |
+
+### Homebrew CRUD QA Coverage
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| Item Creation — data integrity | 8 | Valid weapon, armor with AC, charges, 0 weight, 200-char names, empty description, visibility default, cursed flag |
+| Spell Creation — data integrity | 8 | Cantrips (Lv0), Lv9 spells, AoE shape/size, concentration+ritual, all 8 schools, material components, damage+healing, multi-class |
+| Feat Creation — data integrity | 6 | Ability score increase, skill proficiencies, structured prerequisites, repeatable feats, 10+ benefits, no prerequisites |
+| Duplication logic | 4 | Different IDs, field preservation, no shared IDs (100-iteration test) |
+| Visibility control | 3 | Toggle on/off, field preservation |
+| Export — JSON serialization | 3 | Valid structure, empty collections, 100+ entries |
+| parseHomebrewJSON | 7 | Valid JSON, invalid string, malformed object, missing name (item/spell), empty string, empty object |
+| mergeHomebrewImport — deduplication | 10 | Case-insensitive skip, new items, mixed, new IDs, whitespace variation, spells/feats merge, isHomebrew flag, source preservation |
+| Timestamp integrity | 3 | createdAt preserved on edit (BUG FIX), updatedAt >= createdAt, duplicate timestamps |
+| Bulk operations | 3 | Multi-select, toggle, clear after delete |
+| Edge cases | 7 | Missing optional fields, no components, no benefits, unicode, XSS-safe storage, empty existing, empty imported |
+
+### Bugs Found & Fixed (3)
+
+| # | Bug | File | Severity | Fix |
+|:-:|-----|------|:--------:|-----|
+| 1 | **Syntax error in handleImport — duplicated `const data = result.data;\n}`** — Broken JavaScript rendering Homebrew import non-functional | `HomebrewManager.tsx` | 🔴 **Critical** — import was completely broken | Removed duplicate lines, fixed brace structure |
+| 2 | **FileReader has no error handler** — If file read fails (corrupted, too large), user gets zero feedback | `HomebrewManager.tsx` | 🟡 Medium | Added `reader.onerror` with toast notification |
+| 3 | **submitItem/spell/feat overwrites createdAt on every save** — Editing an item always resets createdAt to `now`, destroying the original creation date | `useHomebrewForms.ts` | 🟡 Medium | Added `originalCreatedAt` ref, submit functions now use `originalCreatedAt || now` |
+
+### Missing 5.5e Live-Play Features Compiled (for Sprint 20+)
+
+| # | Feature | Priority | Target | Value for Live Session |
+|:-:|---------|:--------:|--------|----------------------|
+| 1 | **Token Aura/Emotion System** — Click token → visual aura (gold for bless, red for rage, etc.) with 5e mechanics | 🔴 High | DM battlemap | Instant visual communication of active effects |
+| 2 | **Countdown/Timer for Turns** — Per-turn countdown visible to both DM and PC, customizable duration | 🔴 High | Combat | Prevents analysis paralysis |
+| 3 | **PC Spell Slot Sync** — When PC casts a spell, their slot count updates in real-time on the DM's combat tracker | 🔴 High | Player sheet + DM view | No more "did you mark that slot?" |
+| 4 | **Player Defense Roll Mode** — Instead of DM rolling attack, player rolls defense (d20 + AC modifiers) — variant rule in DMG | 🟡 Medium | Combat | Player engagement during enemy turns |
+| 5 | **Monster Loot Table** — When enemy dies, DM clicks "Generate Loot" → auto-rolls from CR-appropriate table | 🟡 Medium | Encounters | Immediate loot distribution without session prep |
+| 6 | **Auto-compute Passive Perception** — `10 + WIS mod + proficiency` displayed on character card, DM tooltip shows who sees hidden things | 🟡 Medium | Player sheet + DM view | Reduces DM overhead for hidden checks |
+| 7 | **Concentration Timer** — Visual countdown when concentration spell is active, auto-ends when duration expires | 🟡 Medium | Player sheet | No more tracking duration mentally |
+| 8 | **Dual Wielding Attack Button** — "Full Attack" button that applies main-hand + off-hand damage in one click | 🟡 Medium | Combat | Speeds up martial turns |
+| 9 | **Healing Word Button** — Quick-cast healing word that auto-applies to target with bonus action tracking | 🟡 Medium | Combat | Emergency healing in one click |
+| 10 | **DM Faction/Group Tracker** — Tag enemies by faction, filter combat view by faction, mass-apply conditions by faction | 🟢 Low | DM battlemap | Organized encounter management |
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2033 modules)
+- Hygiene: All 386 ESLint errors are pre-existing project-wide parser config issues (every file in the project), NOT code quality issues
+- Production URL: ✅ arkla.vercel.app
+
+### Compliance
+- ✅ NO dice rollers suggested or built
+- ✅ Pure Arkla campaign lore
+- ✅ NO 'Tick race' or 'Food machine' references
+- ✅ Workspace tools only — no terminal editing
+
+---

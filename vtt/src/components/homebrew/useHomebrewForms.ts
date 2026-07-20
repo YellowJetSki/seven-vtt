@@ -43,12 +43,15 @@ export function useHomebrewForms() {
   const [spellForm, setSpellForm] = useState(emptySpell);
   const [featForm, setFeatForm] = useState(emptyFeat);
   const [featBenefitsInput, setFeatBenefitsInput] = useState("");
+  // Track original createdAt for preserving timestamps on edit
+  const [originalCreatedAt, setOriginalCreatedAt] = useState<number | undefined>();
 
   const openForm = useCallback(
     (mode: "add" | "edit", type: HomebrewTabId, existing?: HomebrewItem | HomebrewSpell | HomebrewFeat) => {
       setFormMode(mode);
       setFormType(type);
       setEditId(existing?.id);
+      setOriginalCreatedAt(existing?.createdAt);
       if (type === "items") {
         const e = existing as HomebrewItem | undefined;
         setItemForm(e ? { ...emptyItem, ...e } : emptyItem);
@@ -68,6 +71,7 @@ export function useHomebrewForms() {
     setFormMode(null);
     setFormType("items");
     setEditId(undefined);
+    setOriginalCreatedAt(undefined);
   }, []);
 
   const submitItem = useCallback(() => {
@@ -76,13 +80,13 @@ export function useHomebrewForms() {
     const newItem: HomebrewItem = {
       ...itemForm,
       id: editId || `hb_${now}_${Math.random().toString(36).slice(2, 6)}`,
-      createdAt: now,
+      createdAt: originalCreatedAt || now,
       updatedAt: now,
     };
     if (editId) removeItem(editId);
     addItem(newItem);
     closeForm();
-  }, [itemForm, editId, addItem, removeItem, closeForm]);
+  }, [itemForm, editId, originalCreatedAt, addItem, removeItem, closeForm]);
 
   const submitSpell = useCallback(() => {
     if (!spellForm.name.trim()) return;
@@ -90,13 +94,13 @@ export function useHomebrewForms() {
     const newSpell: HomebrewSpell = {
       ...spellForm,
       id: editId || `hb_${now}_${Math.random().toString(36).slice(2, 6)}`,
-      createdAt: now,
+      createdAt: originalCreatedAt || now,
       updatedAt: now,
     };
     if (editId) removeSpell(editId);
     addSpell(newSpell);
     closeForm();
-  }, [spellForm, editId, addSpell, removeSpell, closeForm]);
+  }, [spellForm, editId, originalCreatedAt, addSpell, removeSpell, closeForm]);
 
   const submitFeat = useCallback(() => {
     if (!featForm.name.trim()) return;
@@ -109,7 +113,7 @@ export function useHomebrewForms() {
       ...featForm,
       benefits,
       id: editId || `hb_${now}_${Math.random().toString(36).slice(2, 6)}`,
-      createdAt: now,
+      createdAt: originalCreatedAt || now,
       updatedAt: now,
     };
     if (editId) removeFeat(editId);

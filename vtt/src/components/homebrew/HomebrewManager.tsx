@@ -219,6 +219,9 @@ export default function HomebrewManager() {
           showToast({ message: "No new entries found to import (duplicates skipped)", type: "info" });
         }
       };
+      reader.onerror = () => {
+        showToast({ message: "Import failed: Could not read file. Try a smaller file or different format.", type: "error", duration: 6000 });
+      };
       reader.readAsText(file);
     },
     [items, spells, feats, store]
