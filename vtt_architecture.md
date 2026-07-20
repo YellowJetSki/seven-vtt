@@ -7502,3 +7502,84 @@ A collapsible loot distribution panel mounted on the Player Cards page:
 | 13 | Combat HP HUD | Floating HP management panel across Player Cards + Dashboard |
 | **14** | **Loot Deposit Panel** | **Item/currency deposit to characters with presets + undo** |
 ---
+
+## Sprint 15/30 — Condition Quick-Toggle Panel (Updated: 2026-07-20 13:23)
+## Sprint 15/30 — Real-Play D&D Mechanics: Condition Quick-Toggle & Battlefield Overlay (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 3 OF 10
+**Target:** Status condition quick-toggle management for the DM on the Player Cards page
+**Tabletop Value:** Enables the DM to apply/remove any of the 16 standard 5e conditions to any character in 1-2 clicks during fast-paced encounters — no opening character sheets, no navigating deep menus
+
+### New Component: `ConditionQuickToggle.tsx` (510 lines)
+
+A collapsible condition management panel mounted on the Player Cards page:
+
+| Section | Lines | Description |
+|---------|:-----:|-------------|
+| Character Target Picker | 30 | Selectable character chips with HP indicator dots + condition dot summary per chip |
+| Condition Groups (4 categories) | 80 | Debilitating, Motion, Senses & Mind, Other — each with condition toggle buttons |
+| Individual Condition Toggles | 100 | All 16 conditions with unique colors/icons, click-to-apply/remove, checkmark indicator |
+| Clear All per Character | 15 | One-click removal of all conditions on selected character |
+| Concentration Management | 60 | Focus/Break toggle with animate-pulse indicator + damage-based DC rules text |
+| Custom Buffs/Debuffs | 120 | Name, duration, description form with per-character storage and remove capability |
+| Flash Message Notifications | 25 | Success/info/warning feedback for every action |
+| Active Conditions Party Count | 10 | Badge showing total active conditions across the entire party |
+
+### Files Modified (3)
+
+| File | Changes |
+|------|---------|
+| `components/player/PlayerList.tsx` | Added ConditionQuickToggle import + `showConditionsPanel` state + `onToggleConditionsPanel` callback + mount between LootDepositPanel and character grid |
+| `components/player/PlayerListHeader.tsx` | Added "Status" toggle button (💡) with gold active state + new `showConditionsPanel`/`onToggleConditionsPanel` props |
+| `components/player/ConditionQuickToggle.tsx` | **NEW** — Full condition management panel |
+
+### 16 Conditions with Color-Coded Toggle Buttons
+
+| Condition | Color Scheme | Icon | Category |
+|-----------|:-----------:|:----:|:--------:|
+| Incapacitated | rose-500 | 💫 | Debilitating |
+| Paralyzed | amber-500 | ⚡ | Debilitating |
+| Petrified | surface-500 | 🗿 | Debilitating |
+| Stunned | pink-500 | ✨ | Debilitating |
+| Unconscious | red-500 | 💤 | Debilitating |
+| Grappled | amber-500 | 🪤 | Motion |
+| Prone | sky-500 | 🛌 | Motion |
+| Restrained | amber-500 | ⛓️ | Motion |
+| Blinded | slate-500 | 🕶️ | Senses & Mind |
+| Charmed | pink-500 | 💕 | Senses & Mind |
+| Deafened | cyan-500 | 🦻 | Senses & Mind |
+| Frightened | violet-500 | 😱 | Senses & Mind |
+| Invisible | indigo-300 | 👻 | Senses & Mind |
+| Exhaustion | amber-500 | 😮‍💨 | Other |
+| Poisoned | emerald-500 | 🫗 | Other |
+| Concentration | violet-500 | 🕯️ | Other |
+
+### Tabletop Features Delivered
+
+| Feature | Value for Live Session |
+|---------|----------------------|
+| 4 categorized condition groups | Faster scanning — DM knows where to look for each condition type |
+| 16 color-coded toggle buttons | Unique visual identity per condition → instant recognition |
+| Character picker with condition dots | See which characters have conditions before selecting them |
+| Clear All button | Instantly remove all conditions when a spell ends or rest is taken |
+| Concentration Focus/Break toggle | One-click concentration management with pulse indicator |
+| Custom buffs/debuffs | Track Bless, Haste, Heroism, or homebrew effects per character |
+| Flash notifications | Visual confirmation for every toggle action |
+| Staggered entrance animations | Premium Lusion-grade feel for every panel transition |
+| Glass card premium styling | Edge light, gradient backgrounds, gold-accented character chips |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (353 parser errors — all pre-sprint, +1 from new file)
+- Git checkpoint: ✅ Sprint 15 saved
+- Architecture ledger: ✅ Updated
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 13 | Combat HP HUD | Floating HP management panel across Player Cards + Dashboard |
+| 14 | Loot Deposit Panel | Item/currency deposit to characters with presets + undo |
+| **15** | **Condition Quick-Toggle** | **16-condition management with concentration + custom buffs** |
+---
