@@ -6226,3 +6226,51 @@ Entire Spellcasting UI ecosystem — 490-line orchestrator (`PlayerSheetSpellsTa
 
 Next: Sprint 18 — Select another unique, untargeted component/screen for premium aesthetic refactoring.
 ---
+
+## Sprint 18/25 — Final Polish Phase: Premium Combat Tab & Character Stats Overhaul (Updated: 2026-07-20 11:18)
+## Sprint 18/25 — Final Polish Phase: Premium Combat Tab & Character Stats Overhaul (2026-07-20)
+
+### Target
+Entire Combat Tab UI ecosystem — 385-line orchestrator (`PlayerSheetCombatTab.tsx`) + 5 sub-components. Complete premium visual refactoring to Lusion/Spotify/Ventriloc-grade standards.
+
+### Components Refactored (6)
+
+| File | Lines (Before) | Lines (After) | Premium Upgrades |
+|------|:--------------:|:-------------:|------------------|
+| `CombatStatusBanner.tsx` | 60 | 100 | Multi-layer gradient with tier-based glass backgrounds (emerald/amber/rose/red), edge light, hover glow sweep, HP percentage pill, death saves quick-ref, bloodied badge with ⚔️ icon, animate-pulse on critical |
+| `CombatSectionHeader.tsx` | 30 | 60 | Gold accent pill (not just line), count badge with border + tabular-nums, flex spacer pattern for right-aligned children, consistent with design system |
+| `HpKeypadSection.tsx` | 135 | 165 | Premium multi-layer HP bar with `shadow-[inset]` + `shimmer`, gold THP pill, 6-button keypad with `from-/to-` gradient pattern, input with glass bg, 3 rest buttons with icon badges, staggered edge light |
+| `ClassResourcesTracker.tsx` | 140 | 175 | Resource gauge with `from-surface-900/80 to-[#07080d]/80` + inset shadow, percentage label inside bar, refresh buttons with gradient bg, staggered slide-in-up animation per resource row, consistent edge light |
+| `CharacterStatsPanel.tsx` | 260 | 290 | Lusion-style conic depth rings on core stat cards, directional radial glow, edge light animation baseline, staggered entrance with `slide-in-up` on all 6 sections (0-300ms delay), ability modifier strip hover elevation |
+| `PlayerSheetCharacterStats.tsx` | 90 | 95 | Glass gradient wrapping cards, edge light on each section, staggered entrance alignment (0.35s/0.4s), divider with gradient |
+| `_animations.scss` | 1 line added | `animate-shimmer` utility class | 2s ease-in-out shimmer for HP bars |
+
+### Premium Design Patterns Applied
+
+| Pattern | Count | Components |
+|---------|:-----:|------------|
+| `bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95` (unified glass) | 6 | All updated components |
+| `conic-gradient(from 0deg at 50% 50%, ...)` (Lusion depth ring) | 4 | CharacterStatsPanel core cards |
+| `radial-gradient(ellipse 100px 60px at 50% 20%, ...)` (hover glow) | 4 | CharacterStatsPanel core cards |
+| Edge light `via-gold-500/20 to-transparent` | 6 | All updated components |
+| `hover:-translate-y-0.5 active:scale-[0.98]` (hover lift) | 20+ | Stat cards, resource rows, speed items |
+| `from-surface-900/80 to-[#07080d]/80 shadow-[inset]` (premium bars) | 3 | HP bar, resource gauges, HD bar |
+| `staggered entrance (slide-in-up + animation-delay)` (0-400ms) | 20+ | All sections, cards, resource rows |
+| `bg-gradient-to-b from-white/[0.02] to-transparent` (premium surface) | 10+ | Ability scores, speed, senses |
+
+### Build & QA
+
+| Metric | Result |
+|--------|:------:|
+| TypeScript errors | ✅ **0** (2033 modules) |
+| Vite production build | ✅ **8.25s** (0 warnings) |
+| Vercel deploy | ✅ **34s** → `vtt-five.vercel.app` |
+| CSS bundle | 307 KB (32.9 KB gzipped) |
+| JS bundle | 1,494 KB (365 KB gzipped) |
+| Git savepoint | ✅ Sprint 18 |
+| New animation utility | `animate-shimmer` added to `_animations.scss` |
+
+### Final Polish Phase (Sprints 16-20) — Cycle 3/5 Complete
+
+Next: Sprint 19 — Select another unique untargeted component or screen for premium aesthetic refactoring.
+---
