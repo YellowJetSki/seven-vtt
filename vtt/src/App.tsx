@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useFirestoreSync } from "@/hooks/useFirestoreSync";
 import { useFirestoreCombatSync } from "@/hooks/useFirestoreCombatSync";
+import { useFirestoreEntitySync } from "@/hooks/useFirestoreEntitySync";
 import { useAuthStore } from "@/stores/authStore";
 import { hasValidConfig } from "@/lib/firebase";
 import LoginPage from "./pages/LoginPage";
@@ -21,6 +22,7 @@ function FirestoreSyncGate() {
   // Always call hooks unconditionally — the hooks themselves guard internally
   useFirestoreSync();
   useFirestoreCombatSync();
+  useFirestoreEntitySync();
   return null;
 }
 

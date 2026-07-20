@@ -8749,3 +8749,61 @@ useAllCharacterMutations() — After Sprint 28:
 - Production URL: ✅ arkla.vercel.app
 
 ---
+
+## Sprint 3/41 — Comprehensive Firebase & Login Phase (Cycle 1 of 10) (Updated: 2026-07-20 18:12)
+## Sprint 3/41 — Firebase & Login Phase (Complete)
+
+### Architectural Audit Findings
+
+After comprehensive analysis of the application's data layer:
+
+**✅ What was working:**
+1. Characters sync via `useFirestoreSync` + `useCharacterMutations` (dual Zustand+Firestore writes)
+2. Combat sync via `useFirestoreCombatSync` + `useCombatMutations` (dual Zustand+Firestore writes)
+3. All 5 Firestore domain services exist (character, combat, entity, campaign, share)
+4. Listeners optimized (Sprint 6) with sync `Unsubscribe` pattern and retry logic
+
+**🔴 Critical gaps identified:**
+1. **Campaign entities (enemies, encounters, battleMaps, journal) wrote ONLY to Zustand `set()`** — no Firestore writes ever occurred for these collections. Cross-device sync was completely broken.
+2. **No real-time listeners for campaign entities** — no `onSnapshot` subscriptions existed for enemies, encounters, maps, or journal subcollections.
+3. **No entity sync hook** — only character and combat had sync hooks.
+
+### New Files Created (2)
+
+#### `useFirestoreEntitySync.ts` (165 lines)
+Real-time listener hook for ALL campaign entity collections:
+- Subscribes to Firestore onSnapshot for 4 subcollections: enemies, encounters, maps, journal
+- Each listener merges Firestore data into Zustand via existing setter actions
+- Connection watchdog with retry (3×2s)
+- Cleanup on unmount with all listener references tracked
+- Mounted in App.tsx FirestoreSyncGate alongside character and combat sync hooks
+
+#### `useEntityMutations.ts` (170 lines)
+Firestore-synced mutation functions for campaign entities:
+- Uses same debounced accumulator pattern as `useCharacterMutations` (50ms batch window)
+- Writes to Zustand (instant UI) and Firestore (async) for every mutation
+- Covers: enemies (saveEnemy, deleteEnemy), encounters (saveEncounter, deleteEncounter), battleMaps (saveMap, deleteMap), journal (saveEntry, deleteEntry)
+- Includes `useAllEntityMutations()` convenience hook
+
+### Architecture (After)
+
+```
+App.tsx ── FirestoreSyncGate
+  ├── useFirestoreSync()        ── characters (existing)
+  ├── useFirestoreCombatSync()  ── combat (existing)
+  └── useFirestoreEntitySync()  ── enemies, encounters, maps, journal (NEW)
+
+Entity mutations ──► useEntityMutations
+  ├── Zustand set()  ── instant UI
+  └── Firestore setDoc ── async, 50ms debounced batch
+                            └── onSnapshot picks up on other tabs
+```
+
+### Build Metrics
+- TypeScript: ✅ 0 errors (2113 modules)
+- Vite build: ✅ 6.85s, 0 warnings
+- Production URL: ✅ arkla.vercel.app
+- JS bundle: 1,803 KB (435 KB gzipped)
+- CSS bundle: 360 KB (36 KB gzipped)
+
+---
