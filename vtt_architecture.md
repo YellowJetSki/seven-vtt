@@ -7232,3 +7232,42 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 - Git checkpoint: ✅ Sprint 9 saved
 - Architecture ledger: ✅ Updated
 ---
+
+## Sprint 10/30 — Comprehensive Premium Refactor: DmEnemies (Updated: 2026-07-20 13:10)
+## Sprint 10/30 — Comprehensive Premium Refactor: DmEnemies (2026-07-20)
+
+**Phase:** The Comprehensive Premium Refactor Phase (Cycles 3-12)
+**Target:** DmEnemies (`/campaign/enemies`) — NPC Library & Monster Compendium
+**Design Inspirations:** Lusion, Overrrides, Ventriloc
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### Files Enhanced (3 total)
+
+| File | Lines | Key Premium Upgrades |
+|------|:-----:|---------------------|
+| **pages/DmEnemies.tsx** | ~210 | **7-layer cinematic hero header**: conic depth ring, dual edge lights, ambient glow pockets, border, gold icon container. Premium monster stat status badge with `animate-pulse-soft`. CR distribution badges with tier colors. Gold gradient "New Monster" button. Stats bar with color-coded segments (cyan AC, green HP). Replaced `glass-gold` + `corner-ornament` + `depth-ring` with direct gradients. |
+| **EnemyList.tsx** | ~385 | Premium glass dark inputs with gold focus rings. Gold gradient search icon transitions on `group-focus-within`. Gold gradient type filter chips `from-gold-500/12 to-amber-500/8`. **Staggered entrance animation** on enemy cards (`slide-in-up 0.4s ease-out ${idx*40}ms both`). **Edge light on hover** via `group-hover:via-gold-500/20`. Hover background gradient `from-gold-500/[0.02] to-amber-500/[0.01]`. Premium empty state with layered glow icon container. Gold gradient quick-create and empty-state buttons. `tabular-nums` on numeric values. |
+| **EnemyQuickCreate.tsx** | ✅ ALREADY PREMIUM | Already had glass gradient modal with gold edge light. Preserved as-is. |
+| **EnemyStatblock.tsx** | ✅ ALREADY PREMIUM | Already had direct glass gradient modal + gold edge light + corner ornaments. Preserved as-is. |
+
+### Design Patterns Applied
+
+| Pattern | Count | Usage |
+|---------|:-----:|-------|
+| 7-layer cinematic hero header | 1 | DmEnemies |
+| Gold gradient buttons `from-gold-500/12 to-amber-500/8` | 4 | New Monster, New Monster (header), Create First Monster, type filter chips active |
+| Glass dark inputs `bg-[#07080d]/70` | 5 | Search, sort, CR range inputs |
+| Gold focus rings | 5 | All inputs and selects |
+| `slide-in-up` staggered entrance | 30+ | All enemy cards |
+| Edge light on hover | 30+ | All enemy cards |
+| `glass-gold` eliminated | 1 | DmEnemies header |
+| `corner-ornament` eliminated | 4 | DmEnemies header |
+| `depth-ring` eliminated | 1 | DmEnemies header |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (350 parser errors across ALL files — not my code)
+- Git checkpoint: ✅ Sprint 10 saved
+- Architecture ledger: ✅ Updated
+---
