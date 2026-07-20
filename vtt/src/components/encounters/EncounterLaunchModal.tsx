@@ -26,6 +26,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCampaignStore } from "@/stores/campaignStore";
+import InitiativeRollOverlay from "./InitiativeRollOverlay";
 import type { Encounter, EnemyDoc, BattleMap } from "@/types";
 
 interface EncounterLaunchModalProps {
@@ -142,6 +143,9 @@ export default function EncounterLaunchModal({
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [launchStatus, setLaunchStatus] = useState<"select" | "deploying" | "deployed" | "error">("select");
   const [deployProgress, setDeployProgress] = useState(0);
+  const [showInitiativeRoll, setShowInitiativeRoll] = useState(false);
+  // Store deployed token info for initiative roll
+  const [deployedTokenSources, setDeployedTokenSources] = useState<Array<{ id: string; name: string; type: "player" | "enemy" | "npc" | "custom" }>>([]);
 
   // ── Reset state when modal opens ──
   const resetState = useCallback(() => {
@@ -179,6 +183,7 @@ export default function EncounterLaunchModal({
         const placements = calculateTokenPlacements(encounter.enemyGroups, enemies, map);
         const totalTokens = placements.reduce((s, p) => s + p.tokens.length, 0);
         let deployedCount = 0;
+        const tokenSources: Array<{ id: string; name: string; type: "enemy" | "npc" | "custom" }> = [];
 
         for (const placement of placements) {
           const doc = enemies.find((e) => e.id === placement.enemyId);
@@ -201,6 +206,7 @@ export default function EncounterLaunchModal({
               statusMarkers: [],
             };
             addMapToken(selectedMapId, token);
+            tokenSources.push({ id: token.id, name: token.label, type: "enemy" });
             deployedCount++;
             setDeployProgress(Math.round((deployedCount / totalTokens) * 100));
           }
@@ -210,14 +216,10 @@ export default function EncounterLaunchModal({
         updateEncounter(encounter.id, { isActive: true, updatedAt: Date.now() });
 
         setDeployProgress(100);
+        setDeployedTokenSources(tokenSources);
         setLaunchStatus("deployed");
 
-        // Short delay then navigate
-        setTimeout(() => {
-          onClose();
-          resetState();
-          navigate("/campaign/maps");
-        }, 800);
+        // Don't auto-navigate — let DM choose what to do next
       } catch (err) {
         console.error("Encounter deploy failed:", err);
         setLaunchStatus("error");
@@ -434,19 +436,41 @@ export default function EncounterLaunchModal({
 
           {/* ── DEPLOYED SUCCESS ── */}
           {launchStatus === "deployed" && (
-            <div className="py-6 space-y-3 text-center">
+            <div className="py-4 space-y-4 text-center">
               <div
-                className="relative w-16 h-16 mx-auto"
+                className="relative w-14 h-14 mx-auto"
                 style={{ animation: "slide-in-up 0.3s ease-out both" }}
               >
                 <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping" />
                 <div className="absolute inset-0 rounded-full bg-emerald-500/15" />
                 <span className="absolute inset-0 flex items-center justify-center text-xl">✨</span>
               </div>
-              <p className="text-[12px] text-emerald-400 font-bold">Enemy tokens deployed!</p>
-              <p className="text-[9px] text-surface-500">
-                Redirecting to Battle Maps...
+              <p className="text-[11px] text-emerald-400 font-bold">Enemy tokens deployed!</p>
+              <p className="text-[8px] text-surface-500">
+                {deployedTokenSources.length} tokens placed on map
               </p>
+
+              {/* Action buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowInitiativeRoll(true)}
+                  className="w-full py-2.5 rounded-xl text-[10px] font-bold bg-gradient-to-br from-gold-500/15 to-amber-500/10 border border-gold-500/25 text-gold-400 hover:from-gold-500/25 hover:to-amber-500/15 hover:border-gold-500/35 hover:shadow-[0_0_24px_rgba(234,179,8,0.06)] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2"
+                >
+                  <span>🎲</span>
+                  <span>Roll Initiative</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onClose();
+                    resetState();
+                    navigate("/campaign/maps");
+                  }}
+                  className="w-full py-2 rounded-xl text-[9px] font-bold bg-gradient-to-br from-blue-500/10 to-indigo-500/8 border border-blue-500/20 text-blue-400 hover:from-blue-500/20 hover:to-indigo-500/12 hover:border-blue-500/30 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2"
+                >
+                  <span>🗺</span>
+                  <span>Go to Battle Maps</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -466,6 +490,20 @@ export default function EncounterLaunchModal({
           )}
         </div>
       </div>
+
+      {/* ── Initiative Roll Overlay ── */}
+      {deployedTokenSources.length > 0 && (
+        <InitiativeRollOverlay
+          tokens={deployedTokenSources}
+          isOpen={showInitiativeRoll}
+          onClose={() => setShowInitiativeRoll(false)}
+          onConfirmed={() => {
+            onClose();
+            resetState();
+          }}
+          encounterName={encounter?.name || "Encounter"}
+        />
+      )}
     </div>
   );
 }
