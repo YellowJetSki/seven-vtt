@@ -145,9 +145,11 @@ export default function LoginPage() {
               style={{ animation: "slide-in-up 0.7s ease-out 0.1s forwards" }}
             >
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-4xl sm:text-5xl text-gold-400 drop-shadow-[0_0_20px_rgba(234,179,8,0.25)] select-none font-serif leading-none">
-                  ᚱ
-                </span>
+                <img
+                  src="/AppIcon.svg"
+                  alt="STᚱ VTT"
+                  className="w-11 h-11 sm:w-12 sm:h-12 drop-shadow-[0_0_24px_rgba(234,179,8,0.3)]"
+                />
                 <div>
                   <h1 className="text-[28px] font-black tracking-tight text-white leading-none">
                     ST<span className="text-gold-400">ᚱ</span> VTT
@@ -221,7 +223,11 @@ export default function LoginPage() {
             {/* Mobile brand (visible only on < lg) */}
             <div className="lg:hidden text-center mb-10">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-4">
-                <span className="text-3xl text-gold-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)] select-none font-serif">ᚱ</span>
+                <img
+                  src="/AppIcon.svg"
+                  alt="STᚱ VTT"
+                  className="w-10 h-10 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]"
+                />
               </div>
               <h1 className="text-[22px] font-black text-white tracking-tight">
                 ST<span className="text-gold-400">ᚱ</span> VTT

@@ -86,8 +86,14 @@ export default function Header() {
           {/* Vertical divider */}
           <div className="w-px h-5 bg-white/[0.06] shrink-0" />
 
-          {/* Campaign identity — stacked wordmark */}
+          {/* Campaign identity — icon + stacked wordmark */}
           <div className="flex items-center gap-2.5 pl-1">
+            {/* App Icon — brand mark */}
+            <img
+              src="/AppIcon.svg"
+              alt="STᚱ VTT"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 drop-shadow-[0_0_8px_rgba(234,179,8,0.15)]"
+            />
             <div className="flex flex-col">
               <span className="text-[13px] sm:text-sm font-bold text-white/90 tracking-tight leading-tight">
                 Arkla

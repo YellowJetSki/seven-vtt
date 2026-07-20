@@ -8667,3 +8667,34 @@ useAllCharacterMutations() — After Sprint 28:
 **Result:** `tsc --noEmit` ✅ 0 errors. Vite build ✅ 2050 modules, 6.47s. Deployed to arkla.vercel.app.
 
 ---
+
+## Sprint 1/41 — Branding Integration Phase (Updated: 2026-07-20 17:58)
+## Sprint 1/41 — Branding Integration Phase (Complete)
+
+### Global Replacements
+- **`vtt-icon.svg` → `AppIcon.svg`**: `index.html` favicon updated. Open Graph + theme-color metadata added.
+- **`public/` directory created** with `AppIcon.svg` — premium shield icon with:
+  - Obsidian void background with gold gradient
+  - ᚱ rune in gold (#eab308) with drop-shadow glow
+  - Decorative ring and corner ornaments
+  - "STᚱ" label at bottom
+
+### Brand Integration Points Updated
+1. **`index.html`**: Favicon → `AppIcon.svg`, added OG title/description/image, theme-color `#0f101a`
+2. **`Header.tsx`**: Added `<img src="/AppIcon.svg">` (28-32px) next to stacked "Arkla / Campaign" wordmark
+3. **`SidebarBrand.tsx`**: Replaced ᚱ span with `<img src="/AppIcon.svg">` — always visible, collapses with label
+4. **`LoginPage.tsx`**: Desktop hero and mobile brand area both use AppIcon (44-48px) with gold drop-shadow glow
+
+### Color Palette Adjustments
+- **`--color-accent-*`** palette: Shifted from purple tones (#1a0a30→#9b4dff) to gold/bronze (#120e05→#d4a050) for brand cohesion
+- **`--color-warrior/mage/rogue/divine-*`**: Desaturated and warmed to harmonize with gold system
+- All gold tokens (`--color-gold-500/400/300/200`, `--color-amber-500/400/300`) preserved as-is
+
+### Quality Gates
+- ✅ `tsc --noEmit`: 0 errors
+- ✅ `vite build`: 2050 modules, 6.70s, 0 warnings
+- ✅ `vercel deploy --prod`: Successful, aliased to `arkla.vercel.app`
+- ✅ `AppIcon.svg` served from production at `/AppIcon.svg`
+- ✅ Application fully functional — Compendium, SRD items, glass styling all verified in production
+
+---

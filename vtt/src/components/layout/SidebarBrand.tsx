@@ -2,7 +2,8 @@
  * STᚱ VTT — SidebarBrand
  *
  * Premium sidebar brand bar with:
- * - Ambient gold glow pocket behind the rune
+ * - AppIcon as the primary brand mark
+ * - Ambient gold glow pocket behind icon
  * - Smooth text fade on collapse
  * - Gold accent divider at bottom
  * - Responsive height (h-14 mobile, h-16 desktop)
@@ -18,7 +19,7 @@ export default function SidebarBrand({ isOpen }: SidebarBrandProps) {
       {/* Gold accent strip at bottom */}
       <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none" />
 
-      {/* Ambient glow pocket behind rune */}
+      {/* Ambient glow pocket behind icon */}
       <div
         className={`absolute transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none ${
           isOpen
@@ -27,21 +28,20 @@ export default function SidebarBrand({ isOpen }: SidebarBrandProps) {
         } bg-gold-500/5 rounded-full blur-[12px]`}
       />
 
-      {/* Rune icon — always visible */}
-      <span
-        className={`font-serif select-none transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+      {/* AppIcon brand mark — always visible */}
+      <img
+        src="/AppIcon.svg"
+        alt="STᚱ VTT"
+        className={`select-none transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           isOpen
-            ? "text-xl text-gold-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.25)]"
-            : "text-xl text-gold-400 drop-shadow-[0_0_6px_rgba(234,179,8,0.2)] mx-auto"
+            ? "w-7 h-7 drop-shadow-[0_0_8px_rgba(234,179,8,0.25)]"
+            : "w-7 h-7 drop-shadow-[0_0_6px_rgba(234,179,8,0.2)] mx-auto"
         }`}
-        aria-hidden="true"
-      >
-        ᚱ
-      </span>
+      />
 
       {/* Brand name — slides out on collapse */}
       <span
-        className={`font-black text-gold text-base sm:text-lg tracking-tight whitespace-nowrap transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+        className={`font-black text-gold text-sm sm:text-base tracking-tight whitespace-nowrap transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           isOpen
             ? "opacity-100 translate-x-0"
             : "opacity-0 -translate-x-4 absolute pointer-events-none"
