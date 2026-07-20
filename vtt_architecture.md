@@ -8807,3 +8807,63 @@ Entity mutations ──► useEntityMutations
 - CSS bundle: 360 KB (36 KB gzipped)
 
 ---
+
+## Sprint 4/41 — Firebase & Login Phase (Cycle 2 of 10) (Updated: 2026-07-20 18:16)
+## Sprint 4/41 — Firebase & Login Phase (Complete)
+
+### Changes Delivered
+
+#### 1. Player Login Page — Complete Premium Redesign
+| Before | After |
+|--------|-------|
+| `glass-gold` CSS class | Direct glass gradient `from-[#14151f]/[0.92] to-[#0f101a]/[0.95]` + edge light |
+| `rogue-*` color tokens on button | Gold/amber `via-gold-500/25` gradient with shimmer |
+| No connection state indicator | Gold/emerald connection dot showing Firebase sync status |
+| Basic flat card | Multi-layer depth: outer glow halo → glass card → edge light |
+| No character auto-fill | Automatically fills player name from character's stored `playerName` |
+| `animate-slide-in-up` missing from card | Card entrance animation at 0.1s |
+
+#### 2. DM Login Page — Connection State Added
+- Firebase connection indicator below the card header: emerald dot "Campaign Online" / amber pulse "Connecting..."
+- `firebaseConnected` state read from authStore and displayed consistently
+
+#### 3. Header — Universal Connection Dot
+- New `ConnectionDot` component in `Header.tsx`
+- Small emerald/amber dot with "Live"/"Sync" label
+- Visible in the Header's right group, between Compendium Drawer and role badge
+- All DM pages now show connection status at a glance
+
+#### 4. Combat Store — localStorage Persist REMOVED
+- Combat state is now entirely **Firestore-driven** (no localStorage persist)
+- `combatStore.ts` simplified — removed `persist()` middleware
+- Eliminated race condition where stale Zustand localStorage could overwrite Firestore data on page reload
+- Combat state is now fully volatile and refreshed from Firestore via `useFirestoreCombatSync`
+
+### Architecture
+
+```
+Firestore (source of truth)
+  ├── Characters ── onSnapshot ──► useFirestoreSync ──► Zustand (volatile, no persist)
+  ├── Combat ── onSnapshot ──► useFirestoreCombatSync ──► combatStore (volatile, NO persist) ← FIXED
+  ├── Entities (enemies/encounters/maps/journal) ── onSnapshot ──► useFirestoreEntitySync ──► campaignStore
+  └── Auth ── localStorage persist (still needed for session) ──► authStore
+
+UI mutations ──► useEntityMutations / useCharacterMutations / useCombatMutations
+  ├── Zustand set() ── instant UI
+  └── Firestore setDoc ── async, 50ms debounced batch
+```
+
+### Remaining localStorage Persist Tables
+| Store | Key | Purpose | Status |
+|-------|-----|---------|--------|
+| authStore | `str-vtt-auth` | Session (role, username) | ✅ Kept (needed for page reload) |
+| campaignStore | `str-vtt-campaign-normalized` | Fallback cache | ✅ Kept (Firestore is source of truth) |
+| combatStore | `str-vtt-combat` | Combat state | 🔴 REMOVED (Firestore-driven) |
+| compendiumStore | `str-vtt-compendium` | SRD + homebrew cache | ✅ Kept (large data, client-side only) |
+
+### Build Metrics
+- TypeScript: ✅ 0 errors (2113 modules)
+- Vite build: ✅ Deployed to arkla.vercel.app
+- Git checkpoint: ✅ Sprint 4 saved
+
+---
