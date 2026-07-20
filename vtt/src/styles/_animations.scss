@@ -164,6 +164,13 @@
 }
 
 // ── Utility Classes ────────────────────────────────────────────
+@keyframes fade-in-fast {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+// ── Utility Classes ────────────────────────────────────────────
+.animate-fade-in-fast { animation: fade-in-fast 0.15s ease-out both; }
 .animate-loading-arc { animation: loading-arc 1.6s ease-in-out infinite; }
 .animate-loading-dot-bounce { animation: loading-dot-bounce 1.4s ease-in-out infinite; }
 .animate-empty-glow-pulse { animation: empty-glow-pulse 4s ease-in-out infinite; }
