@@ -9,6 +9,8 @@
  *   - Status markers: Colored dots around the token
  *   - Label rendering with shadow for readability
  *   - Type-based icons inside token circle
+ *   - Visual state overlays (Cycle 24): bloodied cracks, restrained chains,
+ *     concentrating halo, prone Zzz, stunned starburst, invisible shimmer
  *
  * Cycle 22 Enhancement:
  *   - Ghost token rendering during drag (handled by drag-renderer.ts)
@@ -18,9 +20,16 @@
  * Cycle 23 Enhancement:
  *   - Current turn token highlighting (gold glow + animated border)
  *   - Active token ID passed via drawTokens for turn highlighting
+ *
+ * Cycle 24 Enhancement:
+ *   - Visual state overlays for common 5e conditions
+ *   - Bloodied cracks (HP ≤ 50%), restrained chains, concentrating halo
+ *   - Prone Zzz, stunned starburst, invisible shimmer
+ *   - drawVisualStateOverlays called after base token rendering
  */
 
 import type { MapToken } from "@/types";
+import { drawVisualStateOverlays } from "./restrained-renderer";
 
 // ── Constants ────────────────────────────────────────────
 
@@ -204,6 +213,11 @@ export function drawToken(
       ctx.lineWidth = 0.5;
       ctx.stroke();
     });
+  }
+
+  // ── Cycle 24: Visual State Overlays ──
+  if (!showGhosted) {
+    drawVisualStateOverlays(ctx, token, gridSize, time);
   }
 }
 

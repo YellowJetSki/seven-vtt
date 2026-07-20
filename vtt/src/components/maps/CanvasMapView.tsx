@@ -3,35 +3,33 @@
  *
  * Canvas-based battle map renderer using HTML5 Canvas API.
  * Handles map image, grid, fog of war, dynamic lighting, token rendering,
- * drag-and-drop preview, and initiative/turn order overlays.
+ * drag-and-drop preview, initiative/turn order overlays, visual state
+ * overlays, ping animations, and measurement/ruler tool.
  *
  * Architecture:
- *   ┌──────────────────────────────────────────┐
- *   │  Canvas (z-10)                           │
- *   │  ├─ Background fill                      │
- *   │  ├─ Map image                            │
- *   │  ├─ Grid overlay                         │
- *   │  ├─ Fog of war                           │
- *   │  ├─ Dynamic lighting                     │
- *   │  ├─ Tokens (with turn highlighting)      │
- *   │  ├─ Initiative overlays                  │
- *   │  └─ Drag preview                         │
- *   ├──────────────────────────────────────────┤
- *   │  ZoomControls (z-20)                     │
- *   │  MapViewControls (z-20)                  │
- *   │  InitiativeOverlay HUD (z-30)            │
- *   └──────────────────────────────────────────┘
+ *   ┌──────────────────────────────────────────────┐
+ *   │  Canvas (z-10, 60fps RAF)                    │
+ *   │  ├─ Background fill                          │
+ *   │  ├─ Map image                                │
+ *   │  ├─ Grid overlay                             │
+ *   │  ├─ Fog of war                               │
+ *   │  ├─ Dynamic lighting                          │
+ *   │  ├─ Tokens (with turn + visual state)         │
+ *   │  ├─ Initiative overlays                       │
+ *   │  ├─ Ping effects (expanding rings)            │
+ *   │  ├─ Measurement/ruler lines                   │
+ *   │  └─ Drag preview                              │
+ *   ├──────────────────────────────────────────────┤
+ *   │  ZoomControls (z-20, bottom-left)             │
+ *   │  MapViewControls (z-20, top-right)            │
+ *   │  MapPingRulerTools (z-20, bottom-center)      │
+ *   │  InitiativeOverlay (z-30, top-right)          │
+ *   └──────────────────────────────────────────────┘
  *
- * Cycle 22 Enhancement:
- *   - FULL token drag-and-drop integration using useTokenDrag hook
- *   - Drag preview rendering: ghost token, drop target, drag trail, coordinates
- *
- * Cycle 23 Enhancement:
- *   - Initiative & Turn Order system integrated directly into the map UI
- *   - Current turn combatant gets gold glow ring + animated border
- *   - InitiativeOverlay HUD floats on top of canvas showing turn order
- *   - Active token ID passed for dynamic turn highlighting
- *   - Initiative overlay renders turn banners, next-up indicators, dead overlays
+ * Cycle 22: Token drag-and-drop
+ * Cycle 23: Initiative & Turn Order system
+ * Cycle 24: Token visual state overlays (bloodied/restrained/etc.),
+ *           ping/ripple animations, measurement/ruler tool
  */
 
 import { useRef, useEffect, useCallback, useState, forwardRef, useImperativeHandle } from "react";
@@ -39,9 +37,12 @@ import type { LightSource, WallSegment, MapToken, BattleMap, CombatEncounter } f
 import { renderCanvas, type CanvasRenderState } from "@/lib/canvas/lighting-renderer";
 import { setupCanvas } from "@/lib/canvas/token-renderer";
 import { useTokenDrag } from "@/hooks/useTokenDrag";
-import { useCombatStore } from "@/stores/combatStore";
+import { createPing } from "@/lib/canvas/ping-renderer";
+import { snapToGrid, completeMeasurement, type RulerState } from "@/lib/canvas/measure-renderer";
+import type { PingEffect } from "@/lib/canvas/ping-renderer";
 import ZoomControls from "./ZoomControls";
 import MapViewControls from "./MapViewControls";
+import MapPingRulerTools from "./MapPingRulerTools";
 import InitiativeOverlay from "./InitiativeOverlay";
 
 export interface CanvasMapHandle {
@@ -62,14 +63,10 @@ export interface CanvasMapViewProps {
   dmView?: boolean;
   onTokenClick?: (token: MapToken, clientX?: number, clientY?: number) => void;
   onCellClick?: (gridX: number, gridY: number) => void;
-  /** Called when a token drag completes with final snapped grid position */
   onMoveToken?: (tokenId: string, gridX: number, gridY: number) => void;
-  /** Active combat encounter for initiative overlay */
   activeEncounter?: CombatEncounter | null;
-  /** Called when the DM clicks Next/Prev turn from the initiative overlay */
   onNextTurn?: () => void;
   onPrevTurn?: () => void;
-  /** View-only mode for theatric display */
   viewOnly?: boolean;
 }
 
@@ -95,8 +92,16 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     lights: [], walls, tokens, fogVisible: new Set(), fogExplored: new Set(),
     zoom: 1, panX: 0, panY: 0, showGrid: true, showFog: !dmView, dmView,
     time: 0, dragPreview: null,
-    activeEncounter: activeEncounter,
-    activeTurnTokenId: activeTurnTokenId,
+    activeEncounter,
+    activeTurnTokenId,
+    activePings: [],
+    rulerState: {
+      rulerMode: false,
+      originX: null, originY: null,
+      currentX: 0, currentY: 0,
+      isDragging: false,
+      measurements: [],
+    },
   });
 
   // ── React state for UI controls ──
@@ -107,11 +112,13 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   const [showInitiativeOverlay, setShowInitiativeOverlay] = useState(true);
   const [isCanvasDragging, setIsCanvasDragging] = useState(false);
   const isCanvasDraggingRef = useRef(false);
+  const [pingMode, setPingMode] = useState(false);
+  const [rulerMode, setRulerMode] = useState(false);
 
-  // ── Drag start position ref (for canvas pan vs token drag detection) ──
+  // ── Drag start position ref ──
   const dragStart = useRef({ x: 0, y: 0 });
 
-  // ── Token Drag Hook (Cycle 22) ─────────────────────────
+  // ── Token Drag Hook (Cycle 22) ──
   const {
     dragState,
     handleMouseDown: handleTokenDragDown,
@@ -119,23 +126,17 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     handleMouseUp: handleTokenDragUp,
   } = useTokenDrag(
     viewOnly
-      ? { tokens: [], gridSize: mapData.gridSize } // Disable drag in view-only mode
+      ? { tokens: [], gridSize: mapData.gridSize }
       : {
           tokens,
           gridSize: mapData.gridSize,
-          onMoveToken: (tokenId, gridX, gridY) => {
-            onMoveToken?.(tokenId, gridX, gridY);
-          },
-          onTokenClick: (token) => {
-            onTokenClick?.(token);
-          },
-          onCellClick: (gridX, gridY) => {
-            onCellClick?.(gridX, gridY);
-          },
+          onMoveToken: (tokenId, gridX, gridY) => onMoveToken?.(tokenId, gridX, gridY),
+          onTokenClick: (token) => onTokenClick?.(token),
+          onCellClick: (gridX, gridY) => onCellClick?.(gridX, gridY),
         }
   );
 
-  // ── Sync drag preview state to canvas render state ──
+  // ── Sync drag preview state ──
   useEffect(() => {
     const activeToken = dragState.isDragging && dragState.activeTokenId
       ? tokens.find(t => t.id === dragState.activeTokenId)
@@ -161,7 +162,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     }
   }, [dragState, tokens]);
 
-  // ── Load map image ──────────────────────
+  // ── Load map image ──
   useEffect(() => {
     if (!mapData.imageUrl) return;
     const img = new Image();
@@ -170,7 +171,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     img.onload = () => { stateRef.current.image = img; };
   }, [mapData.imageUrl]);
 
-  // ── Animation loop (60fps pulse on selected/active tokens) ──
+  // ── Animation loop (60fps) ──
   const renderFrame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -199,9 +200,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   useEffect(() => {
     animFrameRef.current = requestAnimationFrame(renderFrame);
     return () => {
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-      }
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [renderFrame]);
 
@@ -214,20 +213,67 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     return () => window.removeEventListener("resize", h);
   }, [renderFrame]);
 
-  // ── Mouse handlers ──
+  // ── Helper: pixel to grid conversion ──
+  const getCanvasGridPos = useCallback((clientX: number, clientY: number) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    const s = stateRef.current;
+    const canvasX = (clientX - rect.left - s.panX) / s.zoom;
+    const canvasY = (clientY - rect.top - s.panY) / s.zoom;
+    return snapToGrid(canvasX, canvasY, s.gridSize);
+  }, []);
 
+  // ── Mouse handlers ──
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (viewOnly || e.button !== 0) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
+    const s = stateRef.current;
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
 
+    // ═══ Cycle 24: Ping mode ═══
+    if (pingMode) {
+      const gridPos = getCanvasGridPos(e.clientX, e.clientY);
+      if (gridPos) {
+        const ping = createPing(gridPos.gridX, gridPos.gridY);
+        stateRef.current.activePings = [...(stateRef.current.activePings || []), ping];
+      }
+      return;
+    }
+
+    // ═══ Cycle 24: Ruler mode ═══
+    if (rulerMode) {
+      const gridPos = getCanvasGridPos(e.clientX, e.clientY);
+      if (gridPos) {
+        const rs = stateRef.current.rulerState!;
+        // If already has origin and is clicking again → complete measurement
+        if (rs.originX !== null && rs.originY !== null && !rs.isDragging) {
+          rs.currentX = gridPos.gridX;
+          rs.currentY = gridPos.gridY;
+          const measurement = completeMeasurement(rs);
+          rs.measurements = [...rs.measurements, measurement];
+          rs.originX = null;
+          rs.originY = null;
+          rs.isDragging = false;
+        } else {
+          // Start new measurement
+          rs.originX = gridPos.gridX;
+          rs.originY = gridPos.gridY;
+          rs.currentX = gridPos.gridX;
+          rs.currentY = gridPos.gridY;
+          rs.isDragging = true;
+        }
+      }
+      return;
+    }
+
+    // ═══ Normal mode: Try token hit first ═══
     const hit = handleTokenDragDown(
       canvasX, canvasY,
-      stateRef.current.panX, stateRef.current.panY, stateRef.current.zoom
+      s.panX, s.panY, s.zoom
     );
 
     if (hit) {
@@ -235,16 +281,26 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
       return;
     }
 
+    // No token hit → start canvas pan
     isCanvasDraggingRef.current = true;
     setIsCanvasDragging(true);
-    dragStart.current = {
-      x: e.clientX - stateRef.current.panX,
-      y: e.clientY - stateRef.current.panY,
-    };
-  }, [handleTokenDragDown, viewOnly]);
+    dragStart.current = { x: e.clientX - s.panX, y: e.clientY - s.panY };
+  }, [handleTokenDragDown, viewOnly, pingMode, rulerMode, getCanvasGridPos]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (viewOnly) return;
+
+    const s = stateRef.current;
+
+    // ═══ Ruler mode: Update cursor position ═══
+    if (rulerMode && s.rulerState?.isDragging && s.rulerState.originX !== null) {
+      const gridPos = getCanvasGridPos(e.clientX, e.clientY);
+      if (gridPos) {
+        s.rulerState.currentX = gridPos.gridX;
+        s.rulerState.currentY = gridPos.gridY;
+      }
+      return;
+    }
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -254,19 +310,36 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
 
     const dragConsumed = handleTokenDragMove(
       canvasX, canvasY,
-      stateRef.current.panX, stateRef.current.panY, stateRef.current.zoom
+      s.panX, s.panY, s.zoom
     );
 
     if (dragConsumed) return;
 
     if (isCanvasDraggingRef.current) {
-      stateRef.current.panX = e.clientX - dragStart.current.x;
-      stateRef.current.panY = e.clientY - dragStart.current.y;
+      s.panX = e.clientX - dragStart.current.x;
+      s.panY = e.clientY - dragStart.current.y;
     }
-  }, [handleTokenDragMove, viewOnly]);
+  }, [handleTokenDragMove, viewOnly, rulerMode, getCanvasGridPos]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (viewOnly) return;
+
+    const s = stateRef.current;
+
+    // ═══ Ruler mode: Complete measurement on release ═══
+    if (rulerMode && s.rulerState?.isDragging && s.rulerState.originX !== null) {
+      const gridPos = getCanvasGridPos(e.clientX, e.clientY);
+      if (gridPos) {
+        s.rulerState.currentX = gridPos.gridX;
+        s.rulerState.currentY = gridPos.gridY;
+        const measurement = completeMeasurement(s.rulerState);
+        s.rulerState.measurements = [...s.rulerState.measurements, measurement];
+      }
+      s.rulerState.isDragging = false;
+      s.rulerState.originX = null;
+      s.rulerState.originY = null;
+      return;
+    }
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -276,20 +349,50 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
 
     const dragConsumed = handleTokenDragUp(
       canvasX, canvasY,
-      stateRef.current.panX, stateRef.current.panY, stateRef.current.zoom
+      s.panX, s.panY, s.zoom
     );
 
     isCanvasDraggingRef.current = false;
     setIsCanvasDragging(false);
 
     if (dragConsumed) return;
-  }, [handleTokenDragUp, viewOnly]);
+  }, [handleTokenDragUp, viewOnly, rulerMode, getCanvasGridPos]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const n = Math.max(0.25, Math.min(4, stateRef.current.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
     stateRef.current.zoom = n;
     setZoom(n);
+  }, []);
+
+  // ── Ping/Ruler handlers ──
+  const handleTogglePing = useCallback(() => {
+    setPingMode((prev) => {
+      stateRef.current.rulerState!.rulerMode = false;
+      setRulerMode(false);
+      return !prev;
+    });
+  }, []);
+
+  const handleToggleRuler = useCallback(() => {
+    setRulerMode((prev) => {
+      stateRef.current.rulerState!.rulerMode = !prev;
+      if (!prev) {
+        setPingMode(false);
+      } else {
+        // Clear pending measurement on deactivate
+        stateRef.current.rulerState!.originX = null;
+        stateRef.current.rulerState!.originY = null;
+        stateRef.current.rulerState!.isDragging = false;
+      }
+      return !prev;
+    });
+  }, []);
+
+  const handleClearMeasurements = useCallback(() => {
+    stateRef.current.rulerState!.measurements = [];
+    stateRef.current.rulerState!.originX = null;
+    stateRef.current.rulerState!.originY = null;
   }, []);
 
   // ── Imperative handle ──
@@ -303,16 +406,38 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     zoomOut: () => { const n = Math.max(0.25, zoom * 0.8); stateRef.current.zoom = n; setZoom(n); },
   }), [renderFrame, zoom, showFog, isDmView]);
 
+  const hasMeasurements = (stateRef.current.rulerState?.measurements.length ?? 0) > 0;
+
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-obsidian" style={{ minHeight: "400px" }}>
       {/* ── Canvas layer ── */}
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 ${isCanvasDragging ? 'cursor-grabbing' : viewOnly ? 'cursor-default' : 'cursor-grab'}`}
+        className={`absolute inset-0 ${
+          pingMode ? 'cursor-crosshair' :
+          rulerMode ? 'cursor-cell' :
+          isCanvasDragging ? 'cursor-grabbing' :
+          viewOnly ? 'cursor-default' : 'cursor-grab'
+        }`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onMouseLeave={(e) => {
+          // If ruler is dragging, complete it
+          if (rulerMode && stateRef.current.rulerState?.isDragging) {
+            const gridPos = getCanvasGridPos(e.clientX, e.clientY);
+            if (gridPos && stateRef.current.rulerState.originX !== null) {
+              stateRef.current.rulerState.currentX = gridPos.gridX;
+              stateRef.current.rulerState.currentY = gridPos.gridY;
+              const measurement = completeMeasurement(stateRef.current.rulerState);
+              stateRef.current.rulerState.measurements = [...stateRef.current.rulerState.measurements, measurement];
+            }
+            stateRef.current.rulerState.isDragging = false;
+            stateRef.current.rulerState.originX = null;
+            stateRef.current.rulerState.originY = null;
+          }
+          handleMouseUp(e);
+        }}
         onWheel={handleWheel}
       />
 
@@ -324,7 +449,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
         />
       )}
 
-      {/* ── Map view controls (bottom-left, above zoom) ── */}
+      {/* ── Map view controls (top-right) ── */}
       {!viewOnly && (
         <MapViewControls
           showFog={showFog} isDmView={isDmView} showGrid={showGrid}
@@ -332,6 +457,20 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
           onToggleDmView={() => { const n = !isDmView; setIsDmView(n); stateRef.current.dmView = n; stateRef.current.showFog = !n; setShowFog(!n); }}
           onToggleGrid={() => { const n = !showGrid; setShowGrid(n); stateRef.current.showGrid = n; }}
         />
+      )}
+
+      {/* ── Ping & Ruler tools (bottom-center) ── */}
+      {!viewOnly && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+          <MapPingRulerTools
+            pingMode={pingMode}
+            rulerMode={rulerMode}
+            hasMeasurements={hasMeasurements}
+            onTogglePing={handleTogglePing}
+            onToggleRuler={handleToggleRuler}
+            onClearMeasurements={handleClearMeasurements}
+          />
+        </div>
       )}
 
       {/* ── Initiative overlay (top-right) ── */}

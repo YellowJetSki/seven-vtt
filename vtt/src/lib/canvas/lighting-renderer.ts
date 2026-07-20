@@ -9,18 +9,16 @@
  *   3. Grid overlay
  *   4. Fog of war
  *   5. Dynamic lighting
- *   6. Tokens (with active turn highlighting)
+ *   6. Tokens (with turn highlighting + visual state overlays)
  *   7. Initiative overlays (turn banner, next-up, dead markers, status chips)
- *   8. Drag preview (ghost + drop target + trail + coordinate readout)
+ *   8. Ping effects (expanding ripple rings)
+ *   9. Measurement/ruler overlays (distance lines + readout)
+ *  10. Drag preview (ghost + drop target + trail + coordinate readout)
  *
- * Cycle 22 Enhancement (Premium Battlemap Overhaul):
- *   - DragPreviewState integration for rendering ghost tokens while dragging
- *
- * Cycle 23 Enhancement (Premium Battlemap Overhaul):
- *   - Initiative overlay rendering directly on the canvas
- *   - ActiveTurnTokenId for dynamic turn highlighting on tokens
- *   - Turn banners, next-up indicators, dead markers, concentration chips
- *   - InitiativeOverlayState integration for canvas initiative rendering
+ * Cycle 22 Enhancement: Drag preview rendering
+ * Cycle 23 Enhancement: Initiative overlay + active turn highlighting
+ * Cycle 24 Enhancement: Visual state overlays (bloodied/restrained/concentrating/
+ *   prone/stunned/invisible), ping/ripple animations, measurement/ruler tool
  */
 
 import type { LightSource, WallSegment, MapToken, CombatEncounter } from "@/types";
@@ -39,6 +37,14 @@ import {
   renderInitiativeOverlay,
   type InitiativeOverlayState,
 } from "./initiative-renderer";
+import {
+  renderPings,
+  type PingState,
+} from "./ping-renderer";
+import {
+  renderMeasurements,
+  type RulerState,
+} from "./measure-renderer";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -74,6 +80,10 @@ export interface CanvasRenderState {
   activeEncounter?: CombatEncounter | null;
   /** Token ID of the currently active turn combatant */
   activeTurnTokenId?: string | null;
+  /** Cycle 24: Active ping effects for ripple animation */
+  activePings?: PingState["activePings"];
+  /** Cycle 24: Ruler measurement state */
+  rulerState?: RulerState;
 }
 
 // ── Renderer ─────────────────────────────────────────────
@@ -89,6 +99,7 @@ export function renderCanvas(
     zoom, panX, panY, showGrid, showFog, dmView,
     time = 0, dragPreview, dragTokenColor, dragTokenLabel, dragTokenSize,
     activeEncounter, activeTurnTokenId,
+    activePings, rulerState,
   } = state;
 
   const mapWidth = gridWidth * gridSize;
@@ -139,7 +150,6 @@ export function renderCanvas(
       time,
       dmView,
     };
-    // Build token position map for initiative overlay
     const tokenPositions = tokens.map((t) => ({
       gridX: t.x,
       gridY: t.y,
@@ -148,19 +158,27 @@ export function renderCanvas(
     renderInitiativeOverlay(ctx, tokenPositions, initState, gridSize);
   }
 
-  // ── 8. Drag preview overlay ──
+  // ── 8. Ping effects ──
+  if (activePings && activePings.length > 0) {
+    state.activePings = renderPings(ctx, activePings, gridSize);
+  }
+
+  // ── 9. Measurement/ruler overlays ──
+  if (rulerState && (rulerState.isDragging || rulerState.measurements.length > 0 ||
+      (rulerState.originX !== null && rulerState.originY !== null))) {
+    renderMeasurements(ctx, rulerState, gridSize);
+  }
+
+  // ── 10. Drag preview overlay ──
   if (dragPreview && dragPreview.isDragging && dragPreview.activeTokenId) {
     const { ghostGridX, ghostGridY, originGridX, originGridY } = dragPreview;
 
-    // Drop target cell highlight
     drawDropTarget(ctx, ghostGridX, ghostGridY, gridSize);
 
-    // Drag trail line
     if (originGridX !== ghostGridX || originGridY !== ghostGridY) {
       drawDragTrail(ctx, originGridX, originGridY, ghostGridX, ghostGridY, gridSize);
     }
 
-    // Ghost token at current position
     if (dragTokenColor) {
       drawGhostToken(
         ctx,
@@ -173,7 +191,6 @@ export function renderCanvas(
       );
     }
 
-    // Coordinate readout
     drawCoordinateReadout(ctx, ghostGridX, ghostGridY, gridSize);
   }
 
