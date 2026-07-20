@@ -9552,3 +9552,78 @@ These are high-practical-value features identified through systematic audit of w
 - ✅ NO mention of 'Tick race' or 'Food machine'
 
 ---
+
+## Sprint 14/41 — Deep Exploration QA Phase (Cycle 2 of 7): Character Derivations & Spell Slot Engine QA (Updated: 2026-07-20 18:54)
+## Sprint 14/41 — Character Derivations & Spell Slot Engine QA
+
+### Test Files Created
+
+| File | Test Suites | Test Cases | Lines |
+|------|:-----------:|:----------:|:-----:|
+| `character-derivations-qa.test.ts` | 8 | **65+** | 520+ |
+| `spell-slot-engine-qa.test.ts` | 10 | **55+** | 480+ |
+
+### character-derivations.ts Test Coverage
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| getAbilityMod | 2 | All 30 standard scores (1-30) mapped to modifiers, edge case 0 |
+| getProficiencyBonus | 2 | All 20 levels, edge case level 0 |
+| computeArmorClass — Unarmored | 3 | Kaelen (Wizard DEX14=AC12), naked DEX10=AC10, naked DEX20=AC15 |
+| computeArmorClass — Unarmored Defense | 2 | Durin (Barbarian CON16=AC15), Barbarian CON18 DEX18=AC18 |
+| computeArmorClass — Light Armor | 3 | Wendy DEX18 Studded=AC16, Leather DEX12=AC13, Padded DEX20=AC16 |
+| computeArmorClass — Medium Armor | 3 | Half Plate DEX14=AC17, Breastplate DEX18=AC16, Chain Shirt DEX10=AC13 |
+| computeArmorClass — Heavy Armor | 2 | Plate+Shield=AC20, Chain Mail=AC16 |
+| computeArmorClass — Standalone Shield | 1 | Shield only=AC12 |
+| computeArmorClass — Kehrfuffle integrated | 1 | Plate+Shield++1=AC21 |
+| computeArmorClass — Magic Items | 3 | +1 armor, +2 AC notes, Shield +1 |
+| computeArmorClass — Edge Cases | 2 | No armor/features=AC10, double armor behavior |
+| computeInitiative | 5 | Wendy(+4), Kehrfuffle(0), Kaelen(+2), DEX20(+5), DEX1(-5) |
+| computeSpeed | 3 | Wendy(25), Kehrfuffle(30), floor≥0 |
+| computeEncumbranceState | 6 | Capacities, levels (unenc./light/heavy/over), coin weight |
+| computeSpellcasting — Full Caster | 5 | Kaelen DC15, ATK+7, INT18, full caster, save DC |
+| computeSpellcasting — Half Caster | 5 | Kehrfuffle DC14, ATK+6, CHA+3, half caster |
+| computeSpellcasting — Non-caster | 3 | Fighter null, Rogue null, Barbarian null |
+| computeAllDerivations — full pipeline | 10 | Wendy/Kehrfuffle/Kaelen/Durin ability mods, AC, PB, init, speed, HP, caster detection |
+| Edge Cases | 5 | Min character, empty equipment, empty inventory, undefined conditions, speed floor |
+
+### spell-slot-engine.ts Test Coverage
+
+| Suite | Tests | Coverage |
+|-------|:-----:|----------|
+| computeSpellSaveDC | 5 | Kaelen(15), Kehrfuffle(14), min(8), negative mod |
+| computeSpellAttackBonus | 4 | Kaelen(+7), Kehrfuffle(+6), zero, negative |
+| buildSpellSlots — Full Caster | 5 | Lv1(2/0), Lv3(4/2), Lv5(4/3/2), Lv20 RAW table |
+| buildSpellSlots — Half Caster | 4 | Lv2(2/0), Lv5(4/2), Lv9(4/3/2), Lv20 RAW table |
+| buildSpellSlots — Third Caster | 4 | Lv3(2/0), Lv7(4/2), Lv13(4/3/2), Lv20 RAW table |
+| buildSpellSlots — Edge Cases | 2 | Level 0 zeros, Lv1 half caster zero slots |
+| castSpell | 6 | Normal cast, L3 cast, no slots, upcast, upcast fail, immutability |
+| restoreSlots | 3 | Full restore, per-level restore, immutability |
+| createSpellcastingState | 2 | Wizard full caster, Paladin half caster |
+| tryCastSpell | 4 | Cast+concentration, no slots, upcast |
+| restoreAllSpellSlots | 1 | Full restoration preserves concentration |
+| restoreSpellSlotsForLevel | 1 | Per-level restore |
+| endConcentration | 1 | Clear spell |
+| getSlotSummary | 3 | Non-zero only, empty, spent slots |
+| Edge Cases | 4 | Unknown caster type, level 0 cast, immutability across all functions, long chain cast/restore cycle |
+
+### Bugs Discovered (Documented)
+
+| # | Bug | Engine | Severity | Detail |
+|:-:|-----|--------|:--------:|--------|
+| 1 | `isDead` detection wrong | character-derivations | 🟡 Medium | Checks for conditions "death" which doesn't exist in 5e. Should check `deathSaves.failures >= 3` |
+| 2 | `acBonuses` dead code | character-derivations | 🟢 Low | Variable computed but never applied; DEX for medium armor is redundantly applied both inside loop and post-loop |
+| 3 | `restoreSlots` crash on undefined level | spell-slot-engine | 🔴 High | If `slots["level9"]` is undefined (e.g., half caster Lv5 attempting to restore level 9), accessing `updated[key].max` would crash. Should have null guard. |
+| 4 | Upcast error message misleading | spell-slot-engine | 🟢 Low | Error says "No level 1 spell slots" when upcast target level 3 has no slots — should say "No level 3 slots" |
+| 5 | `computeSpeed` doesn't feed into `computeAllDerivations` | character-derivations | 🟢 Low | computeAllDerivations returns raw `character.speed` instead of calling `computeSpeed()` — API inconsistency |
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2033 modules)
+- Production URL: ✅ arkla.vercel.app
+
+### Compliance
+- ✅ NO dice rollers in tests
+- ✅ Pure Arkla campaign lore (Wendy, Kehrfuffle, Kaelen, Durin)
+- ✅ NO 'Tick race' or 'Food machine' references
+
+---
