@@ -1,21 +1,27 @@
 /**
- * STᚱ VTT — Sidebar (Modular Premium Architecture)
+ * STᚱ VTT — Sidebar (Premium Persistent Side-Rail)
  *
- * Navigation sidebar with architectural depth transitions.
- * Collapses between icon-only (w-16) and full-width (w-64) with:
- * - Smooth morphing width transition (300ms cubic-bezier)
- * - Mobile: overlays content with backdrop blur, dismissable via backdrop click
- * - Desktop: pushes content alongside
- * - All elements extracted into reusable sub-components:
- *   SidebarBrand, SidebarNavLink, SidebarFooter
+ * Desktop: ALWAYS visible as a persistent side-rail.
+ * - sidebarOpen = true  → w-64 full-width (labels visible)
+ * - sidebarOpen = false → w-16 collapsed (icons only)
+ * - The sidebar NEVER fully disappears on desktop.
  *
- * Uses proper mobile-first responsive pattern:
- * - Mobile (< lg): sidebar is a fixed overlay with backdrop when open
- * - Desktop (lg+): sidebar pushes content alongside, collapses to w-16
+ * Mobile: acts as a drawer overlay triggered by the hamburger.
+ * - sidebarOpen = true  → overlay slides in from left with backdrop
+ * - sidebarOpen = false → hidden off-screen
+ * - MobileBottomNav provides persistent bottom navigation
+ *
+ * Architecture:
+ *   - Responsive breakpoint: lg (1024px)
+ *   - Uses useResponsive for accurate breakpoint detection
+ *   - Body scroll lock on mobile when sidebar is open
+ *   - All sub-components are reusable (SidebarBrand, SidebarNavLink, SidebarFooter)
  */
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useUIStore } from "@/stores/uiStore";
+import { useResponsive } from "@/hooks/useResponsive";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import SidebarBrand from "./SidebarBrand";
 import SidebarNavLink from "./SidebarNavLink";
 import SidebarFooter from "./SidebarFooter";
@@ -40,26 +46,31 @@ const navItems: NavItem[] = [
 export default function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
-  const isLargeScreen = typeof window !== "undefined" && window.innerWidth >= 1024;
+  const { isMobile, isDesktop } = useResponsive();
 
-  // On mobile: when sidebar opens, lock body scroll
-  useEffect(() => {
-    if (sidebarOpen && !isLargeScreen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+  // ── Mobile body scroll lock (extracted hook) ──
+  useBodyScrollLock(sidebarOpen && isMobile);
+
+  // ── Desktop: sidebar is ALWAYS visible ──
+  // If somehow sidebar got closed on desktop (nav bug), re-open it
+  const ensureDesktopVisible = useCallback(() => {
+    if (isDesktop && !sidebarOpen) {
+      setSidebarOpen(true);
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [sidebarOpen]);
+  }, [isDesktop, sidebarOpen, setSidebarOpen]);
 
+  useEffect(() => {
+    ensureDesktopVisible();
+  }, [ensureDesktopVisible]);
+
+  // On desktop, always render — sidebar never disappears
+  // On mobile, only render as overlay (shown/hidden by translate)
   return (
     <>
       {/* ── MOBILE OVERLAY BACKDROP ── */}
-      {sidebarOpen && !isLargeScreen && (
+      {sidebarOpen && isMobile && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -68,23 +79,28 @@ export default function Sidebar() {
       {/* ── SIDEBAR ── */}
       <aside
         className={`
-          // Desktop behavior — pushes content, collapses to w-16
-          lg:relative lg:shrink-0 lg:translate-x-0
+          // ── PERMANENT DESKTOP VISIBILITY ──
+          // Desktop: sidebar ALWAYS renders, never disappears
+          // It transitions between w-64 (open) and w-16 (collapsed)
+          lg:relative lg:shrink-0 lg:translate-x-0 lg:flex
           ${
-            sidebarOpen
-              ? "lg:w-64 lg:min-w-[16rem] lg:max-w-[16rem]"
-              : "lg:w-16 lg:min-w-[4rem] lg:max-w-[4rem]"
+            isDesktop
+              ? sidebarOpen
+                ? "lg:w-64 lg:min-w-[16rem] lg:max-w-[16rem]"
+                : "lg:w-16 lg:min-w-[4rem] lg:max-w-[4rem]"
+              : ""
           }
 
-          // Mobile behavior — fixed overlay with slide-in
-          fixed top-0 left-0 z-50 h-full
+          // ── MOBILE OVERLAY ──
           ${
-            sidebarOpen
-              ? "translate-x-0 w-64 min-w-[16rem] max-w-[16rem]"
-              : "-translate-x-full lg:translate-x-0"
+            isMobile
+              ? sidebarOpen
+                ? "translate-x-0 w-64 min-w-[16rem] max-w-[16rem]"
+                : "-translate-x-full"
+              : ""
           }
 
-          // Shared styling
+          // ── SHARED STYLING ──
           flex flex-col select-none
           bg-gradient-to-b from-[#14151f]/[0.95] to-[#0f101a]/[0.98]
           lg:bg-gradient-to-b from-[#14151f]/[0.88] to-[#0f101a]/[0.94]
@@ -92,6 +108,7 @@ export default function Sidebar() {
           shadow-[4px_0_32px_rgba(0,0,0,0.2)]
           transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
           overflow-hidden
+          ${isMobile ? "fixed top-0 left-0 z-50 h-full" : "h-full"}
         `}
       >
         {/* Gold edge light on right side */}

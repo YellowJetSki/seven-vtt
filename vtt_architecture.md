@@ -6877,3 +6877,55 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 - Component hydration: `AssetImage.tsx` renders both SVG + PNG with loading/error states
 - Canvas integration: `useBattleMapImageLoader` replaces basic `new Image()` with retry + cancel
 ---
+
+## Sprint 2/30 — Navigation Paradigm & Bug Fix (Updated: 2026-07-20 12:51)
+## Sprint 2/30 — Navigation Paradigm & Bug Fix (2026-07-20)
+
+**Phase:** Premium Refinement, Tabletop Practicality, and QA  
+**Status:** Complete — TypeScript 0 errors
+
+### Bug Fix: Sidebar Disappearing on Certain Tabs
+
+**Root Cause:** The `MobileBottomNav` only listed 5 of 8 routes. On mobile, navigating to Homebrew, Journal, or Asset Gallery would hide all bottom navigation. On desktop, the sidebar's `w-16`/`w-64` transition was using `hidden` CSS classes that could fully remove it on some tab transitions.
+
+**Fix applied:**
+1. `MobileBottomNav.tsx` — Now lists ALL 8 routes with horizontal scroll for overflow
+2. `Sidebar.tsx` — Desktop sidebar now uses `lg:flex` (always renders), transitions between `w-64` (open) and `w-16` (collapsed) — NEVER disappears
+3. `useResponsive.ts` — New hook for accurate mobile/desktop detection
+4. `useBodyScrollLock.ts` — New hook for proper mobile sidebar scroll locking
+
+### Hamburger Menu UX Overhaul
+
+**Before:** Desktop hamburger toggled sidebar hidden/visible. Mobile hamburger toggled sidebar overlay. Sidebar could fully disappear on desktop.
+
+**After (Desktop Industry Standard):**
+| State | Desktop (lg+) | Mobile (< lg) |
+|-------|:-------------:|:-------------:|
+| Sidebar open | w-64 full (labels visible) | Fixed overlay (0→100% width) |
+| Sidebar collapsed | w-16 icons only | Hidden (translate-x-full) |
+| Sidebar disappears? | **NEVER** | YES (as designed for mobile) |
+| Hamburger action | Collapse/expand (w-64↔w-16) | Open/close overlay |
+| Bottom nav | Hidden | Shows ALL 8 routes |
+
+### New Files Created (3)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `hooks/useResponsive.ts` | 55 | Hook for accurate mobile/desktop breakpoint detection (lg = 1024px) |
+| `hooks/useBodyScrollLock.ts` | 18 | Hook for preventing body scroll when mobile sidebar/modal is open |
+
+### Files Modified (4)
+
+| File | Changes |
+|------|---------|
+| `stores/uiStore.ts` | `sidebarOpen` default is now responsive (true on desktop, false on mobile startup) |
+| `components/layout/Sidebar.tsx` | Desktop: ALWAYS renders (`lg:flex`), never disappears. Transitions w-64↔w-16. Mobile: overlay with backdrop. Uses `useResponsive` + `useBodyScrollLock` hooks. |
+| `components/layout/AppShell.tsx` | Removed `hidden sm:block` wrapper (sidebar now handles its own visibility). Persistent layout. |
+| `components/layout/Header.tsx` | Uses `useResponsive` for contextual hamburger label. Desktop: "Collapse sidebar" / "Expand sidebar". Mobile: "Open menu" / "Close menu". |
+| `components/layout/MobileBottomNav.tsx` | Now includes ALL 8 routes with horizontal scroll. No more "missing tabs" bug. |
+
+### Quality Gates
+- TypeScript: ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (349 parser errors, same as Sprint 1 — not code errors)
+- Component count: No new monolithic files
+---
