@@ -109,3 +109,51 @@
 .float-slow { animation: float-arcane 8s ease-in-out 1s infinite; }
 .float-fast { animation: float-arcane 4s ease-in-out infinite; }
 .rune-pulse { animation: rune-pulse 2s ease-in-out infinite; }
+
+// ── Premium Loading & Empty State Animations ──────────────────
+
+@keyframes loading-arc {
+  0% { stroke-dashoffset: 150; transform: rotate(0deg); }
+  50% { stroke-dashoffset: 50; transform: rotate(180deg); }
+  100% { stroke-dashoffset: 150; transform: rotate(360deg); }
+}
+
+@keyframes loading-dot-bounce {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes empty-glow-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.08); }
+}
+
+@keyframes empty-float-core {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-8px) rotate(-2deg) scale(1.02); }
+  50% { transform: translateY(-12px) rotate(0deg) scale(1.03); }
+  75% { transform: translateY(-4px) rotate(2deg) scale(1.01); }
+}
+
+@keyframes empty-particle-drift {
+  0% { opacity: 0; transform: translateY(0) translateX(0) scale(0); }
+  20% { opacity: 0.6; }
+  80% { opacity: 0.3; }
+  100% { opacity: 0; transform: translateY(-60px) translateX(var(--drift-x)) scale(1); }
+}
+
+@keyframes loading-progress-fill {
+  0% { width: 0%; }
+  30% { width: 30%; }
+  60% { width: 55%; }
+  85% { width: 75%; }
+  100% { width: 90%; }
+}
+
+// ── Utility Classes ────────────────────────────────────────────
+.animate-loading-arc { animation: loading-arc 1.6s ease-in-out infinite; }
+.animate-loading-dot-bounce { animation: loading-dot-bounce 1.4s ease-in-out infinite; }
+.animate-empty-glow-pulse { animation: empty-glow-pulse 4s ease-in-out infinite; }
+.animate-empty-float-core { animation: empty-float-core 6s ease-in-out infinite; }
+.animate-empty-particle { animation: empty-particle-drift 3s ease-out infinite; }
+.animate-loading-progress { animation: loading-progress-fill 2s ease-in-out infinite; }

@@ -5362,3 +5362,65 @@ campaigns/{campaignId}/dm-share/active
 - JS bundle: 1,460 KB (357 KB gzipped)
 - CSS bundle: 264 KB (29 KB gzipped)
 ---
+
+## Sprint 4/25 — Loading & Empty State Overhaul (Updated: 2026-07-20 10:12)
+## Sprint 4/25 — Premium Loading & Empty State Overhaul (2026-07-20)
+
+### Mission
+Transform the Loading Spinner and Empty State into Lusion/Spotify-grade premium experiences with depth layers, fluid animations, and sophisticated typography.
+
+### Files Created (1)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/ui/LoadingScreen.tsx` | 200 | Full-screen loading splash with cinematic background, animated ᚱ rune with pulse glow, staggered bouncing dots, simulated progress bar, fade-in/out transitions |
+
+### Files Rewritten (2)
+
+| File | Before (lines) | After (lines) | Key Changes |
+|------|:--------------:|:-------------:|-------------|
+| `LoadingSpinner.tsx` | 50 | 155 | Multi-variant (inline/section/sm/md/lg), SVG arc dash animation, 3 staggered bouncing dots, shimmer gradient label text, dual glow ring depth layers |
+| `EmptyState.tsx` | 50 | 215 | 3 variants (default/compact/hero), animated gradient gold text, floating ambient particles (2-5), depth-ring glow behind icon, gradient border icon container, staggered slide-in-up entrance on all elements, ✦ ᚱ ✦ premium rune divider |
+
+### Keyframe Animations Added (6)
+| Animation | Purpose |
+|-----------|---------|
+| `loading-arc` | SVG arc spinner rotates with dash-offset variation |
+| `loading-dot-bounce` | Staggered bounce for 3 indicator dots |
+| `empty-glow-pulse` | Slow ambient glow behind icon |
+| `empty-float-core` | 6-point eased float cycle for icon container |
+| `empty-particle-drift` | Ambient particle rising with horizontal drift |
+| `loading-progress-fill` | Simulated progress bar fill (0→30→55→75→90%) |
+
+### Design Architecture — LoadingSpinner
+```
+Gold glow ring (blur-[16px]) ── background
+  └─ Gold glow ring (blur-[8px]) ── mid-layer
+      ├─ SVG arc spinner (rotate + dash animation)
+      └─ 3 staggered bouncing dots (0.32s stagger)
+          └─ Shimmer gradient label (animate-shimmer)
+```
+
+### Design Architecture — EmptyState
+```
+Layer 1: Ambient glow orbs (animate-empty-glow-pulse, 2 sizes)
+Layer 2: Floating ambient particles (2-5, animated drift)
+Layer 3: Icon container with gradient border + inner glow
+Layer 4: Gradient gold title (WebkitBackgroundClip)
+Layer 5: Description with staggered entrance (0.1s)
+Layer 6: ✦ ᚱ ✦ rune divider (0.15s)
+Layer 7: Action button area (0.2s)
+```
+
+### Files Modified (1)
+- `styles/_animations.scss`: Added 6 new keyframes + utility classes
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ 0 errors (2014 modules) |
+| Vite Build | ✅ 7.80s |
+| Vercel Deploy | ✅ arkla.vercel.app |
+| ESLint (pre-existing misconfig) | 312 errors — all parser config, not code |
+| Console errors | ✅ 0 (only Firestore deprecation) |
+---
