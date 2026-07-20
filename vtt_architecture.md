@@ -9380,3 +9380,82 @@ Added `ConnectedPlayersPanel` above SyncHealthPanel in the sidebar. DM can see l
 - Git checkpoint: ✅ Sprint 11 saved
 
 ---
+
+## Sprint 12/41 — Firebase & Login Phase (Cycle 10 of 10 — FINAL CYCLE, COMPLETE) (Updated: 2026-07-20 18:48)
+## Sprint 12/41 — Firebase & Login Phase FINAL: Cross-Device Presence, Join Code Verification, Connection Banner, Global Logout (Complete)
+
+### Deliverables
+
+#### 1. Player Presence Heartbeat Integration (`PlayerSheetPage.tsx`)
+**Before:** Player logged in but no presence heartbeat was broadcast. DM could not see if players were actually connected.
+**After:** `usePlayerPresence()` hook now called on `PlayerSheetPage` mount. Every 30s heartbeat writes to Firestore `/presence/{charId}`. On unmount, presence is deleted. DM sees live player status via `ConnectedPlayersPanel` in the sidebar.
+
+#### 2. Firebase Join Code Verification (`PlayerJoinPage.tsx`)
+**Before:** Join code verification was hardcoded to `"ARKLA1"` — no Firestore check.
+**After:** Now reads `campaignData.joinCode` and `joinCodeExpiresAt` from Firestore `campaigns/arkla`. Validates:
+- 24-hour TTL expiration check
+- Case-insensitive code matching
+- Graceful fallback to `"ARKLA1"` for development/testing if Firestore has no campaign data
+- Network error handling with fallback notification
+
+#### 3. Global Login/Logout Persistence (`authStore.ts`)
+**Before:** Logout only cleared Zustand state. Firebase Auth session remained active.
+**After:** Logout now also calls `logoutFirebase()` for cross-device session termination. The `FirebaseAuthGate` in App.tsx automatically restores Zustand state on page refresh via `onAuthStateChanged`.
+
+#### 4. Connection Banner Global Mount (`App.tsx`)
+**Before:** ConnectionBanner existed but was never rendered in the app tree.
+**After:** Mounted directly in App.tsx (outside Routes, visible on ALL pages). Shows "connected/offline/exhausted" states with premium glass gradient styling.
+
+### Cross-Device Login Chain (Complete)
+```
+┌─────────────────────────────────────────────┐
+│  DM Laptop                                  │
+│  1. /login → Firebase Auth → DM dashboard   │
+│  2. Sidebar shows ConnectedPlayersPanel     │
+│  3. Sees "Alice (player)" live heartbeat    │
+│  4. Can push screen shares, start combat    │
+│  5. Logout → Firebase Auth terminated       │
+└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  Player Tablet                              │
+│  1. /player → select Alice → /player/sheet  │
+│  2. usePlayerPresence writes heartbeat      │
+│  3. DM sees: "Alice ●" in sidebar           │
+│  4. Player sees real-time DM updates        │
+│  5. Close tab → presence auto-removed       │
+│  6. Tab crash → stale after 90s timeout     │
+└─────────────────────────────────────────────┘
+```
+
+### Files Modified (6)
+| File | Key Change |
+|------|------------|
+| `vtt/src/pages/PlayerSheetPage.tsx` | Added `usePlayerPresence()` heartbeat hook |
+| `vtt/src/pages/PlayerJoinPage.tsx` | Firestore-based join code verification |
+| `vtt/src/stores/authStore.ts` | Firebase logout on Zustand logout |
+| `vtt/src/App.tsx` | Mounted `ConnectionBanner` globally |
+| `vtt/firestore.rules` | (Already updated Sprint 11) |
+| `vtt/src/pages/LoginPage.tsx` | (Already updated Sprint 11) |
+
+### Firebase & Login Phase — Complete Summary
+
+| Sprint | Target | Key Deliverable |
+|:------:|--------|-----------------|
+| 3 | Campaign Settngs | Campaign configuration dashboard, join code generation, race/class restrictions |
+| 4 | Sync Health | Firestore connection watchdog, retry exhaustion, UI indicators |
+| 5 | Offline Queue | IndexedDb mutation queue, replay on reconnect |
+| 6 | Connection Banner | Connection state tracking, toast notifications |
+| 7 | Player Login Page | Character selection, player name entry, retry UX |
+| 8 | Join Code System | 24-hour TTL, 6-char input grid, paste support |
+| 9 | Presence System | Player heartbeat (30s), DM subscription, stale detection |
+| 10 | Connected Players | Sidebar integration, role badges, empty state |
+| **11** | **Firebase Auth** | **persistent login, onAuthStateChanged, security rules** |
+| **12** | **Cross-Device Flow** | **presence integration, join code verification, global banner** |
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2121 modules)
+- Vite build: ✅ 6.83s, 0 errors
+- Deployed: arkla.vercel.app
+- Git checkpoint: ✅ Sprint 12 saved
+
+---
