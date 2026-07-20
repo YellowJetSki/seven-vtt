@@ -5706,3 +5706,69 @@ Vite chunk warning eliminated. No more dynamic import overhead.
 | ConditionManager.tsx | 350 | 🟢 Low |
 | CharacterStatsPanel.tsx | 360 | 🟢 Low |
 ---
+
+## Sprint 9/25 — Monolith Refactor: PlayerSheetCombatTab (Updated: 2026-07-20 10:32)
+## Sprint 9/25 — Monolith Refactor: PlayerSheetCombatTab (577 lines → 210 lines)
+
+### Target
+`PlayerSheetCombatTab.tsx` — the **#1 largest monolith** in the player directory at 577 lines.
+
+### Refactoring Results
+
+| Metric | Before | After | Improvement |
+|--------|:------:|:-----:|:-----------:|
+| PlayerSheetCombatTab.tsx | 577 lines | 210 lines | **−64%** |
+| New sub-components created | 0 inline | 4 reusable | **+4** |
+| New lib modules created | 0 | 1 | **+1** |
+| Total modules (build) | 2024 | 2029 | +5 (net gain) |
+| JS bundle size | 1,469 KB | 1,467 KB | −2 KB (code sharing) |
+
+### New Sub-Components Created (4)
+
+| Component | File | Lines | Purpose |
+|-----------|------|:-----:|---------|
+| `CombatStatusBanner` | `components/player/CombatStatusBanner.tsx` | 45 | Condition-aware HP status display (Healthy/Bloodied/Unconscious/Dead) |
+| `HpKeypadSection` | `components/player/HpKeypadSection.tsx` | 175 | Full HP management: keypad, custom input, temp HP controls, rest grid |
+| `CombatSectionHeader` | `components/player/CombatSectionHeader.tsx` | 30 | Reusable section header with gold accent line + optional count badge |
+| `ClassFeatureList` | `components/player/ClassFeatureList.tsx` | 50 | Feature cards with names and descriptions |
+
+### New Utility Module (1)
+
+| Module | File | Lines | Purpose |
+|--------|------|:-----:|---------|
+| `lib/combat/combat-resource-deriver` | `lib/combat/combat-resource-deriver.ts` | 95 | `buildWeaponAttacks()`, `deriveClassResources()`, `computeCombatStatus()` — all pure functions extracted |
+
+### Code Optimization Phase Progress (Cycles 6-9)
+
+| Sprint | Target | Before (lines) | After (lines) | Δ | New Files |
+|:------:|--------|:--------------:|:-------------:|:-:|:---------:|
+| 7 | `PlayerSheetSpellsTab` monolith | 615 | 170 | **−72%** | 6 new files |
+| 8 | `PlayerSheetInventoryTab` monolith | 460 | 195 | **−58%** | 5 new files |
+| **9** | **`PlayerSheetCombatTab` monolith** | **577** | **210** | **−64%** | **5 new files** |
+| **Total** | | **1,652** | **575** | **−65% avg** | **16 new files** |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vite build | ✅ **10.47s**, 0 errors, 0 warnings, 2029 modules |
+| JS bundle | ✅ **1,467 KB** (359 KB gzipped) — bundle **shrank** despite more modules |
+| CSS bundle | ✅ **276 KB** (31 KB gzipped) — unchanged |
+| Production URL | ✅ **arkla.vercel.app** |
+| ESLint | ⚠️ 321 pre-existing parser config errors (all `"Unexpected token {"` — TSX parsing, not code issues) |
+
+### Remaining Large Files (Next Targets)
+
+| File | Lines | Priority |
+|------|:-----:|:--------:|
+| PlayerCreateModal.tsx | 524 | 🔴 High |
+| LevelUpPanel.tsx | 457 | 🟡 Medium |
+| PlayerSheetRulesTab.tsx | 455 | 🟡 Medium |
+| SpellcastingManager.tsx | 410 | 🟡 Medium |
+| RestBreakdown.tsx | 397 | 🟡 Medium |
+| EnemyCreator.tsx | 562 | 🟡 Medium |
+| ConditionBanner.tsx | 360 | 🟢 Low |
+| ConditionManager.tsx | 350 | 🟢 Low |
+| CharacterStatsPanel.tsx | 360 | 🟢 Low |
+---
