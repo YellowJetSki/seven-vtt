@@ -28,6 +28,7 @@ import ToastContainer from "@/components/ui/ToastContainer";
 import DmQuickReferenceOverlay from "@/components/ui/DmQuickReferenceOverlay";
 import DmPartyRestOverlay from "@/components/control-center/DmPartyRestOverlay";
 import DmCombatConditionBar from "@/components/control-center/DmCombatConditionBar";
+import DmQuickActionPopover from "@/components/control-center/DmQuickActionPopover";
 import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -44,6 +45,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setPartyRest = useUIStore((s) => s.setPartyRest);
   const showCombatConditions = useUIStore((s) => s.showCombatConditions);
   const setCombatConditions = useUIStore((s) => s.setCombatConditions);
+  const showQuickActions = useUIStore((s) => s.showQuickActions);
+  const setQuickActions = useUIStore((s) => s.setQuickActions);
   const role = useAuthStore((s) => s.role);
 
   // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
@@ -75,6 +78,16 @@ export default function AppShell({ children }: AppShellProps) {
     window.addEventListener("toggle-dm-combat-conditions", handleToggleCombatConditions);
     return () => window.removeEventListener("toggle-dm-combat-conditions", handleToggleCombatConditions);
   }, [handleToggleCombatConditions]);
+
+  // ── Listen for custom "toggle-dm-quick-actions" event from sidebar ──
+  const handleToggleQuickActions = useCallback(() => {
+    setQuickActions(!showQuickActions);
+  }, [setQuickActions, showQuickActions]);
+
+  useEffect(() => {
+    window.addEventListener("toggle-dm-quick-actions", handleToggleQuickActions);
+    return () => window.removeEventListener("toggle-dm-quick-actions", handleToggleQuickActions);
+  }, [handleToggleQuickActions]);
 
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
@@ -149,6 +162,16 @@ export default function AppShell({ children }: AppShellProps) {
         <DmCombatConditionBar
           isOpen={showCombatConditions}
           onClose={() => setCombatConditions(false)}
+        />
+      )}
+
+      {/* ── DM Quick Action Popover ──
+          Globally accessible — damage, heal, temp HP & gold distribution
+          from ANY page without navigating to Player Cards */}
+      {role === "dm" && (
+        <DmQuickActionPopover
+          isOpen={showQuickActions}
+          onClose={() => setQuickActions(false)}
         />
       )}
     </div>

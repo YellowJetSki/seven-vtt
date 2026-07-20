@@ -155,6 +155,29 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* ── DM QUICK ACTIONS TOGGLE (Sprint 27) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("toggle-dm-quick-actions"));
+            }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-rose-500/8 hover:border-rose-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Quick Actions — Damage, Heal, Temp HP, Gold"
+            aria-label="Toggle Quick Actions"
+          >
+            <span className="text-sm">⚡</span>
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-rose-400 transition-colors truncate">
+                Quick Actions
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM PARTY REST TOGGLE ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button
