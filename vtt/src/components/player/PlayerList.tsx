@@ -18,13 +18,16 @@ import PlayerListGrid from "./PlayerListGrid";
 import PlayerCardCompact from "./PlayerCardCompact";
 import PartyPowerMatrix from "./PartyPowerMatrix";
 import PlayerSheet from "./PlayerSheet";
+import LootDepositPanel from "./LootDepositPanel";
 import type { PlayerCharacter } from "@/types";
 
 export default function PlayerList() {
   const characters = useCampaignStore((s) => s.characters);
+  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const [activeSheetChar, setActiveSheetChar] = useState<PlayerCharacter | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMatrix, setShowMatrix] = useState(false);
+  const [showLootPanel, setShowLootPanel] = useState(false);
 
   const handleOpenSheet = useCallback((char: PlayerCharacter) => {
     setActiveSheetChar(char);
@@ -34,6 +37,17 @@ export default function PlayerList() {
     setActiveSheetChar(null);
   }, []);
 
+  // ── Quick gold deposit handler ──
+  const handleQuickGold = useCallback(
+    (charId: string, amount: number) => {
+      const char = characters.find((c) => c.id === charId);
+      if (!char) return;
+      const updatedCurrency = { ...char.currency, gold: char.currency.gold + amount };
+      updateCharacter(charId, { currency: updatedCurrency });
+    },
+    [characters, updateCharacter]
+  );
+
   return (
     <>
       <PlayerListHeader
@@ -41,12 +55,21 @@ export default function PlayerList() {
         onAdd={() => setShowCreateModal(true)}
         onToggleMatrix={() => setShowMatrix((s) => !s)}
         showMatrix={showMatrix}
+        showLootPanel={showLootPanel}
+        onToggleLootPanel={() => setShowLootPanel((s) => !s)}
       />
 
       {/* Party Power Matrix — collapsible */}
       {showMatrix && characters.length > 0 && (
         <div className="mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
           <PartyPowerMatrix characters={characters} />
+        </div>
+      )}
+
+      {/* Loot Deposit Panel — collapsible */}
+      {showLootPanel && characters.length > 0 && (
+        <div className="mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+          <LootDepositPanel />
         </div>
       )}
 
@@ -59,6 +82,7 @@ export default function PlayerList() {
               key={char.id}
               character={char}
               onOpen={handleOpenSheet}
+              onQuickGold={handleQuickGold}
             />
           ))}
         </PlayerListGrid>

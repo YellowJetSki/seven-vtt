@@ -22,14 +22,20 @@ import ConditionDots from "./ConditionDots";
 import type { PlayerCharacter } from "@/types";
 import { getAbilityMod, getProficiencyBonus } from "@/lib/mechanics/character-derivations";
 
+// ── Props update: allow parent to receive quick-deposit callbacks ──
+
 interface PlayerCardCompactProps {
   character: PlayerCharacter;
   onOpen: (character: PlayerCharacter) => void;
+  onQuickGold?: (charId: string, amount: number) => void;
 }
+
+// (interface defined above with import)
 
 export default function PlayerCardCompact({
   character: c,
   onOpen,
+  onQuickGold,
 }: PlayerCardCompactProps) {
   const updateCharacter = useCampaignStore((s) => s.updateCharacter);
   const [showManager, setShowManager] = useState(false);
@@ -133,12 +139,27 @@ export default function PlayerCardCompact({
               className="px-2 py-1"
             />
 
-            {/* PB — right aligned */}
+            {/* PB */}
             <CharacterStatBadge
               label="PB"
               value={`+${pb}`}
-              className="px-2 py-1 ml-auto"
+              className="px-2 py-1"
             />
+
+            {/* Quick Gold Deposit */}
+            {onQuickGold && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onQuickGold(c.id, 10);
+                }}
+                className="ml-auto px-2 py-1 rounded-lg text-[9px] font-bold bg-gold-500/8 text-gold-400/70 border border-gold-500/10 hover:bg-gold-500/15 hover:text-gold-400 hover:border-gold-500/20 active:scale-90 transition-all duration-150 flex items-center gap-1"
+                title="Deposit 10 GP to this character"
+              >
+                <span aria-hidden="true">\uD83E\uDE99</span>
+                +10G
+              </button>
+            )}
           </div>
         </div>
       </div>
