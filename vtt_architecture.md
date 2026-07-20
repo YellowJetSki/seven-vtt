@@ -7981,3 +7981,68 @@ Now: The DM clicks "💥 AoE" in the toolbar, selects all targets at once, enter
 | 20 | Damage Types + Combat Log | Resistance engine + history | ~15s/attack |
 | **21** | **Multi-Target AoE Damage** | **Batch target + apply** | **~180s/Fireball** |
 ---
+
+## Sprint 22/30 — Combatant Drag-to-Reorder Initiative Tracker (Updated: 2026-07-20 13:46)
+## Sprint 22/30 — FINAL Real-Play D&D Mechanics: Combatant Drag-to-Reorder Initiative (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — **CYCLE 10 OF 10 (FINAL)**
+**Target:** Drag-and-drop reordering of combatants in the Initiative Tracker
+
+### Problem Solved
+Before this sprint, when a new combatant joined mid-combat (summoned creature, reinforcement wave), the DM had no way to reorder the turn order. The only option was to delete and re-add combatants. Additionally, the current turn highlighting used the **sorted array index** instead of **combatant ID**, causing the current turn indicator to break after reordering.
+
+After: The DM can **grab any combatant by the grab handle** (☰) and drag them to a new position in the turn order. A gold drop zone indicator appears at the insertion point. The current turn indicator now works by **combatant ID** regardless of sorting or reordering. The "Dragging" ghost footer shows what's being moved.
+
+### Fixed Bugs (2)
+| # | Bug | Location | Fix |
+|:-:|-----|----------|-----|
+| 1 | **Current turn highlighting broken after reorder** — `encounter.currentCombatantIndex === idx` compared sorted array index to underlying encounter index | `InitiativeTracker.tsx` | Changed to ID-based: `currentTurnCombatantId` derived from `encounter.combatants[encounter.currentCombatantIndex]?.id`, compared via `c.id === currentTurnCombatantId` |
+| 2 | **No visual drag feedback** — Dragging a row showed no indication of the source, no drop zone, no ghost | `InitiativeTracker.tsx` + `InitiativeCombatantRow.tsx` | Added gold gradient drop zone lines above target slot, left border glow on source, drag ghost footer, grab handle icon (☰) with cursor-grab/cursor-grabbing |
+
+### Files Modified (2)
+
+| File | Lines | Key Changes |
+|------|:-----:|-------------|
+| `InitiativeTracker.tsx` | 220 (rewrite) | Fixed current turn tracking (ID-based), added drag ghost state + drop zone indicators + drag ghost footer, added `isDragging`/`isDropTarget`/`onDragEnd` prop passthrough, added `handleDragEnd` cleanup, added `animate-fade-in-fast` for drop zone animation |
+| `InitiativeCombatantRow.tsx` | 260 (rewrite) | Added grab handle area (`absolute left-0 w-5 items-center cursor-grab`) with 3-dot icon, added `isDragging` (reduced opacity + dashed border), added `isDropTarget` (subtle gold bg highlight), added `onDragEnd` cleanup handler, wrapped content in `pl-5` to account for grab handle, specific drag handler from grab handle (not entire row click) |
+
+### SCSS Change (1)
+
+| File | Change |
+|------|--------|
+| `_animations.scss` | Added `@keyframes fade-in-fast` (0→1 opacity, 0.15s) and `.animate-fade-in-fast` utility class |
+
+### DM Workflow (Combatant Drag-to-Reorder)
+
+```
+1. Combat encounter is active, 5 combatants in turn order
+2. A summoned creature (Wolf) rolls initiative 18 —
+   it should go between the Rogue (20) and the Paladin (15)
+3. DM hovers over Wolf's row in the Initiative Tracker
+4. Grab handle (☰) appears on the left edge with cursor-grab
+5. DM clicks and drags Wolf from position 3 → position 1 (above enemy turn)
+6. Gold drop zone indicator line appears between Rogue and enemy slots
+7. DM releases → drag ghost footer appears momentarily
+8. `reorderCombatants([rogueId, wolfId, paladinId, ...])` fires
+   → Zustand + Firestore both updated instantly
+9. Current turn indicator stays correct (highlights by combatant ID, not index)
+10. Total time: ~2 seconds vs. previously needing delete+recreate (~30s)
+```
+
+### Real-Play D&D Mechanics Phase — Complete Summary
+
+| Sprint | Target | Time Saved | Key Capability |
+|:------:|--------|:----------:|----------------|
+| 13 | Combat HP HUD | ~20s/check | Floating token HP popover from canvas click |
+| 14 | Loot Deposit | ~30s/deposit | Item deposit with undo |
+| 15 | Condition Quick-Toggle | ~15s/applied | 16-condition toggle with search |
+| 16 | DM Quick Reference | ~60s/lookup | 12-section rules overlay |
+| 17 | Encounter Launch Flow | ~120s/encounter | One-click deploy enemies to map |
+| 18 | Automated Initiative Roll | ~60s/round | Animated d20 + auto-sort |
+| 19 | Attack Resolution | ~45s/attack | Single-target auto-attack |
+| 20 | Damage Types + Combat Log | ~15s/apply | Resistance engine + history |
+| 21 | Multi-Target AoE | ~180s/Fireball | Batch target + resistance-aware apply |
+| **22** | **Drag-to-Reorder** | **~30s/reorder** | **Grab handle + drop zone + ID-based turn tracking** |
+
+**Total estimated DM time saved per session: ~10+ minutes across all features.**
+---
