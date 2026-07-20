@@ -7583,3 +7583,88 @@ A collapsible condition management panel mounted on the Player Cards page:
 | 14 | Loot Deposit Panel | Item/currency deposit to characters with presets + undo |
 | **15** | **Condition Quick-Toggle** | **16-condition management with concentration + custom buffs** |
 ---
+
+## Sprint 16/30 — DM Quick Reference Overlay (Updated: 2026-07-20 13:27)
+## Sprint 16/30 — Real-Play D&D Mechanics: DM Quick Reference Overlay (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 4 OF 10
+**Target:** Build a comprehensive DM Quick Reference overlay accessible from ANY page with keyboard shortcut or sidebar button
+**Tabletop Value:** Eliminates the need to alt-tab or search through rulebooks during live sessions. The DM can access all critical 5e rules (DC benchmarks, cover, light, conditions, exhaustion, rest, travel, jumping, light sources, spellcasting, improvised damage, social interaction) instantly without leaving the current screen.
+
+### New Component: `DmQuickReferenceOverlay.tsx` (410 lines)
+
+A floating glass modal overlay with 12 collapsible sections:
+
+| # | Section | Content |
+|:-:|---------|---------|
+| 1 | Difficulty Class | 6 DC thresholds (Very Easy → Nearly Impossible) |
+| 2 | Light & Vision | Bright/Dim/Darkness rules + Darkvision details |
+| 3 | Cover Rules | Half/Three-Quarters/Total AC bonuses |
+| 4 | Key Conditions | Prone, Grappled, Restrained, Stunned, Unconscious, Invisible, Concentration |
+| 5 | Exhaustion | Levels 1-6 with full progression |
+| 6 | Rest Variants | Short Rest vs Long Rest (bullet lists) |
+| 7 | Travel Pace | Fast/Normal/Slow with min/hr/day conversions |
+| 8 | Jumping Rules | Long/High/Hop formulas |
+| 9 | Light Sources | Candle/Daylight with bright/dim/duration |
+| 10 | Spellcasting | V/S/M components, Concentration, Ritual, Reaction, BA rule |
+| 11 | Improvising Damage | By level tier with DMG reference |
+| 12 | Social Interaction | Attitude shifts (Friendly/Indifferent/Hostile) with DCs |
+
+### New Sub-Components Created (inline)
+| Component | Lines | Purpose |
+|-----------|:-----:|---------|
+| `RefSection` | 40 | Collapsible accordion section with staggered entrance animation |
+| `RefRow` | 12 | Key-value data row with optional color |
+| `RefTableRow` | 15 | Multi-column grid data row |
+| `RefDivider` | 5 | Subtle section divider |
+| `RefDescription` | 8 | Italic rule explanation text |
+
+### Files Modified (4)
+
+| File | Changes |
+|------|---------|
+| `stores/uiStore.ts` | Added `showQuickRef` state + `toggleQuickRef`/`setQuickRef` actions |
+| `components/layout/Sidebar.tsx` | Added "📋 Quick Reference" button between nav and footer |
+| `components/layout/AppShell.tsx` | Added custom event listener + keyboard shortcut (`Shift+/` = `?`) + renders `DmQuickReferenceOverlay` |
+| `components/ui/DmQuickReferenceOverlay.tsx` | **NEW** — 410-line comprehensive rules reference overlay |
+
+### Keyboard Shortcuts
+| Key | Action |
+|:---:|--------|
+| **?** (Shift+/) | Toggle DM Quick Reference overlay |
+| **Esc** | Close DM Quick Reference overlay |
+
+### Sidebar Integration
+- Clicking the "📋 Quick Reference" button in the sidebar dispatches a `toggle-dm-quickref` CustomEvent
+- The AppShell listens for this event and toggles the overlay state
+- The overlay opens as a centered glass modal with fade-in backdrop
+
+### Tabletop Features Delivered
+
+| Feature | Value for Live Session |
+|---------|----------------------|
+| 12 sections of SRD rules | Instant access to the most-consulted DM rules |
+| Collapsible accordions | Keep frequently-used sections open |
+| Staggered entrance | Premium feel with section-by-section animation |
+| Keyboard shortcut (`?`) | Open/close without mouse movement |
+| Sidebar button | Alternative access method |
+| Escape to close | Consistent with app modal behavior |
+| Premium glass styling | Edge light, gradient backgrounds, gold accents |
+| Section dividers + descriptions | Clear visual hierarchy between data types |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (354 parser errors — all pre-sprint, +1 from new file)
+- Git checkpoint: ✅ Sprint 16 saved
+- Architecture ledger: ✅ Updated
+
+### Real-Play D&D Mechanics Phase Progress
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| 13 | Combat HP HUD | Floating HP management panel from Player Cards |
+| 14 | Loot Deposit Panel | Item/currency deposit with presets + undo |
+| 15 | Condition Quick-Toggle | 16-condition management with concentration |
+| **16** | **DM Quick Reference** | **12-section overlay accessible from any page** |
+---
