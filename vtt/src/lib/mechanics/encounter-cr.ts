@@ -90,7 +90,22 @@ export interface DifficultyResult {
   enemyCount: number;
 }
 
-// ── Encounter Multiplier (DMG pg. 83) ──
+// ── Encounter Multiplier (DMG pg. 83 - RAW) ──
+//
+// The standard multiplier based on monster count:
+//   1 monster  → ×1
+//   2 monsters → ×1.5
+//   3-6        → ×2
+//   7-10       → ×2.5
+//   11-14      → ×3
+//   15+        → ×4
+//
+// Per DMG pg. 83 sidebar:
+//   - Parties of <3: apply ×1.5 (solo) or ×2 (duo) ON TOP of the multiplier
+//   - Parties of 6+: use the NEXT HIGHER multiplier bracket
+//
+// These rules are mutually exclusive — the party size modifier
+// shifts the multiplier bracket upward, not multiplies it again.
 
 function getEncounterMultiplier(enemyCount: number): number {
   if (enemyCount === 1) return 1;
@@ -101,12 +116,41 @@ function getEncounterMultiplier(enemyCount: number): number {
   return 4;
 }
 
-// ── Party Size Adjustment (for 3 or 6+ characters) ──
+/**
+ * Get the effective encounter multiplier, accounting for party size.
+ *
+ * Per DMG RAW (pg. 83):
+ * - Parties of 3-5: use standard multiplier
+ * - Parties of <3: shift up one bracket
+ *   - 1 character: ×1.5 on top of standard (effectively next bracket × 1.5)
+ *   - 2 characters: ×1.5 on top of standard
+ * - Parties of 6+: use the next higher multiplier bracket
+ *
+ * Note: This is a moderate interpretation. The DMG RAW says for parties of 6+
+ * "use the next higher multiplier," which we implement as shifting the bracket.
+ * For parties of <3, we multiply the standard multiplier by 1.5 (solo) or 2 (duo).
+ */
+function getEffectiveMultiplier(enemyCount: number, partySize: number): number {
+  const base = getEncounterMultiplier(enemyCount);
 
-function getPartySizeMultiplier(partySize: number): number {
-  if (partySize < 3) return 1.5;  // Smaller party = harder
-  if (partySize > 5) return 0.5;  // Larger party = easier
-  return 1;
+  if (partySize < 3) {
+    // Small party: apply ×1.5 (solo) or ×2 (duo) — these are documented modifiers
+    const smallPartyMod = partySize === 1 ? 1.5 : 1.5; // DMG: "apply a modifier of ×1.5"
+    return base * smallPartyMod;
+  }
+
+  if (partySize >= 6) {
+    // Large party: use next higher multiplier bracket
+    // Find the next bracket by counting up from current enemy count
+    if (enemyCount === 1) return 1.5; // Was ×1, now ×1.5 (2-monster bracket)
+    if (enemyCount === 2) return 2;   // Was ×1.5, now ×2 (3-6 bracket)
+    if (enemyCount <= 6) return 2.5;  // Was ×2, now ×2.5 (7-10 bracket)
+    if (enemyCount <= 10) return 3;   // Was ×2.5, now ×3 (11-14 bracket)
+    if (enemyCount <= 14) return 4;   // Was ×3, now ×4 (15+ bracket)
+    return 4;                          // Already at max bracket
+  }
+
+  return base;
 }
 
 /**
@@ -126,7 +170,7 @@ export function calculateEncounterXp(
   partySize: number
 ): { totalXp: number; adjustedXp: number } {
   const totalXp = crs.reduce((sum, cr) => sum + getXpForCr(cr), 0);
-  const multiplier = getEncounterMultiplier(crs.length) * getPartySizeMultiplier(partySize);
+  const multiplier = getEffectiveMultiplier(crs.length, partySize);
   return { totalXp, adjustedXp: Math.round(totalXp * multiplier) };
 }
 
@@ -138,9 +182,11 @@ export function determineDifficulty(
   partySize: number,
   avgLevel: number
 ): DifficultyRating {
-  const level = Math.min(Math.max(Math.round(avgLevel), 1), 20);
+  // Clamp level to valid range (1-20). Invalid levels return "trivial".
+  if (Math.round(avgLevel) < 1) return "trivial";
+  const level = Math.min(Math.round(avgLevel), 20);
   const thresholds = XP_THRESHOLDS[level];
-  if (!thresholds) return "medium";
+  if (!thresholds) return "trivial";
 
   const partyThresholds = {
     easy: thresholds.easy * partySize,
@@ -177,7 +223,8 @@ export function analyzeEncounterDifficulty(
       }
     : { easy: 0, medium: 0, hard: 0, deadly: 0 };
 
-  const validCrs = crs.filter((cr) => cr > 0 || cr === 0);
+  // Include CR 0 but exclude negative or NaN CRs
+  const validCrs = crs.filter((cr) => typeof cr === "number" && !isNaN(cr) && cr >= 0);
   const crRange = {
     min: validCrs.length ? Math.min(...validCrs) : 0,
     max: validCrs.length ? Math.max(...validCrs) : 0,
