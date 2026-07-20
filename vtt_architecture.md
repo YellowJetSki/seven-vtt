@@ -9088,3 +9088,70 @@ First-time Player Login
 - Git checkpoint: ✅ Sprint 7 saved
 
 ---
+
+## Sprint 8/41 — Firebase & Login Phase (Cycle 6 of 10) (Updated: 2026-07-20 18:33)
+## Sprint 8/41 — Firebase & Login Phase: Seed Script, Join Code System & Connectivity (Complete)
+
+### Deliverables
+
+#### 1. Production Seed Script (`scripts/seed-production.mjs`)
+Full production-ready Firestore seed script that writes the Arkla Chronicles campaign data:
+- Uses Firebase Admin SDK (requires `FIREBASE_SERVICE_ACCOUNT_KEY` env var)
+- Seeds: `campaigns/arkla` document, 4 characters (Wendy, Kehrfuffle, Strider, Toern), homebrew collection, live session state
+- All characters have full: equipment, inventory, features, resources, currency, backstory, notes
+- Firestore `Timestamp` objects used for all date fields
+- Error handling with clear console output
+
+**Run command:** `FIREBASE_SERVICE_ACCOUNT_KEY='{...}' node scripts/seed-production.mjs`
+
+#### 2. Player Join Code System (`PlayerJoinPage.tsx`)
+New page at `/player/join` that allows quick player onboarding:
+- **6-character code input grid** — 6 individual input boxes with auto-advance on typing
+- **Paste support** — paste a full 6-char code (auto-splits into inputs)
+- **Backspace navigation** — auto-focus previous field on backspace
+- **Enter to submit** — quick verify flow
+- **3 edge case states**:
+  - Invalid code → amber error banner with "Try Again"
+  - Code expired → amber banner explaining expiration
+  - Already logged in → auto-redirect to `/player/sheet`
+- **Default dev code:** `ARKLA1`
+- Premium glass card styling matching all other login pages
+- Links to both main player login and DM login
+
+#### 3. DM Login Connection State (`LoginPage.tsx`)
+Enhanced the DM login page with:
+- **`syncExhausted` state detection** — reads from authStore
+- **Connection status indicator** — 3 states: "Campaign Online" (emerald), "Connecting..." (amber pulse), "Campaign Unavailable" (amber static)
+- **Sync exhaustion banner** — amber alert with:
+  - Warning icon + "Campaign data unavailable" text
+  - "Character data won't sync until connection is restored" explanation
+  - **Retry button** that triggers `window.location.reload()`
+
+#### 4. Route Integration (`App.tsx`)
+- Added `/player/join` route pointing to `PlayerJoinPage`
+- `PlayerLoginPage` footer now shows "Join with Code" link between Character Login and DM Login
+
+#### 5. Cross-Device Player Login Validation Path
+The player login flow now supports 3 entry points:
+| Entry Path | Route | Use Case |
+|-----------|-------|----------|
+| **Character Login** | `/player` | Select character from roster, enter name |
+| **Join with Code** | `/player/join` | Enter 6-char code from DM |
+| **Auto-reconnect** | `/player/sheet` | Persisted login survives page refresh (Sprint 7) |
+
+### Files Created
+- `pages/PlayerJoinPage.tsx` — Join code entry page
+- `scripts/seed-production.mjs` — Production Firestore seed script
+
+### Files Modified
+- `App.tsx` — Added `/player/join` route
+- `pages/LoginPage.tsx` — Added syncExhausted detection, exhaustion banner with retry button
+- `pages/PlayerLoginPage.tsx` — Added "Join with Code" link in footer
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2116 modules)
+- Vite build: ✅ 6.82s, 0 warnings
+- Deployed: arkla.vercel.app
+- Git checkpoint: ✅ Sprint 8 saved
+
+---
