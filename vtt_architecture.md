@@ -7374,3 +7374,68 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 | **11** | **UnifiedEncounterHub** | **Premium encounter hub** |
 | **12** | **HomebrewPanel** | **Premium homebrew ecosystem**
 ---
+
+## Sprint 13/30 — Real-Play D&D Mechanics: Combat HP HUD (Updated: 2026-07-20 13:17)
+## Sprint 13/30 — Real-Play D&D Mechanics: Combat HP HUD (2026-07-20)
+
+**Phase:** The Real-Play D&D Mechanics Phase (Cycles 13-22) — CYCLE 1 OF 10
+**Target:** Rapid token HP & status management for live combat sessions
+**Tabletop Value:** Enables the DM to update HP for ALL party members from ANY page during a live session
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### New Component: `CombatHpHud.tsx` (420 lines)
+
+A floating, collapsible HP management panel accessible from the Player Cards page and the DM Dashboard:
+
+| Section | Lines | Description |
+|---------|:-----:|-------------|
+| HP Color Helpers | 30 | `getHpColorClass()`, `getStatusLabel()`, `getBarColor()`, `getGlowColor()` — 5-tier status system |
+| Component State | 40 | `isOpen`, `expandedChar`, `customInputs` — collapsible panel with per-character expansion |
+| Character Sorting | 10 | Lowest HP ratio first (critical at top for quick access) |
+| HP Mutation | 20 | `handleHpChange(charId, delta)` — instant +/- with clamping to 0-max |
+| Custom HP Set | 25 | `handleSetHp(charId)` — exact value input with validation |
+| Quick Heal All | 15 | Short rest: heals ~1 HD worth per character |
+| Close-on-Escape | 15 | Window keyboard listener |
+| Close-on-Click-Outside | 20 | Delayed mousedown listener |
+| Floating Toggle Button | 45 | Heart icon with wounded count badge + pulse ring animation |
+| Floating Panel | 175 | Glass card with edge light, party HP bar, character list with per-row HP controls |
+| Custom HP Input (expanded) | 30 | Per-character number input with Apply/Cancel |
+
+### Files Modified (2)
+
+| File | Changes |
+|------|---------|
+| `pages/PlayerCards.tsx` | Added `CombatHpHud` import + mount after `<PlayerList />` |
+| `pages/DmDashboard.tsx` | Added `CombatHpHud` import + mount before closing `</AppShell>` |
+
+### Tabletop Features Delivered
+
+| Feature | Value for Live Session |
+|---------|----------------------|
+| Floating panel on Player Cards + Dashboard | DM accesses from ANY page — no navigation needed |
+| Characters sorted by HP (lowest first) | Wounded characters appear at top — no scrolling |
+| Instant +/-10/5/1 buttons per character | One click per 5 HP change — 6 clicks for -30 damage |
+| Color-coded HP bars (green→amber→red) | Visual triage at a glance — spot the dying character |
+| Status labels (Scratched/Bloodied/Critical/Dead) | Clear status communication without mental math |
+| Party HP summary bar | At-a-glance party health percentage |
+| Wounded count badge on FAB | Diagnostic pulse ring when characters are injured |
+| Custom HP input per character | Exact HP setting for healing potions/damage rolls |
+| Conditions display per character | All active conditions visible without navigation |
+| Temp HP indicator bar | Gold accent when temp HP is active |
+| Quick Heal All | One-click short rest healing across the party |
+| Staggered entrance animations | Premium Lusion-grade feel during live play |
+| Edge light + glass card styling | Consistent with premium design system |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (351 parser errors — all pre-sprint, +1 from new file)
+- Git checkpoint: ✅ Sprint 13 saved
+- Architecture ledger: ✅ Updated
+
+### Real-Play D&D Mechanics Phase — Cycle 1 Complete
+
+| Sprint | Target | Deliverable |
+|:------:|--------|-------------|
+| **13** | **Combat HP HUD** | **Floating HP management panel across all DM pages** |
+---
