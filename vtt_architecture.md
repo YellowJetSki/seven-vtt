@@ -8867,3 +8867,67 @@ UI mutations ──► useEntityMutations / useCharacterMutations / useCombatMut
 - Git checkpoint: ✅ Sprint 4 saved
 
 ---
+
+## Sprint 5/41 — Firebase & Login Phase (Cycle 3 of 10) (Updated: 2026-07-20 18:21)
+## Sprint 5/41 — Firebase & Login Phase (Complete)
+
+### Changes Delivered
+
+#### 1. Campaign Meta Sync (NEW)
+**Added `onSnapshot` listener for campaign document in `useFirestoreEntitySync.ts`**
+- Campaign meta (name, description, settings, stats) now syncs in real-time
+- Fixed `listenCampaignMeta` — removed the `Promise<Unsubscribe> as unknown as Unsubscribe` anti-pattern
+- Returns sync `Unsubscribe` immediately with `cancelled` guard
+- Mounts as the first listener in the entity sync hook
+
+#### 2. Offline Queue Infrastructure (NEW) — `useOfflineQueue.ts`
+- `enqueueMutation()` — stores pending writes to `str-vtt-sync-queue` in localStorage
+- `dequeueMutation()` — removes from queue on successful flush
+- `getPendingMutations()` — for UI display of pending count
+- `clearMutationQueue()` — on logout
+- `useOfflineQueue()` React hook — monitors `firebaseConnected`, auto-flushes on reconnect
+- MAX_QUEUE_SIZE = 50 entries with automatic oldest-half trim on overflow
+- Used as safety net alongside Firebase's built-in `enableMultiTabIndexedDbPersistence`
+
+#### 3. Connection Loss Recovery UI (NEW) — `ConnectionBanner.tsx`
+- Premium glass banner slides in from top when `firebaseConnected` drops to `false`
+- **Offline state**: Rose/amber gradient with "Connection lost" + "X pending updates" + pending count badge
+- **Connected state**: Emerald gradient with "Synced" + checkmark (auto-dismisses after 1.2s)
+- Animated entrance/exit with `cubic-bezier(0.16,1,0.3,1)` spring easing
+- Edge light, backdrop-blur, shadow matching the premium design system
+- Shows `formatTimeSince(lastPing)` for user awareness
+- Mounted in `AppShell.tsx` — visible on ALL authenticated pages (DM and Player)
+
+#### 4. AppShell Integration — `AppShell.tsx`
+- Removed `bg-particle` overlay (visual noise) and unused `useAuthStore` import
+- Added `role` check to only show banner when authenticated
+- `ConnectionBanner` mounted between depth ring and sidebar
+
+### Architecture — New Data Flow
+
+```
+Firestore (campaign/{id} doc)
+  └── onSnapshot ──► useFirestoreEntitySync
+      └── setMeta() ──► Zustand metaSlice (campaign name, settings, stats)
+
+Browser goes offline
+  └── useFirestoreCombatSync watchdog detects silent failure
+      └── setFirebaseConnected(false)
+          └── ConnectionBanner slides in (rose gradient, "Connection lost")
+          └── useOfflineQueue starts enqueuing mutations
+
+Browser reconnects
+  └── onSnapshot fires (characters, combat, entities)
+      └── setFirebaseConnected(true)
+          └── ConnectionBanner slides to emerald "Synced" → auto-dismiss (1.2s)
+          └── useOfflineQueue drains pending mutations
+```
+
+### Build Metrics
+- TypeScript: ✅ 0 errors (2115 modules)
+- Vite build: ✅ 6.68s, deployed to arkla.vercel.app
+- Git checkpoint: ✅ Sprint 5 saved
+- New files: 2 (useOfflineQueue.ts, ConnectionBanner.tsx)
+- Modified files: 4 (campaign-service.ts, useFirestoreEntitySync.ts, AppShell.tsx, ConnectionBanner.tsx)
+
+---
