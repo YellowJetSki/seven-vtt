@@ -9155,3 +9155,76 @@ The player login flow now supports 3 entry points:
 - Git checkpoint: ✅ Sprint 8 saved
 
 ---
+
+## Sprint 9/41 — Firebase & Login Phase (Cycle 7 of 10) (Updated: 2026-07-20 18:36)
+## Sprint 9/41 — Firebase & Login Phase: Join Code System, Sync Health Dashboard & Campaign Settings Integration (Complete)
+
+### Deliverables
+
+#### 1. CampaignSettings — Join Code Generation Panel (`JoinCodePanel.tsx`)
+Full join code management UI added to the DM Campaign Settings page between Character Creation and DM Private Notes:
+
+| Feature | Detail |
+|---------|--------|
+| **Generate Code** | Random 6-character alphanumeric code (no I/O/0/1 — avoids confusion) |
+| **Expiration** | Auto-expires in 24 hours with live countdown (updates every 30s) |
+| **Refresh** | Extends active code by another 24 hours without changing the string |
+| **Clear** | Revokes the join code (disables this login method) |
+| **Copy to Clipboard** | One-click copy with visual checkmark feedback (2s) |
+| **Visual Code Display** | 6 individual character boxes with gold styling when active, muted when expired |
+| **Status Badges** | Active (emerald pulse) / Expired (amber static) / No Code |
+| **State Persistence** | Writes to `CampaignSettings.joinCode` and `joinCodeExpiresAt` fields via existing `updateMetaSettings()` pipeline |
+
+**New type fields in `CampaignSettings`:**
+```typescript
+joinCode?: string;          // 6-char uppercase alphanumeric
+joinCodeExpiresAt?: number; // Unix timestamp ms
+```
+
+#### 2. Sync Health Dashboard (`SyncHealthPanel.tsx`)
+DM-accessible panel integrated into the sidebar showing real-time Firebase connection status:
+
+| Section | Fields |
+|---------|--------|
+| **Connection** | Firebase (Connected/Connecting/Unavailable), Auth State (authenticated/unauthenticated), Role (dm/player/none), Username, Character ID |
+| **Data Store** | Characters count, Maps count, In Combat indicator, Stale data warning (>60s since update) |
+
+- Mounted in sidebar just above the footer
+- When sidebar is collapsed (w-16), shows a green dot trigger button
+- Expands upward as a dropdown with glassmorphism styling
+- "Reconnect" button shown when `syncExhausted` is true
+- Staleness detection with amber warning
+
+#### 3. Emulator Seed Data Pipeline
+The existing `scripts/seed-emulator.mjs` now supports the new `joinCode` field. The production seed script (`scripts/seed-production.mjs`) includes all join code infrastructure.
+
+#### 4. CampaignSettings Integration
+- Default settings now include `joinCode: ""` and `joinCodeExpiresAt: undefined`
+- New `JoinCodePanel` component sits between Character Creation restrictions and DM Private Notes
+
+### Edge Cases Handled
+
+| Edge Case | Behavior |
+|-----------|----------|
+| Code expired but not cleared | Shows "Expired" badge, "Generate New Code" button replaces Refresh/Clear |
+| No code set | Shows dashed border placeholder with "Generate one to let players join" message |
+| Clipboard fails | Silent fallback (no crash), visual feedback still shows |
+| Code contains ambiguous chars | Uses charset `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (excludes I,O,0,1) |
+| DM double-toggle | All actions are independent, no race conditions |
+
+### Files Created
+- `components/campaign/JoinCodePanel.tsx` — Join code generation UI
+- `components/ui/SyncHealthPanel.tsx` — Firebase sync health dashboard
+
+### Files Modified
+- `types/campaign.ts` — Added `joinCode` and `joinCodeExpiresAt` to `CampaignSettings`
+- `components/layout/Sidebar.tsx` — Added SyncHealthPanel import + mount in footer area
+- `pages/CampaignSettings.tsx` — Added JoinCodePanel import + mount + default settings
+
+### Build Metrics
+- TypeScript: ✅ **0 errors** (2118 modules)
+- Vite build: ✅ 7.80s, 0 warnings
+- Deployed: arkla.vercel.app
+- Git checkpoint: ✅ Sprint 9 saved
+
+---
