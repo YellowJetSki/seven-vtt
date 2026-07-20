@@ -15,19 +15,12 @@ service cloud.firestore {
         && request.auth.token.role == "dm";
     }
 
-    function isDmOrFirebaseUser() {
-      return isAuthenticated()
-        && (request.auth.token.role == "dm"
-         || request.auth.token.role == "firebase_user");
-    }
-
     function isPlayer() {
       return isAuthenticated()
         && request.auth.token.role == "player";
     }
 
     function getCharId() {
-      // Players are identified by their Firebase UID matching their character ID
       return request.auth.uid;
     }
 
@@ -38,7 +31,6 @@ service cloud.firestore {
     }
 
     function isPlayerUpdatingOwnFields() {
-      // Players may only update specific fields on their own character
       let affected = request.resource.data.diff(resource.data).affectedKeys();
       let allowedFields = [
         "hitPoints", "deathSaves", "conditions",
@@ -49,10 +41,6 @@ service cloud.firestore {
       return affected.hasOnly(allowedFields);
     }
 
-    function isDmOrOwnCharacter(charId: string) {
-      return isDm() || isOwnCharacter(charId);
-    }
-
     // ═══════════════════════════════════════════════════════════
     //  CAMPAIGN COLLECTIONS
     // ═══════════════════════════════════════════════════════════
@@ -60,16 +48,13 @@ service cloud.firestore {
     match /campaigns/{campaignId} {
 
       // ── Campaign Metadata ──────────────────────────────────
-      // DM: full CRUD. Authenticated users: read-only.
       allow read: if isAuthenticated();
       allow create: if isDm();
       allow update: if isDm();
       allow delete: if isDm();
 
       // ── Characters Subcollection ───────────────────────────
-      // DM: full CRUD on all character documents.
-      // Player: read all, write only their OWN character (by UID match),
-      //         and only specific gameplay fields (HP, XP, currency, etc.)
+      // DM: full CRUD. Player: read all, write own fields only.
       match /characters/{charId} {
         allow read: if isAuthenticated();
         allow create: if isDm();
@@ -82,70 +67,80 @@ service cloud.firestore {
       }
 
       // ── Enemies Subcollection ──────────────────────────────
-      // DM: full CRUD. Players: read-only.
       match /enemies/{enemyId} {
         allow read: if isAuthenticated();
         allow write: if isDm();
       }
 
       // ── Encounters Subcollection ───────────────────────────
-      // DM: full CRUD. Players: read-only.
       match /encounters/{encounterId} {
         allow read: if isAuthenticated();
         allow write: if isDm();
       }
 
-      // ── Maps Subcollection ─────────────────────────────────
-      // DM: full CRUD. Players: read-only.
+      // ── Combat Log Subcollection ──────────────────────────
+      // DM writes log entries. Players read only.
+      match /combatLog/{logEntryId} {
+        allow read: if isAuthenticated();
+        allow create: if isDm();
+        allow update: if isDm();
+        allow delete: if isDm();
+      }
+
+      // ── Maps / Battle Maps Subcollection ──────────────────
       match /maps/{mapId} {
         allow read: if isAuthenticated();
         allow write: if isDm();
 
-        // Map tokens nested under maps
+        // Nested tokens under maps
         match /tokens/{tokenId} {
           allow read: if isAuthenticated();
           allow write: if isDm();
         }
       }
 
-      // ── Maps/Subcollections (legacy flat path) ─────────────
-      // DM: full CRUD. Players: read-only.
+      // ── Maps — Deep Wildcard ──────────────────────────────
       match /maps/{mapId}/{document=**} {
         allow read: if isAuthenticated();
         allow write: if isDm();
       }
 
       // ── Journal Subcollection ──────────────────────────────
-      // DM: full CRUD. Players: read-only.
       match /journal/{entryId} {
         allow read: if isAuthenticated();
         allow write: if isDm();
       }
 
       // ── Sessions Subcollection ─────────────────────────────
-      // DM: full CRUD. Players: read-only.
       match /sessions/{sessionId} {
         allow read: if isAuthenticated();
         allow write: if isDm();
 
-        // Session combatants nested under sessions
+        // Nested combatants under sessions
         match /combatants/{combatantId} {
           allow read: if isAuthenticated();
           allow write: if isDm();
         }
       }
 
-      // ── Sessions/Subcollections (legacy flat path) ─────────
+      // ── Sessions — Deep Wildcard ──────────────────────────
       match /sessions/{sessionId}/{document=**} {
         allow read: if isAuthenticated();
         allow write: if isDm();
       }
 
-      // ── Combat Log Subcollection ──────────────────────────
-      match /combatLog/{logEntryId} {
+      // ── DM Share Subcollection ────────────────────────────
+      // DM pushes images/items to player screens in real-time.
+      // Players read the share document via onSnapshot.
+      match /dm-share/{shareDocId} {
         allow read: if isAuthenticated();
-        allow create: if isDm();
-        allow update, delete: if isDm();
+        allow write: if isDm();
+      }
+
+      // ── DM Share — Deep Wildcard ──────────────────────────
+      match /dm-share/{shareDocId}/{document=**} {
+        allow read: if isAuthenticated();
+        allow write: if isDm();
       }
 
       // ── Catch-all for any other campaign subcollections ────
@@ -176,7 +171,6 @@ service cloud.firestore {
 
     // ═══════════════════════════════════════════════════════════
     //  INSTALLABLE AUTH (Custom Claims Management)
-    //  Allows the DM to create player auth accounts
     // ═══════════════════════════════════════════════════════════
 
     match /_auth/{userId} {
@@ -185,7 +179,6 @@ service cloud.firestore {
 
     // ═══════════════════════════════════════════════════════════
     //  CATCH-ALL DENY
-    //  Any path not explicitly listed above is denied.
     // ═══════════════════════════════════════════════════════════
 
     match /{document=**} {

@@ -1,3 +1,23 @@
+/**
+ * STᚱ VTT — Auth Store (Zustand + Persist)
+ *
+ * Authentication state management with Firebase sync awareness.
+ *
+ * Schema:
+ *   - state: "unauthenticated" | "authenticated"
+ *   - role: "dm" | "player" | null
+ *   - username: display name
+ *   - characterId: linked PC ID (player only)
+ *   - playerIdentifiers: stored player-character mappings
+ *   - firebaseConnected: real-time sync status
+ *   - firebaseAuthLoading: auth operation in progress
+ *   - firebaseAuthError: last auth error message
+ *   - syncExhausted: true when Firebase retries exhausted (Sprint 6)
+ *
+ * Persisted: state, role, username, characterId, playerIdentifiers
+ * Volatile: firebaseConnected, syncExhausted, firebaseAuthLoading, firebaseAuthError
+ */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { hasValidConfig, loginFirebaseDm as firebaseLogin } from "@/lib/firebase";
@@ -17,6 +37,7 @@ interface AuthStateShape {
   characterId: string | null;
   playerIdentifiers: PlayerIdentifier[];
   firebaseConnected: boolean;
+  syncExhausted: boolean;
   firebaseAuthLoading: boolean;
   firebaseAuthError: string | null;
 }
@@ -27,11 +48,11 @@ interface AuthActions {
   logout: () => void;
   setPlayerIdentifiers: (identifiers: PlayerIdentifier[]) => void;
   setFirebaseConnected: (connected: boolean) => void;
+  setSyncExhausted: (exhausted: boolean) => void;
   setFirebaseAuthLoading: (loading: boolean) => void;
   setFirebaseAuthError: (error: string | null) => void;
 }
 
-// Official DM credentials
 const DM_USERNAME = "MikeJello";
 const DM_PASSWORD = "Jello1";
 
@@ -44,6 +65,7 @@ export const useAuthStore = create<AuthStateShape & AuthActions>()(
       characterId: null,
       playerIdentifiers: [],
       firebaseConnected: false,
+      syncExhausted: false,
       firebaseAuthLoading: false,
       firebaseAuthError: null,
 
@@ -75,6 +97,10 @@ export const useAuthStore = create<AuthStateShape & AuthActions>()(
           role: null,
           username: null,
           characterId: null,
+          firebaseConnected: false,
+          syncExhausted: false,
+          firebaseAuthLoading: false,
+          firebaseAuthError: null,
         });
       },
 
@@ -83,7 +109,11 @@ export const useAuthStore = create<AuthStateShape & AuthActions>()(
       },
 
       setFirebaseConnected: (connected: boolean) => {
-        set({ firebaseConnected: connected });
+        set({ firebaseConnected: connected, syncExhausted: false });
+      },
+
+      setSyncExhausted: (exhausted: boolean) => {
+        set({ syncExhausted: exhausted });
       },
 
       setFirebaseAuthLoading: (loading: boolean) => {

@@ -1,19 +1,11 @@
 /**
- * STᚱ VTT — useFirestoreEntitySync (Campaign Meta + Entities Sync)
+ * STᚱ VTT — useFirestoreEntitySync (Campaign Meta + Entities + Retry Exhaustion)
  *
  * Bridges campaign entities (campaign meta, enemies, encounters,
  * battleMaps, journal) between Firestore and Zustand.
  *
- * SYNCED COLLECTIONS (Sprint 5):
- *   - campaign doc          → metaSlice.setMeta
- *   - enemies subcollection → entitySlice.setEnemies
- *   - encounters subcollection → entitySlice.setEncounters
- *   - battleMaps subcollection → entitySlice.setBattleMaps
- *   - journal subcollection → entitySlice.setJournal
- *
- * Architecture:
- *   Firestore ──(onSnapshot)──► useFirestoreEntitySync ──(setState)──► Zustand campagnStore
- *   Entity mutations ──► useEntityMutations ──(setDoc)──► Firestore ◄──(onSnapshot)──► other tabs
+ * Sprint 5: Added campaign meta onSnapshot listener.
+ * Sprint 6: Added retry exhaustion signaling to authStore.
  */
 
 import { useEffect, useRef } from "react";
@@ -28,14 +20,6 @@ import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 
-/**
- * Subscribes to real-time updates for:
- * - Campaign document (meta)
- * - enemies subcollection
- * - encounters subcollection
- * - battleMaps subcollection
- * - journal subcollection
- */
 export function useFirestoreEntitySync(): void {
   const mountedRef = useRef(false);
   const unsubsRef = useRef<(() => void)[]>([]);
@@ -46,11 +30,10 @@ export function useFirestoreEntitySync(): void {
   const authState = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
   const setFirebaseConnected = useAuthStore((s) => s.setFirebaseConnected);
+  const setSyncExhausted = useAuthStore((s) => s.setSyncExhausted);
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
 
-  // Store actions — campaign meta
   const setMeta = useCampaignStore((s) => s.setMeta);
-  // Store actions — entities
   const setEnemies = useCampaignStore((s) => s.setEnemies);
   const setEncounters = useCampaignStore((s) => s.setEncounters);
   const setBattleMaps = useCampaignStore((s) => s.setBattleMaps);
@@ -81,96 +64,99 @@ export function useFirestoreEntitySync(): void {
 
         const campaignPath = `${CAMPAIGN_COLLECTION}/${FALLBACK_CAMPAIGN_ID}`;
 
-        // ── Campaign Meta Listener ──
+        // Campaign Meta
         const unsubMeta = onSnapshot(
           doc(db, CAMPAIGN_COLLECTION, FALLBACK_CAMPAIGN_ID),
           (snap) => {
             if (!mounted) return;
             if (snap.exists()) {
-              const meta = fromFirestore<CampaignMeta>(snap.id, snap.data());
-              setMeta(meta);
+              setMeta(fromFirestore<CampaignMeta>(snap.id, snap.data()));
             }
+            setFirebaseConnected(true);
+            retryCountRef.current = 0;
           },
           (err) => {
-            console.warn("[Firestore/Entities/Meta] Listener error:", err);
+            console.warn("[Firestore/Entities] Meta error:", err);
           }
         );
         unsubsRef.current.push(unsubMeta);
 
-        // ── Enemies listener ──
+        // Enemies
         const unsubEnemies = onSnapshot(
           collection(db, `${campaignPath}/enemies`),
           (snap) => {
             if (!mounted) return;
-            const enemies = snap.docs.map((d) => fromFirestore<EnemyDoc>(d.id, d.data()));
-            setEnemies(enemies);
+            setEnemies(snap.docs.map((d) => fromFirestore<EnemyDoc>(d.id, d.data())));
+            setFirebaseConnected(true);
+            retryCountRef.current = 0;
           },
           (err) => {
-            console.warn("[Firestore/Entities/Enemies] Listener error:", err);
+            console.warn("[Firestore/Entities] Enemies error:", err);
             if (!mounted) return;
             setEnemies([]);
           }
         );
         unsubsRef.current.push(unsubEnemies);
 
-        // ── Encounters listener ──
+        // Encounters
         const unsubEncounters = onSnapshot(
           collection(db, `${campaignPath}/encounters`),
           (snap) => {
             if (!mounted) return;
-            const encounters = snap.docs.map((d) => fromFirestore<Encounter>(d.id, d.data()));
-            setEncounters(encounters);
+            setEncounters(snap.docs.map((d) => fromFirestore<Encounter>(d.id, d.data())));
+            setFirebaseConnected(true);
+            retryCountRef.current = 0;
           },
           (err) => {
-            console.warn("[Firestore/Entities/Encounters] Listener error:", err);
+            console.warn("[Firestore/Entities] Encounters error:", err);
             if (!mounted) return;
             setEncounters([]);
           }
         );
         unsubsRef.current.push(unsubEncounters);
 
-        // ── Battle Maps listener ──
+        // Battle Maps
         const unsubMaps = onSnapshot(
           collection(db, `${campaignPath}/maps`),
           (snap) => {
             if (!mounted) return;
-            const maps = snap.docs.map((d) => fromFirestore<BattleMap>(d.id, d.data()));
-            setBattleMaps(maps);
+            setBattleMaps(snap.docs.map((d) => fromFirestore<BattleMap>(d.id, d.data())));
+            setFirebaseConnected(true);
+            retryCountRef.current = 0;
           },
           (err) => {
-            console.warn("[Firestore/Entities/Maps] Listener error:", err);
+            console.warn("[Firestore/Entities] Maps error:", err);
             if (!mounted) return;
             setBattleMaps([]);
           }
         );
         unsubsRef.current.push(unsubMaps);
 
-        // ── Journal listener ──
+        // Journal
         const unsubJournal = onSnapshot(
           collection(db, `${campaignPath}/journal`),
           (snap) => {
             if (!mounted) return;
-            const entries = snap.docs.map((d) => fromFirestore<JournalEntry>(d.id, d.data()));
-            setJournal(entries);
+            setJournal(snap.docs.map((d) => fromFirestore<JournalEntry>(d.id, d.data())));
+            setFirebaseConnected(true);
+            retryCountRef.current = 0;
           },
           (err) => {
-            console.warn("[Firestore/Entities/Journal] Listener error:", err);
+            console.warn("[Firestore/Entities] Journal error:", err);
             if (!mounted) return;
             setJournal([]);
           }
         );
         unsubsRef.current.push(unsubJournal);
 
-        // Mark connected on first successful sync
-        setFirebaseConnected(true);
-        retryCountRef.current = 0;
       }).catch((err) => {
-        console.warn("[Firestore/Entities] Failed to initialize:", err);
+        console.warn("[Firestore/Entities] Init error:", err);
         if (!mounted) return;
-        // Retry on init failure
         if (retryCountRef.current < MAX_RETRIES) {
           retryCountRef.current++;
           retryTimeoutRef.current = setTimeout(subscribe, RETRY_DELAY_MS);
+        } else {
+          setSyncExhausted(true);
         }
       });
     }
@@ -183,6 +169,8 @@ export function useFirestoreEntitySync(): void {
       if (!firebaseConnectedRef.current && retryCountRef.current < MAX_RETRIES) {
         retryCountRef.current++;
         subscribe();
+      } else if (!firebaseConnectedRef.current) {
+        setSyncExhausted(true);
       }
     }, RETRY_DELAY_MS);
 
@@ -196,5 +184,5 @@ export function useFirestoreEntitySync(): void {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState, role, setMeta, setEnemies, setEncounters, setBattleMaps, setMapTokens, setJournal, setFirebaseConnected]);
+  }, [authState, role, setMeta, setEnemies, setEncounters, setBattleMaps, setMapTokens, setJournal, setFirebaseConnected, setSyncExhausted]);
 }

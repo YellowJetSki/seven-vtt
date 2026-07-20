@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — useFirestoreSync (Optimized)
+ * STᚱ VTT — useFirestoreSync (Optimized + Retry Exhaustion)
  *
  * Bridges the gap between local Zustand state and Firestore real-time data.
  *
@@ -7,15 +7,13 @@
  *   Firestore ──(onSnapshot)──► useFirestoreSync ──(setState)──► Zustand Store
  *   UI mutations ──► useCharacterMutations ──(setDoc)──► Firestore ◄──(onSnapshot)──► other tabs
  *
- * OPTIMIZATION (Sprint 6):
- *   - Fixed the dangerous `Promise<Unsubscribe> as unknown as Unsubscribe` pattern.
- *   - `listenCharacters` now returns a sync `Unsubscribe` immediately.
- *   - Added retry logic: up to 3 attempts with 2s delay on failure.
- *   - Added `retryTimeoutRef` to clear pending retries on unmount.
- *   - Mounted flag correctly handles React strict mode double-invoke.
- *   - Error callback from onSnapshot triggers retry sequence.
- *
- * MUST be mounted once at the top of the app tree (App.tsx or CampaignPage).
+ * OPTIMIZATIONS (Sprints 6, 25):
+ *   - Fixed `Promise<Unsubscribe> as unknown as Unsubscribe` anti-pattern.
+ *   - `listenCharacters` returns sync `Unsubscribe` immediately.
+ *   - Retry logic: up to 3 attempts with 2s delay on failure.
+ *   - Stale closure fix: uses `firebaseConnectedRef` in timeout callbacks.
+ *   - Connection watchdog: if no sync arrives within RETRY_DELAY_MS, retry.
+ *   - Retry exhaustion: when all MAX_RETRIES fail, signals `syncExhausted`.
  */
 
 import { useEffect, useRef } from "react";
@@ -32,11 +30,16 @@ export function useFirestoreSync(): void {
   const unsubRef = useRef<(() => void) | null>(null);
   const retryCountRef = useRef(0);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firebaseConnectedRef = useRef(false);
 
   const authState = useAuthStore((s) => s.state);
   const role = useAuthStore((s) => s.role);
   const setFirebaseConnected = useAuthStore((s) => s.setFirebaseConnected);
+  const setSyncExhausted = useAuthStore((s) => s.setSyncExhausted);
   const setCharacters = useCampaignStore((s) => s.setCharacters);
+  const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
+
+  firebaseConnectedRef.current = firebaseConnected;
 
   useEffect(() => {
     if (authState !== "authenticated" || !role) return;
@@ -46,7 +49,6 @@ export function useFirestoreSync(): void {
     let mounted = true;
 
     function subscribe() {
-      // Clean up previous subscription if retrying
       if (unsubRef.current) {
         unsubRef.current();
         unsubRef.current = null;
@@ -56,7 +58,7 @@ export function useFirestoreSync(): void {
         if (!mounted) return;
         setCharacters(characters);
         setFirebaseConnected(true);
-        retryCountRef.current = 0; // Reset retry count on successful sync
+        retryCountRef.current = 0;
       });
 
       unsubRef.current = unsub;
@@ -65,23 +67,18 @@ export function useFirestoreSync(): void {
     function subscribeWithRetry() {
       subscribe();
 
-      // The error path is handled inside listenCharacters's onSnapshot error callback.
-      // We can't catch FS init errors synchronously because getFirestoreDb is async.
-      // Instead, we rely on the `listenCharacters` internal error path to call callback([])
-      // and set FirebaseConnected to false by the listener supervisor.
-      // The retry is triggered by externally checking if connection succeeded.
-      //
-      // Use a connection watchdog: if no sync arrives within RETRY_DELAY_MS, retry.
-      // This catches silent failures where Firestore init hangs.
-
+      // Connection watchdog: if no sync within RETRY_DELAY_MS, retry
       retryTimeoutRef.current = setTimeout(() => {
         if (!mounted) return;
 
-        const storeState = useAuthStore.getState();
-        if (!storeState.firebaseConnected && retryCountRef.current < MAX_RETRIES) {
+        if (!firebaseConnectedRef.current && retryCountRef.current < MAX_RETRIES) {
           retryCountRef.current++;
           console.info(`[FirestoreSync] Retry ${retryCountRef.current}/${MAX_RETRIES}...`);
           subscribeWithRetry();
+        } else if (!firebaseConnectedRef.current) {
+          // Retries exhausted — signal UI for persistent failure banner
+          console.warn("[FirestoreSync] All retries exhausted.");
+          setSyncExhausted(true);
         }
       }, RETRY_DELAY_MS);
     }
@@ -101,10 +98,9 @@ export function useFirestoreSync(): void {
         unsubRef.current();
         unsubRef.current = null;
       }
-
-      setFirebaseConnected(false);
     };
-  }, [authState, role, setCharacters, setFirebaseConnected]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authState, role, setCharacters, setFirebaseConnected, setSyncExhausted]);
 }
 
 export { FALLBACK_CAMPAIGN_ID };

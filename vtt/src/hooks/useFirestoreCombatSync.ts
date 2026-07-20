@@ -1,15 +1,14 @@
 /**
- * STᚱ VTT — useFirestoreCombatSync (Fixed)
+ * STᚱ VTT — useFirestoreCombatSync (Fixed + Retry Exhaustion)
  *
  * Bridges the combatStore (Zustand) with Firestore real-time data.
  *
- * FIX (Sprint 25): Fixed stale closure bug where `firebaseConnected` was
- * captured in the `subscribeWithRetry` timeout closure at initial render time,
- * causing the retry watchdog to check a stale value and potentially retry
- * even after successful connection. Now uses `firebaseConnectedRef` to always
- * read the latest value inside the timeout callback.
- *
- * MUST be mounted once alongside useFirestoreSync in the auth gate.
+ * FIXES:
+ *   - Sprint 25: Fixed stale closure where `firebaseConnected` was captured
+ *     in the `subscribeWithRetry` timeout closure at initial render time.
+ *   - Sprint 6: Added retry exhaustion tracking — when all MAX_RETRIES fail,
+ *     signals `syncExhausted` on the auth store so the ConnectionBanner
+ *     can display a persistent "Sync Unavailable" state.
  */
 
 import { useEffect, useRef } from "react";
@@ -26,15 +25,14 @@ export function useFirestoreCombatSync(): void {
   const unsubRef = useRef<(() => void) | null>(null);
   const retryCountRef = useRef(0);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Ref-based connection tracking to avoid stale closure in timeout callbacks
   const firebaseConnectedRef = useRef(false);
 
   const authState = useAuthStore((s) => s.state);
   const setFirebaseConnected = useAuthStore((s) => s.setFirebaseConnected);
+  const setSyncExhausted = useAuthStore((s) => s.setSyncExhausted);
   const setEncounter = useCombatStore((s) => s.setEncounter);
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
 
-  // Keep ref in sync with zustand value
   firebaseConnectedRef.current = firebaseConnected;
 
   useEffect(() => {
@@ -68,11 +66,14 @@ export function useFirestoreCombatSync(): void {
       retryTimeoutRef.current = setTimeout(() => {
         if (!mounted) return;
 
-        // Use ref value — always reads LATEST firebaseConnected, not stale closure
         if (!firebaseConnectedRef.current && retryCountRef.current < MAX_RETRIES) {
           retryCountRef.current++;
           console.info(`[FirestoreCombatSync] Retry ${retryCountRef.current}/${MAX_RETRIES}...`);
           subscribeWithRetry();
+        } else if (!firebaseConnectedRef.current) {
+          // Retries exhausted — signal persistent failure
+          console.warn("[FirestoreCombatSync] All retries exhausted.");
+          setSyncExhausted(true);
         }
       }, RETRY_DELAY_MS);
     }
@@ -93,8 +94,6 @@ export function useFirestoreCombatSync(): void {
         unsubRef.current = null;
       }
     };
-    // Note: intentionally OMIT firebaseConnected from deps to prevent
-    // re-running the effect on every connection toggle.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState, setEncounter, setFirebaseConnected]);
+  }, [authState, setEncounter, setFirebaseConnected, setSyncExhausted]);
 }

@@ -27,6 +27,7 @@ import type { AoEDamageResult } from "@/lib/combat/aoe-damage-engine";
 import { buildAoEHPUpdates, createAoELogEntry } from "@/lib/combat/aoe-damage-engine";
 import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 import { generateId, clampHP, createLogEntry } from "@/stores/combat/combat-helpers";
+import { enqueueMutation, dequeueMutation } from "@/hooks/useOfflineQueue";
 
 // ── Helper: Read current encounter + write to both stores ──
 
@@ -47,12 +48,20 @@ function useWriteCombat() {
 
       const updated = mutator(current);
 
+      // Snapshot the mutation for offline queue
+      const mutationSnapshot = { encounterId: updated.id, combatantIds: updated.combatants.map(c => c.id) };
+
       // Update Zustand immediately
       state.setEncounter(updated);
 
       // Write to Firestore async
       setActiveEncounter(FALLBACK_CAMPAIGN_ID, updated).catch((err) => {
-        console.warn("[Firestore/Combat] Write failed:", err);
+        console.warn("[Firestore/Combat] Write failed, queuing for retry:", err);
+        enqueueMutation("combat", "setActiveEncounter", {
+          campaignId: FALLBACK_CAMPAIGN_ID,
+          encounter: updated,
+          mutationSnapshot,
+        });
       });
 
       setTimeout(() => {
