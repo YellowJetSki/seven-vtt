@@ -1,7 +1,8 @@
 /**
- * STᚱ VTT — Enemy List (NPC Library Browser)
+ * STᚱ VTT — Enemy List (Premium NPC Library Browser v3.0)
  *
  * Searchable, filterable, sortable grid of all enemies in the campaign.
+ * Premium glass dark inputs, gold gradient filter chips, staggered cards.
  * Shows name, type, CR, AC, HP, size at a glance.
  * Click to open full statblock.
  */
@@ -129,24 +130,24 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* ── Filters Bar ── */}
+      {/* ── Premium Filters Bar ── */}
       <div className="shrink-0 space-y-2.5 mb-4">
         {/* Search + Sort row */}
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+          <div className="relative flex-1 group/search">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search monsters by name, type..."
-              className="w-full py-2 pl-8 pr-3 rounded-lg text-[11px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600"
+              className="w-full py-2 pl-8 pr-3 rounded-lg text-[11px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600 transition-all duration-200"
             />
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-surface-600">🔍</span>
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-surface-600 group-focus-within/search:text-gold-400/60 transition-colors duration-200">🔍</span>
           </div>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="px-2 py-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-surface-400 focus:outline-none focus:border-gold/25 appearance-none cursor-pointer"
+            className="px-2 py-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-surface-400 focus:outline-none focus:border-gold/25 appearance-none cursor-pointer transition-all"
           >
             <option value="cr">Sort: CR</option>
             <option value="name">Sort: Name</option>
@@ -155,7 +156,7 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
           </select>
           <button
             onClick={onQuickCreate}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-semibold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-semibold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 transition-all duration-200 whitespace-nowrap"
           >
             <span>👾</span>
             <span>New Monster</span>
@@ -167,7 +168,7 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
           <div className="flex flex-wrap gap-1">
             <button
               onClick={() => setTypeFilter("All")}
-              className={`text-[9px] px-2 py-0.5 rounded transition-all ${typeFilter === "All" ? "bg-gold-500/10 text-gold-400 border border-gold/20" : "text-surface-500 hover:text-surface-300 border border-transparent hover:border-white/[0.06]"}`}
+              className={`text-[9px] px-2 py-0.5 rounded transition-all duration-150 ${typeFilter === "All" ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400" : "text-surface-500 hover:text-surface-300 border border-transparent hover:border-white/[0.06]"}`}
             >
               All ({enemies.length})
             </button>
@@ -175,13 +176,13 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
               <button
                 key={type}
                 onClick={() => setTypeFilter(typeFilter === type ? "All" : type)}
-                className={`text-[9px] px-2 py-0.5 rounded transition-all ${typeFilter === type ? "bg-gold-500/10 text-gold-400 border border-gold/20" : "text-surface-500 hover:text-surface-300 border border-transparent hover:border-white/[0.06]"}`}
+                className={`text-[9px] px-2 py-0.5 rounded transition-all duration-150 ${typeFilter === type ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400" : "text-surface-500 hover:text-surface-300 border border-transparent hover:border-white/[0.06]"}`}
               >
                 {type}
               </button>
             ))}
             {typeFilter !== "All" && !topTypes.includes(typeFilter) && (
-              <span className="text-[9px] px-2 py-0.5 rounded bg-gold-500/10 text-gold-400 border border-gold/20 flex items-center gap-1">
+              <span className="text-[9px] px-2 py-0.5 rounded bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 flex items-center gap-1">
                 {typeFilter}
                 <button onClick={() => setTypeFilter("All")} className="text-gold-400/50 hover:text-gold-300">✕</button>
               </span>
@@ -192,13 +193,13 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
             <input
               type="number" value={crMin} min={0} max={30}
               onChange={(e) => setCrMin(Math.max(0, Math.min(30, parseFloat(e.target.value) || 0)))}
-              className="w-10 bg-[#07080d] border border-white/[0.06] rounded px-1 py-0.5 text-[9px] text-center text-surface-400 focus:outline-none focus:border-gold/25"
+              className="w-10 bg-[#07080d]/70 border border-white/[0.06] rounded px-1 py-0.5 text-[9px] text-center text-surface-400 focus:outline-none focus:border-gold/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
             />
             <span className="text-[8px] text-surface-700">—</span>
             <input
               type="number" value={crMax} min={0} max={30}
               onChange={(e) => setCrMax(Math.max(0, Math.min(30, parseFloat(e.target.value) || 30)))}
-              className="w-10 bg-[#07080d] border border-white/[0.06] rounded px-1 py-0.5 text-[9px] text-center text-surface-400 focus:outline-none focus:border-gold/25"
+              className="w-10 bg-[#07080d]/70 border border-white/[0.06] rounded px-1 py-0.5 text-[9px] text-center text-surface-400 focus:outline-none focus:border-gold/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
             />
           </div>
         </div>
@@ -208,8 +209,13 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
       <div className="flex-1 overflow-y-auto scrollbar-gold">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gold-500/8 border border-gold/10 flex items-center justify-center mb-3">
-              <span className="text-xl">👾</span>
+            <div className="relative w-16 h-16 rounded-2xl overflow-hidden mb-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-gold-500/10 to-amber-500/5" />
+              <div className="absolute inset-0 rounded-2xl border border-gold-500/20" />
+              <div className="absolute inset-2 bg-gold-500/10 rounded-xl blur-[4px]" />
+              <span className="absolute inset-0 flex items-center justify-center text-2xl drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]">
+                👾
+              </span>
             </div>
             <h3 className="text-sm font-bold text-surface-300 mb-1">
               {enemies.length === 0 ? "No Monsters Yet" : "No Matches"}
@@ -222,7 +228,7 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
             {enemies.length === 0 && (
               <button
                 onClick={onQuickCreate}
-                className="px-4 py-2 rounded-lg text-[11px] font-semibold bg-gold-500/10 border border-gold/15 text-gold-400 hover:bg-gold-500/15 active:scale-95 transition-all"
+                className="px-4 py-2 rounded-lg text-[11px] font-semibold bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 active:scale-95 transition-all duration-200"
               >
                 👾 Create First Monster
               </button>
@@ -230,13 +236,17 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {filtered.map((enemy) => (
+            {filtered.map((enemy, idx) => (
               <button
                 key={enemy.id}
                 onClick={() => onSelect(enemy)}
-                className="w-full text-left bg-obsidian-mid/50 border border-white/[0.04] rounded-xl p-3 hover:border-gold/15 hover:bg-gold-500/[0.02] active:scale-[0.99] transition-all duration-150 group"
+                className="w-full text-left bg-gradient-to-b from-[#14151f]/70 to-[#0f101a]/85 border border-white/[0.04] rounded-xl p-3 hover:border-gold-500/15 hover:bg-gradient-to-br hover:from-gold-500/[0.02] hover:to-amber-500/[0.01] active:scale-[0.99] transition-all duration-200 group relative overflow-hidden"
+                style={{ animation: `slide-in-up 0.4s ease-out ${idx * 40}ms both` }}
               >
-                <div className="flex items-start gap-2.5">
+                {/* Edge light on hover */}
+                <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/0 group-hover:via-gold-500/20 to-transparent transition-all duration-500" />
+
+                <div className="flex items-start gap-2.5 relative z-10">
                   {/* Type icon */}
                   <div className={`shrink-0 w-8 h-8 rounded-lg ${getTypeColor(enemy.type)} flex items-center justify-center text-xs`}>
                     {enemy.type === "Humanoid" ? "🧑" :
@@ -262,7 +272,7 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
                       <span className="text-sm font-semibold text-surface-200 truncate group-hover:text-gold-200 transition-colors">
                         {enemy.name}
                       </span>
-                      <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded bg-gold-500/10 border border-gold/15 text-gold-400 font-semibold">
+                      <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 font-semibold">
                         CR {formatCr(enemy.challengeRating)}
                       </span>
                     </div>
@@ -307,10 +317,10 @@ export default function EnemyList({ enemies, onSelect, onQuickCreate, onDuplicat
 
       {/* ── Stats footer ── */}
       <div className="shrink-0 mt-3 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[9px] text-surface-600">
-        <span>
+        <span className="tabular-nums">
           Showing {filtered.length} of {enemies.length} monsters
         </span>
-        <span>
+        <span className="tabular-nums">
           Avg CR {stats.avgCr.toFixed(1)} · {Object.keys(stats.byType).length} types
         </span>
       </div>
