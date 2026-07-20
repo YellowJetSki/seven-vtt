@@ -6657,3 +6657,69 @@ origin (token's pre-drag cell)                ghost (cursor position)
 | Premium design tokens | ✅ Gold glass banners, amber pulse dots, gold pulse indicators, red death markers |
 
 ---
+
+## Sprint 24/25 — Premium Battlemap Overhaul: Visual State Overlays, Ping & Measurement Tools (Updated: 2026-07-20 12:00)
+## Sprint 24/25 — Premium Battlemap Overhaul: Visual State Overlays, Ping & Measurement Tools (2026-07-20)
+
+**Phase:** Premium Battlemap Overhaul Phase (Cycle 4 of 5)
+**Target:** Advanced premium tabletop tools — token visual state overlays for common 5e conditions, ping/ripple animation system for DM communication, and measurement/ruler tool for grid distance calculations.
+
+---
+
+### New Files Created (4)
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `lib/canvas/restrained-renderer.ts` | ~380 | Token visual state overlay renderer. 6 distinct overlays: `drawBloodiedOverlay()` — deep red cracked glow ring + fracture arcs + blood drip indicator (activates at HP ≤ 50%); `drawRestrainedOverlay()` — 6 metallic chain links around the token + criss-cross diagonal chains + gold padlock icon; `drawConcentratingOverlay()` — violet pulsing halo ring + diamond icon above token with breathe animation; `drawProneOverlay()` — flat oval shadow + Zzz emoji floating with sine-wave bob; `drawStunnedOverlay()` — 8-ray starburst lines + 3 circling ✦ stars with pink glow; `drawInvisibleOverlay()` — translucent dashed outline with shimmer arc effect. `buildVisualStateOverlayState()` parses token statusMarkers to determine which overlays to apply. |
+| `lib/canvas/ping-renderer.ts` | ~180 | Ping/ripple animation system. `createPing()` generates a PingEffect with grid position, timestamp, and color. `renderPings()` draws each ping as an expanding gold ring (2s duration, ease-out quadratic curve, 0.7→0 opacity) + vertical dashed beam + inner partial ring + center dot. Expired pings (age > 2s) auto-removed from active array. Returns filtered array for state cleanup. |
+| `lib/canvas/measure-renderer.ts` | ~270 | Measurement/ruler tool. `calcDistance()` — Euclidean grid distance. `calcAngle()` — bearing from origin to dest (0-360°). `renderMeasurements()` draws: gold dashed ruler line with 1.5px width, origin/dest dots (4px), grid-interval tick marks (small crosses at each cell interval), distance readout pill ("6.0 cells | 30 ft" with black glass background + gold border), angle arc at origin + degree label. Previous measurements render at 35% opacity to stay visible without distraction. |
+| `components/maps/MapPingRulerTools.tsx` | ~130 | DOM-based floating tool toggle bar positioned at the bottom-center of the canvas. Ping toggle (📍 Ping), Ruler toggle (📏 Measure), Clear Measurements (🗑 Clear, only shown when measurements exist). Active tool gets gold bg + pulsing indicator dot. Gold glass styling matching the design system. |
+
+### Files Modified (3)
+
+| File | Key Changes |
+|------|-------------|
+| `lib/canvas/token-renderer.ts` | Calls `drawVisualStateOverlays()` from `restrained-renderer.ts` at the end of `drawToken()` (after HP bar and status markers, before label). Imports and integrates all 6 visual state overlays directly into the token rendering pipeline. |
+| `lib/canvas/lighting-renderer.ts` | Two new rendering layers: Layer 8 — Ping effects (`renderPings()` called from the 60fps RAF loop, active pings auto-cleaned via returned filtered array); Layer 9 — Measurement/ruler overlays (`renderMeasurements()` called when rulerState has active drag or persisted measurements). `CanvasRenderState` extended with `activePings` and `rulerState` fields. |
+| `components/maps/CanvasMapView.tsx` | Integrated ping mode (`pingMode` state, toggled via MapPingRulerTools, cursor becomes crosshair, click → `createPing()` → appended to `activePings[]`). Integrated ruler mode (`rulerMode` state, cursor becomes cell, click sets origin, drag extends line, release completes measurement — stored in `rulerState.measurements[]`). `handleMouseDown`/`handleMouseMove`/`handleMouseUp` all routed through ping/ruler logic before normal drag. `onMouseLeave` auto-completes in-progress ruler measurements. MapPingRulerTools mounted absolutely at bottom-center. |
+
+### Canvas Rendering Pipeline (Cycle 24 — 10 layers)
+
+```
+Layer  1: Background fill (#2a2a3a or map image)
+Layer  2: Map image (scaled to grid dimensions)
+Layer  3: Grid overlay (gold-tinted dashed)
+Layer  4: Fog of war (visibility/explored sets)
+Layer  5: Dynamic lighting (raycasting + light compositing)
+Layer  6: Tokens (with turn highlighting + 6 visual state overlays)
+Layer  7: Initiative overlays (turn banner, next-up dots, dead markers, chips)
+Layer  8: Ping effects (expanding gold rings + beam, 2s fade)
+Layer  9: Measurement/ruler (dashed lines, tick marks, distance pills)
+Layer 10: Drag preview (ghost token, drop target, trail, coordinates)
+```
+
+### Token Visual State Overlay Summary
+
+| Condition | Visual Indicator | Trigger |
+|-----------|-----------------|---------|
+| **Bloodied** | Red pulsing crack ring + fracture arcs + blood drips | HP ≤ 50% of max |
+| **Restrained** | 6 chain links + criss-cross chains + gold padlock | statusMarkers includes "restrained" |
+| **Concentrating** | Violet halo ring + diamond icon with breathe | statusMarkers includes "concentrating" |
+| **Prone** | Flat oval shadow + Zzz emoji floating | statusMarkers includes "prone" |
+| **Stunned** | 8-ray starburst + 3 circling ✦ stars (pink glow) | statusMarkers includes "stunned" |
+| **Invisible** | Translucent dashed outline + shimmer arc | statusMarkers includes "invisible" |
+
+### Quality Gates
+
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** (2033 modules) |
+| Vite production build | ✅ **7.57s**, 0 warnings |
+| Vercel deploy | ✅ **arkla.vercel.app**, 6.35s build |
+| New files | 4 (`restrained-renderer.ts` 380L, `ping-renderer.ts` 180L, `measure-renderer.ts` 270L, `MapPingRulerTools.tsx` 130L) |
+| Modified files | 3 (token-renderer.ts, lighting-renderer.ts, CanvasMapView.tsx) |
+| Component isolation | ✅ All files < 400 lines, single responsibility |
+| No breaking changes | ✅ All new features are additive (new props, new state) |
+| Premium design tokens | ✅ Gold/amber/rose/emerald/violet/pink consistent with system |
+
+---
