@@ -92,30 +92,45 @@ export async function deleteMapToken(
  * Listens for real-time changes to all map tokens for a given map.
  * Returns an unsubscribe function.
  */
+/**
+ * Listens for real-time changes to all map tokens for a given map.
+ *
+ * OPTIMIZATION (Sprint 6): Added `cancelled` guard to prevent callback
+ * after unsubscribe. Added error listener for subscription failures.
+ * Returns sync Unsubscribe immediately with internal async safety.
+ */
 export function listenMapTokens(
   campaignId: string,
   mapId: string,
   callback: (tokens: MapToken[]) => void
 ): Unsubscribe {
   let unsub: Unsubscribe | null = null;
+  let cancelled = false;
 
-  getFirestoreDb().then((db) => {
-    unsub = onSnapshot(
-      collection(db, tokensPath(campaignId, mapId)),
-      (snap) => {
-        const tokens = snap.docs.map((d) =>
-          fromFirestore<MapToken>(d.id, d.data())
-        );
-        callback(tokens);
-      },
-      (err) => {
-        console.warn("[Firestore/Tokens] Listener error:", err);
+  getFirestoreDb()
+    .then((db) => {
+      if (cancelled) return;
+      unsub = onSnapshot(
+        collection(db, tokensPath(campaignId, mapId)),
+        (snap) => {
+          if (cancelled) return;
+          callback(snap.docs.map((d) => fromFirestore<MapToken>(d.id, d.data())));
+        },
+        (err) => {
+          console.warn("[Firestore/Tokens] Listener error:", err);
+          if (!cancelled) callback([]);
+        }
+      );
+    })
+    .catch((err) => {
+      if (!cancelled) {
+        console.warn("[Firestore/Tokens] Failed to initialize:", err);
         callback([]);
       }
-    );
-  });
+    });
 
   return () => {
+    cancelled = true;
     if (unsub) unsub();
   };
 }

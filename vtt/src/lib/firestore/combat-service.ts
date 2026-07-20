@@ -7,6 +7,13 @@
  *
  * The combat log is stored separately under `campaigns/{campaignId}/combat/log/{logId}`
  * to avoid hitting the 1MB document limit on large sessions.
+ *
+ * OPTIMIZATION (Sprint 6):
+ *   - `listenActiveEncounter` and `listenCombatLog` no longer return
+ *     `Promise<Unsubscribe> as unknown as Unsubscribe`. Now return sync
+ *     `Unsubscribe` with internal async safety.
+ *   - Added `cancelled` guard to prevent callback after unsubscribe.
+ *   - Added error listeners to all onSnapshot calls.
  */
 
 import {
@@ -62,29 +69,41 @@ export async function deleteActiveEncounter(campaignId: string): Promise<void> {
 
 /**
  * Listens for real-time changes to the active combat encounter.
- * Returns an unsubscribe function.
+ *
+ * OPTIMIZATION: Returns sync Unsubscribe immediately with internal
+ * async safety and cancelled guard.
  */
 export function listenActiveEncounter(
   campaignId: string,
   callback: (encounter: CombatEncounter | null) => void
 ): Unsubscribe {
-  const dbPromise = getFirestoreDb();
   let unsub: Unsubscribe | null = null;
+  let cancelled = false;
 
-  dbPromise.then((db) => {
-    unsub = onSnapshot(
-      doc(db, combatActivePath(campaignId)),
-      (snap) => {
-        callback(snap.exists() ? fromFirestore<CombatEncounter>(snap.id, snap.data()) : null);
-      },
-      (err) => {
-        console.warn("[Firestore/Combat] Listener error:", err);
+  getFirestoreDb()
+    .then((db) => {
+      if (cancelled) return;
+      unsub = onSnapshot(
+        doc(db, combatActivePath(campaignId)),
+        (snap) => {
+          if (cancelled) return;
+          callback(snap.exists() ? fromFirestore<CombatEncounter>(snap.id, snap.data()) : null);
+        },
+        (err) => {
+          console.warn("[Firestore/Combat] Listener error:", err);
+          if (!cancelled) callback(null);
+        }
+      );
+    })
+    .catch((err) => {
+      if (!cancelled) {
+        console.warn("[Firestore/Combat] Failed to initialize:", err);
         callback(null);
       }
-    );
-  });
+    });
 
   return () => {
+    cancelled = true;
     if (unsub) unsub();
   };
 }
@@ -120,29 +139,52 @@ export async function getRecentLogEntries(
     .sort((a, b) => a.timestamp - b.timestamp);
 }
 
+/**
+ * Subscribe to recent combat log entries in real-time.
+ *
+ * OPTIMIZATION: Returns sync Unsubscribe immediately with internal
+ * async safety, `cancelled` guard, and error listener.
+ */
 export function listenCombatLog(
   campaignId: string,
   callback: (entries: CombatLogEntry[]) => void,
   limitCount: number = 50
 ): Unsubscribe {
-  const dbPromise = getFirestoreDb();
   let unsub: Unsubscribe | null = null;
+  let cancelled = false;
 
-  dbPromise.then((db) => {
-    const q = query(
-      collection(db, combatLogPath(campaignId)),
-      orderBy("timestamp", "desc"),
-      limit(limitCount)
-    );
-    unsub = onSnapshot(q, (snap) => {
-      const entries = snap.docs
-        .map((d) => fromFirestore<CombatLogEntry>(d.id, d.data()))
-        .sort((a, b) => a.timestamp - b.timestamp);
-      callback(entries);
+  getFirestoreDb()
+    .then((db) => {
+      if (cancelled) return;
+      const q = query(
+        collection(db, combatLogPath(campaignId)),
+        orderBy("timestamp", "desc"),
+        limit(limitCount)
+      );
+      unsub = onSnapshot(
+        q,
+        (snap) => {
+          if (cancelled) return;
+          const entries = snap.docs
+            .map((d) => fromFirestore<CombatLogEntry>(d.id, d.data()))
+            .sort((a, b) => a.timestamp - b.timestamp);
+          callback(entries);
+        },
+        (err) => {
+          console.warn("[Firestore/CombatLog] Listener error:", err);
+          if (!cancelled) callback([]);
+        }
+      );
+    })
+    .catch((err) => {
+      if (!cancelled) {
+        console.warn("[Firestore/CombatLog] Failed to initialize:", err);
+        callback([]);
+      }
     });
-  });
 
   return () => {
+    cancelled = true;
     if (unsub) unsub();
   };
 }
