@@ -19,17 +19,50 @@
  * Atmospheric depth ring and particle overlay for premium feel.
  */
 
+import { useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import MobileBottomNav from "./MobileBottomNav";
 import ToastContainer from "@/components/ui/ToastContainer";
+import DmQuickReferenceOverlay from "@/components/ui/DmQuickReferenceOverlay";
+import { useUIStore } from "@/stores/uiStore";
 
 interface AppShellProps {
   children: ReactNode;
 }
 
 export default function AppShell({ children }: AppShellProps) {
+  const showQuickRef = useUIStore((s) => s.showQuickRef);
+  const toggleQuickRef = useUIStore((s) => s.toggleQuickRef);
+  const setQuickRef = useUIStore((s) => s.setQuickRef);
+
+  // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
+  const handleToggleQuickRef = useCallback(() => {
+    toggleQuickRef();
+  }, [toggleQuickRef]);
+
+  useEffect(() => {
+    window.addEventListener("toggle-dm-quickref", handleToggleQuickRef);
+    return () => window.removeEventListener("toggle-dm-quickref", handleToggleQuickRef);
+  }, [handleToggleQuickRef]);
+
+  // ── Keyboard shortcut: ? key to toggle ──
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Shift+/ on most keyboards
+      if (e.key === "/" && e.shiftKey && !e.repeat) {
+        // Don't trigger if in an input/textarea
+        const activeTag = document.activeElement?.tagName.toLowerCase();
+        if (activeTag === "input" || activeTag === "textarea") return;
+        e.preventDefault();
+        toggleQuickRef();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleQuickRef]);
+
   return (
     <div className="h-screen w-screen overflow-hidden flex bg-obsidian-radial">
       {/* Atmospheric depth ring */}
@@ -62,6 +95,12 @@ export default function AppShell({ children }: AppShellProps) {
       {/* Mobile bottom navigation — only visible on < lg screens */}
       <MobileBottomNav />
       <ToastContainer />
+
+      {/* ── DM Quick Reference Overlay ── */}
+      <DmQuickReferenceOverlay
+        isOpen={showQuickRef}
+        onClose={() => setQuickRef(false)}
+      />
     </div>
   );
 }

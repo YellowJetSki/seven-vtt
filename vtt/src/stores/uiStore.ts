@@ -29,6 +29,7 @@ interface UIState {
   activeModal: string | null;
   modalData: unknown;
   toasts: Toast[];
+  showQuickRef: boolean;
 }
 
 interface UIActions {
@@ -38,6 +39,10 @@ interface UIActions {
   setSidebarOpen: (open: boolean) => void;
   /** Always ensure sidebar is open on desktop (for navigation changes) */
   ensureSidebarForDesktop: () => void;
+  /** Toggle DM Quick Reference overlay */
+  toggleQuickRef: () => void;
+  /** Set DM Quick Reference overlay visibility */
+  setQuickRef: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -52,6 +57,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   activeModal: null,
   modalData: null,
   toasts: [],
+  showQuickRef: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -61,6 +67,9 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   },
 
   setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
+
+  toggleQuickRef: () => set((state) => ({ showQuickRef: !state.showQuickRef })),
+  setQuickRef: (show: boolean) => set({ showQuickRef: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
