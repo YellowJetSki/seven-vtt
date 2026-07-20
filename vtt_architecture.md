@@ -8633,3 +8633,11 @@ useAllCharacterMutations() — After Sprint 28:
 | **Legacy purple tokens** | ✅ **0** — 100% gold/amber/rose/emerald/violet |
 | **Dice rollers** | ✅ **0** (physical dice mandate, all averages)
 ---
+
+## Navigation — Mobile Hamburger Hide (Updated: 2026-07-20 15:06)
+**Fixed:** Hamburger button now hidden on mobile to eliminate redundant navigation with bottom tab bar.
+- `Header.tsx`: Hamburger button uses `hidden lg:flex` — only visible at 1024px+ (desktop)
+- `MobileBottomNav.tsx`: Uses `lg:hidden` — only visible below 1024px (mobile/tablet)
+- Both breakpoints now match at `lg` (1024px), ensuring perfect complementarity. No dead zone existed in the 640-1023px range where neither would be visible.
+
+---

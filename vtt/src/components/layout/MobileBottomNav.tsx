@@ -38,7 +38,7 @@ export default function MobileBottomNav() {
   }, []);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-obsidian/95 backdrop-blur-lg border-t border-gold/10 sm:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-obsidian/95 backdrop-blur-lg border-t border-gold/10 lg:hidden safe-area-bottom">
       {/* Gold gradient top border */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold-500/25 to-transparent" />
 
