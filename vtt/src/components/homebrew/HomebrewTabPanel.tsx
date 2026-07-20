@@ -1,9 +1,9 @@
 /**
- * STᚱ VTT — Homebrew Tab Panel (Premium v3.0)
+ * STᚱ VTT — Homebrew Tab Panel (Premium v3.1)
  *
- * Enhanced with bulk-select mode, duplicate, visibility callbacks,
- * and premium layout with staggered card entrance.
- * Uses direct glass gradient background for each card section.
+ * Enhanced with staggered card entrance animations, gold-accented
+ * tab switching transitions, bulk-select mode support, and
+ * consistent premium layout with direct glass gradient backgrounds.
  */
 
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat } from "@/types/homebrew";
@@ -56,24 +56,31 @@ export default function HomebrewTabPanel({
   selectedIds,
   onToggleSelect,
 }: HomebrewTabPanelProps) {
+  const baseDelay = 50; // ms
+
   if (activeTab === "items") {
     if (items.length === 0) return <HomebrewEmptyState tabLabel="items" />;
     return (
-      <div className="space-y-2">
-        {items.map((item) => (
-          <div key={item.id} className="animate-in slide-in-from-bottom-1 duration-200" style={{ animationDelay: `${Math.min(items.indexOf(item) * 15, 300)}ms` } as React.CSSProperties}>
-            <HomebrewItemCard
-              item={item}
-              onEdit={() => onEditItem(item)}
-              onDelete={() => onDeleteItem(item.id)}
-              onDuplicate={() => onDuplicateItem(item)}
-              onToggleVisibility={(id, visible) => onToggleItemVisibility(id, visible)}
-              isBulkMode={isBulkMode}
-              isSelected={selectedIds?.has(item.id)}
-              onToggleSelect={onToggleSelect}
-            />
-          </div>
-        ))}
+      <div style={{ animation: "slide-in-up 0.3s ease-out both" }}>
+        <div className="space-y-2">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              style={{ animation: `slide-in-up 0.35s ease-out ${baseDelay + Math.min(items.indexOf(item) * 25, 600)}ms both` }}
+            >
+              <HomebrewItemCard
+                item={item}
+                onEdit={() => onEditItem(item)}
+                onDelete={() => onDeleteItem(item.id)}
+                onDuplicate={() => onDuplicateItem(item)}
+                onToggleVisibility={(id, visible) => onToggleItemVisibility(id, visible)}
+                isBulkMode={isBulkMode}
+                isSelected={selectedIds?.has(item.id)}
+                onToggleSelect={onToggleSelect}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -81,21 +88,26 @@ export default function HomebrewTabPanel({
   if (activeTab === "spells") {
     if (spells.length === 0) return <HomebrewEmptyState tabLabel="spells" />;
     return (
-      <div className="space-y-2">
-        {spells.map((spell) => (
-          <div key={spell.id} className="animate-in slide-in-from-bottom-1 duration-200" style={{ animationDelay: `${Math.min(spells.indexOf(spell) * 15, 300)}ms` } as React.CSSProperties}>
-            <HomebrewSpellCard
-              spell={spell}
-              onEdit={() => onEditSpell(spell)}
-              onDelete={() => onDeleteSpell(spell.id)}
-              onDuplicate={() => onDuplicateSpell(spell)}
-              onToggleVisibility={(id, visible) => onToggleSpellVisibility(id, visible)}
-              isBulkMode={isBulkMode}
-              isSelected={selectedIds?.has(spell.id)}
-              onToggleSelect={onToggleSelect}
-            />
-          </div>
-        ))}
+      <div style={{ animation: "slide-in-up 0.3s ease-out 0.05s both" }}>
+        <div className="space-y-2">
+          {spells.map((spell) => (
+            <div
+              key={spell.id}
+              style={{ animation: `slide-in-up 0.35s ease-out ${baseDelay + Math.min(spells.indexOf(spell) * 25, 600)}ms both` }}
+            >
+              <HomebrewSpellCard
+                spell={spell}
+                onEdit={() => onEditSpell(spell)}
+                onDelete={() => onDeleteSpell(spell.id)}
+                onDuplicate={() => onDuplicateSpell(spell)}
+                onToggleVisibility={(id, visible) => onToggleSpellVisibility(id, visible)}
+                isBulkMode={isBulkMode}
+                isSelected={selectedIds?.has(spell.id)}
+                onToggleSelect={onToggleSelect}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -103,21 +115,26 @@ export default function HomebrewTabPanel({
   // feats
   if (feats.length === 0) return <HomebrewEmptyState tabLabel="feats" />;
   return (
-    <div className="space-y-2">
-      {feats.map((feat) => (
-        <div key={feat.id} className="animate-in slide-in-from-bottom-1 duration-200" style={{ animationDelay: `${Math.min(feats.indexOf(feat) * 15, 300)}ms` } as React.CSSProperties}>
-          <HomebrewFeatCard
-            feat={feat}
-            onEdit={() => onEditFeat(feat)}
-            onDelete={() => onDeleteFeat(feat.id)}
-            onDuplicate={() => onDuplicateFeat(feat)}
-            onToggleVisibility={(id, visible) => onToggleFeatVisibility(id, visible)}
-            isBulkMode={isBulkMode}
-            isSelected={selectedIds?.has(feat.id)}
-            onToggleSelect={onToggleSelect}
-          />
-        </div>
-      ))}
+    <div style={{ animation: "slide-in-up 0.3s ease-out 0.1s both" }}>
+      <div className="space-y-2">
+        {feats.map((feat) => (
+          <div
+            key={feat.id}
+            style={{ animation: `slide-in-up 0.35s ease-out ${baseDelay + Math.min(feats.indexOf(feat) * 25, 600)}ms both` }}
+          >
+            <HomebrewFeatCard
+              feat={feat}
+              onEdit={() => onEditFeat(feat)}
+              onDelete={() => onDeleteFeat(feat.id)}
+              onDuplicate={() => onDuplicateFeat(feat)}
+              onToggleVisibility={(id, visible) => onToggleFeatVisibility(id, visible)}
+              isBulkMode={isBulkMode}
+              isSelected={selectedIds?.has(feat.id)}
+              onToggleSelect={onToggleSelect}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

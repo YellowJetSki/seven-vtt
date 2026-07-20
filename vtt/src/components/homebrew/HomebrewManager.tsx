@@ -1,8 +1,9 @@
 /**
- * STᚱ VTT — Homebrew Manager (v2.0)
+ * STᚱ VTT — Homebrew Manager (Premium v3.1 — Lusion-Grade Orchestrator)
  *
  * Full CRUD panel for homebrew items, spells, and feats with bulk operations,
  * export/import, SRD reference display, visibility control, and duplicate.
+ * Enhanced with staggered entrance animations and premium micro-interactions.
  */
 
 import { useState, useMemo, useCallback, useRef } from "react";
@@ -200,9 +201,7 @@ export default function HomebrewManager() {
         const mergedSpells = mergeHomebrewImport(spells, data.spells, true);
         const mergedFeats = mergeHomebrewImport(feats, data.feats, true);
 
-        // Only update if new entries were added
         if (mergedItems.length > items.length || mergedSpells.length > spells.length || mergedFeats.length > feats.length) {
-          // Add only truly new entries
           mergedItems.forEach((item) => {
             if (!items.find((i) => i.id === item.id)) store.addItem(item as HomebrewItem);
           });
@@ -273,21 +272,22 @@ export default function HomebrewManager() {
   }, []);
 
   return (
-    <div>
-      {/* SRD Toggle */}
+    <div style={{ animation: "slide-in-up 0.35s ease-out both" }}>
+      {/* ── Tab Bar + SRD Toggle ── */}
       <div className="flex items-center justify-between mb-3">
         <HomebrewTabs activeTab={activeTab} onChange={setActiveTab} />
-        <label className="flex items-center gap-1.5 cursor-pointer">
+        <label className="flex items-center gap-1.5 cursor-pointer group">
           <input
             type="checkbox"
             checked={showSRD}
             onChange={(e) => setShowSRD(e.target.checked)}
-            className="rounded border-surface-600 bg-surface-800 accent-gold-500 w-3.5 h-3.5"
+            className="rounded border-surface-600 bg-surface-800 accent-gold-500 w-3.5 h-3.5 transition-all duration-150"
           />
-          <span className="text-[10px] text-surface-500 uppercase tracking-wider">SRD</span>
+          <span className="text-[10px] text-surface-500 uppercase tracking-wider group-hover:text-surface-300 transition-colors">SRD</span>
         </label>
       </div>
 
+      {/* ── Search + Actions Bar ── */}
       <HomebrewSearchBar
         search={search}
         onSearchChange={setSearch}
@@ -301,8 +301,12 @@ export default function HomebrewManager() {
         onToggleBulkMode={handleToggleBulkMode}
       />
 
-      <div className="text-[10px] text-surface-500 mb-3">{tabCount} {activeTab}</div>
+      {/* ── Tab Count Label ── */}
+      <div className="text-[10px] text-surface-500 mb-3 tabular-nums">
+        {tabCount} {activeTab}
+      </div>
 
+      {/* ── Tab Panel ── */}
       <HomebrewTabPanel
         activeTab={activeTab}
         items={filteredItems}
@@ -337,6 +341,7 @@ export default function HomebrewManager() {
         onToggleSelect={handleToggleSelect}
       />
 
+      {/* ── Form Modals ── */}
       {formMode && formType === "items" && (
         <HomebrewItemForm
           form={itemForm}
