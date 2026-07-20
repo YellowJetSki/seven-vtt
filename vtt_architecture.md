@@ -7190,3 +7190,45 @@ The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts
 - Git checkpoint: ✅ Sprint 8 saved
 - Architecture ledger: ✅ Updated
 ---
+
+## Sprint 9/30 — Comprehensive Premium Refactor: CampaignSettings (Updated: 2026-07-20 13:08)
+## Sprint 9/30 — Comprehensive Premium Refactor: CampaignSettings (2026-07-20)
+
+**Phase:** The Comprehensive Premium Refactor Phase (Cycles 3-12)
+**Target:** CampaignSettings (`/campaign/settings`) — the campaign configuration dashboard
+**Design Inspirations:** Lusion, Overrrides, Ventriloc
+**Status:** Complete — TypeScript 0 errors, hygiene pre-existing only
+
+### Files Enhanced (7 total)
+
+| File | Lines | Key Premium Upgrades |
+|------|:-----:|---------------------|
+| **pages/CampaignSettings.tsx** | 210 | **7-layer cinematic hero header** matching all other premium pages: conic depth ring, dual edge lights, ambient glow pockets, border. Premium icon container with `from-gold-500/10 to-amber-500/5` gradient. Status badge with `animate-pulse-soft` indicator. Gold focus on all interactive elements. Replaced `glass-gold` + `corner-ornament` + `depth-ring` with direct gradients. Scrollable content with `scrollbar-gold`. |
+| **SettingsSection.tsx** | 50 | **Complete rewrite**: replaced `glass-gold` + `corner-ornament` with premium glass gradient `from-[#14151f]/85 to-[#0f1019]/90` + `border border-white/[0.04]`. Gold edge light with `group-hover:via-gold-500/30` transition. Subtle bottom ambient glow pocket. |
+| **CampaignInfoForm.tsx** | 115 | All inputs: `bg-[#07080d]/70` + `transition-all`. Gold gradient save button `from-gold-500/12 to-amber-500/8`. Gold focus rings `focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15`. Null-safe timestamps. |
+| **XpSystemPicker.tsx** | 185 | Gold gradient active state on XP/currency preset toggle buttons. `hover:border-white/[0.08]` + `active:scale-[0.98]` micro-interactions. Gold gradient save button. Custom currency input with gold focus. |
+| **RaceClassRestrictions.tsx** | 145 | Gold gradient active state on race/class chips `from-gold-500/12 to-amber-500/8`. Glass dark inactive state `bg-[#07080d]/70`. All/Clear quick-action buttons. Gold gradient save button. Updated icon from "CB" to "🧬". |
+| **DmNotesSection.tsx** | 50 | Gold gradient save button. Gold focus on textarea. Glass dark textarea `bg-[#07080d]/70`. |
+| **CampaignStatsDashboard.tsx** | 80 | Stat cards with `hover:border-gold-500/15 hover:shadow-[0_0_8px_rgba(234,179,8,0.02)]`. Gold gradient session button. `tabular-nums` for stat values. Session counter with gold gradient styling. Null-safe timestamps. |
+
+### Design Patterns Applied
+
+| Pattern | Count | Usage |
+|---------|:-----:|-------|
+| 7-layer cinematic hero header | 1 | CampaignSettings |
+| Glass gradient `from-[#14151f]/85 to-[#0f1019]/90` | 1 | SettingsSection wrapper |
+| Glass dark `bg-[#07080d]/70` | 6 | All inputs, textareas, stat cards, toggle cards |
+| Gold gradient buttons `from-gold-500/12 to-amber-500/8` | 5 | Save Info, Save Rules, Save Restrictions, Save Notes, +New Session |
+| Gold edge light | 1 | SettingsSection |
+| Gold focus rings `focus:border-gold-500/25 focus:ring-gold-500/15` | 6 | All inputs/textareas |
+| `glass-gold` eliminated | 1 | CampaignSettings |
+| `corner-ornament` eliminated | 4 | CampaignSettings |
+| `depth-ring` eliminated | 1 | CampaignSettings |
+
+### Quality Gates
+
+- TypeScript (`tsc --noEmit`): ✅ **0 errors**
+- ESLint: ⚠️ Pre-existing config issue (357 total — all files, not my code)
+- Git checkpoint: ✅ Sprint 9 saved
+- Architecture ledger: ✅ Updated
+---
