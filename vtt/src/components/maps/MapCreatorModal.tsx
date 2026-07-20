@@ -13,6 +13,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import type { BattleMap } from "@/types";
 import { useCampaignStore } from "@/stores/campaignStore";
 import AssetBrowser from "@/components/ui/AssetBrowser";
+import BattleMapAssetPanel from "@/components/maps/BattleMapAssetPanel";
 import { type AssetEntry } from "@/images/assetCatalog";
 
 interface MapCreatorModalProps {
@@ -150,20 +151,34 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
 
             {showGallery ? (
               <div className="bg-[#0c0d15] border border-white/[0.04] rounded-xl p-3">
-                <AssetBrowser
-                  category="map"
+                {/* PNG Battle Map Assets — local images from /images/ */}
+                <BattleMapAssetPanel
                   onSelect={(asset: AssetEntry) => {
                     setImageUrl(asset.imageUrl || asset.svg);
                     setImageError(false);
                     setShowGallery(false);
-                  }}
-                  showUrlMode
-                  onUrlSubmit={(url: string) => {
-                    setImageUrl(url);
-                    setImageError(false);
-                    setShowGallery(false);
+                    // Auto-fill map name from asset label
+                    if (!name.trim()) {
+                      setName(asset.label);
+                    }
                   }}
                 />
+                <div className="mt-2 pt-2 border-t border-white/[0.04]">
+                  <AssetBrowser
+                    category="map"
+                    onSelect={(asset: AssetEntry) => {
+                      setImageUrl(asset.imageUrl || asset.svg);
+                      setImageError(false);
+                      setShowGallery(false);
+                    }}
+                    showUrlMode
+                    onUrlSubmit={(url: string) => {
+                      setImageUrl(url);
+                      setImageError(false);
+                      setShowGallery(false);
+                    }}
+                  />
+                </div>
               </div>
             ) : (
               <>
@@ -171,7 +186,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
                   type="text"
                   value={imageUrl}
                   onChange={(e) => { setImageUrl(e.target.value); setImageError(false); }}
-                  placeholder="https://example.com/map.jpg"
+                  placeholder="/images/maps/boathouse_enc.png or https://example.com/map.jpg"
                   className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d] border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700"
                 />
                 {/* Live Preview */}
@@ -183,7 +198,7 @@ export default function MapCreatorModal({ isOpen, onClose }: MapCreatorModalProp
                       </div>
                     ) : imageError ? (
                       <div className="flex items-center justify-center h-full text-[10px] text-rose-400/60">
-                        Image failed to load
+                        Image failed to load — check that it exists in public/images/maps/
                       </div>
                     ) : (
                       <img

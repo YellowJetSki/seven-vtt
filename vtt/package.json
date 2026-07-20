@@ -5,6 +5,8 @@
   "type": "module",
   "description": "STᚱ VTT — A premium virtual tabletop for the Arkla campaign",
   "scripts": {
+    "predev": "node ../scripts/copy-images.mjs",
+    "prebuild": "node ../scripts/copy-images.mjs",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",

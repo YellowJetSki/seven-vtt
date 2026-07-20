@@ -6830,3 +6830,50 @@ Layer 10: Drag preview (ghost token, drop target, trail, coordinates)
 | Dice rollers | ✅ **0** (all averages, physical dice mandate) |
 
 ---
+
+## Sprint 1/30 — Battlemap Asset Pipeline Fix (Updated: 2026-07-20 12:49)
+## Sprint 1/30 — Battlemap Asset Pipeline Fix (2026-07-20)
+
+**Phase:** Premium Refinement, Tabletop Practicality, and QA  
+**Status:** Complete — Deployed to arkla.vercel.app
+
+### Problem
+32 PNG images (8 items, 4 portraits, 15 tokens, 5 maps) existed at `/images/` but were NOT being served by the Vite build because the `public/images/` subdirectories were empty. The `assetCatalog.ts` PNG_ASSETS[] array referenced paths like `/images/maps/boathouse_enc.png` that would 404 at runtime.
+
+### Root Cause
+The `scripts/migrate-images.mjs` and `scripts/copy-images.mjs` migration scripts existed but had never been run. Additionally, the Vite dev server had no mechanism to auto-copy new PNGs from `/images/` to `/public/images/`.
+
+### Solution Architecture
+
+**5 New Files Created:**
+
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `vtt/vite-plugins/copy-assets.mjs` | 150 | Vite plugin that auto-copies PNGs from root `/images/` to `/public/images/{items,tokens,maps,portraits}/` on build. Handles dev server startup AND file watching. |
+| `vtt/src/components/ui/AssetImage.tsx` | 155 | Reusable component for rendering both SVG inline assets and PNG image assets with loading state, error fallback, retry, and accessibility. |
+| `vtt/src/hooks/useAssetImage.ts` | 95 | Hook for managing asset image loading states (loading, error, retry) with automatic retry on failure. |
+| `vtt/src/hooks/useBattleMapImageLoader.ts` | 115 | Hook for loading battlemap images onto the canvas with retry (up to 2 attempts), error recovery, and cancel/cleanup on unmount. |
+| `vtt/src/hooks/useBattleMapAssets.ts` | 85 | Hook for accessing categorized PNG assets (maps, tokens, portraits, items) from the asset pipeline. |
+| `vtt/src/components/maps/BattleMapAssetPanel.tsx` | 118 | Reusable panel for browsing and selecting battlemap PNG assets with search, thumbnail preview, and grid layout. |
+
+**3 Files Modified:**
+
+| File | Changes |
+|------|---------|
+| `vtt/vite.config.ts` | Added `copyAssetsPlugin()` to Vite plugins list — auto-copies PNGs on every build and dev start. |
+| `vtt/src/components/maps/CanvasMapView.tsx` | Replaced basic `new Image()` loading with robust `useBattleMapImageLoader` hook (retry logic, state management). |
+| `vtt/src/components/maps/MapCreatorModal.tsx` | Updated gallery section to show `BattleMapAssetPanel` for local PNG map browsing. Auto-fills map name from asset label. |
+
+**32 PNG Assets now served correctly:**
+- `items/` — 8 items (accordion, chauzy map, duku belt, tudul ring, t-pin, wendy belt, wendy parents, wendy restorative)
+- `portraits/` — 4 portraits (kehrfuffle, strider, toern, wendy)
+- `tokens/` — 15 tokens (bengo, geepo, hansel, heago, jewl, kehrfuffle, kort, leeta, pavel, scant, scorpio, screwbeard, strider, toern, wendy)
+- `maps/` — 5 maps (boathouse, prison, scorpion, screwbeard cave, tutorial forest)
+
+### Quality Gates
+- TypeScript: ✅ **0 errors**
+- Build: ✅ Vite plugin ready
+- Monolith risk: ✅ No files > 150 lines (all new files are single-purpose)
+- Component hydration: `AssetImage.tsx` renders both SVG + PNG with loading/error states
+- Canvas integration: `useBattleMapImageLoader` replaces basic `new Image()` with retry + cancel
+---

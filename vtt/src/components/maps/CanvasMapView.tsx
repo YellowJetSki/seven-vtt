@@ -45,6 +45,7 @@ import { snapToGrid, completeMeasurement, type RulerState } from "@/lib/canvas/m
 import type { PingEffect } from "@/lib/canvas/ping-renderer";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { KeyboardShortcutActions } from "@/hooks/useKeyboardShortcuts";
+import { useBattleMapImageLoader } from "@/hooks/useBattleMapImageLoader";
 import ZoomControls from "./ZoomControls";
 import MapViewControls from "./MapViewControls";
 import MapPingRulerTools from "./MapPingRulerTools";
@@ -177,14 +178,14 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     }
   }, [dragState, tokens]);
 
-  // ── Load map image ──
+  // ── Load map image (with retry + error handling) ──
+  const { imageElement, isLoading: isMapLoading, hasError: mapLoadError } =
+    useBattleMapImageLoader(mapData.imageUrl);
+
+  // Sync loaded image to canvas render state
   useEffect(() => {
-    if (!mapData.imageUrl) return;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = mapData.imageUrl;
-    img.onload = () => { stateRef.current.image = img; };
-  }, [mapData.imageUrl]);
+    stateRef.current.image = imageElement;
+  }, [imageElement]);
 
   // ── Animation loop (60fps) ──
   const renderFrame = useCallback(() => {
