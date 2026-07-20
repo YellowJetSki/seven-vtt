@@ -31,6 +31,7 @@ interface UIState {
   toasts: Toast[];
   showQuickRef: boolean;
   showPartyRest: boolean;
+  showCombatConditions: boolean;
 }
 
 interface UIActions {
@@ -46,6 +47,8 @@ interface UIActions {
   setQuickRef: (show: boolean) => void;
   /** Set DM Party Rest overlay visibility */
   setPartyRest: (show: boolean) => void;
+  /** Set DM Combat Condition Bar visibility */
+  setCombatConditions: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -62,6 +65,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   toasts: [],
   showQuickRef: false,
   showPartyRest: false,
+  showCombatConditions: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -75,6 +79,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   toggleQuickRef: () => set((state) => ({ showQuickRef: !state.showQuickRef })),
   setQuickRef: (show: boolean) => set({ showQuickRef: show }),
   setPartyRest: (show: boolean) => set({ showPartyRest: show }),
+  setCombatConditions: (show: boolean) => set({ showCombatConditions: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

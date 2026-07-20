@@ -27,6 +27,7 @@ import MobileBottomNav from "./MobileBottomNav";
 import ToastContainer from "@/components/ui/ToastContainer";
 import DmQuickReferenceOverlay from "@/components/ui/DmQuickReferenceOverlay";
 import DmPartyRestOverlay from "@/components/control-center/DmPartyRestOverlay";
+import DmCombatConditionBar from "@/components/control-center/DmCombatConditionBar";
 import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -41,6 +42,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setQuickRef = useUIStore((s) => s.setQuickRef);
   const showPartyRest = useUIStore((s) => s.showPartyRest);
   const setPartyRest = useUIStore((s) => s.setPartyRest);
+  const showCombatConditions = useUIStore((s) => s.showCombatConditions);
+  const setCombatConditions = useUIStore((s) => s.setCombatConditions);
   const role = useAuthStore((s) => s.role);
 
   // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
@@ -62,6 +65,16 @@ export default function AppShell({ children }: AppShellProps) {
     window.addEventListener("toggle-dm-party-rest", handleTogglePartyRest);
     return () => window.removeEventListener("toggle-dm-party-rest", handleTogglePartyRest);
   }, [handleTogglePartyRest]);
+
+  // ── Listen for custom "toggle-dm-combat-conditions" event from sidebar ──
+  const handleToggleCombatConditions = useCallback(() => {
+    setCombatConditions(!showCombatConditions);
+  }, [setCombatConditions, showCombatConditions]);
+
+  useEffect(() => {
+    window.addEventListener("toggle-dm-combat-conditions", handleToggleCombatConditions);
+    return () => window.removeEventListener("toggle-dm-combat-conditions", handleToggleCombatConditions);
+  }, [handleToggleCombatConditions]);
 
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
@@ -126,6 +139,16 @@ export default function AppShell({ children }: AppShellProps) {
         <DmPartyRestOverlay
           isOpen={showPartyRest}
           onClose={() => setPartyRest(false)}
+        />
+      )}
+
+      {/* ── DM Combat Condition Bar ──
+          Globally accessible — apply conditions to characters/combatants
+          from ANY page during fast-paced combat */}
+      {role === "dm" && (
+        <DmCombatConditionBar
+          isOpen={showCombatConditions}
+          onClose={() => setCombatConditions(false)}
         />
       )}
     </div>

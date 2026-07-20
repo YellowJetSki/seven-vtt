@@ -132,6 +132,29 @@ export default function Sidebar() {
           ))}
         </nav>
 
+        {/* ── DM COMBAT CONDITIONS TOGGLE ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("toggle-dm-combat-conditions"));
+            }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Combat Conditions"
+            aria-label="Toggle Combat Conditions"
+          >
+            <span className="text-sm">⚡</span>
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-amber-400 transition-colors truncate">
+                Conditions
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM PARTY REST TOGGLE ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button
