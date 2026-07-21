@@ -365,7 +365,7 @@ export default function AttackResolutionPopover({
     >
       <div
         ref={popoverRef}
-        className="pointer-events-auto w-[340px] max-h-[85vh] bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/98 border border-white/[0.06] rounded-2xl shadow-[0_32px_64px_rgba(0,0,0,0.5),0_0_40px_rgba(234,179,8,0.02)] overflow-hidden flex flex-col"
+        className="relative pointer-events-auto w-[340px] max-h-[85vh] bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/98 border border-white/[0.06] rounded-2xl shadow-[0_32px_64px_rgba(0,0,0,0.5),0_0_40px_rgba(234,179,8,0.02)] overflow-hidden flex flex-col"
         style={{
           ...popoverStyle,
           animation: "slide-in-up 0.2s ease-out both",

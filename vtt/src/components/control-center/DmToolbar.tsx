@@ -50,7 +50,7 @@ export default function DmToolbar({
   const isActive = (mode: PlacementMode) => placementMode === mode;
 
   return (
-    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#12131e]/85 backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.03)]">
+    <div className="relative flex items-center justify-between px-3 py-2 rounded-xl bg-[#12131e]/85 backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.03)]">
       {/* Top gold edge */}
       <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-gold-500/10 to-transparent pointer-events-none" />
 

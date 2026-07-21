@@ -216,7 +216,7 @@ export default function MultiTargetAoEPopover({
   return (
     <div ref={popoverRef} style={popoverStyle}>
       <div
-        className="w-[380px] max-h-[85vh] flex flex-col rounded-2xl bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/95 border border-white/[0.06] shadow-[0_32px_80px_rgba(0,0,0,0.55),0_8px_24px_rgba(0,0,0,0.3)] backdrop-blur-2xl overflow-hidden"
+        className="relative w-[380px] max-h-[85vh] flex flex-col rounded-2xl bg-gradient-to-b from-[#14151f]/95 to-[#0f1019]/95 border border-white/[0.06] shadow-[0_32px_80px_rgba(0,0,0,0.55),0_8px_24px_rgba(0,0,0,0.3)] backdrop-blur-2xl overflow-hidden"
       >
         {/* ── Top edge light ── */}
         <div className="absolute top-0 left-[5%] right-[5%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent pointer-events-none z-10" />
