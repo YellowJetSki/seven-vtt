@@ -14205,3 +14205,68 @@ Comprehensive DOM verification confirmed all 16 DM popover components use the pr
 ### Git Savepoint
 - ✅ Sprint 18 checkpoint created
 ---
+
+## Cycle 19 — QA & Stabilization (Cycle 4 of 5) (Updated: 2026-07-21 14:41)
+## Sprint 19 of 80 — QA & Stabilization Phase — Cycle 4 of 5 — COMPLETE ✅
+
+### Production Deployment
+- **URL:** https://arkla.vercel.app — Hash: `index-B0cJy6pi.js`
+- **Build:** 8.30s (Vercel), 2,152 modules, 0 TS errors, 0 warnings
+- **JS:** 2,235 KB (523 KB gzipped), **CSS:** 428 KB (52 KB gzipped)
+
+### Deep QA — Homebrew Panel CRUD Pipeline (Item/Spell/Feat Forms)
+
+Validated all 3 Homebrew creation forms for the upcoming "Homebrew Forge" phase (Cycles 21-30):
+
+| Form | Dynamic Fields | 5.5e Compliance | Status |
+|:-----|:--------------|:----------------:|:------:|
+| `HomebrewItemForm.tsx` | Category-based: weapon(damage dice/type/bonus), armor(AC bonus), potion/healing, custom category input | ✅ Full | ✅ |
+| `HomebrewSpellForm.tsx` | AoE shape/size (6 shapes), damage/healing dice, save DC, ATK bonus, 8 schools, ritual toggle, visible toggle | ✅ Full | ✅ |
+| `HomebrewFeatForm.tsx` | Ability score increase (6 abilities), skill proficiencies (18), structured prerequisites, repeatable toggle | ✅ Full | ✅ |
+| `useHomebrewForms.ts` | Submit functions preserve createdAt on edit; originalCreatedAt ref prevents overwrite | ✅ Fixed | ✅ |
+
+### Deep QA — NPC/Enemy Creature Builder
+
+| Check | Status |
+|:------|:------:|
+| `EnemyDoc` type has `imageUrl?: string` | ✅ Pre-existing |
+| `EnemyDoc` type had `spellcasting` with casterType/ability/DC/ATK/spells/slots | ❌ **Missing — ADDED** |
+| `EnemyCreator` exposes `imageUrl` input field | ❌ **Missing — ADDED with live preview** |
+| `EnemyCreator` saves `imageUrl` to EnemyDoc on handleSave | ❌ **Missing — ADDED** |
+| 5.5e ability scores, saving throws, senses, languages | ✅ Full |
+| Structured attack manager with CombatEntity compatibility | ✅ Full |
+| CR → AC/HP auto-computation tables | ✅ Full (CR 0-30) |
+
+### ImageUrl Field Integration (Critical Gap Fix)
+
+**Gap identified:** `EnemyDoc` had `imageUrl?: string` in the type definition, but:
+1. The `EnemyCreator` component had NO input field for it
+2. The `handleSave` function did NOT include `imageUrl` in the EnemyDoc construction
+
+**Fix applied to `EnemyCreator.tsx`:**
+1. Added `[imageUrl, setImageUrl]` state declaration (reads from `existingEnemy?.imageUrl`)
+2. Added "Token Image URL" text input between Speed and CR fields
+3. Added live image preview (w-8 h-8 rounded thumbnail with error fallback)
+4. Added `imageUrl: imageUrl || undefined` to `handleSave` EnemyDoc construction
+5. Added `imageUrl` to dependency array of `handleSave` useCallback
+
+### EnemyDoc Type Extension (Pre-Homebrew-Forge)
+
+Added `spellcasting` field to `EnemyDoc` interface in `src/types/enemy.ts`:
+```typescript
+spellcasting?: {
+  casterType: "full" | "half" | "third" | "pact" | "innate";
+  spellcastingAbility: "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
+  spellSaveDC: number;
+  spellAttackBonus: number;
+  spells?: string[];
+  slotsPerLevel?: Record<string, { current: number; max: number }>;
+};
+```
+
+### TypeScript Verification
+- ✅ `npx tsc --noEmit`: 0 errors (2,152 modules)
+
+### Git Savepoint
+- ✅ Sprint 19 checkpoint created
+---
