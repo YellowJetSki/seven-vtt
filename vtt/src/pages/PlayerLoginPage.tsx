@@ -62,7 +62,8 @@ export default function PlayerLoginPage() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex relative bg-[#07080d] select-none">
+    <div className="overflow-hidden flex relative bg-[#07080d] select-none"
+      style={{ height: '100dvh', width: '100dvw' }}>
       {/* ═══════════════════════════════════════════════════════
            LAYER 1: Deep Background
            ═══════════════════════════════════════════════════════ */}

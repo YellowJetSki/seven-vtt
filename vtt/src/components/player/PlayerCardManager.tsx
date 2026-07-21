@@ -14,7 +14,7 @@
 
 import { useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { setCharacter } from "@/lib/firestore-service";
+import { setCharacter, deleteCharacter } from "@/lib/firestore-service";
 import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
 import LevelUpPanel from "./LevelUpPanel";
 import type { PlayerCharacter } from "@/types";
@@ -73,6 +73,10 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
 
   const handleDelete = useCallback(() => {
     removeCharacter(character.id);
+    // Also delete from Firestore so character doesn't reappear on refresh
+    deleteCharacter(FALLBACK_CAMPAIGN_ID, character.id).catch((err) => {
+      console.warn("[PlayerCardManager] Firestore deletion failed:", err);
+    });
     onClose();
   }, [character.id, removeCharacter, onClose]);
 

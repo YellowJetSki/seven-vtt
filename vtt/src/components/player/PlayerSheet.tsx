@@ -9,7 +9,7 @@
  * 44px+ touch targets, swipeable tabs, no horizontal overflow.
  */
 
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import type { PlayerCharacter } from "@/types";
 import { computeSpellcasting } from "@/lib/mechanics/character-derivations";
 import PlayerSheetHeader from "./PlayerSheetHeader";
@@ -73,8 +73,21 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
     }
   };
 
+  // ── ESC key to close ──
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-obsidian/98 backdrop-blur-md animate-in slide-in-from-bottom duration-300 overflow-hidden">
+    // Using dvh/dvw for dynamic viewport — handles mobile URL bars properly
+    <div className="fixed inset-0 z-50 flex flex-col bg-obsidian/98 backdrop-blur-md animate-in slide-in-from-bottom duration-300 overflow-hidden"
+      style={{ height: '100dvh', width: '100dvw' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       {/* Ambient gold gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-gold-500/[0.02] via-transparent to-transparent pointer-events-none" />
       <div className="relative z-10 flex flex-col h-full">

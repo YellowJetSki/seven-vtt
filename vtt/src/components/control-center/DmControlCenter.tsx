@@ -60,7 +60,8 @@ export default function DmControlCenter() {
   }
 
   return (
-    <div className="flex h-full bg-obsidian">
+    // dvh/dvw for dynamic viewport safety — handles mobile URL bars
+    <div className="flex bg-obsidian" style={{ height: '100%', minHeight: '0', overflow: 'hidden' }}>
       {/* ─── Token HP Popover ─────────────────────── */}
       {state.hpPopoverToken && (
         <TokenHpPopover

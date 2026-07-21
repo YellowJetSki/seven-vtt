@@ -12048,3 +12048,24 @@ Next: Final deployment, edge-case hardening, and production readiness verificati
 The application is battle-ready for live D&D 5.5e sessions. From the LoginPage's aurora animation to the DM's Combat Wrap-Up overlay, every surface has been hardened, polished, and deployed.
 
 ---
+
+## Sprint 1/40 — Critical Bug Fix Phase (Updated: 2026-07-21 08:56)
+## Sprint 1/40 — Critical Bug Fix Phase (Complete)
+**Date:** 2026-07-21
+
+### 4 Core Bug Fixes Delivered
+
+| # | Bug | Files Fixed | Fix Summary |
+|:-:|-----|-------------|-------------|
+| 1 | Player Card view can't be closed | `PlayerSheet.tsx` | Added Escape key listener + backdrop click-to-close handler. Added `useEffect` dependency. Player sheet now closes on Escape key or clicking outside the content. |
+| 2 | Navigation disappearing on Fight (Battle Maps) tab | `DmControlCenter.tsx` | Changed `h-full` to `height: 100% + min-height: 0` to properly fill available space within the AppShell flex layout. DmControlCenter's inner 3-column layout (sidebar → canvas → panel) no longer competes with AppShell's sidebar. |
+| 3 | Dynamic viewport height/width (mobile URL bars) | `AppShell.tsx`, `LoginPage.tsx`, `PlayerJoinPage.tsx`, `PlayerLoginPage.tsx`, `PlayerSheetPage.tsx`, `PlayerSheet.tsx` | All `h-screen w-screen` replaced with `100dvh` / `100dvw` for proper dynamic viewport handling. Main content padding uses `env(safe-area-inset-bottom)` for mobile notch/home indicator. |
+| 4 | Deleted characters reappear on refresh | `PlayerCardManager.tsx` | `handleDelete` now also calls `deleteCharacter()` from Firestore's `character-service.ts`. Zustand removes locally, Firestore removes remotely. `onSnapshot` listener will not bring it back. |
+
+### Production Deployment
+- Build: 2,129 modules, 7.38s, 0 errors
+- Bundle: JS 2,030 KB (481 KB gzipped), CSS 378 KB (38 KB gzipped)
+- URL: https://arkla.vercel.app
+- Assets confirmed serving HTTP 200 (AppIcon.png, all 32 PNG campaign assets)
+- TypeScript: 0 errors (`npx tsc --noEmit`)
+---

@@ -37,7 +37,8 @@ export default function PlayerSheetPage() {
   // ── Loading: persisted login, awaiting Firestore sync ──
   if (!character && characterId && !firebaseConnected && !syncExhausted) {
     return (
-      <div className="h-screen w-screen bg-[#07080d] flex items-center justify-center p-4">
+      <div className="bg-[#07080d] flex items-center justify-center p-4"
+        style={{ height: '100dvh', width: '100dvw' }}>
         <div className="text-center max-w-sm">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-5">
             <span className="text-2xl text-gold-400">ᚱ</span>
@@ -59,7 +60,8 @@ export default function PlayerSheetPage() {
     const isWaitingForSync = characterId && !syncExhausted;
 
     return (
-      <div className="h-screen w-screen bg-[#07080d] flex items-center justify-center p-4">
+      <div className="bg-[#07080d] flex items-center justify-center p-4"
+        style={{ height: '100dvh', width: '100dvw' }}>
         <div className="relative bg-gradient-to-b from-[#14151f]/[0.92] to-[#0f101a]/[0.95] backdrop-blur-2xl border border-white/[0.06] rounded-2xl p-8 max-w-sm w-full shadow-[0_32px_80px_rgba(0,0,0,0.55)] text-center animate-in fade-in zoom-in-95 duration-300">
           {/* Gold edge light */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent rounded-t-2xl" />
@@ -119,7 +121,8 @@ export default function PlayerSheetPage() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#07080d] flex flex-col">
+    <div className="overflow-hidden bg-[#07080d] flex flex-col"
+      style={{ height: '100dvh', width: '100dvw' }}>
       {/* Ambient glow layer */}
       <div className="absolute inset-0 bg-gradient-to-b from-gold-500/[0.015] via-transparent to-transparent pointer-events-none" />
 

@@ -140,7 +140,9 @@ export default function AppShell({ children }: AppShellProps) {
   }, [toggleQuickRef]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex bg-obsidian-radial">
+    <div className="overflow-hidden flex bg-obsidian-radial"
+      style={{ height: '100dvh', width: '100dvw' }}
+    >
       {/* Atmospheric depth ring */}
       <div className="depth-ring fixed inset-0 pointer-events-none z-0" />
 
@@ -157,7 +159,7 @@ export default function AppShell({ children }: AppShellProps) {
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
         <Header />
         <main className="flex-1 min-h-0 overflow-y-auto scrollbar-gold">
-          <div className="h-full" style={{ padding: "1.5rem 1.5rem 5rem" }}>
+          <div className="h-full" style={{ padding: "1.5rem 1.5rem max(5rem, env(safe-area-inset-bottom, 0px) + 1.5rem)" }}>
             {children}
           </div>
         </main>
