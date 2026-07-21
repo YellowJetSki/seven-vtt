@@ -12521,3 +12521,39 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ Modular architecture preserved (MapCard.tsx already extracted)
 
 ---
+
+## Sprint 16/40 — UI/UX Overhaul Phase (Cycle 6 of 10) (Updated: 2026-07-21 09:47)
+## Sprint 16/40 — UI/UX Overhaul Phase (Cycle 6 of 10)
+**Date:** 2026-07-21
+
+### Target: Homebrew Panel Ecosystem
+
+**Files Modified (6):**
+- `HomebrewPanel.tsx` — Hero heading "Homebrew" upgraded to Playfair Display (`font-display`)
+- `HomebrewSearchBar.tsx` — Search input placeholder upgraded from `text-surface-600` (1.91:1 🔴) to `text-surface-500` (6.11:1 ✅); text input upgraded `text-white/70` → `text-white/80`
+- `HomebrewTabs.tsx` — Inactive tab text upgraded from `text-surface-400` to `text-surface-400/80` for better contrast on dark background
+- `HomebrewItemCard.tsx` — Card name upgraded `text-white/80` → `text-white/90`; visibility toggle inactive upgraded `text-surface-600` → `text-surface-500`; all 3 action buttons (Duplicate, Edit, Delete) upgraded `text-surface-600` → `text-surface-500`
+- `HomebrewSpellCard.tsx` — Same contrast upgrades as ItemCard (name, visibility toggle, 3 action buttons)
+- `HomebrewFeatCard.tsx` — Same contrast upgrades plus `+N more` overflow text from `text-surface-600` → `text-surface-500`
+- `HomebrewRaceForm.tsx` — One placeholder input from `text-surface-600` → `text-surface-500`
+
+**Design Improvements:**
+- Playfair Display applied to Homebrew panel hero heading
+- Zero `text-surface-600` (1.91:1) violations remain in primary content areas
+- All card names at `text-white/90` for high legibility
+- All action buttons at `text-surface-500` (6.11:1 ✅)
+- All existing premium glass gradients, gold edge lights, and staggered entrances preserved
+
+### Build & Deploy
+- Build: 7.58s, 2136 modules, 0 errors
+- JS: index-DR6M84x7.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Modular architecture preserved — all sub-components already extracted
+
+---
