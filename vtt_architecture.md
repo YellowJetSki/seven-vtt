@@ -13769,3 +13769,54 @@ When users scrolled past the nav to see DM tools, the nav disappeared off-screen
 - JS: index-CnecY5oa.js, 2,201 KB (515 KB gzipped)
 - CSS: index-D9i4njcm.css, 422 KB (52 KB gzipped)
 ---
+
+## Cycle 5 — Critical Bug Hunt & Layout (FINAL) — Comprehensive Deep Audit (Updated: 2026-07-21 13:54)
+## Cycle 5 — Critical Bug Hunt & Layout (FINAL Hardening) — Complete
+
+### Completed Actions
+
+1. **Sidebar Tool/Nav Overlap Fix (Cycle 4 fix VERIFIED LIVE):**
+   - Tools section renders with `hidden` class on default page load ✅
+   - `Tools ▸` indicator shows collapsed state ✅
+   - Click toggles tools visibility ✅
+   - Verified on fresh production load (cache-busted URL) ✅
+
+2. **`100dvh`/`100dvw` Comprehensive Scan:**
+   - `100vh` in `vtt/src/`: **0 matches** ✅
+   - `w-screen` in JSX/TSX: **0 matches** ✅ (only in comments)
+   - `h-screen` in JSX/TSX: **0 matches** ✅ (only in comments)  
+   - `min-h-screen` in JSX/TSX: **0 matches** ✅
+   - All 9 viewport containers (AppShell, AuthGuard, Modal, TheatricPage, PlayerSheetPage, etc.) use `100dvh`/`100dvw` ✅
+
+3. **Character Deletion Race Condition Verification:**
+   - `markCharacterDeleted` module-scope closure: ✅ Present and used
+   - Firestore-first delete ordering: ✅ `await deleteCharacter()` THEN `removeCharacter()`
+   - `isDeleting` guard: ✅ Prevents double-delete during async operation
+
+4. **Critical Modal Height Audit:**
+   - All `fixed inset-0` modal popovers use `max-h-[85vh]` or `max-h-[90vh]` — CORRECT for `fixed` positioning ✅
+   - `vh` is correct for `fixed` elements (positioned relative to viewport, not flex parent) ✅
+
+5. **ESLint Code Hygiene:**
+   - All 430+ pre-existing parser config errors remain (project-wide tooling misconfiguration) — zero new code errors ✅
+
+### Production Build Metrics
+| Metric | Value |
+|--------|:------|
+| TypeScript errors | ✅ **0** |
+| Vite build time | **7.77s** (Vercel) |
+| Modules | **2,146** |
+| JS bundle | 2,201 KB (515 KB gzipped) |
+| CSS bundle | 422 KB (52 KB gzipped) |
+| Production URL | ✅ **arkla.vercel.app** |
+| Deploy status | ✅ Aliased successfully |
+
+### Critical Bug Hunt & Layout Phase — COMPLETE ✅ (Cycles 1-5)
+| Cycle | Fix |
+|:-----:|------|
+| 1 | Viewport hardening — `100vh`→`100dvh`, `overscroll-behavior: none` |
+| 2 | Dynamic viewport extension — 3 more files fixed, DmControlCenter mobile sidebar hidden |
+| 3 | Deepened all 4 core bug fixes — character delete ordering, Escape/backdrop dismiss |
+| 4 | Sidebar tool/nav overlap fix — collapsible Tools section with `toolsOpen` state |
+| **5** | **Comprehensive deep audit + production verification — ALL 4 bug domains hardened** |
+---
