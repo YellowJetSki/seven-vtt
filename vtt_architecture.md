@@ -15192,3 +15192,28 @@ Upgraded the Token Image URL field in EnemyCreator:
 
 ### Ready for Cycle 39 — PC Experience Phase — Cycle 4 of 10
 ---
+
+## Cycle 39 — PC Experience Phase — Cycle 4 of 10 (Complete) (Updated: 2026-07-21 15:42)
+## Sprint 39 of 80 — PC Experience Phase — Cycle 4 of 10 (COMPLETE) ✅
+
+### Feature Enhancements
+
+| Enhancement | File | Lines | Details |
+|:------------|:-----|:-----:|:--------|
+| **1. InventoryItemDetailModal Overhaul** | `InventoryItemDetailModal.tsx` (REWRITTEN — 390 lines) | +110 lines | Premium Overrrides-grade overhaul: added fullscreen **image lightbox** mode (tap image → expands fullscreen with backdrop blur, close button, image caption bar), **consumption visual flow** (click "Use" → shows emerald "Used"/"Consuming..." pulse state with ping animation before closing), enhanced weapon/armor stat cards with hover glow transitions, "View Full Image" button when image present, keyboard Escape exits lightbox before modal. Consistent gold glass-premium styling. |
+| **2. ConsumptionAnimation Deterministic Fix** | `ConsumptionAnimation.tsx` | ~200 lines | Removed `Math.random()` from HP value generation. Added `getConsumableType()` export for external reuse. Deterministic healing formula: Standard Potion=7, Greater=14, Superior=28, Supreme=45 HP. Food/Rations=2. Antidote/Cure cures conditions (no HP). Particles use deterministic sine/cosine placement instead of Math.random. |
+| **3. Inventory Consumption Deterministic** | `PlayerSheetInventoryTab.tsx` | — | Replaced `Math.floor(Math.random() * 8) + 5` with proper 5.5e potion tier detection: Standard/Greater/Superior/Supreme healing potions with correct average HP values (7/14/28/45). Food provides 2HP. Antidotes/cures provide no HP (condition removal only). |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Vite build: ✅ Clean (verified)
+- Git: ✅ Sprint 39 checkpoint saved
+
+### Compliance
+- ✅ **ZERO Math.random in inventory consumption** — all deterministic HP values from 5.5e potion tier detection
+- ✅ Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides premium design: image lightbox with backdrop blur, consumption visual states, hover glow transitions
+
+### Ready for Cycle 40 — PC Experience Phase — Cycle 5 of 10
+---
