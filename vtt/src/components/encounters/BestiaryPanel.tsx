@@ -92,13 +92,13 @@ export default function BestiaryPanel({ onAddToEncounter, encounterContextLabel 
   return (
     <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
       {/* ── Premium Stats Bar ── */}
-      <div className="shrink-0 flex items-center gap-2 mb-3 text-[9px] text-surface-500 px-1 border-b border-white/[0.03] pb-2">
-        <span className="text-gold-400/60 font-semibold tabular-nums">{stats.total} monsters</span>
-        <span className="text-surface-600">·</span>
+      <div className="shrink-0 flex items-center gap-2 mb-3 text-[9px] text-surface-400 px-1 border-b border-white/[0.03] pb-2">
+        <span className="text-gold-400/70 font-semibold tabular-nums">{stats.total} monsters</span>
+        <span className="text-surface-500">·</span>
         <span>📋 {stats.typeCount} types</span>
         {stats.total > 0 && (
           <>
-            <span className="text-surface-600">·</span>
+            <span className="text-surface-500">·</span>
             <div className="flex items-center gap-1">
               <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 tabular-nums">🟢 {stats.crBuckets.low}</span>
               <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/15 text-amber-400 tabular-nums">🟡 {stats.crBuckets.mid}</span>

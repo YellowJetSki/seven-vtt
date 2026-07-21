@@ -176,9 +176,9 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
           HEADER: Encounter Selector
           ═══════════════════════════════════════════════════ */}
       <div className="shrink-0 flex items-center justify-between mb-3 pb-2 border-b border-white/[0.03]">
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/60">Encounters</h3>
+        <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/80">Encounters</h3>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-surface-500 tabular-nums">{encounters.length}</span>
+          <span className="text-[9px] text-surface-400 tabular-nums">{encounters.length}</span>
           <button
             onClick={() => setIsCreating(!isCreating)}
             className="w-6 h-6 rounded-lg bg-gradient-to-br from-gold-500/12 to-amber-500/8 border border-gold-500/20 text-gold-400 hover:from-gold-500/20 hover:to-amber-500/12 text-[10px] flex items-center justify-center active:scale-90 transition-all duration-150"
@@ -250,7 +250,7 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
               <div className="absolute inset-0 rounded-2xl border border-gold-500/20" />
               <span className="absolute inset-0 flex items-center justify-center text-lg drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]">⚔</span>
             </div>
-            <p className="text-[10px] text-surface-500 mb-2">No encounters yet</p>
+            <p className="text-[10px] text-surface-400 mb-2">No encounters yet</p>
             <button
               onClick={() => setIsCreating(true)}
               className="text-[9px] text-gold-400 hover:text-gold-300 transition-colors underline underline-offset-4 decoration-gold-500/30 hover:decoration-gold-500/60"
@@ -301,7 +301,7 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
                   {/* Delete button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(enc.id); }}
-                    className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center justify-center text-[8px] text-surface-600 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all"
+                    className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center justify-center text-[8px] text-surface-500 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all"
                     title="Delete encounter"
                   >
                     ✕
@@ -325,18 +325,18 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
                 {getDifficultyLabel(difficulty.rating)}
               </span>
               <span className="text-[9px] text-gold-400/60 tabular-nums">{difficulty.totalXp.toLocaleString()} XP</span>
-              <span className="text-[9px] text-surface-500 tabular-nums">Adj: {difficulty.adjustedXp.toLocaleString()}</span>
+              <span className="text-[9px] text-surface-400 tabular-nums">Adj: {difficulty.adjustedXp.toLocaleString()}</span>
               {difficulty.crRange.min > 0 && (
                 <span className="text-[9px] text-rose-400 tabular-nums">CR {difficulty.crRange.min}–{difficulty.crRange.max}</span>
               )}
-              <span className="text-[9px] text-surface-500 tabular-nums">· Party: {partySize}×Lv.{avgLevel}</span>
+              <span className="text-[9px] text-surface-400 tabular-nums">· Party: {partySize}×Lv.{avgLevel}</span>
             </div>
           )}
 
           {/* Enemy group list */}
           <div className="space-y-1 max-h-40 overflow-y-auto scrollbar-gold">
             {selectedEncounter.enemyGroups.length === 0 ? (
-              <p className="text-[9px] text-surface-600 italic px-1 py-2 text-center">
+              <p className="text-[9px] text-surface-500 italic px-1 py-2 text-center">
                 Add monsters from the Bestiary above
               </p>
             ) : (
@@ -350,7 +350,7 @@ export default function EncounterComposer({ onEncounterChanged }: EncounterCompo
                     style={{ animation: "slide-in-up 0.25s ease-out both" }}
                   >
                     <span className="flex-1 text-[10px] text-surface-300 truncate">
-                      {doc?.name ?? "Unknown"} <span className="text-surface-600">{crDisplay}</span>
+                      {doc?.name ?? "Unknown"} <span className="text-surface-500">{crDisplay}</span>
                     </span>
                     <div className="flex items-center gap-1.5">
                       <button

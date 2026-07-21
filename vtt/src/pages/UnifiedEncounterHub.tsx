@@ -78,18 +78,18 @@ export default function UnifiedEncounterHub() {
             </div>
 
             <div className="min-w-0 pt-1">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
-                Bestiary & Encounters
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white/95 tracking-tight leading-tight font-display">
+                Bestiary &amp; Encounters
               </h1>
-              <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
+              <p className="text-xs sm:text-sm text-surface-400 mt-1 leading-relaxed font-sans">
                 Unified monster library and encounter builder — browse, create, and deploy in one place
               </p>
               <div className="flex items-center gap-3 mt-3 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/60 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
+                <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/70 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse-soft" />
                   Unified System
                 </span>
-                <span className="text-[9px] text-surface-500 tabular-nums">
+                <span className="text-[9px] text-surface-400 tabular-nums">
                   {encounters.length} encounter{encounters.length !== 1 ? "s" : ""}
                 </span>
               </div>
@@ -107,7 +107,7 @@ export default function UnifiedEncounterHub() {
           className={`relative px-4 sm:px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
             activeTab === "bestiary"
               ? "text-gold-400"
-              : "text-surface-500 hover:text-surface-300"
+              : "text-surface-400 hover:text-surface-200"
           }`}
         >
           Bestiary (Monsters)
@@ -121,7 +121,7 @@ export default function UnifiedEncounterHub() {
           className={`relative px-4 sm:px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
             activeTab === "encounters"
               ? "text-gold-400"
-              : "text-surface-500 hover:text-surface-300"
+              : "text-surface-400 hover:text-surface-200"
           }`}
         >
           Encounters
