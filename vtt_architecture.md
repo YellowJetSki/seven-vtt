@@ -11530,3 +11530,59 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 | Git savepoint | ✅ Sprint 7 |
 
 ---
+
+## Sprint 8/20 — UI Bug & Visual Polish Phase (Cycle 2 of 3) — Complete (Updated: 2026-07-20 22:40)
+## Sprint 8/20 — UI Bug & Visual Polish Phase (Cycle 2 of 3)
+
+### Visual Bugs Fixed
+
+#### 1. Orphaned Edge Lights (3 components fixed)
+
+**Root Cause:** Three popover components had gemstone gold edge lights (`absolute top-0 left-[X%] right-[X%] h-px bg-gradient-to-r...`) whose parent containers lacked the `relative` CSS class. Without a positioned ancestor, these edge lights would anchor against the nearest positioned parent up the DOM tree (potentially the React root or viewport), causing them to render at incorrect positions or be invisible to the user.
+
+| Component | File | Fix |
+|-----------|------|:----|
+| **DmToolbar** | DmToolbar.tsx | Added `relative` to the toolbar flex container |
+| **MultiTargetAoEPopover** | MultiTargetAoEPopover.tsx | Added `relative` to the glass card container |
+| **AttackResolutionPopover** | AttackResolutionPopover.tsx | Added `relative` to the popover card container |
+
+#### 2. Edge Light Parent Verification (Comprehensive Audit)
+
+All 22+ components with gold edge lights audited:
+
+| Status | Count | Components |
+|:------:|:-----:|-----------|
+| ✅ Already had `relative` | 19 | EncounterBuilder, InitiativeRollOverlay, EncounterLaunchModal, all 5 DM popovers, 3 Homebrew cards, SettingsSection, TokenHpPopover, ConcentrationCheckPopover, CombatLogPanel, EncounterCards, JoinCodePanel, etc. |
+| 🔧 Fixed — Added `relative` | 3 | DmToolbar, MultiTargetAoEPopover, AttackResolutionPopover |
+
+### z-Index Stacking Audit
+
+| Layer | z-index | Usage | Consistency |
+|:-----:|:-------:|-------|:-----------:|
+| Canvas ambient glow | `z-0` | Gold ambient pocket behind canvas | ✅ All components |
+| Content inside glass cards | `z-[1]` | Headers, bodies, footers | ✅ All 80+ panels |
+| Edge lights on cards | `z-10` (or auto from DOM) | Gold gradient edge accent | ✅ Fixed with `relative` parent |
+| Floating toolbars | `z-20` | DmToolbar, CanvasActionBar, ZoomControls, MapPingRulerTools | ✅ Consistent |
+| Backdrop overlays | `z-40` | Black+blur behind modals | ✅ Consistent |
+| Modal/Overlay content | `z-50` | Popovers, drawers, full modals | ✅ Consistent |
+
+### Layout "Squish Zone" Audit
+
+All 8 routes checked for proper flex containment:
+- ✅ Sidebar uses `shrink-0 min-w-0` — never collapses
+- ✅ Right panel uses `shrink-0 min-w-[18rem]` — minimum width enforced
+- ✅ Main content uses `flex-1 min-h-0 overflow-y-auto` — properly scrolls
+- ✅ Mobile bottom nav uses `fixed bottom-0` — pinned, not flex-dependent
+- ✅ Canvas wrapper uses `absolute inset-0` — fills available space
+
+### Production Build
+
+| Metric | Value |
+|:-------|:------|
+| Hash | `index-CwoecGqt.js` (Vercel) |
+| Build time | 8.96s (local) / 6.93s (Vercel) |
+| TS errors | 0 |
+| Console errors | 0 (benign Firestore deprecation only) |
+| Git savepoint | ✅ Sprint 8 |
+
+---
