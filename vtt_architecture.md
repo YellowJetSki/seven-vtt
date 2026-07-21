@@ -15812,3 +15812,46 @@ QA the canvas DRAW FUNCTION coordinate math across 5 untested renderer modules: 
 - Light-compositor: color tint edge cases (all warmth values, mixed lights)
 
 ---
+
+## Canvas Raycasting & Lighting Compositor QA (Cycle 55 — FINAL) (Updated: 2026-07-21 17:07)
+## Cycle 55 — Canvas Raycasting & Lighting Compositor QA — COMPLETE (FINAL)
+
+### FINAL cycle of the Canvas Rendering Pipeline QA phase (Cycles 51-55).
+
+### Test File Created
+**`canvas-raycasting-lighting-qa.test.ts`** — 75+ tests across 10 suites covering the LAST 3 untested modules:
+
+| Suite | Module | Tests | Coverage |
+|:------|:--------|:-----:|----------|
+| 1 | lineIntersection | 5 | Intersection at (5,5), parallel lines (null), coincident lines (null), non-overlapping (null), endpoint touch |
+| 2 | castRay: wall occlusion | 4 | Wall directly ahead (hit at 100px), ray away from wall (null), maxDist shorter than wall (null), no walls full distance |
+| 3 | castRay: door handling | 2 | Closed door blocks ray, open door passes through |
+| 4 | castRay: non-blocking wall | 1 | Decorative wall (blocksVision=false) is skipped |
+| 5 | createWallGrid (perimeter) | 5 | 4 perimeter walls (top/bottom/left/right), correct IDs, top spans full width, right spans full height, 15 custom walls appended = 19 total |
+| 6 | parseHexColor | 8 | Exact RGB for #FF0000/#00FF00/#0000FF, torch, arcane, no-hash, empty string fallback, invalid hex fallback |
+| 7 | getLightColorHex | 5 | Torch/fire/moonlight presets, custom hex passthrough, unknown string |
+| 8 | computeLightIntensity distance | 9 | Full at origin, full within bright radius, full at bright edge, partial in dim radius (0.25), zero beyond, lower intensity scales, 40px grid scaling |
+| 9 | compositeLights | 8 | No lights → ambient tint, zero ambient → zero, single warm light, torch+arcane mix, combined intensity >1 clamped, 5 lights color clamping, zero-intensity lights ignored |
+| 10 | LIGHT_COLORS presets | 7 | 9 presets with correct names, torch warmth 0.8, fire 1.0, neon 0.0, moonlight 0.1, all valid hex/label/warmth |
+| 11 | lighting-engine constants | 2 | RAY_COUNT=64, EXPLORE_RADIUS=3 |
+| 12 | createDefaultLights | 2 | Moonlight centered at midpoint, radius=max(w,h), intensity 0.4 |
+| 13 | generateLightId | 2 | "light_" prefix, 100 calls = 100 unique IDs |
+
+### Canvas Pipeline QA Phase — COMPLETE (Cycles 51-55)
+
+| Cycle | Focus | Tests Added |
+|:-----:|-------|:-----------:|
+| 51 | Canvas 10-layer rendering pipeline + 11 engine files | 50+ |
+| 52 | Lighting/Fog/Ping/Initiative compositing + timing | 50+ |
+| 53 | CanvasMapView orchestration + imperative API | 50+ |
+| 54 | Draw function coordinate math (drag, grid, ping, initiative, restrained) | 65+ |
+| **55** | **Raycasting + Lighting Compositor + LIGHT_COLORS (FINAL)** | **75+** |
+| **Total** | **Complete Canvas Pipeline coverage** | **~290 tests across 5 files** |
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (tsc --noEmit) | ✅ **0 errors** |
+| ESLint | 447 pre-existing parser config errors (+1 for new file — same root cause) |
+| Git savepoint | ✅ Sprint 55 |
+---
