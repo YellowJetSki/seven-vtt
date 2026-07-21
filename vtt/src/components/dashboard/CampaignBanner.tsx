@@ -67,7 +67,7 @@ export default function CampaignBanner({ meta, stats }: CampaignBannerProps) {
 
             {/* Title block */}
             <div className="min-w-0 pt-1">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white/95 tracking-tight leading-tight font-display">
                 {meta.name}
               </h1>
               <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed max-w-xl line-clamp-2">
