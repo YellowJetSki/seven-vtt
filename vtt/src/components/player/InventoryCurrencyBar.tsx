@@ -1,17 +1,21 @@
 /**
- * STᚱ VTT — Inventory Currency Bar (Premium)
+ * STᚱ VTT — Inventory Currency Bar (Overrrides-Grade Overhaul)
  *
- * Ventriloc/Spotify-grade interactive currency visualization:
+ * Cycle 40: Premium Firestore-synced interactive currency editor.
  * - Galaxy/Orbital coin grid with depth and glow
  * - Tap coin to edit with smooth inline transition
  * - Quick-add presets with animated pulse
- * - Coin roll-up denominations
- * - Estimated total with sparkline-like progress
+ * - Coin denomination breakdown (convert CP→SP→GP)
+ * - Estimated total with wealth density bar
+ * - Dual-sync: Zustand (instant) + Firestore (real-time)
+ *
+ * Fixes Cycle 38 issue: Uses useInventoryMutations().handleSetCurrency
+ * instead of raw useCampaignStore() — ensures cross-device sync.
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { PlayerCharacter } from "@/types";
-import { useCampaignStore } from "@/stores/campaignStore";
+import { useInventoryMutations } from "@/hooks/useCharacterMutations";
 
 interface CoinDef {
   label: string;
@@ -22,25 +26,29 @@ interface CoinDef {
   valueToNext: number;
   nextKey: keyof PlayerCharacter["currency"] | null;
   sortOrder: number;
+  denominationLabel: string;
 }
 
 const COINS: CoinDef[] = [
-  { label: "PP", key: "platinum",   color: "text-cyan-300",  glowColor: "rgba(103,232,249,0.15)", icon: "💎", valueToNext: 0,  nextKey: null,            sortOrder: 5 },
-  { label: "GP", key: "gold",       color: "text-amber-400", glowColor: "rgba(251,191,36,0.15)", icon: "🪙", valueToNext: 10, nextKey: "platinum",      sortOrder: 4 },
-  { label: "EP", key: "electrum",   color: "text-gold-500/60",glowColor: "rgba(234,179,8,0.08)",  icon: "💠", valueToNext: 2,  nextKey: "gold",          sortOrder: 3 },
-  { label: "SP", key: "silver",     color: "text-surface-300",glowColor: "rgba(203,213,225,0.08)",icon: "🥈", valueToNext: 10, nextKey: "electrum",      sortOrder: 2 },
-  { label: "CP", key: "copper",     color: "text-amber-600", glowColor: "rgba(217,119,6,0.08)",  icon: "🟤", valueToNext: 10, nextKey: "silver",         sortOrder: 1 },
+  { label: "PP", key: "platinum",   color: "text-cyan-300",  glowColor: "rgba(103,232,249,0.15)", icon: "💎", valueToNext: 10, nextKey: null,                sortOrder: 5, denominationLabel: "1 PP = 10 GP" },
+  { label: "GP", key: "gold",       color: "text-amber-400", glowColor: "rgba(251,191,36,0.15)",  icon: "🪙", valueToNext: 10, nextKey: "platinum",          sortOrder: 4, denominationLabel: "1 GP = 10 SP" },
+  { label: "EP", key: "electrum",   color: "text-gold-500/60",glowColor: "rgba(234,179,8,0.08)",  icon: "💠", valueToNext: 2,  nextKey: "gold",              sortOrder: 3, denominationLabel: "1 EP = 2 SP" },
+  { label: "SP", key: "silver",     color: "text-surface-300",glowColor: "rgba(203,213,225,0.08)",icon: "🥈", valueToNext: 10, nextKey: "electrum",           sortOrder: 2, denominationLabel: "1 SP = 10 CP" },
+  { label: "CP", key: "copper",     color: "text-amber-600", glowColor: "rgba(217,119,6,0.08)",  icon: "🟤", valueToNext: 10, nextKey: "silver",             sortOrder: 1, denominationLabel: "most common" },
 ];
 
 interface InventoryCurrencyBarProps {
   currency: PlayerCharacter["currency"];
   characterId: string;
+  character: PlayerCharacter;
 }
 
-export default function InventoryCurrencyBar({ currency, characterId }: InventoryCurrencyBarProps) {
-  const updateCharacter = useCampaignStore((s) => s.updateCharacter);
+export default function InventoryCurrencyBar({ currency, characterId, character }: InventoryCurrencyBarProps) {
+  // FIX (Cycle 40): Use Firestore-synced mutation hook instead of raw useCampaignStore
+  const { handleSetCurrency } = useInventoryMutations();
   const [editKey, setEditKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [showDenomination, setShowDenomination] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -52,11 +60,10 @@ export default function InventoryCurrencyBar({ currency, characterId }: Inventor
 
   const updateCurrency = useCallback(
     (key: keyof PlayerCharacter["currency"], value: number) => {
-      updateCharacter(characterId, {
-        currency: { ...currency, [key]: Math.max(0, value) },
-      });
+      const newCurrency = { ...currency, [key]: Math.max(0, value) };
+      handleSetCurrency(character, newCurrency);
     },
-    [characterId, currency, updateCharacter]
+    [character, currency, handleSetCurrency]
   );
 
   const addCurrency = useCallback(
@@ -75,6 +82,8 @@ export default function InventoryCurrencyBar({ currency, characterId }: Inventor
             if (higherAmount >= 1) {
               updateCurrency(coinDef.nextKey, higherAmount - 1);
               updateCurrency(key, current + coinDef.valueToNext - absAmount);
+            } else {
+              updateCurrency(key, 0);
             }
           }
         }
@@ -92,7 +101,11 @@ export default function InventoryCurrencyBar({ currency, characterId }: Inventor
     setEditKey(null);
   }, [editKey, editValue, updateCurrency]);
 
-  const totalGp = currency.platinum * 10 + currency.gold + currency.electrum * 0.5 + currency.silver * 0.1 + currency.copper * 0.01;
+  const totalGp = useCallback(() => {
+    return currency.platinum * 10 + currency.gold + currency.electrum * 0.5 + currency.silver * 0.1 + currency.copper * 0.01;
+  }, [currency])();
+
+  const totalInCopper = currency.platinum * 1000 + currency.gold * 100 + currency.electrum * 50 + currency.silver * 10 + currency.copper;
 
   return (
     <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-3 overflow-hidden">
@@ -104,10 +117,38 @@ export default function InventoryCurrencyBar({ currency, characterId }: Inventor
         <span className="text-[10px] uppercase tracking-widest font-black text-gold-500/60">
           Currency
         </span>
-        <span className="text-[8px] text-surface-600 tabular-nums">
-          ~{totalGp.toFixed(1)} GP total
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowDenomination(!showDenomination)}
+            className="text-[7px] uppercase tracking-wider text-surface-600 hover:text-surface-400 transition-colors px-1 py-0.5 rounded-md hover:bg-white/[0.03]"
+          >
+            {showDenomination ? "Hide" : "Info"}
+          </button>
+          <span className="text-[8px] text-surface-600 tabular-nums">
+            ~{totalGp.toFixed(1)} GP
+          </span>
+        </div>
       </div>
+
+      {/* Denomination reference card */}
+      {showDenomination && (
+        <div className="mb-2.5 p-2 rounded-lg bg-surface-800/40 border border-surface-700/20 animate-in slide-in-from-top-1 duration-200">
+          <p className="text-[8px] text-surface-500 mb-1.5">Coin Values (Standard 5.5e)</p>
+          <div className="grid grid-cols-5 gap-1">
+            {COINS.map((coin) => (
+              <div key={coin.key} className="text-center">
+                <p className={`text-[9px] font-bold ${coin.color}`}>{coin.icon} {coin.label}</p>
+                <p className="text-[6px] text-surface-600 mt-0.5">{coin.denominationLabel}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-1.5 pt-1.5 border-t border-surface-700/20">
+            <p className="text-[7px] text-surface-600">
+              Total: <span className="text-gold-400 font-semibold">{totalGp.toFixed(1)} GP</span> ({totalInCopper.toLocaleString()} CP equivalent)
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Coin grid — premium orbital layout */}
       <div className="grid grid-cols-5 gap-1.5">

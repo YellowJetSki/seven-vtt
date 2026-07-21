@@ -324,7 +324,7 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
       </div>
 
       {/* Currency */}
-      <InventoryCurrencyBar currency={currency} characterId={character.id} />
+      <InventoryCurrencyBar currency={currency} characterId={character.id} character={character} />
 
       {/* Equipment slots */}
       {equipment.length > 0 && (
