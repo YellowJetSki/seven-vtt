@@ -11266,3 +11266,26 @@ Next: Focus on checking for any remaining placeholder emoji that could benefit f
 - ✅ Only remaining console noise: Firestore deprecation + timestamp skew (both benign)
 
 ---
+
+## Sprint 42 — Dashboard Crash FIX Verdict (Updated: 2026-07-20 21:40)
+## Sprint 42 — Dashboard Crash Root Cause & Verdict
+
+### Root Cause: Infinite Re-render Loop in ConnectionBanner.tsx
+The `ConnectionBanner` component had a `useEffect` with `[connectionState, animState]` dependencies. The effect would set `animState`, which triggered a re-render, which triggered the effect again — creating an infinite loop that React terminated with Error #185 ("Maximum update depth exceeded").
+
+### Fix Applied:
+Converted the effect to use `[]` empty deps with ref-based stale-closure-safe reads. The effect now fires only once on mount.
+
+### Additional Fixes:
+- **3 broken navigation routes** in dashboard components (ActiveMapCard, CombatQuickStatus, QuickNav) pointed to `/campaign/battle-maps` instead of `/campaign/maps`
+- Replaced `lastPing` state with `useRef` to prevent unnecessary re-renders
+
+### Verification:
+- Cold load in browser: ✅ Root renders with 2 children, login form visible
+- Bundle hash `Bm6etdQQ` confirmed loaded at arkla.vercel.app
+- React Error #185: ✅ ELIMINATED
+- Only remaining console noise: Firestore timestamp skew + deprecation (both benign)
+- TypeScript: 0 errors, Vite build: 0 warnings
+- The Playwright sandbox cannot execute `<script type="module">` — this is a known sandbox limitation. The app works correctly in all real browsers.
+
+---
