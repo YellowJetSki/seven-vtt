@@ -12,7 +12,7 @@
 
 import type { SVGProps } from "react";
 
-type IconName =
+export type IconName =
   | "quickActions"
   | "conditions"
   | "encounterComplete"
@@ -58,6 +58,7 @@ function IconBase({ children, size = 24, ...props }: { children: string; size?: 
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
+      aria-hidden="true"
       width={size}
       height={size}
       {...props}
@@ -75,6 +76,7 @@ export default function PremiumIcon({ name, size = 24, className = "", ...props 
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="none"
+        aria-hidden="true"
         width={size}
         height={size}
         className={className}
@@ -337,4 +339,4 @@ const ICON_MAP: Record<string, string> = {
   `,
 };
 
-export { type IconName };
+// IconName is already exported inline via `export type IconName` above

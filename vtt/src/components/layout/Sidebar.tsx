@@ -56,12 +56,14 @@ const navActions: { action: string; label: string; icon: string; eventName: stri
   { action: "custom", label: "Quick Note", icon: "📝", eventName: "toggle-dm-quicknote" },
 ];
 
+import type { IconName } from "@/components/ui/PremiumIcon";
+
 /** All DM tool actions as a data array to eliminate repetition */
 interface DmToolProps {
   /** Custom event name to dispatch */
   eventName: string;
   /** PremiumIcon name */
-  icon: string;
+  icon: IconName;
   /** Icon color class */
   colorClass: string;
   /** Hover accent color class */
@@ -219,7 +221,7 @@ function DmToolButton({ tool, isOpen }: { tool: DmToolProps; isOpen: boolean }) 
   const hoverTextClass = TOOL_HOVER_TEXT[tool.eventName] || "group-hover:text-surface-300";
 
   const iconContent = tool.icon ? (
-    <PremiumIcon name={tool.icon as any} className={`w-3.5 h-3.5 ${tool.colorClass}`} />
+    <PremiumIcon name={tool.icon} className={`w-3.5 h-3.5 ${tool.colorClass}`} />
   ) : (
     <span className="w-3.5 h-3.5 flex items-center justify-center text-[13px]">
       {tool.label === "Travel & Wilderness" ? "🗺️" : tool.label === "Naval & Ships" ? "⚓" : "💬"}
