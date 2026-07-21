@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useFirestoreSync } from "@/hooks/useFirestoreSync";
 import { useFirestoreCombatSync } from "@/hooks/useFirestoreCombatSync";
@@ -30,26 +30,26 @@ function FirestoreSyncGate() {
 }
 
 function FirebaseAuthGate() {
-  const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
-  const role = useAuthStore((s) => s.role);
   const login = useAuthStore((s) => s.login);
+  const loginRef = useRef(login);
+  loginRef.current = login;
 
   // Firebase Auth state listener — restores session on page refresh
+  // Uses refs to avoid stale closures and re-subscription loops
   useEffect(() => {
     if (!hasValidConfig()) return;
 
     const unsub = onFirebaseAuthChanged((user) => {
-      if (user && role === null) {
+      if (user) {
         // Firebase restored a user session — auto-login via Zustand
-        // Use the email prefix as username (e.g., "MikeJello@arkla.vtt" → "MikeJello")
         const emailName = user.email?.split("@")[0] || "DM";
-        login(emailName, "");
+        loginRef.current(emailName, "");
         useAuthStore.getState().setFirebaseConnected(true);
       }
     });
 
     return unsub;
-  }, [role, login]);
+  }, []); // Register once on mount — refs prevent stale closures
 
   return null;
 }
