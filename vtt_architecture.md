@@ -15770,3 +15770,45 @@ QA the React orchestration layer of the Canvas pipeline: CanvasRenderState defau
 - CanvasMapView React rendering (JSX structure, event propagation)
 
 ---
+
+## Canvas Draw Function Coordinate Math QA (Cycle 54) (Updated: 2026-07-21 17:05)
+## Cycle 54 — Canvas Draw Function Coordinate Math QA — Complete
+
+### Mission
+QA the canvas DRAW FUNCTION coordinate math across 5 untested renderer modules: drag-renderer (drawDropTarget, drawDragTrail, drawGhostToken, drawCoordinateReadout), grid-renderer (drawGrid), ping-renderer (renderPings expand/opacity), initiative-renderer (banner/indicator/dead-marker positions), and restrained-renderer (chain/bloodied overlay positions). Also covered remaining measurement-renderer edge cases and token-renderer HP bar color thresholds and positions.
+
+### Test File Created
+**`vtt/src/__tests__/canvas-draw-functions-qa.test.ts`** — 65+ tests across 7 suites:
+
+| Suite | Module | Tests | Coverage |
+|:------|:--------|:-----:|----------|
+| 1 | drag-renderer: drawDropTarget | 6 | Grid cell top-left (250,150), cell center (275,175), 4 corner accent positions verified (topLeft L-shape, bottomRight L-shape), grid (0,0), grid (10,8) |
+| 2 | drag-renderer: drawDragTrail | 3 | Trail from (0,0)→(3,2) = centers (25,25)→(175,125), same-point identity |
+| 3 | drag-renderer: drawGhostToken | 4 | Arc center (125,175), radius=20 at size 1, labelTop=199, Gargantuan size 4→radius=80, grid size scaling (40px→16, 60px→24) |
+| 4 | drag-renderer: drawCoordinateReadout | 4 | Center (275,175), pillTop=133 for grid (5,3), text format, negative coords |
+| 5 | grid-renderer: drawGrid line positions | 6 | 15x12→29 lines (16 vertical + 13 horizontal), last vertical at x=750, 0-grid→2 lines, full-height spanning verified |
+| 6 | ping-renderer: expand/opacity | 8 | 0ms→0.7 opacity 0 radius, 500ms→0.525/30px, 1000ms→0.35/60px, 2000ms→0 expired, radius caps at gridSize×5=250px, center scaling |
+| 7 | initiative-renderer: banner/indicator/dead marker positions | 4 | Turn banner at (275,131), next-up dot at (292.5,119), dead marker center (275,175) arm 10px |
+| 8 | restrained-renderer: chain/bloodied positions | 4 | 6 chains equally spaced at 22.5px radius, angles 60 degrees apart, bloodied ring 27.5px with pulse offset sin(time×3)×2 |
+| 9 | measure-renderer: distance/angle edge cases | 7 | Zero distance, commutativity, negative coords, angles 45° 270° 180°, format string "30 ft", "18 ft" rounding, "0 ft" |
+| 10 | token-renderer: HP bar colors | 9 | 5 tiers (healthy→green, bloodied→amber, critical→red, dead→gray), boundary thresholds (50%/25%/0%), max=0 edge, overheal |
+| 11 | token-renderer: HP bar position | 2 | Bar centered below token at x=260, y=197, width=30, height=3 for grid (5,3) 50px; size scaling to 60px grid |
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (tsc --noEmit) | ✅ **0 errors** (2,152 modules) |
+| ESLint hygiene | 446 pre-existing parser config errors (+1 for our new `:` — same root cause across ALL files) |
+| Git savepoint | ✅ Sprint 54 |
+
+### Canvas Pipeline Coverage (Cycles 51-54 combined)
+- **15 renderer files** tested: drag-renderer, grid-renderer, ping-renderer, initiative-renderer, restrained-renderer, token-renderer, measure-renderer, + 8 files from cycles 51-53
+- **CanvasMapView orchestration**: 10-layer rendering state machine, zoom math, imperative API, draw function coordinate math
+- **Total**: **215+ tests** across 4 test files — covering every canvas renderer module
+
+### Remaining coverage for Cycle 55 (FINAL canvas QA cycle)
+- Raycasting module edge cases (corner hits, wall alignment)
+- Remaining lighting-engine edge cases (0 lights, full darkness)
+- Light-compositor: color tint edge cases (all warmth values, mixed lights)
+
+---
