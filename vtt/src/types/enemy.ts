@@ -71,7 +71,17 @@ export interface EnemyDoc {
   legendaryActions?: string;
   /** Structured attacks that inject into the Combat Tab entity system */
   attacks?: EnemyAttack[];
+  /** Spellcasting configuration for NPC casters */
+  spellcasting?: {
+    casterType: "full" | "half" | "third" | "pact" | "innate";
+    spellcastingAbility: "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
+    spellSaveDC: number;
+    spellAttackBonus: number;
+    spells?: string[];
+    slotsPerLevel?: Record<string, { current: number; max: number }>;
+  };
   isHomebrew: boolean;
+  /** Image URL for token display on the battlemap */
   imageUrl?: string;
   createdAt: number;
   updatedAt: number;

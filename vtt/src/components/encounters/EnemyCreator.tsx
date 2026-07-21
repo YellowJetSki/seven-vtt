@@ -134,6 +134,7 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
   const [dmgResist, setDmgResist] = useState<string[]>(existingEnemy?.damageResistances || []);
   const [dmgImmune, setDmgImmune] = useState<string[]>(existingEnemy?.damageImmunities || []);
   const [condImmune, setCondImmune] = useState<string[]>(existingEnemy?.conditionImmunities || []);
+  const [imageUrl, setImageUrl] = useState(existingEnemy?.imageUrl || "");
   const [showAttackForm, setShowAttackForm] = useState(false);
   const [attName, setAttName] = useState("");
   const [attBonus, setAttBonus] = useState(5);
@@ -235,6 +236,7 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
       senses, languages, challengeRating, traits, actions, reactions,
       specialAbilities, legendaryActions,
       attacks: attacks.length > 0 ? attacks : undefined,
+      imageUrl: imageUrl || undefined,
       isHomebrew: true, createdAt: existingEnemy?.createdAt || Date.now(), updatedAt: Date.now(),
     };
     if (isEditMode && onSaved) {
@@ -247,7 +249,7 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
   }, [name, creatureType, size, speed, armorClass, hitPoints, challengeRating,
       abilities, attacks, senses, languages, traits, actions, reactions,
       specialAbilities, legendaryActions, dmgResist, dmgImmune, condImmune,
-      isEditMode, existingEnemy, enemies, setEnemies, onCreated, onSaved, onClose]);
+      imageUrl, isEditMode, existingEnemy, enemies, setEnemies, onCreated, onSaved, onClose]);
 
   const isValid = name.trim().length > 0;
 
@@ -313,6 +315,16 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
                     <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Speed (ft)</label>
                     <input type="number" value={speed} onChange={(e) => setSpeed(Math.max(5, parseInt(e.target.value) || 30))} className="w-full py-2 px-2.5 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25" />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Token Image URL</label>
+                  <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/token.png" className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+                  {imageUrl && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <img src={imageUrl} alt="Token preview" className="w-8 h-8 rounded-lg object-cover border border-white/[0.06]" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <span className="text-[9px] text-surface-500">Token preview</span>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
