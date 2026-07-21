@@ -39,6 +39,7 @@ interface UIState {
   showSocialInteraction: boolean;
   showTreasureGenerator: boolean;
   showConcentrationTimer: boolean;
+  showLegendaryTracker: boolean;
 }
 
 interface UIActions {
@@ -70,6 +71,8 @@ interface UIActions {
   setTreasureGenerator: (show: boolean) => void;
   /** Set DM Concentration Timer overlay visibility */
   setConcentrationTimer: (show: boolean) => void;
+  /** Set DM Legendary Action Tracker overlay visibility */
+  setLegendaryTracker: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -94,6 +97,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showSocialInteraction: false,
   showTreasureGenerator: false,
   showConcentrationTimer: false,
+  showLegendaryTracker: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -115,6 +119,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setSocialInteraction: (show: boolean) => set({ showSocialInteraction: show }),
   setTreasureGenerator: (show: boolean) => set({ showTreasureGenerator: show }),
   setConcentrationTimer: (show: boolean) => set({ showConcentrationTimer: show }),
+  setLegendaryTracker: (show: boolean) => set({ showLegendaryTracker: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

@@ -35,6 +35,7 @@ import DmSkillCheckPopover from "@/components/control-center/DmSkillCheckPopover
 import DmSocialInteractionPopover from "@/components/control-center/DmSocialInteractionPopover";
 import DmTreasureGeneratorPopover from "@/components/control-center/DmTreasureGeneratorPopover";
 import DmConcentrationTimerPopover from "@/components/control-center/DmConcentrationTimerPopover";
+import DmLegendaryActionTracker from "@/components/control-center/DmLegendaryActionTracker";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -64,6 +65,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setTreasureGenerator = useUIStore((s) => s.setTreasureGenerator);
   const showConcentrationTimer = useUIStore((s) => s.showConcentrationTimer);
   const setConcentrationTimer = useUIStore((s) => s.setConcentrationTimer);
+  const showLegendaryTracker = useUIStore((s) => s.showLegendaryTracker);
+  const setLegendaryTracker = useUIStore((s) => s.setLegendaryTracker);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -177,6 +180,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setConcentrationTimerRef.current(!showConcentrationTimerRef.current); };
     window.addEventListener("toggle-dm-concentration-timer", handler);
     return () => window.removeEventListener("toggle-dm-concentration-timer", handler);
+  }, []);
+
+  const showLegendaryTrackerRef = useRef(showLegendaryTracker);
+  showLegendaryTrackerRef.current = showLegendaryTracker;
+  const setLegendaryTrackerRef = useRef(setLegendaryTracker);
+  setLegendaryTrackerRef.current = setLegendaryTracker;
+
+  useEffect(() => {
+    const handler = () => { setLegendaryTrackerRef.current(!showLegendaryTrackerRef.current); };
+    window.addEventListener("toggle-dm-legendary-tracker", handler);
+    return () => window.removeEventListener("toggle-dm-legendary-tracker", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -306,6 +320,13 @@ export default function AppShell({ children }: AppShellProps) {
           with configurable durations and expiry warnings */}
       {role === "dm" && (
         <DmConcentrationTimerPopover />
+      )}
+
+      {/* ── DM Legendary Action Tracker Popover (Sprint 35) ──
+          Track legendary actions (3/round), resistances, lair actions,
+          mythic phases, and recharge abilities per creature */}
+      {role === "dm" && (
+        <DmLegendaryActionTracker />
       )}
     </div>
   );
