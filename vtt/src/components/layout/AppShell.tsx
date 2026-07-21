@@ -31,7 +31,6 @@ import DmCombatConditionBar from "@/components/control-center/DmCombatConditionB
 import DmQuickActionPopover from "@/components/control-center/DmQuickActionPopover";
 import DmNpcQuickCreatePopover from "@/components/control-center/DmNpcQuickCreatePopover";
 import DmCombatWrapUpOverlay from "@/components/control-center/DmCombatWrapUpOverlay";
-import ConnectionBanner from "@/components/ui/ConnectionBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -144,10 +143,6 @@ export default function AppShell({ children }: AppShellProps) {
     <div className="h-screen w-screen overflow-hidden flex bg-obsidian-radial">
       {/* Atmospheric depth ring */}
       <div className="depth-ring fixed inset-0 pointer-events-none z-0" />
-
-      {/* ── Connection Banner ──
-          Shows sync status for all authenticated sessions */}
-      {role && <ConnectionBanner />}
 
       {/* ── SIDEBAR ──
           Desktop: persistent side-rail, always visible
