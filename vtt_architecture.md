@@ -11808,3 +11808,34 @@ Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the applica
 | **Runtime errors** | ✅ **0** (only benign Firestore deprecation warning) |
 
 ---
+
+## Sprint 15/20 — Console & Runtime Error Phase (Cycle 1 of 3) — Complete (Updated: 2026-07-20 23:11)
+## Sprint 15/20 — Console & Runtime Error Phase (Cycle 1 of 3)
+
+### Bug Fixes
+
+| # | Bug | Location | Severity | Fix |
+|:-:|-----|----------|:--------:|-----|
+| 1 | **FirebaseAuthGate stale auth redirect loop** — On page refresh with valid Firebase Auth session, `FirebaseAuthGate` called `state.login(emailName, "Jello1")` which checks `username === "MikeJello"`. If Firebase email doesn't match "MikeJello", Zustand login returns false silently, leaving the user unauthenticated despite having a valid Firebase session → infinite redirect to `/login`. | `App.tsx` `FirebaseAuthGate` | 🔴 **Redirect loop** | Changed to `useAuthStore.setState()` directly since Firebase Auth has already validated the user. Bypasses the hardcoded password check. |
+
+### Runtime Error Audit — All Clean
+
+| Check | Status | Details |
+|:------|:------:|:--------|
+| **Canvas null guards** | ✅ All pass | `CanvasMapView.tsx`, `useTheatricCanvas.ts` — proper `if (!canvas) return; if (!ctx) return;` guards |
+| **Firestore catch handlers** | ✅ All pass | `useCharacterMutations`, `useCombatMutations`, `useEntityMutations`, `useTokenMutations` — every `.catch()` handles gracefully |
+| **setInterval cleanup** | ✅ All pass | `usePresence`, `JoinCodePanel`, `InitiativeHeader`, `SessionTimer`, `SyncHealthPanel` — all have `clearInterval` in return |
+| **AuthGuard rehydration** | ✅ Correct | 50ms timeout for Zustand persist rehydration, then proper redirect logic |
+| **ConnectionBanner infinite loop** | ✅ Fixed | Ref-based pattern with empty `[]` effect deps (Sprint 41 fix confirmed) |
+| **Firestore sync retry** | ✅ Correct | `useFirestoreSync`, `useFirestoreCombatSync`, `useFirestoreEntitySync` — all have 3×2s retry + exhaustion detection |
+| **Presence heartbeat cleanup** | ✅ Correct | `clearInterval` on unmount + `removePresence` catch handler |
+
+### TypeScript & Build Status
+
+| Metric | Value |
+|:-------|:------|
+| **TypeScript errors** | ✅ **0** (npx tsc --noEmit clean) |
+| **Production URL** | ✅ arkla.vercel.app |
+| **Runtime errors in prod** | ✅ **0** (only benign Firestore deprecation warning) |
+
+---
