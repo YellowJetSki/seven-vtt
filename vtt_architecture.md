@@ -12583,3 +12583,41 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ Modular architecture — all sub-components already extracted
 
 ---
+
+## Sprint 18/40 — UI/UX Overhaul Phase (Cycle 8 of 10) (Updated: 2026-07-21 09:55)
+## Sprint 18/40 — UI/UX Overhaul Phase (Cycle 8 of 10)
+**Date:** 2026-07-21
+
+### Target: CampaignSettings Ecosystem
+
+**Files Modified (7):**
+- **CampaignSettings.tsx** — Hero heading "Campaign Settings" upgraded to Playfair Display (`font-display`); footer text `text-surface-700`→`text-surface-500`
+- **CampaignInfoForm.tsx** — 3x `placeholder:text-surface-700`→`placeholder:text-surface-500` (name, DM, description); timestamp meta `text-surface-600`→`text-surface-500`
+- **XpSystemPicker.tsx** — XP preset description `text-surface-600`→`text-surface-500`; currency preset description `text-surface-600`→`text-surface-500`; custom input placeholder `text-surface-700`→`text-surface-500` + text `text-white/70`→`text-white/80`
+- **RaceClassRestrictions.tsx** — Summary stats `text-surface-600`→`text-surface-500`
+- **DmNotesSection.tsx** — Character count `text-surface-700`→`text-surface-500`; textarea placeholder `text-surface-700`→`text-surface-500`
+- **CampaignStatsDashboard.tsx** — Stat card labels `text-surface-600`→`text-surface-500`; session count label `text-surface-600`→`text-surface-500`; campaign age text `text-surface-600`→`text-surface-500`
+- **JoinCodePanel.tsx** — Empty state text `text-surface-600`→`text-surface-500`; expiry info `text-surface-600`→`text-surface-500`; muted expired chars `text-surface-600`→`text-surface-500`; join path `text-gold-400/50`→`text-gold-400/60`
+
+### Contrast Improvements Summary
+- **13 `text-surface-600` violations eliminated** (1.91:1 🔴→6.11:1 ✅)
+- **6 `text-surface-700` violations eliminated** (4.5:1 borderline→6.11:1 ✅)
+- **2 `text-white/70`→`text-white/80` input text improvements**
+- **1 `text-gold-400/50`→`text-gold-400/60` opacity bump for better legibility**
+- **2 `placeholder:text-surface-700`→`placeholder:text-surface-500`** across 3 inputs
+- **1 Playfair Display heading added**
+- **Zero remaining `text-surface-600` or `text-surface-700` tokens** in all 7 campaign component files
+
+### Build & Deploy
+- Build: 8.11s, 2136 modules, 0 errors
+- JS: index-_sxAi90U.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ All sub-components already extracted — no monolith risk
+
+---
