@@ -14764,3 +14764,55 @@ Premium full statblock viewer matching the HomebrewItemDetailModal pattern:
 | `components/homebrew/HomebrewTabPanel.tsx` | Added enemies props, EnemyCard/DetailModal rendering |
 | `components/homebrew/HomebrewManager.tsx` | Integrated campaign store enemies, EnemyCreator, search/filter/duplicate/bulk for enemies |
 ---
+
+## Cycle 29 — The Homebrew Forge (Cycle 9 of 10) (Updated: 2026-07-21 15:18)
+## Sprint 29 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. Export/Import Pipeline — Enemies Integration (4th Collection)
+Extended the full export/import lifecycle to include enemies alongside items/spells/feats:
+
+| Pipeline Step | Items/Spells/Feats | Enemies/Monsters |
+|---------------|:------------------:|:-----------------:|
+| **Export** | ✅ Already worked | ✅ **NOW INCLUDED** — `exportHomebrewToJSON()` accepts optional `enemies` param |
+| **JSON structure** | `items[], spells[], feats[]` | ✅ **NEW** `enemies[]` key (optional, backward-compatible) |
+| **Parse & validate** | Name checks | ✅ **NEW** — validates non-empty names, array type check |
+| **Import merge** | `mergeHomebrewImport()` | ✅ **NEW** `mergeEnemyImport()` — dedup by name, new IDs |
+| **Bulk import** | ✅ Already worked | ✅ **NOW INCLUDED** — imported enemies merged into campaign store |
+| **Export version** | v1 | ✅ **Bumped to v2** — backward-compatible (v1 readers ignore enemies) |
+
+#### 2. Export Version Bump — HOME_EXPORT_VERSION 1→2
+- Version 2 exports include `enemies[]` array
+- Version 1 readers skip the field gracefully (optional, undefined default)
+- `parseHomebrewJSON()` validates enemies if present but doesn't require them
+
+#### 3. Enemy Creator Image Field Enhancement
+Upgraded the Token Image URL field in EnemyCreator:
+- **Clear button** next to the input for removing URLs without manual text deletion
+- **Larger preview** (48px → 48px circle → 12x12 rounded-xl with shadow)
+- **Descriptive label** below: "This image will appear on the battlemap token"
+- **Structured layout** with flex row (input + clear button) and preview section below
+
+#### 4. Homebrew Manager Import UX Enhancement
+- Import toast now reports ALL 4 categories: items, spells, feats, **monsters**
+- "No new entries" toast fires when ALL 4 collections have duplicates
+- `mergeEnemyImport` imported from `homebrew-io.ts`
+
+### Files Modified (4)
+| File | Changes |
+|------|---------|
+| `types/homebrew.ts` | Added `enemies?: import("@/types").EnemyDoc[]` to `HomebrewExport`. Bumped version to 2. |
+| `lib/homebrew-io.ts` | Added `enemies` support to `exportHomebrewToJSON()`, `parseHomebrewJSON()`, new `mergeEnemyImport()` function |
+| `components/homebrew/HomebrewManager.tsx` | Updated export/import callbacks to include enemies. Imported `mergeEnemyImport`. |
+| `components/encounters/EnemyCreator.tsx` | Enhanced token image preview (larger, clear button, descriptive label) |
+
+### Build Metrics
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 11.54s, 0 warnings |
+| Modules | 2,157 |
+| Bundle hash | `index-C6f-3Xlr.js` |
+| Git | ✅ Sprint 29 checkpoint |
+---
