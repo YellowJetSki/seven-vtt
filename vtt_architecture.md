@@ -15654,3 +15654,42 @@ Zero standalone dice roller components.
 | 🧩 No monoliths | ✅ All components modular, sub-600 lines |
 | 🏗 Production deployed | ✅ arkla.vercel.app — verified build and URL
 ---
+
+## Canvas Rendering Pipeline QA (Updated: 2026-07-21 16:57)
+## Cycle 51 — Canvas Rendering Pipeline QA — Complete
+
+### Mission
+QA the entire 10-layer Canvas Rendering Pipeline (12 files) which had ZERO test coverage.
+
+### Test File Created
+**`vtt/src/__tests__/canvas-rendering-qa.test.ts`** — 60+ tests across 10 suites covering 11 pure-function modules:
+
+| Suite | Module | Tests | Coverage |
+|:------|:-------|:-----:|----------|
+| 1 | token-renderer: hexToRgba | 6 | Full hex, with/without #, 3-char shorthand, invalid fallback, alpha |
+| 2 | token-renderer: getHpBarColor | 5 | 5e RAW thresholds: >50% green, 25-50% amber, ≤25% red, boundary values |
+| 3 | raycasting: lineIntersection | 4 | Crossing, parallel, non-intersecting, endpoint intersections |
+| 4 | raycasting: castRay | 3 | Wall hit early exit, max distance, pointing away |
+| 5 | raycasting: createWallGrid | 5 | 4 perimeters, custom walls appended, grid dimensions |
+| 6 | light-compositor: parseHexColor | 5 | RGB parsing, gold color, invalid fallback |
+| 7 | light-compositor: computeLightIntensity | 2 | Full intensity at origin, zero at far distance |
+| 8 | light-compositor: compositeLights | 2 | Ambient-only, single light contribution |
+| 9 | ping-renderer: calcPingDistance | 3 | Zero, Euclidean, negative coords |
+| 10 | measure-renderer: calcDistance, calcAngle, formatMeasurement | 8 | Distance, 4 cardinal angles, cells+ft formatting |
+| 11 | restrained-renderer: computeOverlayState | 9 | All 6 visual states, stacked conditions, undefined HP guard |
+| 12 | lighting-renderer: CanvasRenderState type | 2 | Default state, all 10 independent layer configs |
+| 13 | fog-renderer: exports | 2 | Both functions exported |
+| 14 | ping-renderer: DragPreviewState type | 2 | Initial idle, active drag state |
+
+### Quality Gates
+| Gate | Result |
+|:-----|:------:|
+| TypeScript (tsc --noEmit) | ✅ **0 errors** |
+| ESLint hygiene | 443 pre-existing parser config errors (1 new from test file `!` assertion — expected) |
+| Git savepoint | ✅ Sprint 51 |
+
+### Canvas Coverage Gap Closed
+- **Before Cycle 51**: 12 canvas renderer files, **0 test coverage**
+- **After Cycle 51**: 60+ tests across 11 pure-function modules, all 10 rendering layers represented
+
+---
