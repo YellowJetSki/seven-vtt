@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Player Live Encounter View (Companion PC Screen)
+ * STᚱ VTT — Player Live Encounter View (Companion PC Screen — Overrrides-Grade)
  *
  * A companion overlay for the Player Sheet that joins alongside
  * the DM's Theatric Display. Shows live encounter information
@@ -8,11 +8,12 @@
  *
  * Features:
  *   - Round counter with phase indicator (Prep/Active/Paused)
- *   - Current turn display with pulsing gold indicator
- *   - Compact turn order with HP bars and status effects
- *   - "My Turn" badge when it's the player's character's turn
+ *   - Current turn display with pulsing gold indicator + "Your Turn" cinematic
+ *   - Premium turn order cards with color-coded HP bars and 5-tier status
+ *   - "Your Turn" cinematic pulse overlay (full glow ring animation)
  *   - Live HP updates from combat store (Firestore-synced)
- *   - Damage/heal flash messages for the player
+ *   - Damage/heal flash messages with ACTUAL numerical values
+ *   - Turn transition animation effects
  *   - Premium glass gradient styling matching the design system
  *   - Staggered entrance animations
  *
@@ -20,7 +21,7 @@
  * Campaign: Arkla — Wendy Swiftfoot (Rogue 5), Kehrfuffle Ironheart (Paladin 5)
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCombatStore } from "@/stores/combatStore";
 
 interface PlayerLiveEncounterViewProps {
@@ -28,31 +29,33 @@ interface PlayerLiveEncounterViewProps {
   playerCharacterId?: string;
   /** The current player's character name to highlight */
   playerCharacterName?: string;
+  /** Optional compact mode for sidebar integration */
+  compact?: boolean;
 }
 
-function getHpColorClass(ratio: number): string {
-  if (ratio <= 0) return "text-rose-400";
-  if (ratio <= 0.25) return "text-red-400";
-  if (ratio <= 0.5) return "text-amber-400";
-  return "text-emerald-400";
-}
-
-function getHpBarColor(ratio: number, current: number): string {
-  if (current <= 0) return "bg-rose-500";
-  if (ratio <= 0.25) return "bg-red-500";
-  if (ratio <= 0.5) return "bg-amber-500";
-  return "bg-emerald-500";
+// ── 5-tier HP status with color coding ──
+function getHpTier(current: number, max: number): { label: string; color: string; bar: string } {
+  if (current <= 0 || max <= 0) return { label: "Down", color: "text-rose-400", bar: "bg-rose-500/40" };
+  const r = current / max;
+  if (r <= 0.25) return { label: "Critical", color: "text-red-400", bar: "bg-red-500" };
+  if (r <= 0.5) return { label: "Bloodied", color: "text-amber-400", bar: "bg-amber-500" };
+  if (r <= 0.75) return { label: "Scratched", color: "text-emerald-400", bar: "bg-emerald-400" };
+  return { label: "Healthy", color: "text-emerald-400", bar: "bg-emerald-500" };
 }
 
 export default function PlayerLiveEncounterView({
   playerCharacterId,
   playerCharacterName,
+  compact = false,
 }: PlayerLiveEncounterViewProps) {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const [flashMessage, setFlashMessage] = useState<{
     text: string;
     type: "damage" | "heal" | "info";
   } | null>(null);
+  const [prevHpMap, setPrevHpMap] = useState<Record<string, number>>({});
+  const [shownFlashIds, setShownFlashIds] = useState<Set<string>>(new Set());
+  const flashTimestampsRef = useRef<Record<string, number>>({});
 
   // Flash message auto-dismiss
   useEffect(() => {
@@ -61,32 +64,61 @@ export default function PlayerLiveEncounterView({
     return () => clearTimeout(t);
   }, [flashMessage]);
 
-  // Watch for the player's own character HP changes for flash feedback
+  // Detect HP changes per combatant and show flash messages with actual values
   useEffect(() => {
-    if (!activeEncounter || !playerCharacterName) return;
-    const playerCombatant = activeEncounter.combatants.find(
-      (c) => c.name.toLowerCase() === playerCharacterName.toLowerCase()
-    );
-    if (!playerCombatant) return;
+    if (!activeEncounter) return;
 
-    // Listen for HP changes — if current < max and visible, show flash
-    const { current, max } = playerCombatant.hitPoints;
-    if (current < max && current > 0) {
-      setFlashMessage({ text: "HP Updated", type: "info" });
+    for (const c of activeEncounter.combatants) {
+      const prevHp = prevHpMap[c.id] ?? c.hitPoints.current;
+      const currentHp = c.hitPoints.current;
+      const diff = currentHp - prevHp;
+
+      if (diff !== 0 && c.hitPoints.max > 0) {
+        const flashKey = `${c.id}-${currentHp}-${Date.now()}`;
+        const now = Date.now();
+        const lastFlash = flashTimestampsRef.current[c.id] ?? 0;
+
+        // Only show flash if > 500ms since last for this combatant (debounce)
+        if (now - lastFlash > 500 && !shownFlashIds.has(flashKey)) {
+          setShownFlashIds((prev) => new Set(prev).add(flashKey));
+          flashTimestampsRef.current[c.id] = now;
+
+          if (diff < 0) {
+            setFlashMessage({
+              text: `${c.name}: ${diff} HP`,
+              type: "damage",
+            });
+          } else if (diff > 0) {
+            setFlashMessage({
+              text: `${c.name}: +${diff} HP`,
+              type: "heal",
+            });
+          }
+        }
+      }
+    }
+
+    // Update HP map for next comparison
+    const newMap: Record<string, number> = {};
+    for (const c of activeEncounter.combatants) {
+      newMap[c.id] = c.hitPoints.current;
+    }
+    setPrevHpMap(newMap);
+    // Clean up old flash IDs
+    if (shownFlashIds.size > 50) {
+      setShownFlashIds(new Set());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeEncounter?.combatants.map((c) => c.hitPoints.current).join(",")]);
+  }, [activeEncounter?.combatants.map((c) => `${c.id}:${c.hitPoints.current}`).join(",")]);
 
-  const encounter = activeEncounter;
-
-  if (!encounter || encounter.phase === "completed") {
+  if (!activeEncounter || activeEncounter.phase === "completed") {
     return null;
   }
 
-  const currentIdx = encounter.currentCombatantIndex;
+  const currentIdx = activeEncounter.currentCombatantIndex;
   const currentCombatant =
-    currentIdx >= 0 && currentIdx < encounter.combatants.length
-      ? encounter.combatants[currentIdx]
+    currentIdx >= 0 && currentIdx < activeEncounter.combatants.length
+      ? activeEncounter.combatants[currentIdx]
       : null;
 
   const isPlayerTurn =
@@ -96,24 +128,32 @@ export default function PlayerLiveEncounterView({
 
   // Sort combatants by initiative descending for turn order display
   const sortedCombatants = useMemo(() => {
-    return [...encounter.combatants].sort((a, b) => b.initiative - a.initiative);
-  }, [encounter.combatants]);
+    return [...activeEncounter.combatants].sort((a, b) => b.initiative - a.initiative);
+  }, [activeEncounter.combatants]);
 
   const phaseLabel =
-    encounter.phase === "prep"
+    activeEncounter.phase === "prep"
       ? "Preparing"
-      : encounter.phase === "active"
+      : activeEncounter.phase === "active"
       ? "⚔ In Combat"
       : "Completed";
   const phaseColor =
-    encounter.phase === "prep"
+    activeEncounter.phase === "prep"
       ? "text-amber-400"
-      : encounter.phase === "active"
+      : activeEncounter.phase === "active"
       ? "text-rose-400"
       : "text-surface-500";
 
+  const aliveCount = activeEncounter.combatants.filter((c) => c.hitPoints.current > 0).length;
+  const deadCount = activeEncounter.combatants.filter((c) => c.hitPoints.current <= 0).length;
+
   return (
-    <div className="w-full bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-200">
+    <div className="relative w-full bg-gradient-to-b from-[#14151f]/[0.92] to-[#0f1019]/[0.96] border border-white/[0.04] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-200">
+      {/* Your Turn — Cinematic full-width pulse banner */}
+      {isPlayerTurn && (
+        <div className="absolute inset-0 rounded-xl border-2 border-gold-500/20 pointer-events-none animate-pulse z-0" />
+      )}
+
       {/* Flash message toast */}
       {flashMessage && (
         <div
@@ -130,10 +170,10 @@ export default function PlayerLiveEncounterView({
       )}
 
       {/* Edge light */}
-      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none z-[1]" />
 
       {/* Header — Round + Phase + Turn indicator */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+      <div className="relative flex items-center justify-between px-4 py-3 border-b border-white/[0.04] z-[1]">
         <div className="flex items-center gap-3">
           <h3 className="text-[13px] font-bold text-white/90 font-display tracking-tight">
             ⚔ Combat
@@ -145,8 +185,13 @@ export default function PlayerLiveEncounterView({
           )}
         </div>
         <div className="flex items-center gap-3">
+          {currentCombatant && (
+            <span className={`text-[10px] font-semibold ${isPlayerTurn ? "text-gold-300" : "text-surface-400"} truncate max-w-[80px] hidden sm:block`}>
+              {currentCombatant.name}
+            </span>
+          )}
           <span className="text-[11px] font-mono tabular-nums text-gold-400/80">
-            R{encounter.round}
+            R{activeEncounter.round}
           </span>
           <span className={`text-[10px] font-mono uppercase tracking-wider ${phaseColor}`}>
             {phaseLabel}
@@ -159,24 +204,33 @@ export default function PlayerLiveEncounterView({
         {sortedCombatants.map((c, idx) => {
           const hpRatio = c.hitPoints.max > 0 ? c.hitPoints.current / c.hitPoints.max : 0;
           const isCurrent = c.id === currentCombatant?.id;
-          const isPlayer =
-            playerCharacterName &&
-            c.name.toLowerCase() === playerCharacterName.toLowerCase();
+          const isPlayer = playerCharacterName && c.name.toLowerCase() === playerCharacterName.toLowerCase();
+          const tier = getHpTier(c.hitPoints.current, c.hitPoints.max);
 
           return (
             <div
               key={c.id}
-              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-150 ${
+              className={`relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-150 ${
                 isCurrent
                   ? "bg-gold-500/10 border border-gold-500/20 shadow-[0_0_8px_rgba(234,179,8,0.04)]"
                   : c.hitPoints.current <= 0
                   ? "opacity-50"
                   : "hover:bg-white/[0.02]"
-              }`}
+              } ${isCurrent && isPlayerTurn ? "ring-1 ring-gold-500/30" : ""}`}
             >
+              {/* Current turn indicator bar */}
+              {isCurrent && (
+                <div className="absolute left-0 top-1 bottom-1 w-[2px] rounded-r-full bg-gold-500" />
+              )}
+
               {/* Initiative badge */}
               <span className="w-6 text-[10px] font-mono tabular-nums text-surface-400 text-right shrink-0">
                 {c.initiative}
+              </span>
+
+              {/* Creature type icon */}
+              <span className="text-[10px] shrink-0">
+                {c.type === "player" ? "🛡" : c.type === "ally" ? "🧙" : "👹"}
               </span>
 
               {/* Name and type */}
@@ -189,7 +243,7 @@ export default function PlayerLiveEncounterView({
                     : "text-surface-300"
                 }`}
               >
-                {isPlayer && "✦ "}
+                {isPlayer && <span className="text-gold-400">✦ </span>}
                 {c.name}
               </span>
 
@@ -200,19 +254,16 @@ export default function PlayerLiveEncounterView({
                 </span>
               )}
 
-              {/* HP bar */}
-              <div className="w-16 shrink-0">
+              {/* Compact HP with percentage bar */}
+              <div className="w-20 shrink-0">
                 <div className="h-1.5 bg-surface-800/60 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-300 ${getHpBarColor(
-                      hpRatio,
-                      c.hitPoints.current
-                    )}`}
-                    style={{ width: `${Math.max(0, hpRatio * 100)}%` }}
+                    className={`h-full rounded-full transition-all duration-300 ${tier.bar}`}
+                    style={{ width: `${Math.max(0, Math.min(100, hpRatio * 100))}%` }}
                   />
                 </div>
                 <div className="flex justify-between mt-0.5">
-                  <span className={`text-[8px] font-mono tabular-nums ${getHpColorClass(hpRatio)}`}>
+                  <span className={`text-[8px] font-mono tabular-nums ${tier.color}`}>
                     {c.hitPoints.current}
                   </span>
                   <span className="text-[8px] font-mono tabular-nums text-surface-600">
@@ -221,7 +272,7 @@ export default function PlayerLiveEncounterView({
                 </div>
               </div>
 
-              {/* Player turn indicator */}
+              {/* Status dot */}
               {isCurrent && (
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.5)] shrink-0 animate-pulse" />
               )}
@@ -230,14 +281,29 @@ export default function PlayerLiveEncounterView({
         })}
       </div>
 
-      {/* Footer */}
-      {encounter.combatants.length > 0 && (
-        <div className="px-4 py-2 border-t border-white/[0.04]">
-          <span className="text-[9px] text-surface-500 tracking-wide">
-            {encounter.combatants.filter((c) => c.hitPoints.current > 0).length} alive ·{" "}
-            {encounter.combatants.filter((c) => c.hitPoints.current <= 0).length} down ·{" "}
-            {encounter.round} round{encounter.round !== 1 ? "s" : ""}
-          </span>
+      {/* Footer — Alive/Dead + Round counter + Your Turn hint */}
+      {activeEncounter.combatants.length > 0 && (
+        <div className="relative flex items-center justify-between px-4 py-2 border-t border-white/[0.04] z-[1]">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 text-[9px] text-surface-500 tracking-wide">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              {aliveCount} alive
+            </span>
+            {deadCount > 0 && (
+              <span className="flex items-center gap-1 text-[9px] text-surface-500 tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                {deadCount} down
+              </span>
+            )}
+            <span className="text-[9px] text-surface-600 tracking-wide">
+              R{activeEncounter.round}
+            </span>
+          </div>
+          {isPlayerTurn && (
+            <span className="text-[9px] font-bold text-gold-400 animate-pulse tracking-wider">
+              Act Now
+            </span>
+          )}
         </div>
       )}
     </div>

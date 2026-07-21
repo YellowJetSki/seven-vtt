@@ -32,11 +32,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 type StatVariant = "default" | "hp" | "gold" | "xp" | "ability" | "proficiency";
 
-interface PresetButton {
-  label: string;
-  value: number;
-}
-
 interface InlineStatCardProps {
   /** Stat label (e.g., "HP", "XP", "GP") */
   label: string;
@@ -44,21 +39,20 @@ interface InlineStatCardProps {
   value: number;
   /** Maximum value (optional, for ratio display) */
   maxValue?: number;
-  /** Quick-adjust preset buttons */
+  /** Quick-adjust preset buttons (positive or negative numbers) */
   presets?: number[];
-  /** Color thresholds as ratios of (value / maxValue). 
-   *  Default: [0, 0.25, 0.5, 0.75] → rose/red/amber/emerald */
-  colorThresholds?: number[];
   /** Visual variant for color coding */
   variant?: StatVariant;
-  /** Icon to display */
+  /** Emoji/icon to display */
   icon?: string;
   /** Called when value changes (delta for presets, absolute for direct input) */
   onChange?: (newValue: number) => void;
-  /** Custom suffix (defaults to label-specific) */
+  /** Custom suffix */
   suffix?: string;
   /** Tooltip text */
   hint?: string;
+  /** X-Large stat display mode (for AC, HP) */
+  xl?: boolean;
 }
 
 function getTextColor(value: number, maxValue: number | undefined, variant: StatVariant): string {
@@ -90,12 +84,12 @@ export default function InlineStatCard({
   value,
   maxValue,
   presets = [],
-  colorThresholds,
   variant = "default",
   icon,
   onChange,
   suffix,
   hint,
+  xl = false,
 }: InlineStatCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(String(value));
@@ -179,20 +173,22 @@ export default function InlineStatCard({
             <span className="text-[8px] text-surface-600 italic">↵</span>
           </div>
         ) : (
-          <div className="flex items-baseline gap-1.5">
+          <div className={`flex items-baseline gap-1.5 ${xl ? "justify-center" : ""}`}>
             <span
-              className={`text-lg font-bold tabular-nums cursor-pointer hover:opacity-80 transition-opacity ${
-                getTextColor(value, maxValue, variant)
-              }`}
+              className={`font-bold tabular-nums cursor-pointer hover:opacity-80 transition-opacity ${
+                xl ? "text-2xl leading-none" : "text-lg"
+              } ${getTextColor(value, maxValue, variant)}`}
               onClick={() => setIsEditing(true)}
-              title="Tap to edit"
+              title={hint || "Tap to edit"}
             >
               {value.toLocaleString()}
             </span>
             {maxValue !== undefined && (
-              <span className="text-[10px] text-surface-600 tabular-nums">/ {maxValue.toLocaleString()}</span>
+              <span className={`tabular-nums ${xl ? "text-sm" : "text-[10px]"} text-surface-600`}>
+                / {maxValue.toLocaleString()}
+              </span>
             )}
-            {suffix && <span className="text-[9px] text-surface-600">{suffix}</span>}
+            {suffix && <span className={`${xl ? "text-xs" : "text-[9px]"} text-surface-600`}>{suffix}</span>}
           </div>
         )}
 
@@ -206,14 +202,14 @@ export default function InlineStatCard({
           </div>
         )}
 
-        {/* Preset buttons row */}
+        {/* Preset buttons — premium keypad */}
         {presets.length > 0 && (
-          <div className="flex gap-1 mt-2">
+          <div className={`grid ${presets.length > 4 ? "grid-cols-6" : presets.length > 3 ? "grid-cols-3" : `grid-cols-${presets.length}`} gap-1 mt-2`}>
             {presets.map((p, i) => (
               <button
                 key={i}
                 onClick={() => handlePreset(p)}
-                className={`flex-1 h-7 rounded-lg text-[9px] font-semibold transition-all duration-150 active:scale-90 ${
+                className={`h-7 rounded-lg text-[9px] font-semibold transition-all duration-150 active:scale-90 ${
                   p < 0
                     ? "bg-rose-500/8 text-rose-400/70 border border-rose-500/10 hover:bg-rose-500/15 hover:text-rose-300"
                     : p > 0
@@ -224,6 +220,15 @@ export default function InlineStatCard({
                 {p > 0 ? "+" : ""}{p}
               </button>
             ))}
+            {/* Full heal button for HP variant */}
+            {variant === "hp" && maxValue && (
+              <button
+                onClick={() => onChange?.(maxValue)}
+                className="h-7 rounded-lg text-[8px] font-bold bg-gold-500/10 text-gold-400/80 border border-gold-500/15 hover:bg-gold-500/15 hover:text-gold-300 active:scale-90 transition-all duration-150"
+              >
+                Full
+              </button>
+            )}
           </div>
         )}
       </div>
