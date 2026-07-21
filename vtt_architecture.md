@@ -16750,3 +16750,50 @@ Total time: ~5 seconds for full combat awareness
 ### DM Tool Tally: 24 Globally Accessible Tools
 +1 (new): Party Resources Quick-View (gold, `hud` icon)
 ---
+
+## DM Encounter Analyzer (Cycle 31/35) (Updated: 2026-07-21 18:20)
+## Cycle 31 — DM Encounter Analyzer & Party Balance Tool — COMPLETE
+
+### New Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `lib/mechanics/encounter-analyzer.ts` | ~350 | Pure-function encounter analysis engine |
+| `control-center/DmEncounterAnalyzer.tsx` | ~550 | Premium glass popover for encounter analysis |
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Party Profile** | Size, avg level, avg AC, avg HP, role detection (frontline/healer/arcane/skill) |
+| **Difficulty Thresholds** | Easy/Medium/Hard/Deadly/Impossible with adjusted XP (DMG multiplier) |
+| **Enemy Breakdown** | Per-enemy CR, XP contribution, count, type |
+| **Action Economy Analysis** | Party vs enemy ratio, advantage detection (balanced/party/enemies) |
+| **Save Targeting** | Strong saves (CON/WIS/DEX) vs weak saves (STR/INT/CHA) with warnings |
+| **Role Coverage** | Emoji badges for frontline/healer/arcane/skill with recommendations |
+| **CR vs Party Level** | Avg enemy CR / avg party level ratio with color coding |
+| **Smart Recommendations** | Color-coded severity: danger(rose), warning(amber), info(sky), success(emerald) |
+| **3-Tab Layout** | Overview (full stats), Saves (weak/strong analysis), Recommendations |
+| **Empty State** | Guidance when no encounter or characters loaded |
+| **Escape/Backdrop Dismiss** | Consistent with all 25 DM tools |
+
+### Engine: `encounter-analyzer.ts`
+| Function | Purpose |
+|:---------|:--------|
+| `analyzeCharacters()` | Party profile from character data (roles, saves, avg stats) |
+| `analyzeEnemies()` | Enemy XP contribution and breakdown |
+| `analyzeEncounterComprehensive()` | Full pipeline: combines party + enemy → difficulty, economy, recommendations |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showEncounterAnalyzer` + `setEncounterAnalyzer` |
+| `AppShell.tsx` | Layout | Added import, refs, listener, rendering block |
+| `Sidebar.tsx` | Layout | Added "Analyzer" button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 76
+
+### DM Tool Tally: 25 Globally Accessible Tools
++1 (new): Encounter Analyzer (amber, `conditions` icon)
+---
