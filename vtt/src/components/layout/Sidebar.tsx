@@ -140,6 +140,14 @@ const dmTools: DmToolProps[] = [
     title: "Travel & Wilderness — Overland travel, navigation, foraging, weather, and random encounters",
   },
   {
+    eventName: "toggle-dm-initiative-draft",
+    icon: "rollInitiative",
+    colorClass: "text-gold-400",
+    hoverClass: "hover:bg-gold-500/8 hover:border-gold-500/10",
+    label: "Init Draft",
+    title: "Initiative Quick-Draft — Rapid initiative entry, sort, lock, and one-click commit to combat",
+  },
+  {
     eventName: "toggle-dm-damage-calculator",
     icon: "attack",
     colorClass: "text-rose-400",
@@ -248,6 +256,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
   "toggle-dm-party-spell-slots": "group-hover:text-violet-400",
+  "toggle-dm-initiative-draft": "group-hover:text-gold-400",
   "toggle-dm-damage-calculator": "group-hover:text-rose-400",
   "toggle-dm-combat-progress": "group-hover:text-gold-400",
 };

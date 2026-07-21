@@ -45,6 +45,7 @@ import GlobalQuickNote from "@/components/ui/GlobalQuickNote";
 import PartyInventoryPanel from "@/components/player/PartyInventoryPanel";
 import DmCombatProgressPanel from "@/components/control-center/DmCombatProgressPanel";
 import DmDamageCalculator from "@/components/control-center/DmDamageCalculator";
+import DmInitiativeDraft from "@/components/control-center/DmInitiativeDraft";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -95,6 +96,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setCombatProgress = useUIStore((s) => s.setCombatProgress);
   const showDamageCalculator = useUIStore((s) => s.showDamageCalculator);
   const setDamageCalculator = useUIStore((s) => s.setDamageCalculator);
+  const showInitiativeDraft = useUIStore((s) => s.showInitiativeDraft);
+  const setInitiativeDraft = useUIStore((s) => s.setInitiativeDraft);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -296,6 +299,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setDamageCalculatorRef.current(!showDamageCalculatorRef.current); };
     window.addEventListener("toggle-dm-damage-calculator", handler);
     return () => window.removeEventListener("toggle-dm-damage-calculator", handler);
+  }, []);
+
+  const showInitiativeDraftRef = useRef(showInitiativeDraft);
+  showInitiativeDraftRef.current = showInitiativeDraft;
+  const setInitiativeDraftRef = useRef(setInitiativeDraft);
+  setInitiativeDraftRef.current = setInitiativeDraft;
+
+  useEffect(() => {
+    const handler = () => { setInitiativeDraftRef.current(!showInitiativeDraftRef.current); };
+    window.addEventListener("toggle-dm-initiative-draft", handler);
+    return () => window.removeEventListener("toggle-dm-initiative-draft", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -519,6 +533,14 @@ export default function AppShell({ children }: AppShellProps) {
           Presets per CR tier, 13 damage types, multi-target, resistance. */}
       {role === "dm" && (
         <DmDamageCalculator onClose={() => setDamageCalculator(false)} />
+      )}
+
+      {/* ── DM Initiative Quick-Draft (Cycle 28) ──
+          Rapid initiative entry for combat setup. Auto-fills PCs,
+          quick +/- buttons for DEX bonuses, enemy typeahead,
+          sort, lock, and one-click commit/start combat. */}
+      {role === "dm" && (
+        <DmInitiativeDraft onClose={() => setInitiativeDraft(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──

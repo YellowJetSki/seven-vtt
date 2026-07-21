@@ -50,6 +50,7 @@ interface UIState {
   showPartySpellSlots: boolean;
   showCombatProgress: boolean;
   showDamageCalculator: boolean;
+  showInitiativeDraft: boolean;
 }
 
 interface UIActions {
@@ -93,6 +94,7 @@ interface UIActions {
   setPartyInventory: (show: boolean) => void;
   setCombatProgress: (show: boolean) => void;
   setDamageCalculator: (show: boolean) => void;
+  setInitiativeDraft: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -128,6 +130,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showPartySpellSlots: false,
   showCombatProgress: false,
   showDamageCalculator: false,
+  showInitiativeDraft: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -160,6 +163,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setPartySpellSlots: (show: boolean) => set({ showPartySpellSlots: show }),
   setCombatProgress: (show: boolean) => set({ showCombatProgress: show }),
   setDamageCalculator: (show: boolean) => set({ showDamageCalculator: show }),
+  setInitiativeDraft: (show: boolean) => set({ showInitiativeDraft: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
