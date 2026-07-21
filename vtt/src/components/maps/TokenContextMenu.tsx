@@ -24,6 +24,7 @@ import { useDMSelectionStore } from "@/stores/dmSelectionStore";
 import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
 import { useCombatStore } from "@/stores/combatStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
+import { addDamageFloater } from "@/stores/damageNumberStore";
 
 // ── Condition quick-toggles for context menu ──
 const QUICK_CONDITIONS: { key: string; label: string; icon: string; color: string }[] = [
@@ -162,7 +163,10 @@ export default function TokenContextMenu() {
     const token = useContextMenuStore.getState().getTarget();
     if (!token) return;
     const hp = token.hp || { current: 0, max: 0 };
-    const newCurrent = Math.max(0, hp.current - amount);
+
+    // Publish floating damage number
+    addDamageFloater(token.id, amount, amount >= 20 ? "crit" : "damage", undefined, 2000);
+
     // Write via combat store if in combat, else DM selection
     if (activeEncounter && token.type === "enemy") {
       damageCombatant(token.id, amount);
@@ -176,7 +180,10 @@ export default function TokenContextMenu() {
     const token = useContextMenuStore.getState().getTarget();
     if (!token) return;
     const hp = token.hp || { current: 0, max: 0 };
-    const newCurrent = Math.min(hp.max, hp.current + amount);
+
+    // Publish floating heal number
+    addDamageFloater(token.id, amount, "heal", undefined, 2000);
+
     selectCombatant(token.id);
     closeMenu();
   }, [selectCombatant, closeMenu]);

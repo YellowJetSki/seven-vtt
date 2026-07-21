@@ -45,6 +45,10 @@ import {
   renderMeasurements,
   type RulerState,
 } from "./measure-renderer";
+import {
+  renderDamageNumbers,
+  type DamageNumberState,
+} from "./damage-number-renderer";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -86,6 +90,8 @@ export interface CanvasRenderState {
   rulerState?: RulerState;
   /** Cycle 17: Token ID to highlight with a golden pulsing ring */
   focusTokenId?: string | null;
+  /** Cycle 20: Floating damage/heal numbers */
+  damageNumbers?: DamageNumberState["damageNumbers"];
 }
 
 // ── Renderer ─────────────────────────────────────────────
@@ -103,6 +109,7 @@ export function renderCanvas(
     activeEncounter, activeTurnTokenId,
     activePings, rulerState,
     focusTokenId,
+    damageNumbers,
   } = state;
 
   const mapWidth = gridWidth * gridSize;
@@ -159,6 +166,11 @@ export function renderCanvas(
       id: t.id,
     }));
     renderInitiativeOverlay(ctx, tokenPositions, initState, gridSize);
+  }
+
+  // ── 7.5. Floating damage/heal numbers (Cycle 20) ──
+  if (damageNumbers && damageNumbers.length > 0) {
+    renderDamageNumbers(ctx, damageNumbers, tokens, gridSize, panX, panY, zoom, time);
   }
 
   // ── 8. Ping effects ──

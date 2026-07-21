@@ -54,6 +54,8 @@ import KeyboardShortcutHints from "./KeyboardShortcutHints";
 import InitiativeOverlay from "./InitiativeOverlay";
 import TokenContextMenu from "./TokenContextMenu";
 import { useContextMenuStore } from "@/stores/contextMenuStore";
+import { useDamageNumberStore } from "@/stores/damageNumberStore";
+import { useDamageNumberEffect } from "@/hooks/useDamageNumberEffect";
 
 export interface CanvasMapHandle {
   recenter: () => void;
@@ -214,6 +216,9 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   const focusTokenIdRef = useRef(focusTokenId);
   focusTokenIdRef.current = focusTokenId;
 
+  // ── Cycle 20: Subscribe to damage/heal events for floating numbers ──
+  useDamageNumberEffect(tokens, activeEncounter?.phase === "active");
+
   // ── Stable render callback — reads latest values from refs ──
   const renderFrameRef = useRef<() => void>(() => {});
   renderFrameRef.current = () => {
@@ -226,6 +231,10 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     const s = stateRef.current;
     const md = mapDataRef.current;
 
+    // Read damage numbers from store every frame (they auto-expire)
+    const dns = useDamageNumberStore.getState();
+    const activeNumbers = dns.numbers;
+
     Object.assign(s, {
       gridWidth: md.gridWidth, gridHeight: md.gridHeight, gridSize: md.gridSize,
       gridColor: md.gridColor || "#808080", gridOpacity: md.gridOpacity ?? 0.4,
@@ -235,6 +244,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
       activeEncounter: activeEncounterRef.current,
       activeTurnTokenId: activeTurnTokenIdRef.current,
       focusTokenId: focusTokenIdRef.current,
+      damageNumbers: activeNumbers,
     });
 
     const dpr = window.devicePixelRatio || 1;
