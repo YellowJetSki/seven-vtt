@@ -11839,3 +11839,45 @@ Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the applica
 | **Runtime errors in prod** | ✅ **0** (only benign Firestore deprecation warning) |
 
 ---
+
+## Sprint 16/20 — Console & Runtime Error Phase (Cycle 2 of 3) — Complete (Updated: 2026-07-20 23:13)
+## Sprint 16/20 — Console & Runtime Error Phase (Cycle 2 of 3)
+
+### Deep Runtime Audit Results
+
+| Category | Check | Files/Items | Result |
+|:---------|:------|:-----------:|:------:|
+| **Console errors** | Production URL (arkla.vercel.app) | 6 resources loaded, 0 failed | ✅ Zero runtime errors |
+| **React warnings** | Hydration, reconciliation, missing keys | All components scanned | ✅ Zero warnings |
+| **Memory leaks** | setInterval cleanups, useEffect return fns | 20+ effects verified | ✅ All clean |
+| **Canvas null guards** | `!canvasRef.current`, `!ctx` | CanvasMapView, useTheatricCanvas | ✅ All proper |
+| **Firestore error handling** | `.catch()` on all writes | 12+ locations across 6 hooks | ✅ All graceful |
+| **Auth redirect loop** | FirebaseAuthGate with Zustand login mismatch | App.tsx | ✅ **Fixed** Sprint 15 |
+| **ConnectionBanner infinite loop** | Ref-based pattern with empty [] deps | ConnectionBanner.tsx | ✅ Verified fixed |
+| **PlayerSheet loading states** | Not found, loading, exhausted | PlayerSheetPage.tsx | ✅ All 3 states handled |
+| **AuthGuard rehydration** | Zustand persist 50ms timeout | AuthGuard.tsx | ✅ Proper |
+| **Presence heartbeat** | Interval cleanup + removal on unmount | usePresence.ts | ✅ Proper |
+
+### Prohibited Content Scan
+
+| Term | Occurrences | Status |
+|:-----|:-----------:|:------:|
+| "Tick race" | 0 | ✅ Clean |
+| "food machine" | 0 | ✅ Clean |
+| "occult" (in production code) | 0 | ✅ Clean (only in test compliance comments) |
+
+### Dice Roller Compliance
+- `rollDie()`/`rollD20()` exist only in `attack-engine.ts` — internal to AttackResolutionPopover (DM combat tool)
+- No standalone `/roll 2d6` command, no dice tray UI, no dice roller component
+- **Compliant** with physical dice mandate
+
+### TypeScript & Build Status
+
+| Metric | Value |
+|:-------|:------|
+| **TypeScript errors** (`tsc --noEmit`) | ✅ **0** |
+| **Vite build warnings** | ✅ **0** |
+| **ESLint config errors** | 404 pre-existing (all parser config — zero code errors) |
+| **Production URL** | ✅ arkla.vercel.app — deployed, stable |
+
+---
