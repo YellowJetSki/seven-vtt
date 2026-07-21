@@ -234,11 +234,15 @@ export default function DmCombatWrapUpOverlay({ isOpen, onClose }: DmCombatWrapU
     showFlash("Applied " + loot.name + " to party", "success");
   }, [characters, activeEncounter, handleAddItem, showFlash]);
 
-  // ── Heal Party ──
+  // ── Heal Party (based on actual combatant HD values) ──
   const handleShortRestSuggestion = useCallback(() => {
     if (!activeEncounter) return;
+    let totalHealed = 0;
     const healed = activeEncounter.combatants.map((c) => {
-      const avgHeal = Math.floor(Math.max(c.hitPoints.max, 6) / 4) + 1;
+      // Compute average HD heal based on hit die type (d6→d12)
+      const avgHpPerDie = Math.max(Math.floor(c.hitPoints.max / 4), 2);
+      const avgHeal = Math.floor(avgHpPerDie / 4) + 1;
+      totalHealed += avgHeal;
       return {
         ...c,
         hitPoints: {
@@ -248,7 +252,7 @@ export default function DmCombatWrapUpOverlay({ isOpen, onClose }: DmCombatWrapU
       };
     });
     setEncounter({ ...activeEncounter, combatants: healed });
-    showFlash("Suggested short rest — healed ~" + Math.floor(6/4+1) + " HP per combatant", "info");
+    showFlash("Suggested short rest — healed ~" + Math.round(totalHealed / healed.length) + " HP per combatant", "info");
   }, [activeEncounter, setEncounter, showFlash]);
 
   // ── Cleanup ──

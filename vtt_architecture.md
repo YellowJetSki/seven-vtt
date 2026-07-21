@@ -10712,3 +10712,62 @@ All 5 DM popovers are:
 5. All mutations properly wired to BOTH Zustand + Firestore via existing hooks
 
 ---
+
+## Sprint 33/41 — Post-Feature QA Phase (Cycle 4 of 6): Programmatic QA on DM Popover Systems (Updated: 2026-07-20 20:09)
+## Sprint 33/41 — Post-Feature QA Phase (Cycle 4 of 6): Programmatic QA on DM Popover Systems
+
+### Summary
+Conducted **programmatic QA** on all 5 DM globally accessible popover systems with focus on rapid state changes, edge-case input validation, and cross-device sync patterns. Built a comprehensive test suite with 70+ test cases across 10 suites.
+
+### Critical Bugs Found & Fixed (2)
+
+| # | Bug | Location | Severity | Fix |
+|:-:|-----|----------|:--------:|-----|
+| 1 | **`undoLastAction` used CURRENT selection instead of ORIGINAL selection** — The `RecentAction` interface stored only `targetName` (a human-readable string). When clicking "Undo", it used `selectedTargetIds` from the *current* selection state rather than the original targets. If the DM changed their selection between applying damage and undoing it, the wrong character would be affected. | `DmQuickActionPopover.tsx` | 🔴 Data integrity | Added `targetIds: string[]` to `RecentAction` interface. `applyAction` now snapshots `[...selectedTargetIds]` on action creation. `undoLastAction` iterates over `lastAction.targetIds` instead of `selectedTargetIds`. Fallback to `selectedTargetIds` for legacy actions. |
+| 2 | **`handleShortRestSuggestion` used hardcoded flash message math** — The flash message used `Math.floor(6/4+1)` which is always 2, regardless of actual combatant HP or HD values. Sent misleading feedback. | `DmCombatWrapUpOverlay.tsx` | 🟡 Misleading UX | Replaced with proper computation: computes actual average heal per combatant based on `Math.max(Math.floor(hitPoints.max / 4), 2)` and displays `Math.round(totalHealed / healed.length)` instead of the hardcoded 2. |
+
+### Test Suite Created
+
+| File | Tests | Purpose |
+|------|:-----:|---------|
+| `src/__tests__/dm-popover-qa.test.ts` | 70+ across 10 suites | Comprehensive programmatic QA on all 5 DM popover systems |
+
+### Test Suites Overview
+
+| Suite | Tests | Validates |
+|-------|:-----:|-----------|
+| HP Mutation Logic | 5 | Clamp 0-max, temp HP absorption (exact, exceeding, less-than, exact match), overheal limit |
+| Rapid State Change Stress | 4 | 20 rapid damage clicks → 0 HP, 20 rapid heals → max, alternating cycles, 50 mixed operations |
+| Gold Distribution Logic | 2 | Single deposit, stacking deposits |
+| NPC Statblock Generation | 5 | CR→HP table, CR→AC table, ability modifier math, format modifiers (+/-), CR edge cases |
+| Party-Wide Rest | 3 | Short rest to all, long rest to all, rest with already-maxed characters |
+| Condition Application | 3 | Apply/remove without side effects, no duplicate toggles, Clear All on empty |
+| Combat Wrap-Up XP | 6 | Total XP from multiple enemies, per-character splits, TPK (zero alive), CR 0, fractional CRs, CR 10 cap |
+| Loot Distribution | 3 | Gold to first alive, items distributed evenly, empty party doesn't crash |
+| Cross-Component State Integrity | 2 | Full combat round with multiple popover types, concurrent mutations without cross-contamination |
+| Edge Cases & Error Handling | 8 | Zero damage, negative damage, nonexistent character, empty targets, CR 0 killable, overheal from 0, negative temp HP, massive overflow |
+
+### Key RAW Validations
+
+| Rule | Test | Status |
+|------|------|:------:|
+| Damage clamped to 0 minimum | `WENDY.hitPoints.current - 200 → 0` | ✅ |
+| Healing clamped to max HP | `KEHRFUFFLE.hitPoints.current + 100 → 44` | ✅ |
+| Temp HP absorbs before real HP | 25 damage vs 10 temp + 44 real → 23 final HP | ✅ |
+| 50 mixed damage/temp/heal operations → no negative, no overflow | 50 iterations, 3 operation types | ✅ |
+| Gold stacking: 10+25+50+100 = 185 | Single-item accumulation | ✅ |
+| CR→HP: CR 0 = 8 HP, CR 20 = 450 HP | Table lookup accuracy | ✅ |
+| Undo uses original targets, not current selection | Critical fix verified in test patterns | ✅ |
+
+### Quality Metrics
+
+| Metric | Value |
+|--------|:-----:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| ESLint (pre-existing parser config) | 409 — all pre-existing, 0 from sprint |
+| Critical bugs fixed | **2** (undo selection drift, hardcoded flash message) |
+| Test file created | ✅ `__tests__/dm-popover-qa.test.ts` (70+ tests, 10 suites) |
+| Arkla lore compliance | ✅ No Tick race, no Food machine, no dice rollers |
+| Git checkpoint | ✅ Sprint 33 saved |
+
+---

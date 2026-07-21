@@ -80,6 +80,7 @@ interface RecentAction {
   id: string;
   mode: ActionMode;
   targetName: string;
+  targetIds: string[]; // Store original target IDs for undo precision
   amount: number;
   timestamp: number;
 }
@@ -229,13 +230,14 @@ export default function DmQuickActionPopover({ isOpen, onClose }: DmQuickActionP
       actionCount++;
     }
 
-    // Log the action
+    // Log the action with target IDs for precise undo
     const newAction: RecentAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       mode: actionMode,
       targetName: selectedTargetIds.size > 1
         ? `${selectedTargetIds.size} targets`
         : targets.find((t) => t.id === [...selectedTargetIds][0])?.name || "target",
+      targetIds: [...selectedTargetIds], // Snapshot current selection for undo
       amount: Math.abs(amount),
       timestamp: Date.now(),
     };
@@ -247,21 +249,23 @@ export default function DmQuickActionPopover({ isOpen, onClose }: DmQuickActionP
     );
   }, [selectedTargetIds, actionMode, targets, characters, handleHpChange, handleSetTempHp, handleAddItem, showFlash]);
 
-  // ── Undo last action ──
+  // ── Undo last action (precise: uses stored targetIds from action snapshot) ──
   const undoLastAction = useCallback(() => {
     const lastAction = recentActions[0];
     if (!lastAction) return;
 
-    // Inverse the action
+    // Inverse the action using the stored target IDs (not current selection)
+    const storedTargetIds = lastAction.targetIds || [...selectedTargetIds]; // Fallback for legacy actions
+
     if (lastAction.mode === "damage") {
       // Reverse damage → heal
-      for (const targetId of selectedTargetIds) {
+      for (const targetId of storedTargetIds) {
         const char = characters.find((c) => c.id === targetId);
         if (char) handleHpChange(char, lastAction.amount);
       }
     } else if (lastAction.mode === "heal") {
       // Reverse heal → damage
-      for (const targetId of selectedTargetIds) {
+      for (const targetId of storedTargetIds) {
         const char = characters.find((c) => c.id === targetId);
         if (char) handleHpChange(char, -lastAction.amount);
       }
