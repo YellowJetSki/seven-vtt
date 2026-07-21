@@ -47,6 +47,7 @@ import DmCombatProgressPanel from "@/components/control-center/DmCombatProgressP
 import DmDamageCalculator from "@/components/control-center/DmDamageCalculator";
 import DmInitiativeDraft from "@/components/control-center/DmInitiativeDraft";
 import DmCombatantMover from "@/components/control-center/DmCombatantMover";
+import DmPartyResourcesQuickView from "@/components/control-center/DmPartyResourcesQuickView";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -101,6 +102,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setInitiativeDraft = useUIStore((s) => s.setInitiativeDraft);
   const showCombatantMover = useUIStore((s) => s.showCombatantMover);
   const setCombatantMover = useUIStore((s) => s.setCombatantMover);
+  const showPartyResources = useUIStore((s) => s.showPartyResources);
+  const setPartyResources = useUIStore((s) => s.setPartyResources);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -324,6 +327,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setCombatantMoverRef.current(!showCombatantMoverRef.current); };
     window.addEventListener("toggle-dm-combatant-mover", handler);
     return () => window.removeEventListener("toggle-dm-combatant-mover", handler);
+  }, []);
+
+  const showPartyResourcesRef = useRef(showPartyResources);
+  showPartyResourcesRef.current = showPartyResources;
+  const setPartyResourcesRef = useRef(setPartyResources);
+  setPartyResourcesRef.current = setPartyResources;
+
+  useEffect(() => {
+    const handler = () => { setPartyResourcesRef.current(!showPartyResourcesRef.current); };
+    window.addEventListener("toggle-dm-party-resources", handler);
+    return () => window.removeEventListener("toggle-dm-party-resources", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -564,6 +578,14 @@ export default function AppShell({ children }: AppShellProps) {
           encounter. */}
       {role === "dm" && (
         <DmCombatantMover onClose={() => setCombatantMover(false)} />
+      )}
+
+      {/* ── DM Party Resources Quick-View (Cycle 30) ──
+          At-a-glance resource overview for ALL player characters:
+          spell slots, class resources, hit dice, concentration,
+          and conditions without opening individual sheets. */}
+      {role === "dm" && (
+        <DmPartyResourcesQuickView onClose={() => setPartyResources(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──

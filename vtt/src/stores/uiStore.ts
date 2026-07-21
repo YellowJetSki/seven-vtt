@@ -52,6 +52,7 @@ interface UIState {
   showDamageCalculator: boolean;
   showInitiativeDraft: boolean;
   showCombatantMover: boolean;
+  showPartyResources: boolean;
 }
 
 interface UIActions {
@@ -97,6 +98,7 @@ interface UIActions {
   setDamageCalculator: (show: boolean) => void;
   setInitiativeDraft: (show: boolean) => void;
   setCombatantMover: (show: boolean) => void;
+  setPartyResources: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -134,6 +136,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showDamageCalculator: false,
   showInitiativeDraft: false,
   showCombatantMover: false,
+  showPartyResources: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -168,6 +171,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setDamageCalculator: (show: boolean) => set({ showDamageCalculator: show }),
   setInitiativeDraft: (show: boolean) => set({ showInitiativeDraft: show }),
   setCombatantMover: (show: boolean) => set({ showCombatantMover: show }),
+  setPartyResources: (show: boolean) => set({ showPartyResources: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
