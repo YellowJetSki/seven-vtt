@@ -46,7 +46,11 @@ export default function RoleSelection({ onSelect }: RoleSelectionProps) {
         </div>
       </button>
 
-      <div className="rune-gold pt-2 justify-center">ᚱ ᚱ ᚱ</div>
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <span className="w-6 h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
+        <span className="text-[9px] text-gold-500/40 tracking-[0.3em] font-bold">ᚱ ᚱ ᚱ</span>
+        <span className="w-6 h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
+      </div>
     </div>
   );
 }

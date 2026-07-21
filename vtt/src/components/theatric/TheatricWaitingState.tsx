@@ -79,8 +79,10 @@ export default function TheatricWaitingState({
           </span>
         </div>
 
-        <div className="rune-gold mt-8 justify-center opacity-40">
-          ✦ ✦ ✦
+        <div className="flex items-center justify-center gap-3 mt-8 opacity-40">
+          <span className="w-6 h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
+          <span className="text-[9px] text-gold-500/40 tracking-[0.3em] font-bold">✦ ✦ ✦</span>
+          <span className="w-6 h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
         </div>
       </div>
     </div>
