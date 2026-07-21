@@ -14005,3 +14005,45 @@ Created **240-line TypeScript utility module** with exported constants:
 | CSS bundle | 427 KB (52 KB gzipped) |
 | Production URL | ✅ arkla.vercel.app
 ---
+
+## Cycle 11 — Foundation & Dashboards — DM Dashboard At-a-Glance Campaign Overview (Updated: 2026-07-21 14:15)
+## Cycle 11 — DM Dashboard: At-a-Glance Campaign Overview — Complete
+**Date:** 2026-07-21
+
+### Deliverables
+
+#### 1. New Component: CampaignMetaSummary (180 lines)
+Compact KPI strip showing 7 critical campaign metrics at a glance:
+- **Campaign Age** — Human-readable lifespan (Today / X days / X months Yd) with gold accent
+- **Sessions Run** — sessionCount from campaign stats, amber accent
+- **Party Size** — character count, emerald accent
+- **Monsters** — enemy count, rose accent
+- **Encounters** — encounter count, rose accent  
+- **Maps** — battle map count, violet accent
+- **Journal** — journal entry count, cyan accent
+
+Design:
+- Each metric is a compact card with per-accent border + gradient hover glow
+- 6 unique accent colors (gold/amber/emerald/rose/violet/cyan)
+- Uses `staggerEntrance()` from the design token system (30ms stagger)
+- `group`-based hover with accent line at top and directional bg gradient
+- Responsive flex-wrap layout: auto-flow across available width
+
+#### 2. Refactored: DmDashboard.tsx (v3.0)
+- **4-tier staggered entrance**: Command Bar (0ms) → CampaignBanner (60ms) → CampaignMetaSummary (120ms) → Two-column War Room (180-320ms)
+- All entrances use `entrance()` from `lib/design-tokens.ts` instead of raw `animate-in` CSS classes
+- CampaignMetaSummary integrated between banner and war room as Tier 3
+- Reads `enemies`, `encounters`, `journal` from campaignStore for live counts
+- Empty state uses token-compliant `active:scale-95` micro-interaction
+- Removed unused minLevel/midLevel computations (simplified)
+- Premium stagger: 0ms → 60ms → 120ms → 180ms → 200ms → 240ms → 260ms → 300ms → 320ms
+
+### Build Metrics
+| Metric | Value |
+|--------|:------:|
+| TypeScript | ✅ 0 errors (2150 modules) |
+| Vite build | ✅ 7.95s Vercel |
+| JS bundle | 2,222 KB (521 KB gzipped) |
+| CSS bundle | 428 KB (52 KB gzipped) |
+| Production URL | ✅ arkla.vercel.app
+---
