@@ -2,7 +2,7 @@
  * STᚱ VTT — Theatric Waiting State (Premium Cinematic Gold)
  *
  * Cinematic loading/error state for the Theatric Display.
- * Features gold ᚱ rune with pulsing glow, ambient particle background,
+ * Features pulsing AppIcon shield with gold ambient glow,
  * and gold-accented status indicators.
  */
 
@@ -24,8 +24,13 @@ export default function TheatricWaitingState({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gold-500/[0.03] rounded-full blur-[100px] animate-pulse-glow" style={{ animationDuration: "4s" }} />
 
         <div className="relative z-10 text-center">
-          <div className="text-6xl mb-6 float-arcane text-gold-400 drop-shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-            ᚱ
+          <div className="mb-6 flex justify-center">
+            <img
+              src="/AppIcon.svg"
+              alt="STᚱ VTT"
+              className="w-24 h-24 animate-pulse-glow drop-shadow-[0_0_40px_rgba(234,179,8,0.4)]"
+              style={{ animationDuration: "3s" }}
+            />
           </div>
           <div className="mt-4 flex flex-col items-center gap-3">
             <div className="w-7 h-7 border-[2px] border-gold-500/20 border-t-gold-500 rounded-full animate-spin" />
@@ -47,8 +52,13 @@ export default function TheatricWaitingState({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold-500/[0.02] rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: "6s" }} />
 
       <div className="relative z-10 text-center max-w-md p-8">
-        <div className="text-7xl mb-6 text-gold-400/80 animate-pulse-glow drop-shadow-[0_0_30px_rgba(234,179,8,0.15)]">
-          ᚱ
+        <div className="mb-6 flex justify-center">
+          <img
+            src="/AppIcon.svg"
+            alt="STᚱ VTT"
+            className="w-28 h-28 animate-pulse-glow drop-shadow-[0_0_50px_rgba(234,179,8,0.25)]"
+            style={{ animationDuration: "4s" }}
+          />
         </div>
         <h1 className="text-2xl font-bold text-gold-300/90 mb-3 tracking-tight">
           STᚱ VTT

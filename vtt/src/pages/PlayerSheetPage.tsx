@@ -17,6 +17,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import PlayerSheet from "@/components/player/PlayerSheet";
 import PlayerShareReveal from "@/components/player/PlayerShareReveal";
+import PlayerLiveEncounterView from "@/components/player/PlayerLiveEncounterView";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { usePlayerPresence } from "@/hooks/usePresence";
 
@@ -182,6 +183,14 @@ export default function PlayerSheetPage() {
 
       {/* ── DM Share Reveal (fullscreen overlay for DM image pushes) ── */}
       <PlayerShareReveal />
+
+      {/* ── Live Encounter View (companion battle overlay) ── */}
+      <div className="absolute top-4 right-4 z-30 w-72 max-w-[calc(100vw-2rem)] animate-in slide-in-from-right-2 duration-300 delay-500">
+        <PlayerLiveEncounterView
+          playerCharacterId={character.id}
+          playerCharacterName={character.name}
+        />
+      </div>
 
       {/* ── Player Sheet (full-screen modal) ── */}
       <div className="flex-1 overflow-hidden animate-in fade-in duration-500 delay-200">

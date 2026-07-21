@@ -12,6 +12,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTheatricStore } from "@/stores/theatricStore";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useCombatStore } from "@/stores/combatStore";
 import TheatricDisplay from "@/components/theatric/TheatricDisplay";
 import TheatricStatusBar from "@/components/theatric/TheatricStatusBar";
 import TheatricWaitingState from "@/components/theatric/TheatricWaitingState";
@@ -29,6 +30,7 @@ export default function TheatricPage() {
   const showLabels = useTheatricStore((s) => s.showLabels);
   const campaignMaps = useCampaignStore((s) => s.battleMaps);
   const mapTokens = useCampaignStore((s) => s.mapTokens);
+  const activeEncounter = useCombatStore((s) => s.activeEncounter);
 
   const [mapData, setMapData] = useState<typeof campaignMaps[0] | null>(null);
   const [tokens, setTokens] = useState<typeof mapTokens[string]>([]);
@@ -131,6 +133,47 @@ export default function TheatricPage() {
       }
     };
   }, []); // ← stable: never re-creates, reads from refs
+
+  // ── Auto-follow camera onto active combatant ──
+  // Reads active encounter from combatStore and centers camera
+  // on the current turn token, using grid coordinates
+  const autoFollowRef = useRef(activeEncounter);
+  autoFollowRef.current = activeEncounter;
+  const tokensFromStore = useRef(mapTokens);
+  tokensFromStore.current = mapTokens;
+  const activeMapIdRef = useRef(activeMapId);
+  activeMapIdRef.current = activeMapId;
+  const setCameraRef2 = useRef(setCamera);
+  setCameraRef2.current = setCamera;
+
+  useEffect(() => {
+    // Only activate auto-follow when combat is active and a map is selected
+    const enc = autoFollowRef.current;
+    if (!enc || enc.phase !== "active" || !activeMapIdRef.current) return;
+
+    const currentIdx = enc.currentCombatantIndex;
+    if (currentIdx < 0 || currentIdx >= enc.combatants.length) return;
+
+    const currentCombatant = enc.combatants[currentIdx];
+    if (!currentCombatant) return;
+
+    // Find the matching token for this combatant by name
+    const mapTokenArray = tokensFromStore.current[activeMapIdRef.current];
+    if (!mapTokenArray) return;
+
+    const matchingToken = mapTokenArray.find(
+      (t) => t.label.toLowerCase() === currentCombatant.name.toLowerCase()
+    );
+    if (!matchingToken) return;
+
+    // Smoothly center camera on the token's grid position
+    // We only auto-follow once when the turn changes, not every frame
+    setCameraRef2.current({
+      x: -(matchingToken.x * 50), // approximate gridSize = 50
+      y: -(matchingToken.y * 50),
+      zoom: 1.2, // slight zoom-in for dramatic effect
+    });
+  }, [activeEncounter?.currentCombatantIndex]); // Runs when turn changes
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
