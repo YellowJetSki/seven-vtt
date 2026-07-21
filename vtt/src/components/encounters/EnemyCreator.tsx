@@ -134,6 +134,21 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
   const [dmgResist, setDmgResist] = useState<string[]>(existingEnemy?.damageResistances || []);
   const [dmgImmune, setDmgImmune] = useState<string[]>(existingEnemy?.damageImmunities || []);
   const [condImmune, setCondImmune] = useState<string[]>(existingEnemy?.conditionImmunities || []);
+  // Saving throw proficiency tracking (parent-state, hoisted from SaveRow)
+  const [saveProfs, setSaveProfs] = useState<Record<string, boolean>>(() => {
+    const saved: Record<string, boolean> = {};
+    if (existingEnemy?.savingThrows) {
+      Object.keys(existingEnemy.savingThrows).forEach((k) => { saved[k] = true; });
+    }
+    return saved;
+  });
+  const [saveBonuses, setSaveBonuses] = useState<Record<string, string>>(() => {
+    const saved: Record<string, string> = {};
+    if (existingEnemy?.savingThrows) {
+      Object.entries(existingEnemy.savingThrows).forEach(([k, v]) => { if (v !== undefined) saved[k] = String(v); });
+    }
+    return saved;
+  });
   const [imageUrl, setImageUrl] = useState(existingEnemy?.imageUrl || "");
   const [showAttackForm, setShowAttackForm] = useState(false);
   const [attName, setAttName] = useState("");
@@ -255,7 +270,11 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
       id: existingEnemy?.id || ("enemy_" + Date.now()),
       name: name.trim(), type: creatureType, size, armorClass,
       hitPoints: { current: hitPoints, max: hitPoints, temporary: 0 },
-      speed, abilities, savingThrows: {}, skills: {},
+      speed, abilities, savingThrows: Object.fromEntries(
+        (["strength","dexterity","constitution","intelligence","wisdom","charisma"] as const)
+          .filter((k) => saveProfs[k])
+          .map((k) => [k, saveBonuses[k] ? getModNum(abilities[k]) + Number(saveBonuses[k]) : getModNum(abilities[k]) + pb])
+      ), skills: {},
       damageVulnerabilities: [], damageResistances: dmgResist,
       damageImmunities: dmgImmune, conditionImmunities: condImmune,
       senses, languages, challengeRating, traits, actions, reactions,
@@ -276,7 +295,8 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
       abilities, attacks, senses, languages, traits, actions, reactions,
       specialAbilities, legendaryActions, dmgResist, dmgImmune, condImmune,
       imageUrl, isEditMode, existingEnemy, enemies, setEnemies, onCreated, onSaved, onClose,
-      showSpellcasting, spCasterType, spAbility, spDC, spATK, spSpells, spSlots]);
+      showSpellcasting, spCasterType, spAbility, spDC, spATK, spSpells, spSlots,
+      saveProfs, saveBonuses, pb]);
 
   const isValid = name.trim().length > 0;
 
@@ -413,12 +433,19 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
             <Section title={"Saving Throws"} icon={String.fromCharCode(128737)}>
               <p className="text-[9px] text-surface-600 mb-3">Saves are computed from ability scores + proficiency bonus (+{pb}). Toggle to mark proficient.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <SaveRow ability="strength" label="STR" score={abilities.strength} pb={pb} />
-                <SaveRow ability="dexterity" label="DEX" score={abilities.dexterity} pb={pb} />
-                <SaveRow ability="constitution" label="CON" score={abilities.constitution} pb={pb} />
-                <SaveRow ability="intelligence" label="INT" score={abilities.intelligence} pb={pb} />
-                <SaveRow ability="wisdom" label="WIS" score={abilities.wisdom} pb={pb} />
-                <SaveRow ability="charisma" label="CHA" score={abilities.charisma} pb={pb} />
+                {(["strength","dexterity","constitution","intelligence","wisdom","charisma"] as const).map((key) => (
+                  <SaveRow
+                    key={key}
+                    ability={key}
+                    label={ABILITY_LABELS[key]}
+                    score={abilities[key]}
+                    pb={pb}
+                    isProficient={saveProfs[key] || false}
+                    bonusOverride={saveBonuses[key] || ""}
+                    onToggle={(v) => setSaveProfs((prev) => ({ ...prev, [key]: v }))}
+                    onBonusChange={(v) => setSaveBonuses((prev) => ({ ...prev, [key]: v }))}
+                  />
+                ))}
               </div>
             </Section>
 
@@ -577,8 +604,17 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
                       <input value={spSpells} onChange={(e) => setSpSpells(e.target.value)} placeholder="Fireball, Shield, Counterspell" className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
                     </div>
                     <div>
-                      <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Slots Per Level (JSON)</label>
-                      <input value={spSlots} onChange={(e) => setSpSlots(e.target.value)} placeholder='{"1":{"current":4,"max":4},"2":{"current":2,"max":2}}' className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold/25 placeholder:text-surface-700 font-mono" />
+                      <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Spell Slots per Level</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[1,2,3,4,5,6,7,8,9].map((lvl) => (
+                          <div key={lvl} className="flex items-center gap-1 bg-[#07080d]/70 border border-white/[0.04] rounded-lg px-2 py-1">
+                            <span className="text-[8px] text-gold-400/60 w-4">L{lvl}</span>
+                            <input type="number" min={0} max={9} value={(() => { try { const p = JSON.parse(spSlots); return (typeof p === "object" && p[String(lvl)]?.max) ?? 0; } catch { return 0; } })()} onChange={(e) => { const v = parseInt(e.target.value) || 0; try { const p = JSON.parse(spSlots); const o = typeof p === "object" ? p : {}; setSpSlots(JSON.stringify({...o, [String(lvl)]: {current: v, max: v}})); } catch { setSpSlots(JSON.stringify({[String(lvl)]: {current: v, max: v}})); } }}
+                              className="w-8 text-center py-0.5 rounded text-[9px] bg-[#0c0d15] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25" />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[7px] text-surface-600 mt-1">Set max slots per level. Levels without slots can remain 0.</p>
                     </div>
                   </div>
                 )}
@@ -665,12 +701,16 @@ function TagInput({ value, onChange, options, placeholder }: {
   );
 }
 
-/** A single saving throw toggle row */
-function SaveRow({ ability, label, score, pb }: { ability: string; label: string; score: number; pb: number }) {
-  const [enabled, setEnabled] = useState(false);
-  const [bonus, setBonus] = useState("");
+/** A single saving throw toggle row — parent-controlled state */
+function SaveRow({ ability, label, score, pb, isProficient, bonusOverride, onToggle, onBonusChange }: {
+  ability: string; label: string; score: number; pb: number;
+  isProficient: boolean; bonusOverride: string;
+  onToggle: (v: boolean) => void; onBonusChange: (v: string) => void;
+}) {
   const baseMod = getModNum(score);
-  const totalBonus = enabled ? (bonus && bonus !== "0" ? baseMod + Number(bonus) : baseMod + pb) : undefined;
+  const totalBonus = isProficient
+    ? (bonusOverride && bonusOverride !== "0" ? baseMod + Number(bonusOverride) : baseMod + pb)
+    : undefined;
   return (
     <div className="rounded-xl bg-[#0c0d15] border border-white/[0.04] p-2.5 text-center">
       <span className="text-[9px] uppercase tracking-wider text-gold-400/50 font-bold">{label}</span>
@@ -678,22 +718,22 @@ function SaveRow({ ability, label, score, pb }: { ability: string; label: string
         <label className="flex items-center gap-1 cursor-pointer">
           <input
             type="checkbox"
-            checked={enabled}
-            onChange={() => { setEnabled(!enabled); if (enabled) setBonus(""); }}
+            checked={isProficient}
+            onChange={() => { onToggle(!isProficient); if (isProficient) onBonusChange(""); }}
             className="rounded w-3 h-3 border-surface-600 bg-surface-800 accent-gold-500"
           />
-          <span className={`text-[8px] ${enabled ? "text-gold-400" : "text-surface-600"}`}>Prof</span>
+          <span className={`text-[8px] ${isProficient ? "text-gold-400" : "text-surface-600"}`}>Prof</span>
         </label>
-        {enabled && (
+        {isProficient && (
           <input
-            value={bonus}
-            onChange={(e) => setBonus(e.target.value)}
+            value={bonusOverride}
+            onChange={(e) => onBonusChange(e.target.value)}
             placeholder={"+0"}
             className="w-10 px-1 py-0.5 rounded text-[9px] bg-[#07080d] border border-white/[0.06] text-white/60 text-center focus:outline-none focus:border-gold/25"
           />
         )}
       </div>
-      {enabled && (
+      {isProficient && (
         <span className="text-[10px] font-bold text-cyan-400 block mt-0.5">
           {(totalBonus ?? 0) >= 0 ? "+" : ""}{totalBonus}
         </span>
