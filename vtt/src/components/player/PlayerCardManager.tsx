@@ -47,6 +47,7 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
   const [playerName, setPlayerName] = useState(character.playerName || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLevelUpPanel, setShowLevelUpPanel] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSave = useCallback(() => {
     updateCharacter(character.id, {
@@ -72,6 +73,8 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
   }, [character, addCharacter, onClose]);
 
   const handleDelete = useCallback(async () => {
+    if (isDeleting) return; // Prevent double-clicks during async delete
+    setIsDeleting(true);
     try {
       // Delete from Firestore FIRST to prevent race condition where
       // onSnapshot could re-add the character before Firestore delete propagates
@@ -84,7 +87,7 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
       removeCharacter(character.id);
     }
     onClose();
-  }, [character.id, removeCharacter, onClose]);
+  }, [character.id, isDeleting, removeCharacter, onClose]);
 
   if (!isOpen) return null;
 
@@ -225,13 +228,15 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
               <div className="flex gap-2">
                 <button
                   onClick={handleDelete}
-                  className="flex-1 py-1.5 rounded-lg text-[10px] font-bold bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 active:scale-95 transition-all"
+                  disabled={isDeleting}
+                  className="flex-1 py-1.5 rounded-lg text-[10px] font-bold bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Yes, Delete
+                  {isDeleting ? "Deleting..." : "Yes, Delete"}
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-1.5 rounded-lg text-[10px] text-surface-400 border border-white/[0.06] hover:text-surface-200 hover:border-white/[0.10] active:scale-95 transition-all"
+                  disabled={isDeleting}
+                  className="flex-1 py-1.5 rounded-lg text-[10px] text-surface-400 border border-white/[0.06] hover:text-surface-200 hover:border-white/[0.10] active:scale-95 transition-all disabled:opacity-40"
                 >
                   Cancel
                 </button>

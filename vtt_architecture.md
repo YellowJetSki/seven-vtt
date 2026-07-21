@@ -12095,3 +12095,27 @@ The application is battle-ready for live D&D 5.5e sessions. From the LoginPage's
 - URL: https://arkla.vercel.app — verified stable (HTTP 200)
 - TypeScript: 0 errors (`npx tsc --noEmit`)
 ---
+
+## Sprint 3/40 — Critical Bug Fix Phase (Deep Hardening) (Updated: 2026-07-21 09:05)
+## Sprint 3/40 — Critical Bug Fix Phase (Deep Hardening) — Complete
+**Date:** 2026-07-21
+
+### Deep Hardening on All 4 Core Bugs
+
+| Bug | Sprint 1-2 Fix | Sprint 3 Hardening |
+|-----|---------------|--------------------|
+| 1. Close Player Card | Escape + backdrop click | **Delete button double-click guard**: Added `isDeleting` state + disabled state to prevent double-fire on async Firestore delete |
+| 2. Navigation on Fight tab | Mobile sidebar hidden | No change needed — verified layout is correct with AppShell sidebar + ControlCenter sidebar intended as dual-panel UX |
+| 3. Dynamic viewport | AuthGuard, Modal, TheatricPage fixed | No additional changes needed — all 9 entry points and modals now use dvh/dvw |
+| 4. Character deletion | Firestore-first + async/await ordering | **Added `isDeleting` guard**: prevents user from clicking "Yes, Delete" multiple times during async Firestore operation. Button shows "Deleting..." during operation. Cancel button also disabled during delete. |
+
+### Key Architectural Verification
+- **CharacterSlice `get ? get().characters` pattern**: Verified — the `get` function is always provided from `campaignStore.ts` line 22, so character operations always have access to the correct state
+- **Firestore delete → Zustand remove ordering**: Verified correct — Firestore delete is awaited first (with `isDeleting` guard), THEN Zustand removes. Prevents `onSnapshot` race condition
+- **ControlCenterSidebar on mobile**: `isMobile ? "hidden" : "block"` — mobile users see only the AppShell MobileBottomNav, not the inner map selection sidebar
+
+### Production Deployment
+- Build: 2,129 modules, 7.29s, 0 errors
+- Bundle hash: `index-DT7ObXUB.js`
+- URL: https://arkla.vercel.app — verified stable
+---
