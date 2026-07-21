@@ -172,7 +172,7 @@ export default function HomebrewRaceForm({
                 value={race.name}
                 onChange={(e) => updateRace("name", e.target.value)}
                 placeholder="e.g. Frost Giant-kin"
-                className="w-full px-3 py-2 bg-[#0c0d15] border border-white/[0.06] rounded-lg text-sm text-surface-200 placeholder:text-surface-600 focus:outline-none focus:border-gold/30 transition-all"
+                className="w-full px-3 py-2 bg-[#0c0d15] border border-white/[0.06] rounded-lg text-sm text-surface-200 placeholder:text-surface-500 focus:outline-none focus:border-gold/30 transition-all"
               />
             </div>
             <div>

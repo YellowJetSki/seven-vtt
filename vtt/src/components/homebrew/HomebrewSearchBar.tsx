@@ -57,7 +57,7 @@ export default function HomebrewSearchBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600 transition-all duration-200"
+            className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all duration-200"
           />
         </div>
 

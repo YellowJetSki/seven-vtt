@@ -32,7 +32,7 @@ export default function HomebrewTabs({ activeTab, onChange }: HomebrewTabsProps)
           className={`relative px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 active:scale-95 ${
             activeTab === tab.id
               ? "bg-gradient-to-br from-gold-500/12 to-amber-500/8 text-gold-400 border border-gold-500/20 shadow-[0_0_8px_rgba(234,179,8,0.03)]"
-              : "text-surface-400 hover:text-surface-200 border border-transparent hover:border-white/[0.06]"
+              : "text-surface-400/80 hover:text-surface-200 border border-transparent hover:border-white/[0.06]"
           }`}
         >
           {tab.label}

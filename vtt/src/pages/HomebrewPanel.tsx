@@ -56,7 +56,7 @@ export default function HomebrewPanel() {
               </div>
 
               <div className="min-w-0 pt-1" style={{ animation: "slide-in-up 0.35s ease-out 0.15s both" }}>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight font-display">
                   Homebrew
                 </h1>
                 <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">

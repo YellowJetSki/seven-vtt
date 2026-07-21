@@ -68,7 +68,7 @@ export default function HomebrewItemCard({
         <div className="flex-1 min-w-0">
           {/* Name + Tags Row */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/80 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/90 truncate group-hover:text-gold-200 transition-colors">
               {item.name}
             </h4>
             {item.rarity && (
@@ -136,7 +136,7 @@ export default function HomebrewItemCard({
             className={`p-1.5 rounded-lg transition-all duration-150 active:scale-90 ${
               item.visibleToPlayers
                 ? "text-gold-400/80 hover:bg-gold-500/10"
-                : "text-surface-600 hover:text-surface-400 hover:bg-surface-800/40"
+                : "text-surface-500 hover:text-surface-400 hover:bg-surface-800/40"
             }`}
             title={item.visibleToPlayers ? "Visible to players" : "DM only"}
           >
@@ -146,7 +146,7 @@ export default function HomebrewItemCard({
           {/* Duplicate */}
           <button
             onClick={() => onDuplicate(item)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Duplicate"
           >
             <Copy className="w-3.5 h-3.5" />
@@ -155,7 +155,7 @@ export default function HomebrewItemCard({
           {/* Edit */}
           <button
             onClick={() => onEdit(item)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Edit"
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -164,7 +164,7 @@ export default function HomebrewItemCard({
           {/* Delete */}
           <button
             onClick={() => onDelete(item.id)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Delete"
           >
             <Trash2 className="w-3.5 h-3.5" />

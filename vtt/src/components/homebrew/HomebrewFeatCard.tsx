@@ -64,7 +64,7 @@ export default function HomebrewFeatCard({
         <div className="flex-1 min-w-0">
           {/* Name + Prerequisites Row */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/80 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/90 truncate group-hover:text-gold-200 transition-colors">
               {feat.name}
             </h4>
             {feat.repeatable && (
@@ -102,7 +102,7 @@ export default function HomebrewFeatCard({
               {feat.benefits.slice(0, 2).map((b, i) => (
                 <span key={i}>{b}{i < Math.min(feat.benefits.length, 2) - 1 ? " · " : ""}</span>
               ))}
-              {feat.benefits.length > 2 && <span className="text-surface-600"> · +{feat.benefits.length - 2} more</span>}
+              {feat.benefits.length > 2 && <span className="text-surface-500"> · +{feat.benefits.length - 2} more</span>}
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ export default function HomebrewFeatCard({
             className={`p-1.5 rounded-lg transition-all duration-150 active:scale-90 ${
               feat.visibleToPlayers
                 ? "text-gold-400/80 hover:bg-gold-500/10"
-                : "text-surface-600 hover:text-surface-400 hover:bg-surface-800/40"
+                : "text-surface-500 hover:text-surface-400 hover:bg-surface-800/40"
             }`}
             title={feat.visibleToPlayers ? "Visible to players" : "DM only"}
           >
@@ -122,21 +122,21 @@ export default function HomebrewFeatCard({
           </button>
           <button
             onClick={() => onDuplicate(feat)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Duplicate"
           >
             <Copy className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onEdit(feat)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Edit"
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(feat.id)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Delete"
           >
             <Trash2 className="w-3.5 h-3.5" />

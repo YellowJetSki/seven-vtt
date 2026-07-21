@@ -63,7 +63,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
         <div className="flex-1 min-w-0">
           {/* Name + Level + School */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/80 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/90 truncate group-hover:text-gold-200 transition-colors">
               {spell.name}
             </h4>
             <span className={`text-[9px] uppercase tracking-wider ${LEVEL_COLORS[String(spell.level)] || "text-surface-400"}`}>
@@ -136,7 +136,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
             className={`p-1.5 rounded-lg transition-all duration-150 active:scale-90 ${
               spell.visibleToPlayers
                 ? "text-gold-400/80 hover:bg-gold-500/10"
-                : "text-surface-600 hover:text-surface-400 hover:bg-surface-800/40"
+                : "text-surface-500 hover:text-surface-400 hover:bg-surface-800/40"
             }`}
             title={spell.visibleToPlayers ? "Visible to players" : "DM only"}
           >
@@ -144,21 +144,21 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
           </button>
           <button
             onClick={() => onDuplicate(spell)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Duplicate"
           >
             <Copy className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onEdit(spell)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-gold-400 hover:bg-gold-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Edit"
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(spell.id)}
-            className="p-1.5 rounded-lg text-surface-600 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-surface-500 hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all duration-150 opacity-0 group-hover:opacity-100"
             title="Delete"
           >
             <Trash2 className="w-3.5 h-3.5" />
