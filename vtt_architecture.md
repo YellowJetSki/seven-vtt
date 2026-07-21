@@ -15095,3 +15095,43 @@ Upgraded the Token Image URL field in EnemyCreator:
 
 ### Ready for Cycle 36 — PC Experience Phase (Cycle 1 of 10)
 ---
+
+## Cycle 36 — PC Experience Phase — Cycle 1 of 10 (Complete) (Updated: 2026-07-21 15:35)
+## Sprint 36 of 80 — PC Experience Phase — Cycle 1 of 10 (COMPLETE) ✅
+
+### Feature Enhancements Built
+
+| Enhancement | Component | Status | Details |
+|:------------|:----------|:------:|:--------|
+| **1. Inventory Item Detail Modal** | `InventoryItemDetailModal.tsx` (NEW — 240 lines) | ✅ Complete | Premium glass modal for viewing item details with image support. Spotify-style hero image banner with gradient overlay, category-based SVG fallback (no image), gold-accented weapon stat cards (damage, ATK, type), armor AC card, consumable indicator with emerald border + pulse animation, equip/unequip toggle, use consumable button, delete, Escape + backdrop dismiss, staggered entrance, corner ornaments. |
+| **2. Editable Premium Inline Stat Card** | `InlineStatCard.tsx` (NEW — 215 lines) | ✅ Complete | Overrrides/Ventriloc-grade inline stat editing. Alpine-style glass card with gold edge light, tap-to-edit with numeric input (Enter/ Escape), configurable quick presets (e.g. -10/-5/-1/+1/+5/+10), color-coded thresholds (rose/red/amber/emerald), progress bar for HP/XP, 44px+ touch targets, auto-focus + select on edit, keyboard commit. |
+| **3. Item `imageUrl` field added** | `character-core.ts` (MODIFIED) | ✅ Complete | Added `imageUrl?`, `attackBonus?`, `damageDice?`, `damageType?`, `acBonus?` to `InventoryItem` type — supports weapon/armor stat display in detail modal. |
+| **4. Item name clickable → opens detail modal** | `InventoryItemRow.tsx` (MODIFIED) | ✅ Complete | Item name changed from `<span>` to `<button>` with `onViewDetail` callback, hover text-gold state. New `onViewDetail` prop added to interface. |
+| **5. XP stat bar premium upgrade** | `PlayerSheetPersistentStats.tsx` (MODIFIED) | ✅ Complete | XP section now has gradient background (`from-amber-500/8 to-gold-500/5`), hover glow sweep (gold/amber directional), hover edge light, gradient progress bar (amber-600→gold-500), "next level" hint label (`tabular-nums`). |
+
+### Files Created (2)
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `InventoryItemDetailModal.tsx` | 240 | Full item detail viewer with image support, stat cards |
+| `InlineStatCard.tsx` | 215 | Premium inline stat editing with presets, colors, bars |
+
+### Files Modified (5)
+| File | Changes |
+|:-----|:--------|
+| `character-core.ts` | Added 5 optional fields to `InventoryItem` (imageUrl, attackBonus, damageDice, damageType, acBonus) |
+| `PlayerSheetInventoryTab.tsx` | Added `detailItemIndex` state, `InventoryItemDetailModal` import + rendering, `onViewDetail` pass-through |
+| `InventoryItemRow.tsx` | Added `onViewDetail` prop + destructuring, name becomes clickable `<button>` |
+| `PlayerSheetPersistentStats.tsx` | XP section upgraded with gradient bg, hover glow, edge light, next-level hint |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Git: ✅ Sprint 36 checkpoint saved
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides/Lusion premium design patterns (gold edge lights, hover glow, glass gradient, staggered entrance)
+
+### Ready for Cycle 37 — PC Experience Phase — Cycle 2 of 10
+---
