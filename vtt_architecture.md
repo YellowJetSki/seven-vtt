@@ -16134,3 +16134,44 @@ Canvas ───(selectedCombatantId)───► DM Tool  (Cycle 18: token clic
 - Git savepoint: Sprint 63
 - Production deploy: Deferred (free tier rate-limited — build is clean)
 ---
+
+## Token Context Menu System (Cycle 64) (Updated: 2026-07-21 17:42)
+## Cycle 64 — Token Context Menu System — COMPLETE
+
+### What Was Built
+A premium right-click context menu on canvas tokens giving the DM instant access to the most common combat actions.
+
+**1. `contextMenuStore.ts` (NEW — 65 lines)**
+- Zustand store: `targetToken`, `position {x, y}`, `isOpen`
+- Actions: `openMenu(token, x, y)`, `closeMenu()`, `getTarget()`
+
+**2. `TokenContextMenu.tsx` (NEW — 320 lines)**
+Premium glassmorphism floating menu at right-click position with:
+- **Token Info Header**: Color swatch, name, HP fraction, HP mini bar, dead indicator
+- **HP Quick Actions**: 3×2 grid (-10, -5, -1, +1, +5, +10) with rose/emerald color coding
+- **Condition Quick-Toggles**: 6 toggle chips (Prone, Incapacitated, Stunned, Unconscious, Poisoned, Concentrating) with per-condition color matching
+- **Kill/Revive**: Toggle button with destructive rose styling
+- **Focus on Canvas**: Triggers gold pulse ring on token
+- **View Details**: Publishes to DM selection store for popover sync
+- **Viewport Clamping**: Flips position to keep menu on-screen
+- **Escape/Click-Outside**: Dismiss behavior
+- **Staggered Entrance**: cubic-bezier(0.16,1,0.3,1) gold glass animation
+
+**3. `CanvasMapView.tsx` (MODIFIED)**
+- Added `handleContextMenu` — right-click hit-tests tokens (iterates reverse for z-order), opens menu at cursor position
+- Added `onContextMenu={handleContextMenu}` to canvas element
+- Escape keyboard shortcut now also closes context menu
+- Mounted `<TokenContextMenu />` as DOM overlay
+
+### Files Created
+- `vtt/src/stores/contextMenuStore.ts` (65 lines)
+- `vtt/src/components/maps/TokenContextMenu.tsx` (320 lines)
+
+### Files Modified
+- `vtt/src/components/maps/CanvasMapView.tsx`
+
+### Build
+- TypeScript: 0 errors
+- Vite build: Clean
+- Git savepoint: Sprint 64
+---
