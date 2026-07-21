@@ -94,7 +94,7 @@ export default function PlayerCardCompact({
                 <PlayerCardAvatar character={c} />
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm font-bold text-surface-200 truncate leading-tight">
+                <h3 className="text-sm font-bold text-white/90 truncate leading-tight font-display">
                   {c.name}
                 </h3>
                 <p className="text-[10px] text-surface-500 truncate">

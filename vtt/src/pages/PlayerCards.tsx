@@ -1,29 +1,34 @@
 /**
- * STᚱ VTT — Player Cards (Lusion-Grade Premium Hero Banner)
+ * STᚱ VTT — Player Cards (Overrrides-Grade Premium DM Roster)
  *
- * DM-facing player character roster with cinematically layered header.
+ * DM-facing player character roster with premium tier treatment.
  * Mobile-first: single column → 2-col tablet → 3-col desktop.
  *
  * Premium header features:
- * - 7-layer depth composition (void bg → conic ring → edge lights → glow pockets → glass surface → content → hover animations)
- * - Animated conic gradient depth ring rotating over 30s
- * - Rune container with ambient glow
- * - Stat badge strip with staggered entrance
+ * - 7-layer cinematic hero with conic depth ring
+ * - Playfair Display heading
+ * - Gold-accented DM tool strip with sync state
+ * - Overrrides-style entity cards with glass depth
+ * - Combat HP HUD floating overlay
  */
 
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useAuthStore } from "@/stores/authStore";
 import AppShell from "@/components/layout/AppShell";
 import PlayerList from "@/components/player/PlayerList";
 import CombatHpHud from "@/components/player/CombatHpHud";
 
 export default function PlayerCards() {
   const characters = useCampaignStore((s) => s.characters);
+  const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
   const characterCount = characters.length;
 
   return (
     <AppShell>
       <div className="max-w-6xl mx-auto" style={{ padding: "0 1rem 5rem" }}>
-        {/* ── Page header — Cinematic hero banner ── */}
+        {/* ═══════════════════════════════════════════════════════
+           Page header — Cinematic hero banner (7-layer depth)
+           ═══════════════════════════════════════════════════════ */}
         <div className="relative rounded-2xl overflow-hidden group">
           {/* Layer 1: Deep void background */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#181a2a]/90 via-[#12131e]/90 to-[#0c0d15]/95" />
@@ -60,26 +65,41 @@ export default function PlayerCards() {
                 </span>
               </div>
 
-              {/* Title block */}
+              {/* Title block — Playfair Display for heading */}
               <div className="min-w-0 pt-1">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white/95 tracking-tight leading-tight font-display">
                   Player Characters
                 </h1>
-                <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
+                <p className="text-xs sm:text-sm text-surface-400 mt-1 leading-relaxed font-sans">
                   Manage your party · Tap a card for full details
                 </p>
 
-                {/* Meta badges */}
-                <div className="flex items-center gap-3 mt-3 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/60 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
+                {/* Meta badges — premium tool strip */}
+                <div className="flex items-center gap-2.5 mt-3 flex-wrap">
+                  {/* Party Roster badge */}
+                  <span className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gold-400/70 bg-gold-500/10 border border-gold-500/15 px-2.5 py-1 rounded font-medium">
                     <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse-soft" />
                     Party Roster
                   </span>
+
+                  {/* Character count — only if non-zero */}
                   {characterCount > 0 && (
-                    <span className="text-[9px] text-surface-500 tracking-wider">
+                    <span className="text-[9px] text-surface-400 tracking-wider font-medium">
                       {characterCount} hero{characterCount !== 1 ? "es" : ""}
                     </span>
                   )}
+
+                  {/* Sync state */}
+                  <span className={`inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest px-2 py-1 rounded font-medium ${
+                    firebaseConnected
+                      ? "text-emerald-400/70 bg-emerald-500/10 border border-emerald-500/15"
+                      : "text-amber-400/70 bg-amber-500/10 border border-amber-500/15"
+                  }`}>
+                    <span className={`w-1 h-1 rounded-full ${
+                      firebaseConnected ? "bg-emerald-500" : "bg-amber-500"
+                    }`} />
+                    {firebaseConnected ? "Synced" : "Offline"}
+                  </span>
                 </div>
               </div>
             </div>

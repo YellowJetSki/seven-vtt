@@ -68,7 +68,7 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
             Party Power Matrix
           </h3>
         </div>
-        <span className="text-[8px] text-surface-500 tabular-nums">
+        <span className="text-[8px] text-surface-400 tabular-nums">
           {characters.length} character{characters.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -77,17 +77,17 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
       <div className="overflow-x-auto scrollbar-gold">
         <table className="w-full text-[10px]">
           <thead>
-            <tr className="text-[8px] uppercase tracking-widest text-surface-600 border-b border-white/[0.03]">
-              <th className="text-left px-3 py-2 font-black">Name</th>
-              <th className="text-left px-2 py-2 font-black">Race</th>
-              <th className="text-left px-2 py-2 font-black">Class</th>
-              <th className="text-center px-2 py-2 font-black w-8">Lv</th>
-              <th className="text-center px-2 py-2 font-black w-9">AC</th>
-              <th className="text-center px-2 py-2 font-black w-10">HP</th>
-              <th className="text-center px-2 py-2 font-black w-8">Init</th>
-              <th className="text-center px-2 py-2 font-black w-7">PB</th>
-              <th className="text-center px-2 py-2 font-black w-10">Speed</th>
-              <th className="text-center px-2 py-2 font-black w-14">Passive</th>
+            <tr className="text-[8px] uppercase tracking-widest text-surface-500 border-b border-white/[0.03]">
+              <th className="text-left px-3 py-2 font-black text-surface-400">Name</th>
+              <th className="text-left px-2 py-2 font-black text-surface-400">Race</th>
+              <th className="text-left px-2 py-2 font-black text-surface-400">Class</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-8">Lv</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-9">AC</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-10">HP</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-8">Init</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-7">PB</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-10">Speed</th>
+              <th className="text-center px-2 py-2 font-black text-surface-400 w-14">Passive</th>
             </tr>
           </thead>
           <tbody>
@@ -170,7 +170,7 @@ export default function PartyPowerMatrix({ characters }: PartyPowerMatrixProps) 
 function StatPill({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div className="flex items-center gap-1">
-      <span className="text-[8px] uppercase tracking-wider text-surface-600">{label}</span>
+      <span className="text-[8px] uppercase tracking-wider text-surface-500">{label}</span>
       <span className={`text-[11px] font-bold tabular-nums ${color}`}>{value}</span>
     </div>
   );
