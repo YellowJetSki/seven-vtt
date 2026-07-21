@@ -139,7 +139,7 @@ export default function JoinCodePanel({ settings, onSave }: JoinCodePanelProps) 
                   key={i}
                   className={`w-8 h-10 flex items-center justify-center text-lg font-bold tracking-widest rounded-lg ${
                     isExpired
-                      ? "text-surface-600 bg-surface-900/30"
+                      ? "text-surface-500 bg-surface-900/30"
                       : "text-gold-300 bg-gold-500/10 border border-gold-500/20 shadow-[0_0_4px_rgba(234,179,8,0.04)]"
                   }`}
                 >
@@ -172,7 +172,7 @@ export default function JoinCodePanel({ settings, onSave }: JoinCodePanelProps) 
           </div>
         ) : (
           <div className="mb-5 py-4 px-5 rounded-xl bg-[#07080d]/40 border border-dashed border-white/[0.04]">
-            <p className="text-sm text-surface-600 text-center">
+            <p className="text-sm text-surface-500 text-center">
               No join code set. Generate one to let players join your campaign instantly.
             </p>
           </div>
@@ -180,9 +180,9 @@ export default function JoinCodePanel({ settings, onSave }: JoinCodePanelProps) 
 
         {/* ── Expiry Info ── */}
         {hasValidCode && (
-          <p className="text-[10px] text-surface-600 mb-4 text-center">
+          <p className="text-[10px] text-surface-500 mb-4 text-center">
             Code expires in <span className="text-gold-400/70 font-medium">{expiresLabel}</span>
-            {" · "}Players enter this code at <span className="text-gold-400/50 font-mono">/player/join</span>
+            {" · "}Players enter this code at <span className="text-gold-400/60 font-mono">/player/join</span>
           </p>
         )}
 

@@ -104,7 +104,7 @@ export default function CampaignSettings() {
               <div className="min-w-0 pt-1 flex-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight font-display">
                       Campaign Settings
                     </h1>
                     <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
@@ -149,7 +149,7 @@ export default function CampaignSettings() {
             />
 
             {/* Footer */}
-            <div className="text-center text-[9px] text-surface-700 pt-4 pb-8 space-y-1">
+            <div className="text-center text-[9px] text-surface-500 pt-4 pb-8 space-y-1">
               <p>All settings are saved locally to your campaign data.</p>
               <p>Future: Firestore sync will enable cross-DM restoration.</p>
             </div>

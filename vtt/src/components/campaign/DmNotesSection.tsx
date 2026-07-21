@@ -36,10 +36,10 @@ export default function DmNotesSection({ settings, onSave }: DmNotesSectionProps
           onChange={(e) => { setNotes(e.target.value); setHasChanges(true); }}
           placeholder="Write your private DM notes here..."
           rows={6}
-          className="w-full py-2 px-3 rounded-lg text-xs leading-relaxed bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[120px] transition-all"
+          className="w-full py-2 px-3 rounded-lg text-xs leading-relaxed bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 resize-y min-h-[120px] transition-all"
         />
         <div className="flex items-center justify-between">
-          <div className="text-[8px] text-surface-700">
+          <div className="text-[8px] text-surface-500">
             {notes.length} characters · Saved to campaign data
           </div>
           <button

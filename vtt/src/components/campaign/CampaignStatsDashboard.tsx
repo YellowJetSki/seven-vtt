@@ -50,7 +50,7 @@ export default function CampaignStatsDashboard({ meta, liveStats, onIncrementSes
             <div className={`text-base font-bold mt-0.5 tabular-nums ${stat.color}`}>
               {liveStats[stat.key]}
             </div>
-            <div className="text-[8px] text-surface-600 mt-0.5 uppercase tracking-wider">
+            <div className="text-[8px] text-surface-500 mt-0.5 uppercase tracking-wider">
               {stat.label}
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function CampaignStatsDashboard({ meta, liveStats, onIncrementSes
           <span className="text-lg">🎲</span>
           <div>
             <div className="text-sm font-bold text-gold-300 tabular-nums">{sessionCount}</div>
-            <div className="text-[9px] text-surface-600">Total Sessions</div>
+            <div className="text-[9px] text-surface-500">Total Sessions</div>
           </div>
         </div>
         <button
@@ -76,7 +76,7 @@ export default function CampaignStatsDashboard({ meta, liveStats, onIncrementSes
 
       {/* Campaign age */}
       {meta && (
-        <div className="text-[9px] text-surface-600 text-center pt-1">
+        <div className="text-[9px] text-surface-500 text-center pt-1">
           Campaign created {meta.createdAt ? new Date(meta.createdAt).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) : "N/A"}
           {meta.updatedAt !== meta.createdAt && meta.updatedAt && ` · Last updated ${new Date(meta.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
         </div>

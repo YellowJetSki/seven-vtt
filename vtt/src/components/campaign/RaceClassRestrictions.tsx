@@ -164,7 +164,7 @@ export default function RaceClassRestrictions({ settings, onSave }: RaceClassRes
 
         {/* Summary */}
         <div className="flex items-center justify-between pt-1">
-          <div className="text-[9px] text-surface-600">
+          <div className="text-[9px] text-surface-500">
             {allowedRaces.length}/{ALL_RACES.length} races &middot; {allowedClasses.length}/{ALL_CLASSES.length} classes
           </div>
           <button

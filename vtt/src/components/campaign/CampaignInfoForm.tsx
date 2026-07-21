@@ -58,7 +58,7 @@ export default function CampaignInfoForm({ meta, onSave }: CampaignInfoFormProps
             value={name}
             onChange={(e) => { setName(e.target.value); markChanged(); }}
             placeholder="Enter campaign name..."
-            className="w-full py-2 px-3 rounded-lg text-sm font-semibold bg-[#07080d]/70 border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
+            className="w-full py-2 px-3 rounded-lg text-sm font-semibold bg-[#07080d]/70 border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all"
           />
         </div>
 
@@ -70,7 +70,7 @@ export default function CampaignInfoForm({ meta, onSave }: CampaignInfoFormProps
             value={dmName}
             onChange={(e) => { setDmName(e.target.value); markChanged(); }}
             placeholder="DM name..."
-            className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
+            className="w-full py-2 px-3 rounded-lg text-sm bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all"
           />
         </div>
 
@@ -82,13 +82,13 @@ export default function CampaignInfoForm({ meta, onSave }: CampaignInfoFormProps
             onChange={(e) => { setDescription(e.target.value); markChanged(); }}
             placeholder="Campaign synopsis, setting, or premise..."
             rows={3}
-            className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[60px] transition-all"
+            className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 resize-y min-h-[60px] transition-all"
           />
         </div>
 
         {/* Save */}
         <div className="flex items-center justify-between pt-1">
-          <div className="text-[9px] text-surface-600 space-y-0.5">
+          <div className="text-[9px] text-surface-500 space-y-0.5">
             <div>Created {meta.createdAt ? new Date(meta.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "N/A"}</div>
             <div>Updated {meta.updatedAt ? new Date(meta.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "N/A"}</div>
           </div>

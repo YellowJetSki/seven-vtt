@@ -89,7 +89,7 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
                     <div className={`text-xs font-semibold ${xpSystem === p.value ? "text-gold-300" : "text-surface-300"}`}>
                       {p.label}
                     </div>
-                    <div className="text-[9px] text-surface-600 mt-0.5">{p.desc}</div>
+                    <div className="text-[9px] text-surface-500 mt-0.5">{p.desc}</div>
                   </div>
                 </div>
               </button>
@@ -117,7 +117,7 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
                     <div className={`text-[10px] font-semibold ${currencyPreset === p.value ? "text-gold-300" : "text-surface-300"}`}>
                       {p.label}
                     </div>
-                    <div className="text-[8px] text-surface-600 mt-0.5">{p.desc}</div>
+                    <div className="text-[8px] text-surface-500 mt-0.5">{p.desc}</div>
                   </div>
                 </div>
               </button>
@@ -129,7 +129,7 @@ export default function XpSystemPicker({ settings, onSave }: XpSystemPickerProps
               value={currencyName}
               onChange={(e) => { setCurrencyName(e.target.value); setHasChanges(true); }}
               placeholder="e.g., Dragon Scales, Guild Marks..."
-              className="w-full py-1.5 px-3 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/70 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
+              className="w-full py-1.5 px-3 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all"
             />
           )}
         </div>
