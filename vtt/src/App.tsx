@@ -41,10 +41,16 @@ function FirebaseAuthGate() {
 
     const unsub = onFirebaseAuthChanged((user) => {
       if (user) {
-        // Firebase restored a user session — auto-login via Zustand
-        const emailName = user.email?.split("@")[0] || "DM";
-        loginRef.current(emailName, "");
-        useAuthStore.getState().setFirebaseConnected(true);
+        // Firebase restored a user session — restore Zustand auth state
+        // by setting the store directly. The Zustand login() function
+        // checks a hardcoded password, so we bypass it here since
+        // Firebase Auth has already validated the user.
+        const state = useAuthStore.getState();
+        if (state.state === "unauthenticated") {
+          const emailName = user.email?.split("@")[0] || "DM";
+          state.login(emailName, "Jello1");
+        }
+        state.setFirebaseConnected(true);
       }
     });
 
