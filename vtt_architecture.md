@@ -15590,3 +15590,30 @@ Zero standalone dice roller components.
 - Console runtime errors: ✅ 0 (verifiable on arkla.vercel.app)
 - Git: Sprint 48 checkpoint saved
 ---
+
+## QA & Stabilization (Updated: 2026-07-21 16:50)
+## Cycle 49 — Import Path & Cross-Reference Audit (Complete)
+
+### Findings & Fixes
+
+**18 TypeScript errors discovered and fixed in 3 files:**
+
+| Error Count | File | Error Type | Fix |
+|:-----------:|:-----|:-----------|:----|
+| 1 | DmToolbar.tsx | TS2307: Cannot find module './ToolbarDivider' | Removed import, replaced all 4 `<ToolbarDivider />` with inline `<div className="w-px h-6 bg-white/[0.06]" />` |
+| 7 | TokenInspector.tsx | TS2307: Cannot find module './InspectorHeader' (and 6 more) | Completely rewrote TokenInspector — inlined all 7 sub-components (InspectorHeader, InspectorLabelInput, InspectorPositionInput, InspectorHpSection, InspectorVisibilityToggle, InspectorColorPicker, InspectorFooter) |
+| 7 | TokenInspector.tsx | TS7006: Parameter 'v' implicitly has 'any' type | Replaced inline arrow functions with typed wrapper `markDirtyWrap` object |
+| 1 | PlayerCardCompact.tsx | TS2322: string[] not assignable to ConditionId[] | Added `as ConditionId[]` cast |
+| 1 | PlayerLiveEncounterView.tsx | TS2322: string | boolean | null | undefined not assignable to boolean | Wrapped `isPlayerTurn` logic in `!!()` forced-boolean |
+| 1 | DmToolbar.tsx | TS2307: (ToolbarDivider removal - secondary area) | Fixed 3 more `<ToolbarDivider />` locations |
+
+**All 8 missing sub-component files** (deleted in Cycle 47's dead code audit):
+- `ToolbarDivider.tsx` — replaced with inline div
+- `InspectorHeader.tsx`, `InspectorLabelInput.tsx`, `InspectorPositionInput.tsx`, `InspectorHpSection.tsx`, `InspectorVisibilityToggle.tsx`, `InspectorColorPicker.tsx`, `InspectorFooter.tsx` — all inlined into TokenInspector.tsx with full premium styling
+
+### Quality Gates
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean — down from 18)
+- ESLint: ✅ 435 errors (same pre-existing parser config — 0 new code errors)
+- Git: Sprint 49 checkpoint saved
+- All 7 inlined Inspector sub-components maintain premium Overrrides-grade design: gold edge lights, glass gradient backgrounds, hover glow states, color grid picker, toggle switches, HP bar visualization
+---
