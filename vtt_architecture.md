@@ -12937,3 +12937,51 @@ Tested the caster experience workflow — a completely different system than Spr
 - ✅ Zero new ESLint errors (423 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 26/40 — The Extensive QA Phase (Cycle 6 of 10) (Updated: 2026-07-21 10:29)
+## Sprint 26/40 — The Extensive QA Phase (Cycle 6 of 10)
+**Date:** 2026-07-21
+
+### Target: Homebrew Panel CRUD UI Pipeline
+
+Tested the DM's content creation workflow — a completely different system than Sprints 21-25 (DM Share, Level-Up, Player Sheet Tabs, Encounter/Initiative, Spellcasting UI). This covers: form validation rules, submit logic, bulk operations, visibility control, search/filter pipeline, card rendering data, export/import error states, tab switching, duplicate logic, spell AoE integration, and feat prerequisites.
+
+### Key Gap Identified
+The existing `homebrew-crud-qa.test.ts` tested the **engine layer** (`homebrew-io.ts` — export/import JSON, merge/dedup). It did NOT test the **UI pipeline**: form validations, object creation logic, bulk toggle patterns, visibility toggle field preservation, multi-field search matching, card rendering data shapes, or the full create → export → import workflow.
+
+### New Test File Created
+**`src/__tests__/sprint-26-homebrew-ui-pipeline-qa.test.ts`** — **65+ tests across 12 suites**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Form Validation Rules | 7 | Empty name rejection (items, spells, feats), whitespace-only rejection, damageDice optional for armor, weapon damage requirements |
+| 2. Object Creation | 8 | Unique IDs, createdAt preserved on edit, updatedAt updated, spell level 1 default, cantrip (Lv0), Lv9, Fireball stats, multi-benefit feats, multi-ability increases |
+| 3. Bulk Operations | 4 | Select/unselect items, clear after delete, toggle mode preserves selection, individual toggling |
+| 4. Visibility Control | 6 | Default visible for all 3 types, toggle off, toggle preserves other fields, player-visible filter excludes hidden |
+| 5. Search/Filter Pipeline | 6 | Name match, description match, tag match, multi-field simultaneous, case-insensitive, category filter independent |
+| 6. Card Rendering Data | 9 | Weapon damage chips, spell damage chips, school badge, concentration/ritual badges, ASI badges (single + multi), skill proficiency badges, AC bonus chips, charge tracking |
+| 7. Export/Import Error States | 5 | Empty collections, 100+ entries, unparseable blob, missing name field, missing spells array |
+| 8. Tab Switching | 5 | Filtering per tab, count preservation, cross-tab independence |
+| 9. Duplicate Logic | 3 | Unique IDs with "(Copy)" suffix, field preservation, 100-rapid ID uniqueness |
+| 10. Spell AoE Integration | 3 | Shape + areaSize, single-target vs AoE, healing vs damage |
+| 11. Feat Prerequisites | 3 | Structured prerequisites, empty, multi-prerequisite |
+| 12. Full DM Workflow | 1 | Create item → spell → feat → export → import → verify all fields preserved |
+
+### Key Validations
+- ✅ Empty name rejected for all 3 types (items, spells, feats)
+- ✅ 100-rapid duplicate generates 100 unique IDs
+- ✅ Full create→export→import pipeline preserves all fields (Longsword +1, Fireball, Tough)
+- ✅ Multi-field search matches name, description, category, and tags simultaneously
+- ✅ Export with 100+ entries does not truncate
+
+### Build & Deploy
+- Build: **7.65s**, 2136 modules, 0 errors
+- Hash: `index-CKrZ8vyz.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (424 pre-existing parser config errors — all project-wide)
+
+---
