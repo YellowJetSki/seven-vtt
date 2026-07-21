@@ -12390,3 +12390,39 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ No monolith files — 5 new reusable components
 
 ---
+
+## Sprint 12/40 — UI/UX Overhaul Phase (Cycle 2 of 10) (Updated: 2026-07-21 09:34)
+## Sprint 12/40 — UI/UX Overhaul Phase (Cycle 2 of 10)
+**Date:** 2026-07-21
+
+### Target: DM Dashboard (DmDashboard.tsx) — Premium Overrrides/Ventriloc-Grade Overhaul
+
+**Files Created (2):**
+- `DmCommandBar.tsx` — Premium floating glass bar with DM identity, sync status, and combat active indicator. Sticky position at dashboard top.
+- `OverrridesSectionHeader.tsx` — Reusable premium section header with gold accent icon container, Playfair Display heading, count badge, and optional action slot.
+
+**Files Modified (2):**
+- `DmDashboard.tsx` — Integrated DmCommandBar, replaced raw party-status header JSX with OverrridesSectionHeader component, applied Playfair Display (`font-display`) to campaign name heading.
+- `CampaignBanner.tsx` — Campaign name now uses `font-display` for premium serif heading treatment.
+
+**Design Patterns Applied:**
+- Premium gradient glass command bar with edge light
+- Gold-accented icon containers on all section headers
+- Playfair Display on headings (serif = premium D&D manual feel)
+- Plus Jakarta Sans on body and metadata (clean, modern)
+- Consistent staggered entrance choreography (50ms-220ms)
+- Overrrides-style gold icons + section metadata badges
+
+### Build & Deploy
+- Build: 7.30s, 2136 modules (+2 from Sprint 11)
+- JS: 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200 verified
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ No monolithic files — 2 new reusable components
+
+---
