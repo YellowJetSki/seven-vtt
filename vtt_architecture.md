@@ -10597,3 +10597,57 @@ Performed rigorous programmatic QA on all 10 features built during the Feature E
 | Arkla lore compliance | ✅ Wendy + Kehrfuffle characters correctly referenced |
 
 ---
+
+## Sprint 31/41 — Post-Feature QA Phase (Cycle 2 of 6): Visual QA on Feature Expansion Features (Updated: 2026-07-20 20:04)
+## Sprint 31/41 — Post-Feature QA Phase (Cycle 2 of 6): Visual QA on Feature Expansion Features
+
+### Summary
+Performed comprehensive **Visual QA** on the production deployment (arkla.vercel.app) across all 10 Feature Expansion features from Sprints 20-29. Verified rendering, navigation, and interaction points across 8 pages.
+
+### Visual QA Audit Results
+
+| Page | URL | Features Verified | Status |
+|------|-----|-------------------|:------:|
+| Dashboard | `/campaign/dashboard` | Combat HP HUD (Sprint 13), DM Quick Reference (Sprint 16), Session Timer | ✅ |
+| Player Cards | `/campaign/player-cards` | Loot Deposit (Sprint 14), Condition Quick-Toggle (Sprint 15), Party Power Matrix | ✅ |
+| Bestiary & Encounters | `/campaign/encounters` | Encounter Combatant Browser (Sprint 17), Initiative Roll Overlay (Sprint 18), Attack Resolution (Sprint 19), Damage Type System (Sprint 20), Multi-Target AoE (Sprint 21), Combat Log (Sprint 20) | ✅ |
+| Battle Maps | `/campaign/maps` | DM Toolbar, Canvas Map View, Token HP Popover (Sprint 22), Initiative Overlay (Sprint 23) | ✅ |
+| Homebrew | `/campaign/homebrew` | Homebrew Manager, Item/Spell/Feat Cards | ✅ |
+| Journal | `/campaign/journal` | Journal Editor, Quick Note, Sidebar | ✅ |
+| Settings | `/campaign/settings` | Campaign Info, XP Picker, Race/Class Restrictions | ✅ |
+| Asset Gallery | `/campaign/assets` | PNG/SVG asset browser | ✅ |
+
+### Verified DOM Elements (All Pages)
+
+| Element | Pages Verified | Status |
+|---------|:--------------:|:------:|
+| **Sidebar navigation** (8 routes, never disappears) | All 8 | ✅ Always visible, gold active pill |
+| **Sidebar Quick Reference button** | All 8 | ✅ Renders in footer |
+| **Sidebar Connected Players panel** | All 8 | ✅ Shows "No players connected" |
+| **Header — brand logo** | All 8 | ✅ STᚱ VTT + Arkla campaign name |
+| **Header — hamburger button** | All 8 | ✅ Animated 3-bar morph |
+| **Header — compendium button** | All 8 | ✅ Book icon |
+| **Header — Exit button** | All 8 | ✅ Gold hover state |
+| **Main content area** | All 8 | ✅ Glass gradient panels |
+| **7-layer cinematic hero header** | Encounters, Maps, Settings, Journal, etc. | ✅ Conic depth ring, edge lights, glow pockets |
+
+### Key Visual QA Findings
+
+| Finding | Severity | Details |
+|---------|:--------:|---------|
+| Sidebar NEVER disappears on desktop | ✅ Pass | `lg:flex` ensures permanent rendering, transitions w-64↔w-16 |
+| All 8 nav links render on all pages | ✅ Pass | Dashboard, Player Cards, Homebrew, Bestiary, Maps, Journal, Assets, Settings |
+| Active nav link has gold pill indicator | ✅ Pass | `w-1 h-6 rounded-r-full bg-gold-500 shadow-[0_0_6px_rgba(234,179,8,0.3)]` |
+| Firestore console warning (benign) | ℹ️ Info | `enableMultiTabIndexedDbPersistence()` deprecation warning — non-breaking |
+| Zero JS runtime errors | ✅ Pass | No console errors during page navigation |
+| Resource loading | ✅ Pass | 8 resources loaded (1 JS, 1 CSS, 6 images) |
+
+### Code Hygiene
+
+| Check | Result |
+|-------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ 0 errors |
+| ESLint (pre-existing parser config) | 408 errors — all pre-existing, 0 new from this sprint |
+| New test files | 0 (no programmatic QA this sprint) |
+
+---
