@@ -16327,3 +16327,47 @@ Party loot distribution after battle:
 - Vite build: Clean
 - Git savepoint: Sprint 67
 ---
+
+## Party Spell Slots Panel (Cycle 68) (Updated: 2026-07-21 17:57)
+## Cycle 68 — Party Spell Slots Panel: Real-Time Caster Overview — COMPLETE
+
+### New Component Created
+- **`PartySpellSlotsPanel.tsx`** (~320 lines) — Premium violet-accented glass popover
+
+### Features
+| Feature | Detail |
+|:--------|:-------|
+| **Per-character spellcasting breakdown** | Caster type badge (Full/Half/Third/Pact), Save DC, ATK bonus |
+| **Per-level slot gauges** | Grid of 3-5 arc-fill gauges per character showing Lv1-Lv9 slot usage |
+| **Color-coded tiering** | Emerald=Full, Gold=Light (≤25%), Amber=Moderate (≤50%), Rose=Exhausted (≤75%) |
+| **Usage bar** | Compact gradient bar always visible under each character row |
+| **Party summary strip** | Total slots used/available with wide gradient bar at panel top |
+| **Sort modes** | A-Z (alphabetical) / Usage (highest depletion first) |
+| **Quick "Restore All"** | One-click restores all spell slots for a character via updateCharacter |
+| **Non-caster detection** | Compact summary at bottom showing non-caster party members |
+| **Stat cards** | DC/ATK/Usage% grid in expanded view |
+
+### Integration Points
+| Location | File | Type |
+|:---------|:-----|:-----|
+| Store state | `uiStore.ts` | `showPartySpellSlots` + `setPartySpellSlots` |
+| AppShell listener | `AppShell.tsx` | `toggle-dm-party-spell-slots` custom event + rendering |
+| Sidebar button | `Sidebar.tsx` | "Party Spell Slots" button (violet, sparkles icon) |
+
+### DM Workflow
+```
+During a dungeon delve after several encounters:
+1. Open "Party Spell Slots" from sidebar
+2. Party summary shows: "12/28 slots used"
+3. Sorted by usage → Kaelen at top with 75% drained
+4. Wendy (Rogue) shown as non-caster
+5. Expand Kehrfuffle → sees L1 slots at 1/3, L2 at 0/2
+6. Click "Restore All Slots" → Kehrfuffle's slots restored
+Total time: ~10 seconds vs navigating character sheets individually
+```
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 68
+---
