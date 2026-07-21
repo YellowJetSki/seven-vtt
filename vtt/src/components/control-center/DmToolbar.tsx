@@ -8,7 +8,6 @@
 
 import LaunchTheatricButton from "@/components/dashboard/LaunchTheatricButton";
 import ToolButton from "./ToolButton";
-import ToolbarDivider from "./ToolbarDivider";
 
 export type PlacementMode = "none" | "light" | "wall" | "door" | "token" | "aoe";
 
@@ -62,7 +61,7 @@ export default function DmToolbar({
         >
           ← Back
         </button>
-        <ToolbarDivider />
+        <div className="w-px h-6 bg-white/[0.06]" />
         <h2 className="text-xs font-bold text-white/80 truncate drop-shadow-[0_0_4px_rgba(255,215,0,0.06)] max-w-[120px]">
           {mapName}
         </h2>
@@ -99,7 +98,7 @@ export default function DmToolbar({
           👁
         </ToolButton>
 
-        <ToolbarDivider />
+        <div className="w-px h-6 bg-white/[0.06]" />
 
         {/* Token tools */}
         <ToolButton onClick={onAddPlayerToken} tooltip="Add player token">
@@ -109,7 +108,7 @@ export default function DmToolbar({
           👹
         </ToolButton>
 
-        <ToolbarDivider />
+        <div className="w-px h-6 bg-white/[0.06]" />
 
         {/* Placement tools */}
         <ToolButton
@@ -133,7 +132,7 @@ export default function DmToolbar({
       {/* Rest button */}
       {onRest && (
         <>
-          <ToolbarDivider />
+          <div className="w-px h-6 bg-white/[0.06]" />
           <button
             onClick={onRest}
             className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-emerald-400 hover:border-emerald-500/15 hover:bg-emerald-500/5 transition-all duration-200 font-medium flex items-center gap-1 active:scale-90"

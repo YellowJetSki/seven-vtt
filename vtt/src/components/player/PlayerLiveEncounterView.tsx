@@ -131,10 +131,11 @@ export default function PlayerLiveEncounterView({
       ? activeEncounter.combatants[currentIdx]
       : null;
 
-  const isPlayerTurn =
+  const isPlayerTurn = !!(
     currentCombatant &&
     playerCharacterName &&
-    currentCombatant.name.toLowerCase() === playerCharacterName.toLowerCase();
+    currentCombatant.name.toLowerCase() === playerCharacterName.toLowerCase()
+  );
 
   // Sort combatants by initiative descending for turn order display
   const sortedCombatants = useMemo(() => {

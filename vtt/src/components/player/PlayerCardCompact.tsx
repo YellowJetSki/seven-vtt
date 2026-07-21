@@ -57,7 +57,7 @@ export default function PlayerCardCompact({
   const tier = getHpTier(hp.current, hp.max);
   const hpRatio = hp.max > 0 ? Math.min(1, Math.max(0, hp.current / hp.max)) : 0;
 
-  const conditions: ConditionId[] = c.conditions || [];
+  const conditions = (c.conditions || []) as ConditionId[];
 
   // ── HP handler (Zustand instant + Firestore via campaignStore) ──
   const handleHpChange = useCallback(
