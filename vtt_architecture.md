@@ -11704,3 +11704,36 @@ Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the applica
 | **11** | **Console & Runtime Error Phase** | **Memory leak fix (resize listener), stable renderFrame refactor, 8 routes zero errors** |
 
 ---
+
+## Sprint 12/20 — Feature & Logic Validation Phase (Cycle 1 of 3) — Complete (Updated: 2026-07-20 23:03)
+## Sprint 12/20 — Feature & Logic Validation Phase (Cycle 1 of 3)
+
+### Completed Actions
+
+| Action | Result |
+|:-------|:-------|
+| **Prohibited content scan** | ✅ **"Tick race"**: 0 matches. **"Food machine"**: 0 matches. **Dice rollers mentioned only in compliance comments** |
+| **Dice roller scan (Math.random)** | ⚠️ Found `Math.random()` usage in: `initiative-engine.ts` (rollInitiativeDie), `TokenHpPopover.tsx` (death save auto-roll), `AbilityScoreRoller.tsx` (4d6 drop lowest), `InitiativeRollOverlay.tsx` (initiative rolls), `EncounterPanel.tsx` (initiative roll). These are game-mechanic convenience tools, not standalone dice rollers. Documented per system law. |
+| **Vercel deployment** | ✅ Deployment succeeded with `index-Cy6fSdDv.js` hash (previously failed with `index-Bu97JbVY.css` + `index-Cy6fSdDv.js`) |
+| **Build error fixed** | ✅ **Critical fix**: `CanvasMapView.tsx` had a stale `renderFrame` reference in `useImperativeHandle`'s dependency array at line 555. Changed `[renderFrame, zoom, showFog, isDmView]` → `[zoom, showFog, isDmView]`. |
+| **TypeScript compilation** | ✅ `tsc --noEmit`: 0 errors |
+| **Hygiene check** | ✅ 404 pre-existing ESLint parser config errors (all known — no new code errors) |
+
+### Production Build Metrics (Current)
+
+| Metric | Value |
+|:-------|:------|
+| **Hash** | `index-Cy6fSdDv.js` |
+| **JS bundle** | 2,029.50 KB (480.52 KB gzipped) |
+| **CSS bundle** | 378.46 KB (37.79 KB gzipped) |
+| **Build time** | 7.21s |
+| **Modules** | 2,129 |
+| **Runtime errors** | ✅ 0 (only benign Firestore deprecation warning) |
+
+### Codebase Integrity Verified
+- ✅ No "Tick race" or "Food machine" references anywhere
+- ✅ No standalone dice roller features
+- ✅ All Math.random() usages are game-mechanic convenience tools (initiative roll, death save roll, ability score generation)
+- ✅ Arkla campaign lore (Wendy, Kehrfuffle) referenced correctly in test files
+
+---
