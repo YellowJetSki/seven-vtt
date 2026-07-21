@@ -175,17 +175,56 @@ export default function PlayerLiveEncounterView({
       {/* Edge light */}
       <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none z-[1]" />
 
-      {/* ── Header — Round + Phase + Turn indicator ── */}
-      <div className="relative flex items-center justify-between px-4 py-3 border-b border-white/[0.04] z-[1]">
-        <div className="flex items-center gap-3">
-          <h3 className="text-[13px] font-bold text-white/90 font-display tracking-tight">
-            ⚔ Combat
-          </h3>
-          {isPlayerTurn && (
-            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-gold-500/15 text-gold-300 border border-gold-500/20 rounded-md animate-pulse">
-              Your Turn
-            </span>
-          )}
+      {/* ── Header — Character Portrait + Identity + Phase ── */}
+      <div className="relative flex items-center justify-between px-4 py-3 border-b border-white/[0.04] z-[1] bg-gradient-to-r from-white/[0.01] to-transparent">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Character Portrait / Avatar */}
+          <div className="relative shrink-0">
+            <div className={`w-9 h-9 rounded-xl overflow-hidden border-2 ${isPlayerTurn ? "border-gold-500/40 shadow-[0_0_8px_rgba(234,179,8,0.15)]" : "border-white/[0.06]"} bg-gradient-to-br from-surface-800/60 to-surface-900/60 flex items-center justify-center`}>
+              {character?.imageUrl ? (
+                <img
+                  src={character.imageUrl}
+                  alt={character.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                    (e.target as HTMLImageElement).parentElement!.classList.add("fallback-active");
+                  }}
+                />
+              ) : (
+                <span className={`text-sm font-bold ${isPlayerTurn ? "text-gold-400" : "text-surface-500"}`}>
+                  {character ? character.name.charAt(0).toUpperCase() : "?"}
+                </span>
+              )}
+            </div>
+            {/* Status dot — green if alive, red if 0 HP */}
+            {playerCombatant && (
+              <span
+                className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0f1019] ${
+                  playerCombatant.hitPoints.current > 0 ? "bg-emerald-400" : "bg-red-500"
+                }`}
+              />
+            )}
+          </div>
+
+          {/* Identity */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-[13px] font-bold text-white/90 font-display tracking-tight truncate">
+                {character?.name || "⚔ Combat"}
+              </h3>
+              {isPlayerTurn && (
+                <span className="shrink-0 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-gold-500/15 text-gold-300 border border-gold-500/20 rounded-md animate-pulse">
+                  Your Turn
+                </span>
+              )}
+            </div>
+            {character && (
+              <p className="text-[8px] text-surface-500 truncate">
+                {character.race} · {character.class} {character.level}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {currentCombatant && (
