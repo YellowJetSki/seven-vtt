@@ -12156,3 +12156,25 @@ Performed comprehensive static analysis verifying all 4 core bugs across the ent
 - Bundle hash: `index-DiMrbVeF.js`
 - URL: https://arkla.vercel.app — verified HTTP 200
 ---
+
+## Sprint 5/40 — Critical Bug Fix Phase (Deep Character Retention Fix) (Updated: 2026-07-21 09:12)
+## Sprint 5/40 — Critical Bug Fix Phase (Deep Character Retention Fix) — Complete
+**Date:** 2026-07-21
+
+### Key Fix: Transient Character Wipe Prevention (Bug #4 Deep)
+
+**Root Cause:** `character-service.ts` `listenCharacters()` called `callback([])` in the `onSnapshot` error handler when Firestore connection briefly dropped. This triggered `setCharacters([])` in Zustand, which:
+1. Cleared ALL characters from memory
+2. Saved empty array to localStorage via Zustand persist
+3. All pages showed "No characters yet" during the blip
+4. Characters only restored after the retry mechanism reconnected (2-6s delay)
+
+**Fix:** Removed the `callback([])` call from the `onSnapshot` error handler. The `.catch` for initialization failure still calls `callback([])` because that occurs during initial load (no state to preserve). The `onSnapshot` error handler now only logs the error — the retry mechanism in `useFirestoreSync` handles reconnection and data restoration.
+
+**Defense-in-depth:** The `characterSlice.ts` `setCharacters` function was NOT modified (reverted) to avoid blocking legitimate `onSnapshot` updates from Firestore deletes that result in empty collections.
+
+### Production Build
+- Build: 7.30s, 2,129 modules, 0 errors
+- Bundle hash: `index-DTVMTvBC.js`
+- URL: https://arkla.vercel.app — verified HTTP 200
+---

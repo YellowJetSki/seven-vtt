@@ -74,7 +74,10 @@ export function listenCharacters(
         },
         (err) => {
           console.warn("[Firestore/Characters] Listener error:", err);
-          if (!cancelled) callback([]);
+          // CRITICAL: Do NOT call callback([]) on transient connection blips.
+          // The retry mechanism in useFirestoreSync will reconnect and restore data.
+          // Clearing characters here would wipe Zustand state and localStorage persist,
+          // causing a "No characters" flash during live sessions.
         }
       );
     })
