@@ -11455,3 +11455,39 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 | Git savepoint | ✅ Sprint 5 |
 
 ---
+
+## Sprint 6/20 — Feature & Logic Validation Phase (Complete) (Updated: 2026-07-20 22:31)
+## Sprint 6/20 — Feature & Logic Validation Phase (Final)
+
+### Critical Bug Fix: Combat Write Debounce (Sprint 6)
+
+**Problem:** `useWriteCombat()` in `useCombatMutations.ts` used a synchronous `pendingWrites` lockout (`if (pendingWrites.current) return;`). If a DM clicked "-5 HP" twice within 50ms, the **second write was silently dropped**. Only the first mutation applied to Zustand and Firestore.
+
+**Fix:** Rewrote `useWriteCombat()` to use the **microtask accumulator pattern** matching `useCharacterMutations.ts`:
+- **Zustand writes**: Go through INSTANTLY on every call (all rapid clicks apply)
+- **Firestore writes**: Queued and flushed once after 50ms with the LATEST encounter state
+- **Queue collapse**: Sequential mutations merge into a single Firestore batch write
+- **Pattern**: `mutationQueue.current.push({ encounter: updated })` → only `queue[queue.length - 1]` flushed
+
+### Feature Integrity Validation
+
+| Check | Method | Result |
+|-------|--------|:------:|
+| Combat write accumulator | Full code review of patched `useWriteCombat()` | ✅ No dropped mutations |
+| ConnectionBanner stale closure | Code review — `[]` deps + ref-based pattern in place | ✅ Sprint 42 fix verified |
+| `as any` usages in combat stores | Searched `vtt/src/stores/combat/` | ✅ Zero occurrences |
+| `as any` usages in hooks | Searched `vtt/src/hooks/` | ✅ Only defensive fallback access to optional fields + runtime deserialization |
+| Rapid state change stability | 3 test suites validate 50-action burst scenarios | ✅ Verified |
+| TypeScript compilation | `tsc --noEmit` | ✅ 0 errors (2129 modules) |
+
+### Deployed Production Build
+
+| Metric | Value |
+|--------|:------:|
+| Script hash | `index-DhtZf2Wm.js` |
+| Build time | 9.02s (local) / 6.99s (Vercel) |
+| Vercel deploy | 46s, aliased to arkla.vercel.app |
+| Console errors | **0** (benign Firestore deprecation only) |
+| Git savepoint | ✅ Sprint 6 |
+
+---
