@@ -67,6 +67,8 @@ export interface HomebrewSpell {
   concentration: boolean;
   duration: string;
   range: string;
+  /** Flavor/quote text for premium card display */
+  flavorText?: string;
   /** VTT area shape for AoE placement */
   shape?: "circle" | "cone" | "cube" | "sphere" | "line" | "cylinder";
   /** Area size in feet */

@@ -77,6 +77,12 @@ export default function HomebrewSpellForm({ form, onChange, onSubmit, onClose, i
             <textarea value={form.description} onChange={(e) => onChange({ ...form, description: e.target.value })} className="input-arcane w-full py-2 px-3 text-sm resize-none h-24" placeholder="Full spell description including effects and flavor..." />
           </div>
 
+          {/* Flavor Text */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Flavor Text <span className="text-surface-600">(optional)</span></label>
+            <input value={form.flavorText || ""} onChange={(e) => onChange({ ...form, flavorText: e.target.value || undefined })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder='"A blazing sphere of fire..."' />
+          </div>
+
           {/* Casting Info */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -200,6 +206,18 @@ export default function HomebrewSpellForm({ form, onChange, onSubmit, onClose, i
           <div>
             <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Classes</label>
             <ClassInput classes={form.classes} onChange={(classes) => onChange({ ...form, classes })} />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Tags <span className="text-surface-600">(comma-separated)</span></label>
+            <input value={form.tags?.join(", ") || ""} onChange={(e) => onChange({ ...form, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder="fire, damage, evocation" />
+          </div>
+
+          {/* Source */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Source</label>
+            <input value={form.source || ""} onChange={(e) => onChange({ ...form, source: e.target.value })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder="homebrew" />
           </div>
 
           {/* Submit */}

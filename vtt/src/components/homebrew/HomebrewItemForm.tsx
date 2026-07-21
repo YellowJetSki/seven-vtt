@@ -22,6 +22,7 @@ interface HomebrewItemFormProps {
 const CATEGORIES = ["weapon", "armor", "potion", "scroll", "wand", "ring", "wondrous", "tool", "ammunition", "food", "poison", "other"];
 const RARITIES = ["common", "uncommon", "rare", "very rare", "legendary", "artifact"];
 const DAMAGE_TYPES = ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder"];
+const WEAPON_PROPERTIES = ["Finesse", "Heavy", "Light", "Loading", "Range", "Reach", "Special", "Thrown", "Two-Handed", "Versatile", "Ammunition", "Silvered", "Adamantine"];
 
 export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, isEdit }: HomebrewItemFormProps) {
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -32,6 +33,7 @@ export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, is
 
   const isWeapon = form.category === "weapon";
   const isArmor = form.category === "armor";
+  const isConsumable = ["potion", "poison", "food", "scroll"].includes(form.category);
   const [useCustomCategory, setUseCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
 
@@ -107,6 +109,12 @@ export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, is
             <textarea value={form.description} onChange={(e) => onChange({ ...form, description: e.target.value })} className="input-arcane w-full py-2 px-3 text-sm resize-none h-24" placeholder="Item description, magical effects, and any special properties..." />
           </div>
 
+          {/* Flavor Text */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Flavor Text <span className="text-surface-600">(optional)</span></label>
+            <input value={form.flavorText || ""} onChange={(e) => onChange({ ...form, flavorText: e.target.value || undefined })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder='"A sword fit for a king..."' />
+          </div>
+
           {/* Weapon Stats */}
           {isWeapon && (
             <div className="glass-dark rounded-xl p-4 space-y-3 border border-gold/10">
@@ -128,6 +136,41 @@ export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, is
                   <input type="number" value={form.attackBonus ?? 0} onChange={(e) => onChange({ ...form, attackBonus: Number(e.target.value) || undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" />
                 </div>
               </div>
+              {/* Weapon Properties */}
+              <div>
+                <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1.5">Properties</label>
+                <div className="flex flex-wrap gap-1">
+                  {WEAPON_PROPERTIES.map((prop) => (
+                    <button
+                      key={prop}
+                      type="button"
+                      onClick={() => {
+                        const current = form.weaponProperties ?? [];
+                        onChange({
+                          ...form,
+                          weaponProperties: current.includes(prop)
+                            ? current.filter((p) => p !== prop)
+                            : [...current, prop],
+                        });
+                      }}
+                      className={`px-2 py-1 text-[9px] font-semibold rounded-lg border transition-all duration-200 active:scale-95 ${
+                        (form.weaponProperties ?? []).includes(prop)
+                          ? "bg-gold-500/10 border-gold/25 text-gold-400"
+                          : "bg-surface-800/40 border-surface-700/20 text-surface-400 hover:border-gold/15"
+                      }`}
+                    >
+                      {prop}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Versatile damage dice */}
+              {(form.weaponProperties ?? []).includes("Versatile") && (
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Versatile Damage Dice</label>
+                  <input value={form.versatileDamage ?? ""} onChange={(e) => onChange({ ...form, versatileDamage: e.target.value || undefined })} className="input-arcane w-24 py-1.5 px-2 text-xs" placeholder="1d10" />
+                </div>
+              )}
             </div>
           )}
 
@@ -135,9 +178,54 @@ export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, is
           {isArmor && (
             <div className="glass-dark rounded-xl p-4 space-y-3 border border-gold/10">
               <span className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block">🛡 Armor Stats</span>
-              <div>
-                <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">AC Bonus</label>
-                <input type="number" value={form.acBonus ?? 0} onChange={(e) => onChange({ ...form, acBonus: Number(e.target.value) || undefined })} className="input-arcane w-24 py-1.5 px-2 text-xs" placeholder="e.g. 18 for plate" />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">AC Bonus</label>
+                  <input type="number" value={form.acBonus ?? 0} onChange={(e) => onChange({ ...form, acBonus: Number(e.target.value) || undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="e.g. 18" />
+                </div>
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Armor Type</label>
+                  <select value={form.armorType ?? ""} onChange={(e) => onChange({ ...form, armorType: e.target.value || undefined })} className="input-arcane w-full py-1.5 px-2 text-xs">
+                    <option value="">—</option>
+                    <option value="light">Light</option>
+                    <option value="medium">Medium</option>
+                    <option value="heavy">Heavy</option>
+                    <option value="shield">Shield</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">DEX Cap</label>
+                  <input type="number" min={0} max={2} value={form.dexCap ?? ""} onChange={(e) => onChange({ ...form, dexCap: e.target.value ? Number(e.target.value) : undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="2" />
+                </div>
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">STR Required</label>
+                  <input type="number" min={0} value={form.strengthRequirement ?? ""} onChange={(e) => onChange({ ...form, strengthRequirement: e.target.value ? Number(e.target.value) : undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="15" />
+                </div>
+                <div className="flex items-end pb-1">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" checked={form.stealthDisadvantage || false} onChange={(e) => onChange({ ...form, stealthDisadvantage: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-rose-500" />
+                    <span className="text-[9px] text-rose-300">Stealth⬇</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Potion / Consumable Stats */}
+          {isConsumable && (
+            <div className="glass-dark rounded-xl p-4 space-y-3 border border-emerald-500/10">
+              <span className="text-[10px] uppercase tracking-widest font-black text-emerald-400/70 block">🧪 Consumable Stats</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Healing Dice</label>
+                  <input value={form.healingDice ?? ""} onChange={(e) => onChange({ ...form, healingDice: e.target.value || undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="4d4+4" />
+                </div>
+                <div>
+                  <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Temp HP</label>
+                  <input type="number" min={0} value={form.temporaryHp ?? ""} onChange={(e) => onChange({ ...form, temporaryHp: e.target.value ? Number(e.target.value) : undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="10" />
+                </div>
               </div>
             </div>
           )}
@@ -184,6 +272,12 @@ export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, is
               <input type="checkbox" checked={form.isCursed} onChange={(e) => onChange({ ...form, isCursed: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-red-500" />
               <span className="text-xs text-rose-300">Cursed</span>
             </label>
+          </div>
+
+          {/* Source */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Source</label>
+            <input value={form.source || ""} onChange={(e) => onChange({ ...form, source: e.target.value })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder="homebrew" />
           </div>
 
           {/* Tags */}

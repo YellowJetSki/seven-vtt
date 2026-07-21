@@ -155,11 +155,21 @@ export default function HomebrewItemCard({
             )}
           </div>
 
+          {/* Flavor Text */}
+          {item.flavorText && (
+            <p className="text-[9px] text-gold-400/50 italic mt-1 leading-relaxed line-clamp-1">"{item.flavorText}"</p>
+          )}
+
           {/* Description */}
           {item.description && (
             <p className="text-[10px] text-surface-400 mt-1.5 line-clamp-2 leading-relaxed">
               {item.description}
             </p>
+          )}
+
+          {/* Source */}
+          {item.source && item.source !== "homebrew" && (
+            <span className="mt-1 text-[8px] text-surface-500 block">Source: {item.source}</span>
           )}
         </div>
 

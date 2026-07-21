@@ -126,11 +126,21 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
             )}
           </div>
 
+          {/* Flavor Text */}
+          {spell.flavorText && (
+            <p className="text-[9px] text-gold-400/50 italic mt-1 leading-relaxed line-clamp-1">"{spell.flavorText}"</p>
+          )}
+
           {/* Description */}
           {spell.description && (
             <p className="text-[10px] text-surface-400 mt-1.5 line-clamp-2 leading-relaxed">
               {spell.description}
             </p>
+          )}
+
+          {/* Source */}
+          {spell.source && spell.source !== "homebrew" && (
+            <span className="mt-1 text-[8px] text-surface-500 block">Source: {spell.source}</span>
           )}
         </div>
 

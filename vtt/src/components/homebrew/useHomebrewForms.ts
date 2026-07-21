@@ -23,7 +23,7 @@ const emptySpell: Omit<HomebrewSpell, "id" | "createdAt" | "updatedAt"> = {
   name: "", level: 1, school: "Evocation", castingTime: "1 action",
   ritual: false, components: ["V", "S"], concentration: false,
   duration: "Instantaneous", range: "60 feet", classes: [], description: "",
-  visibleToPlayers: true, isHomebrew: true, source: "homebrew", tags: [],
+  flavorText: "", visibleToPlayers: true, isHomebrew: true, source: "homebrew", tags: [],
 };
 
 const emptyFeat: Omit<HomebrewFeat, "id" | "createdAt" | "updatedAt"> = {
