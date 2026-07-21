@@ -15324,3 +15324,56 @@ PlayerSheetPage
 - ✅ 5.5e RAW: Spell slot tiers (full→green, partial→amber/gold, exhausted→red), resource type color mapping
 - ✅ Modular architecture: 4 sub-components, no monolith risk
 ---
+
+## Cycle 43 — PC Experience Phase — Cycle 8 of 10 (Complete) (Updated: 2026-07-21 15:54)
+## Sprint 43 of 80 — PC Experience Phase — Cycle 8 of 10 (COMPLETE) ✅
+
+### Feature Enhancements
+
+| Enhancement | File | Lines | Details |
+|:------------|:-----|:-----:|:--------|
+| **1. InventoryItemImageModal (NEW)** | `InventoryItemImageModal.tsx` | 230 lines | Full-screen premium item image viewer. Displays item with image URL hero banner, gradient overlay, ambient gold glow pocket. Shows stats grid (quantity/weight/category), weapon attack stats (ATK+DMG), armor AC bonus, and description. Equip/Unequip and Consume action buttons. Escape key + backdrop click to dismiss. Premium Overrrides-grade glassmorphism design with edge light and staggered entrance. |
+| **2. Companion View — Character Portrait** | `PlayerLiveEncounterView.tsx` | ~30 lines rewritten | Replaced plain "⚔ Combat" header with full character identity section: 36×36 avatar circle with character image (or initial fallback), status dot (emerald=alive, red=0HP), race · class level subtitle, gold pulse rings on "Your Turn". Portrait uses gold border glow when it's the player's turn. |
+| **3. InventoryItemDetailModal — Verified** | Existing (Cycle 39) | 180 lines | Already has image lightbox mode, consumption animation wiring, full stat display. Codebase confirmed mature. |
+
+### Companion View Architecture (Cycle 43)
+
+```
+PlayerLiveEncounterView (w-72, top-right overlay)
+├── "Your Turn" Cinematic Pulse (gold triple-ring + ping)
+├── EncounterFlashToast (damage/heal debounced)
+├── Header — Character Portrait + Identity 
+│   ├── 36×36 Avatar Ring (image or initial fallback)
+│   ├── Status Dot (emerald/red, alive/dead)
+│   ├── Character Name + "Your Turn" badge
+│   └── Race · Class Level subtitle
+├── Phase Bar (round counter + phase indicator)
+├── "Act Now" Callout (gold banner — your turn)
+├── PlayerCompanionResources (Cycle 42)
+│   ├── Spell Slot Grid (5-col gauges + DC/ATK)
+│   ├── Hit Dice Pill
+│   └── Class Resources (color-coded per type)
+├── CombatantRowCard[] (sorted by initiative)
+└── Footer (alive/dead counts)
+```
+
+### File Audit
+| File | Lines | Status |
+|:-----|:-----:|:-------|
+| InventoryItemImageModal.tsx | 230 | ✅ NEW — premium item image viewer |
+| PlayerLiveEncounterView.tsx | ~270 | ✅ ENHANCED — character portrait + identity |
+| PlayerSheetInventoryTab.tsx | ~500 | ✅ VERIFIED — already uses detail modal |
+| InventoryItemDetailModal.tsx | 180 | ✅ VERIFIED — image lightbox already exists |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Vite build: ✅ Clean
+- Production URL: ✅ https://arkla.vercel.app — deployed, verified
+
+### Compliance
+- ✅ **ZERO Math.random** — all deterministic
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides premium design: gold pulse banners, character portrait glow, glassmorphism stats grid
+- ✅ Arkla campaign lore: character name/race/class display from PlayerCharacter
+- ✅ Modular architecture: 5 sub-components in companion view, no monolith risk
+---
