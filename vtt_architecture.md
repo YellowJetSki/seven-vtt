@@ -13361,3 +13361,34 @@ DMG-based treasure generation tool with premium Lusion-grade glassmorphism UI:
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 34/40 — The Intensive VTT Analysis Phase — CYCLE 4 OF 10 (Updated: 2026-07-21 11:14)
+## Sprint 34/40 — The Intensive VTT Analysis Phase — CYCLE 4 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — Concentration Duration Timer
+
+#### Built: DmConcentrationTimerPopover (400+ lines)
+Global real-time concentration spell duration tracker with premium Lusion-grade glassmorphism UI:
+
+**Core Features:**
+- **Live countdown timers** — 1-second tick clock showing `Xm Ys` remaining for each active concentration
+- **4 duration presets** — 1 min (emerald), 10 min (amber), 1 hour (rose), Custom (violet) with manual minutes input
+- **Color-coded progress bars** — Green (<50%), Amber (<75%), Rose (<90%), Red (≥90% expiring)
+- **Expiry warnings** — "⚠️ Almost Done" at 75%, "⚠️ Expiring" ping animation at 90%
+- **+1m / +5m extend buttons** — Quick extension without removing and re-adding
+- **Auto-expired tracking** — Expired entries auto-separate from active; clear expired with one click
+- **Combatant concentration status** — Reads from active encounter to show which combatants are concentrating
+
+**Integration:**
+- `stores/uiStore.ts` — Added `showConcentrationTimer` + `setConcentrationTimer`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-concentration-timer`, DM-role rendering
+- `components/layout/Sidebar.tsx` — "Concentration" sidebar button with violet-accent styling using PremiumIcon `sparkles`
+
+#### Build & Deploy
+- Build: **7.49s**, 2140 modules, 0 errors
+- Hash: `index-CC8eY7Qj.js`, deployed to arkla.vercel.app
+- No dice rollers (all computation-based timestamps, no RNG)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
