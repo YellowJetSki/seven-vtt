@@ -13032,3 +13032,64 @@ Previous QA cycles covered individual player components (Sprint 23: sheet tabs r
 - ✅ Zero new ESLint errors (425 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 28/40 — The Extensive QA Phase (Cycle 8 of 10) (Updated: 2026-07-21 10:41)
+## Sprint 28/40 — The Extensive QA Phase (Cycle 8 of 10)
+**Date:** 2026-07-21
+
+### Target: Theatric Display + DM Screen-Share Pipeline
+
+Tested the complete player-facing external monitor experience PLUS DM-initiated screen-sharing — the 8th completely different workflow from Sprints 21-27. Covers canvas rendering states, camera controls, token visibility, DM share push/dismiss lifecycle, player share reveal, inventory deposit from share, rapid push cycles, auto-hide HUD timers, and full integration pipeline.
+
+### Key Gap Identified
+Previous QA cycles tested combat, spells, and player sheets (Sprints 21-27) but NONE tested the **player-facing theatric display** or the **DM-to-player screen-share pipeline**. The Theatric Display is a zero-chrome cinematic canvas and the DM Share system uses Firestore real-time listeners — both critical for live sessions but entirely untested.
+
+### New Test File Created
+**`src/__tests__/sprint-28-theatric-dm-share-qa.test.ts`** — **60+ tests across 10 suites**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Canvas Rendering States | 7 | Loading, error (map not found), connected, image URL load, fallback gradient, HiDPI scaling, zero-size container |
+| 2. Camera Controls | 7 | Default centered, panning, zoom in/out, extreme zoom bounds (0.1-4), rotation in radians, full reset, keyboard pan speed |
+| 3. Token Visibility & Labels | 7 | Render all tokens, invisible tokens translucent, label fallback, HP bar green/amber/red thresholds, dead token (0 HP), label toggle, label+HP display |
+| 4. DM Share Push/Dismiss Lifecycle | 8 | Initial state, dismiss=true, image URL valid, item payload, handout description, map reference, empty URL handled, timestamp tracking |
+| 5. Player Share Reveal | 7 | New share visible, dismissed hides, dismiss button, inventory notification, no-deposit, backdrop gradient, hint text |
+| 6. Inventory Deposit from Share | 7 | Add item, stack duplicates, different items separate, gold accumulation, multiple deposits sum correctly, specific player target, all players targeting |
+| 7. Rapid Push/Dismiss Cycles | 4 | 10 cycles complete, new share hides previous, rapid push replaces, dismiss after replace preserves state |
+| 8. Auto-Hide HUD Timer | 5 | Initially visible, hides at 3s, mouse movement shows, 500ms fade transition, gold glassmorphism |
+| 9. Edge Cases | 8 | No active map, disconnected state, stale share ref pattern, map not found error, zero tokens, no grid size fallback, unique inventory IDs, invalid share URL |
+| 10. Full Integration | 2 | DM shares map -> Player receives -> dismisses (6 steps); DM deposits item -> Player receives it (3 steps) |
+
+### Key Validations
+- Canvas rendering: loading, error, connected, HiDPI, zero-container guards
+- Camera: pan (16px/zoom speed), zoom clamped [0.1, 4], rotation in radians
+- HP bar color thresholds: green (>50%), amber (25-50%), red (<25%), gray (dead=0)
+- DM Share lifecycle: push -> onSnapshot triggers -> visible -> dismiss -> hidden
+- 10 rapid push/dismiss cycles complete without state corruption
+- Inventory stacking: duplicate items increment quantity, different items create separate entries
+- Gold accumulation: 10+25+50+100 = 185 GP
+- Auto-hide HUD: visible at mount, hides at 3s, shows on mouse movement
+
+### Build & Deploy
+- Build: **10.45s**, 2136 modules, 0 errors
+- Hash: `index-CwN0TGri.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### QA Coverage So Far (Sprints 21-28 = 8 of 10 workflows)
+| Sprint | Workflow Tested |
+|:------:|-----------------|
+| 21 | DM Share + Combat Log Pipeline |
+| 22 | Level-Up -> Rest Pipeline |
+| 23 | Player Sheet Tabs + Inventory + Conditions |
+| 24 | Encounter Builder -> CR -> Initiative Pipeline |
+| 25 | Player Spellcasting UI Pipeline |
+| 26 | Homebrew Panel CRUD UI Pipeline (DM content creation) |
+| 27 | Player Login -> Sheet -> Combat Interaction Flow |
+| **28** | **Theatric Display + DM Screen-Share Pipeline** |
+
+### Compliance
+- No virtual dice rollers
+- No 'Tick race' or 'Food machine' references
+- Zero new ESLint errors (426 pre-existing parser config errors — all project-wide)
+
+---
