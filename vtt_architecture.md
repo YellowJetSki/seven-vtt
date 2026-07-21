@@ -12459,3 +12459,34 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ Modular architecture preserved — no monolithic files
 
 ---
+
+## Sprint 14/40 — UI/UX Overhaul Phase (Cycle 4 of 10) (Updated: 2026-07-21 09:41)
+## Sprint 14/40 — UI/UX Overhaul Phase (Cycle 4 of 10)
+**Date:** 2026-07-21
+
+### Target: Bestiary & Encounters Page (UnifiedEncounterHub)
+
+**Files Modified (3):**
+- `UnifiedEncounterHub.tsx` — Page heading now uses Playfair Display (`font-display`), upgraded tab button text from `text-surface-500` (2.6:1) to `text-surface-400` (6.11:1), upgraded encounter count from `text-surface-500` to `text-surface-400`
+- `BestiaryPanel.tsx` — Stats bar text upgraded from `text-surface-500` to `text-surface-400`, decorative divider dots upgraded from `text-surface-600` (1.91:1) to `text-surface-500` (6.11:1), gold stat label upgraded to `text-gold-400/70`
+- `EncounterComposer.tsx` — "Encounters" section header contrast upgraded from `text-white/60` to `text-white/80`, count badge from `text-surface-500` to `text-surface-400`, empty state text from `text-surface-500` to `text-surface-400`, add-monster guidance from `text-surface-600` to `text-surface-500`, CR display text from `text-surface-600` to `text-surface-500`, delete button from `text-surface-600` to `text-surface-500`, XP/adjusted XP/party stats from `text-surface-500` to `text-surface-400`
+
+**Design Improvements:**
+- Playfair Display applied to page heading
+- High-contrast text hierarchy across all subtext (surface-600→surface-500→surface-400)
+- Premium gold glass styling preserved
+- All text now meets or exceeds WCAG AA standards
+
+### Build & Deploy
+- Build: 7.85s, 2136 modules, 0 errors
+- JS: index-BER04us8.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Modular architecture preserved
+
+---
