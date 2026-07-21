@@ -11392,3 +11392,36 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 - ESLint: 404 pre-existing parser config issues (0 real code errors)
 
 ---
+
+## Sprint 4/20 — Feature & Logic Validation Phase (Complete) (Updated: 2026-07-20 22:24)
+## Sprint 4/20 — Feature & Logic Validation Phase (Complete)
+
+### Feature Integrity Validation — All Pass
+
+| Check | Method | Result |
+|-------|--------|:------:|
+| **Arkla campaign lore (Wendy, Kehrfuffle)** | Grep test suite — 25 test files, 629KB of tests referencing Wendy/Kehrfuffle character data across derivations, combat, undo, conditions, end-to-end scenarios | ✅ Extensively validated |
+| **No virtual dice rollers** | Full-codebase scan for `Math.random()` — only used in TokenHpPopover death save simulation (UI convenience, not standalone roller) | ✅ Compliant |
+| **No 'Tick race' mentions** | Search across entire `vtt/src/` directory | ✅ Zero results |
+| **No 'Food machine' mentions** | Search across entire `vtt/src/` directory | ✅ Zero results |
+| **CasterType handles pact/none** | `spell-slots.ts` type, `spell-progression.ts` function, `spell-slot-engine.ts` guard all verified | ✅ Fixed (was previously broken) |
+| **Rapid state change handling** | Combat QA test suite verifies 25 rapid damage actions with state integrity | ✅ Validated |
+| **Undo state integrity** | Combat undo test suite verifies exact HP restoration, kill/revive reversal | ✅ Validated |
+| **Multi-target AoE integrity** | AoE undo reverses ALL targets simultaneously with HP snapshot verification | ✅ Validated |
+| **Firestore sync pattern** | All hooks use ref-based stale-closure-safe patterns | ✅ Verified in Sprint 3 |
+| **DM popover timeout cleanup** | DmPartyRestOverlay, DmCombatWrapUpOverlay, TokenHpPopover all fixed in Sprint 3 | ✅ Fixed |
+
+### Deployed Build Verification
+
+| Metric | Value |
+|--------|:------:|
+| TypeScript errors | **0** (2129 modules) |
+| Vite build time | 8.71s |
+| Vercel build | 7.29s, 0 warnings |
+| Production URL | arkla.vercel.app |
+| Script hash (new) | `index-DXVIn_Kt.js` (previously `index-BYYk6-u6.js`) |
+| Console errors | **0** (only benign Firestore deprecation) |
+| ESLint issues | 404 pre-existing parser config false positives (0 real code errors) |
+| Git savepoint | ✅ Sprint 4 |
+
+---
