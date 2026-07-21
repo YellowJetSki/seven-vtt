@@ -42,7 +42,10 @@ type IconName =
   | "heart"
   | "shield"
   | "sword"
-  | "sparkles";
+  | "sparkles"
+  | "travel"
+  | "ship"
+  | "monsterKnowledge";
 
 interface PremiumIconProps extends SVGProps<SVGSVGElement> {
   name: IconName;
@@ -305,6 +308,32 @@ const ICON_MAP: Record<string, string> = {
     <path d="M19 8l.5 1 1 .5-1 .5-.5 1-.5-1-1-.5 1-.5.5-1z" fill="currentColor" opacity="0.4"/>
     <path d="M5 16l.5 1 1 .5-1 .5-.5 1-.5-1-1-.5 1-.5.5-1z" fill="currentColor" opacity="0.4"/>
     <path d="M8 5l1.5.5L10 7l.5-1.5L12 5l-1.5-.5L10 3l-.5 1.5L8 5z" fill="currentColor" opacity="0.3"/>
+  `,
+
+  // 🗺️ Travel & Wilderness — Compass with trail
+  travel: `
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+    <path d="M12 7l2 3.5 3.5 1.5-3.5 1.5L12 17l-2-3.5L6.5 12l3.5-1.5L12 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+    <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.4"/>
+  `,
+
+  // 🚢 Naval & Ships — Sailing vessel
+  ship: `
+    <path d="M2 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M12 3v14M8 17l4-5 4 5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+    <path d="M4 17l4-1 4-2 4 1 4 1" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none" opacity="0.6"/>
+    <path d="M7 8h10l-2-3H9L7 8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+    <circle cx="12" cy="10" r="0.8" fill="currentColor" opacity="0.3"/>
+  `,
+
+  // 📖 Monster Knowledge — Open book with knowledge spark
+  monsterKnowledge: `
+    <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <path d="M4 4.5A2.5 2.5 0 016.5 2H20v16H6.5A2.5 2.5 0 014 15.5v-11z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+    <path d="M9 8l.5 1 1 .5-1 .5-.5 1-.5-1-1-.5 1-.5.5-1z" fill="currentColor" opacity="0.5"/>
+    <path d="M12 7l.3.7.7.3-.7.3-.3.7-.3-.7-.7-.3.7-.3.3-.7z" fill="currentColor" opacity="0.3"/>
+    <circle cx="18" cy="7" r="1" fill="currentColor" opacity="0.2"/>
   `,
 };
 
