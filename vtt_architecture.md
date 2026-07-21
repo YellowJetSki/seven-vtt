@@ -16797,3 +16797,42 @@ Total time: ~5 seconds for full combat awareness
 ### DM Tool Tally: 25 Globally Accessible Tools
 +1 (new): Encounter Analyzer (amber, `conditions` icon)
 ---
+
+## DM Quest Tracker (Cycle 32/35) (Updated: 2026-07-21 18:22)
+## Cycle 32 — DM Quest, NPC & Session Reference Tracker — COMPLETE
+
+### New Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `control-center/DmQuestTracker.tsx` | ~550 | Premium session-side quest/NPC/location reference tool |
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **3-Tab Layout** | Quests (⚔), NPCs (👤), Locations (📍) — with per-tab filtered counts |
+| **Quest Management** | Active/completed/abandoned statuses with color-coded badges (emerald/gold/rose) |
+| **NPC Reference** | Name, role, location, attitude (friendly/indifferent/hostile), notes — all inline editable |
+| **Location Pins** | Name, type badge (sky), description — inline editable |
+| **Search** | Cross-category search matching names, descriptions, roles, notes, locations |
+| **Quest Filter Chips** | All / Active / Completed / Abandoned — quick status filtering |
+| **Inline Editing** | Click any text to edit: name, description, notes — Enter saves, Escape cancels |
+| **NPC-Quest Links** | Quests show linked NPC names as violet tags |
+| **Footer Stats** | Active/friendly/hostile counts at-a-glance |
+| **Escape/Backdrop Dismiss** | Consistent with all DM tools |
+| **Preset Campaign Data** | Sunless Citadel + Icespire Peak demo data pre-loaded |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showQuestTracker` + `setQuestTracker` |
+| `AppShell.tsx` | Layout | Added import, refs, listener, rendering block |
+| `Sidebar.tsx` | Layout | Added "Quest Tracker" button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 77
+
+### DM Tool Tally: 26 Globally Accessible Tools
++1 (new): Quest Tracker (emerald, `loot` icon)
+---
