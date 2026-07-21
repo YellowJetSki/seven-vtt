@@ -12,7 +12,7 @@
  * - Danger zone with two-step delete confirmation
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { setCharacter, deleteCharacter } from "@/lib/firestore-service";
 import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
@@ -89,10 +89,25 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
     onClose();
   }, [character.id, isDeleting, removeCharacter, onClose]);
 
+  // ── Escape key dismiss ──
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isDeleting) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, isDeleting, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       {showLevelUpPanel && (
         <LevelUpPanel
           character={character}

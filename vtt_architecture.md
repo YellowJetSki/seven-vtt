@@ -12200,3 +12200,34 @@ Performed comprehensive static analysis verifying all 4 core bugs across the ent
 - Bundle hash: `index-1ij60ZdI.js`
 - URL: https://arkla.vercel.app — verified HTTP 200
 ---
+
+## Sprint 7/40 — Critical Bug Fix Phase (PlayerCardManager Escape+Backdrop Close Fix) (Updated: 2026-07-21 09:18)
+## Sprint 7/40 — Critical Bug Fix Phase (PlayerCardManager Escape+Backdrop Close Fix) — Complete
+**Date:** 2026-07-21
+
+### Fix Applied
+
+**Bug #1 Residual: PlayerCardManager missing Escape key handler + backdrop click close**
+
+**Problem:** `PlayerCardManager.tsx` (the DM's character management modal, opened by clicking the ⚙ gear on player cards) was the ONLY modal in the application missing both:
+1. An Escape key listener (all other modals have it — Modal.tsx, PlayerSheet.tsx, CombatHpHud.tsx, etc.)
+2. A backdrop click handler (`onClick={onClose}` on the backdrop div)
+
+This meant the DM could open the Manage modal but had to click one of the explicit close buttons (✕, Cancel, or Save) to dismiss it. Keyboard-centric users or those who clicked outside the modal would be stuck.
+
+**Fix:**
+- Added `useEffect` with `"keydown"` listener for `"Escape"` key — guards against closing during active deletion (`!isDeleting`)
+- Added `onClick={onClose}` to the backdrop `div` — the inner card's existing `stopPropagation` prevents accidental closes from clicking inside the modal
+- Added missing `useEffect` and `useRef` imports
+
+### Bug #1 Complete Status
+- ✅ PlayerSheet closes via `PlayerSheet.tsx` Escape handler
+- ✅ PlayerCreateModal closes via `Modal.tsx` Escape handler  
+- ✅ PlayerCardManager closes via newly added Escape + backdrop handlers
+- ✅ All other modals (ConcentrationCheckPopover, TokenHpPopover, MapCreatorModal, CombatHpHud, DmQuickReferenceOverlay, Modal.tsx, ItemFormModal) verified with existing handlers
+
+### Production Build
+- Build: 7.50s, 2,129 modules, 0 errors, 0 warnings
+- Bundle hash: `index-BqHCsxOv.js`
+- URL: https://arkla.vercel.app — HTTP 200 verified
+---
