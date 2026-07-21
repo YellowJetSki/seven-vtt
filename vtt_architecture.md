@@ -13545,3 +13545,52 @@ Globally accessible DM tool for managing between-session downtime activities wit
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 39/40 — The Intensive VTT Analysis Phase — CYCLE 9 OF 10 (Updated: 2026-07-21 11:42)
+## Sprint 39/40 — The Intensive VTT Analysis Phase — CYCLE 9 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — Travel Pace & Wilderness Survival Guide
+
+#### Built: DmTravelPaceGuide (700+ lines)
+Comprehensive overland travel and wilderness survival tool with sky-blue accent glassmorphism design. Two-panel layout: settings sidebar + journey log.
+
+**10 Terrain Types:** Plains, Forest, Mountains, Swamp, Desert, Arctic, Coast, Hills, Jungle, Underdark — each with unique speed multiplier, forage DC, and navigation DC
+
+**8 Weather Conditions:** Clear, Cloudy, Rain, Storm, Extreme Heat, Extreme Cold, Fog, Wind — with auto-generation or manual override, each affecting navigation and forage DCs
+
+**3 Travel Paces:** Fast (−5 navigation, −5 perception, 30 mi/day), Normal (24 mi/day), Slow (+5 navigation, steatlh available, 18 mi/day)
+
+**Key Features:**
+- **Journey Generator:** Configurable 1-30 days, generates per-day breakdown with navigation DCs, foraging results, random encounter checks, and weather
+- **Daily Resource Consumption:** Tracks food (1 lb/person/day) and water (1 gal/person/day) with foraging offset
+- **Navigation Results:** On Track / Lost / Significantly Lost with DC-based thresholds
+- **Foraging Results:** None / Food / Water / Both with DC-based success rates
+- **Random Encounters:** 18% base chance per day, modified by pace (fast ×1.5, slow ×0.5) and terrain (jungle/swamp/underdark ×1.5)
+- **Per-Day Detail Cards:** Expandable entries showing navigation DC + result, forage result + amount, encounter check, notes field
+- **Journey Summary:** Total distance, travel days, average pace, party size
+- **Resource Consumption Alert:** Amber info card showing total food/water consumed across journey
+- **Empty State:** 5.5e travel rules explanation (pace rules + survival basics)
+
+**Data Tables:**
+- `TERRAIN_SPEED_MULTIPLIER`: Plains/Coast ×1.0, Forest/Hills/Desert/Arctic ×0.75, Mountains/Swamp/Jungle/Underdark ×0.5
+- `TERRAIN_FORAGE_DC`: Coast/Jungle/Forest DC 10 → Desert DC 20
+- `TERRAIN_NAVIGATION_DC`: Open vs Obscured per terrain
+- `WEATHER_*_PENALTY`: Storm −5 nav, −3 forage; Fog −5 nav, −3 forage; Extreme Heat −5 forage; etc.
+- `PACE_*`: Speed in mi/day, forage penalty, navigation penalty, encounter modifier
+
+**Integration:**
+- `stores/uiStore.ts` — Added `showTravelPace` + `setTravelPace`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-travel-pace`, DM-role rendering
+- `components/layout/Sidebar.tsx` — Sky-blue accented "Travel & Wilderness" button after Rest & Downtime
+
+#### Build & Verify
+- **Build:** 7.99s, 2145 modules, 0 TypeScript errors
+- **Hash:** `index-sgztoure.js`, deployed to arkla.vercel.app
+- `tsc --noEmit` = 0 errors (definitive quality gate)
+- ESLint: 436 pre-existing parser config errors (ALL "Unexpected token" — project-wide tooling issue, NOT code errors)
+- No dice rollers (pure computation — encounter checks use deterministic thresholds, not dice)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant — party of 4 adventurers referenced in resource consumption
+
+---
