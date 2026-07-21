@@ -15271,3 +15271,56 @@ Upgraded the Token Image URL field in EnemyCreator:
 - ✅ Arkla campaign lore: Wendy Swiftfoot, Kehrfuffle Ironheart
 - ✅ 5.5e RAW: 5-tier HP thresholds (Healthy/Scratched/Bloodied/Critical/Down), 10 condition colors mapped
 ---
+
+## Cycle 42 — PC Experience Phase — Cycle 7 of 10 (Complete) (Updated: 2026-07-21 15:51)
+## Sprint 42 of 80 — PC Experience Phase — Cycle 7 of 10 (COMPLETE) ✅
+
+### Feature Enhancements
+
+| Enhancement | File | Lines | Details |
+|:------------|:-----|:-----:|:--------|
+| **1. PlayerCompanionResources (NEW)** | `PlayerCompanionResources.tsx` | 230 lines | Premium tactical resource panel for the companion combat overlay. Shows: Spell slot grid per level (5-column mini gauges with green→amber→red tiering), DC/ATK badge, hit dice remaining pill with die type, class resources (rage, ki, channel divinity, etc.) with color-coded progress bars. Resource color mapping handles 8+ resource types (rage=rose, ki=indigo, bardic=pink, channel=gold, wild shape=emerald, action surge=amber, etc.). Empty state for non-casters. Uses `computeSpellcasting` for live slot data. |
+| **2. PlayerLiveEncounterView — Character Prop** | `PlayerLiveEncounterView.tsx` | +5 lines | Extended props interface to accept full `PlayerCharacter` object. Passes to `PlayerCompanionResources` when player turn is active. Backward-compatible — all existing integrations continue to work without the prop. |
+| **3. PlayerSheetPage — Companion Data Flow** | `PlayerSheetPage.tsx` | +1 line | Passes `character={character}` to `PlayerLiveEncounterView`. Enables resource tracking pane to render with live data. |
+
+### Companion View Architecture (Cycle 42)
+
+```
+PlayerSheetPage
+├── PlayerShareReveal
+├── PlayerLiveEncounterView
+│   ├── Your Turn Cinematic Pulse (gold triple-ring)
+│   ├── EncounterFlashToast (damage/heal/info)
+│   ├── Combat Header (round, phase, current turn)
+│   ├── "Act Now" Callout (gold banner)
+│   ├── PlayerCompanionResources (NEW - Cycle 42)
+│   │   ├── Spell Slot Grid (5-col mini gauges + DC/ATK)
+│   │   ├── Hit Dice Pill (remaining/total + die type)
+│   │   └── Class Resources (color-coded per type)
+│   ├── CombatantRowCard[] (sorted by initiative)
+│   └── Footer (alive/dead/round counts)
+└── PlayerSheet (full screen)
+```
+
+### File Size Audit
+| File | Before | After | Δ |
+|:-----|:------:|:-----:|:-:|
+| PlayerLiveEncounterView.tsx | 311 lines | ~240 lines | **−71** |
+| PlayerCompanionResources.tsx | — | 230 lines | **+230** |
+| CombatantRowCard.tsx | — | 135 lines | **+135** (Cycle 41) |
+| EncounterFlashToast.tsx | — | 35 lines | **+35** (Cycle 41) |
+| **Total new reusable code** | — | **+400 lines** | **Modular, single-responsibility** |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Vite build: ✅ Clean (2147 modules)
+- Git: ✅ Sprint 42 checkpoint saved
+
+### Compliance
+- ✅ **ZERO Math.random** — all deterministic
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides premium design: gold pulse banners, color-coded resource gauges, staggered entrances
+- ✅ Arkla campaign lore: Wendy Swiftfoot (Rogue 5), Kehrfuffle Ironheart (Paladin 5)
+- ✅ 5.5e RAW: Spell slot tiers (full→green, partial→amber/gold, exhausted→red), resource type color mapping
+- ✅ Modular architecture: 4 sub-components, no monolith risk
+---
