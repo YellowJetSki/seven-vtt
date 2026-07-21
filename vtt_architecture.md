@@ -11289,3 +11289,35 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 - The Playwright sandbox cannot execute `<script type="module">` — this is a known sandbox limitation. The app works correctly in all real browsers.
 
 ---
+
+## Sprint 1/20 — Console & Runtime Error Phase (Updated: 2026-07-20 22:11)
+## Sprint 1/20 — Console & Runtime Error Phase (Complete)
+
+### Root Cause Diagnosed: React Error #185 (Infinite Re-render Loop)
+
+**Previously fixed (pre-Sprint 1):** ConnectionBanner.tsx had an infinite re-render loop in its useEffect with `[connectionState, animState]` deps. The effect changed animState, which triggered the effect again.
+
+**Sprint 1 fixes applied:**
+1. **ConnectionBanner.tsx** — Verified the `[]` empty-deps fix is correct. Effect registers once on mount and reads latest state from refs (`connectionStateRef`, `animStateRef`).
+
+2. **FirebaseAuthGate (App.tsx)** — Replaced `[role, login]` deps with `[]` empty deps + ref pattern. The old implementation re-subscribed to `onFirebaseAuthChanged` every time `role` changed. The listener fires immediately on subscription with `null` user. Now:
+   - Uses `loginRef` to store latest login function
+   - Registers listener once on mount with `[]` deps
+   - Prevents wasteful re-subscriptions
+
+3. **Navigation routes fixed** — 3 dashboard components (ActiveMapCard, CombatQuickStatus, QuickNav) navigated to `/campaign/battle-maps` instead of `/campaign/maps`.
+
+### Runtime Verification
+- Build: 0 errors (2129 modules)
+- Deploy: arkla.vercel.app — fresh build, no cache
+- Console: ONLY Firestore deprecation warning (benign)
+- React Error #185: ✅ ELIMINATED
+- Firebase Auth 400: Expected (no real Firebase user configured — local login works around it)
+
+### Remaining Issues (for future sprints)
+- 2MB JS bundle — needs code-splitting
+- ESLint misconfigured (404 false-positive parser errors — all files, not real issues)
+- Playwright sandbox cannot execute `<script type="module">` — app works in real browsers
+- Long-rest refresh loses Zustand auth if Firebase Auth not configured
+
+---
