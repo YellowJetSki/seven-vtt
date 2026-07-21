@@ -15917,3 +15917,42 @@ The codebase is mature and hardened. Remaining work for cycles 58-80 should focu
 - Performance profiling (JS bundle ~2,300 KB / ~525 KB gzipped)
 - Or, if directed: commence Feature Expansion Phase 2 (new 5.5e mechanics)
 ---
+
+## Performance Optimization — Font Subsetting & Bundle Chunking (Cycle 58) (Updated: 2026-07-21 17:16)
+## Cycle 58 — Performance Optimization: Font Subsetting & Vite Bundle Chunking — COMPLETE
+
+### Font Optimization (Latin-only subsetting)
+
+**Problem:** @fontsource CSS imports (`@import "@fontsource/plus-jakarta-sans/400.css"`) pulled ALL subset files (latin, latin-ext, cyrillic, cyrillic-ext, vietnamese) for ALL weights (200-800). This resulted in 72 font files shipped to production.
+
+**Fix:** Replaced full-subset imports with latin-only subset imports:
+```
+@import "@fontsource/plus-jakarta-sans/latin-400.css";  // (was: /400.css)
+```
+
+**Before:** 72 font files = ~3,853 KB (3.7 MB)
+**After:** 8 font files (Latin-only, WOFF2 only, 8 needed weights) = ~129 KB
+**Savings: ~3,724 KB (96.7% reduction in font payload)**
+
+### JS Bundle Code Splitting
+
+**Problem:** Single monolithic JS bundle `index-D-iPmTJo.js` = 2,478 KB. Every app update invalidates the entire cache.
+
+**Fix:** Added `rollupOptions.output.manualChunks` in Vite config to separate vendor code:
+
+| Chunk | Size | Cache Strategy |
+|:------|:----:|:--------------:|
+| `vendor-react` | 50 KB | React/Router — rarely changes |
+| `vendor-firebase` | 566 KB | Firebase SDK — rarely changes |
+| `vendor-motion` | 130 KB | Framer Motion — rarely changes |
+| `vendor-zustand` | 0.6 KB | Zustand — rarely changes |
+| `vendor-ui` | 10 KB | Lucide Icons — rarely changes |
+| `index` (app code) | 1,720 KB | Changes per deployment |
+
+**Savings:** Subsequent page loads skip caching ~756 KB of vendor code that hasn't changed.
+
+### TypeScript & Build
+- ✅ TypeScript: 0 errors
+- ✅ Vite build: 6 chunked files, clean CSS output
+- ✅ Saved as Sprint 58 checkpoint
+---
