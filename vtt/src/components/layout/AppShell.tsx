@@ -44,6 +44,7 @@ import DmShipCombatGuide from "@/components/control-center/DmShipCombatGuide";
 import GlobalQuickNote from "@/components/ui/GlobalQuickNote";
 import PartyInventoryPanel from "@/components/player/PartyInventoryPanel";
 import DmCombatProgressPanel from "@/components/control-center/DmCombatProgressPanel";
+import DmDamageCalculator from "@/components/control-center/DmDamageCalculator";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -92,6 +93,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setPartySpellSlots = useUIStore((s) => s.setPartySpellSlots);
   const showCombatProgress = useUIStore((s) => s.showCombatProgress);
   const setCombatProgress = useUIStore((s) => s.setCombatProgress);
+  const showDamageCalculator = useUIStore((s) => s.showDamageCalculator);
+  const setDamageCalculator = useUIStore((s) => s.setDamageCalculator);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -272,6 +275,11 @@ export default function AppShell({ children }: AppShellProps) {
   const setCombatProgressRef = useRef(setCombatProgress);
   setCombatProgressRef.current = setCombatProgress;
 
+  const showDamageCalculatorRef = useRef(showDamageCalculator);
+  showDamageCalculatorRef.current = showDamageCalculator;
+  const setDamageCalculatorRef = useRef(setDamageCalculator);
+  setDamageCalculatorRef.current = setDamageCalculator;
+
   useEffect(() => {
     const handler = () => { setShipCombatRef.current(!showShipCombatRef.current); };
     window.addEventListener("toggle-dm-ship-combat", handler);
@@ -282,6 +290,12 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setCombatProgressRef.current(!showCombatProgressRef.current); };
     window.addEventListener("toggle-dm-combat-progress", handler);
     return () => window.removeEventListener("toggle-dm-combat-progress", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = () => { setDamageCalculatorRef.current(!showDamageCalculatorRef.current); };
+    window.addEventListener("toggle-dm-damage-calculator", handler);
+    return () => window.removeEventListener("toggle-dm-damage-calculator", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -497,6 +511,14 @@ export default function AppShell({ children }: AppShellProps) {
           damage/healing totals, turn timer, and quick controls. */}
       {role === "dm" && (
         <DmCombatProgressPanel onClose={() => setCombatProgress(false)} />
+      )}
+
+      {/* ── DM Damage/Healing Calculator (Cycle 27) ──
+          Quick damage/healing resolution for environmental effects,
+          traps, fall damage, poison, and other non-attack sources.
+          Presets per CR tier, 13 damage types, multi-target, resistance. */}
+      {role === "dm" && (
+        <DmDamageCalculator onClose={() => setDamageCalculator(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──
