@@ -203,6 +203,14 @@ const dmTools: DmToolProps[] = [
     label: "Party Inventory",
     title: "Party Inventory — View all characters' items, search, drag-and-drop transfer",
   },
+  {
+    eventName: "toggle-dm-party-spell-slots",
+    icon: "sparkles",
+    colorClass: "text-violet-400",
+    hoverClass: "hover:bg-violet-500/8 hover:border-violet-500/10",
+    label: "Party Spell Slots",
+    title: "Party Spell Slots — See all casters' slot usage, DC/ATK, restore slots",
+  },
 ];
 
 /** Map of tool event name → hover text color class (Tailwind JIT-safe) */
@@ -223,6 +231,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-party-rest": "group-hover:text-emerald-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
+  "toggle-dm-party-spell-slots": "group-hover:text-violet-400",
 };
 
 /** Renders a single DM tool button — reused for both expanded and collapsed modes */

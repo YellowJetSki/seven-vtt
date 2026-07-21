@@ -43,6 +43,7 @@ import DmTravelPaceGuide from "@/components/control-center/DmTravelPaceGuide";
 import DmShipCombatGuide from "@/components/control-center/DmShipCombatGuide";
 import GlobalQuickNote from "@/components/ui/GlobalQuickNote";
 import PartyInventoryPanel from "@/components/player/PartyInventoryPanel";
+import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -86,6 +87,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setShipCombat = useUIStore((s) => s.setShipCombat);
   const showPartyInventory = useUIStore((s) => s.showPartyInventory);
   const setPartyInventory = useUIStore((s) => s.setPartyInventory);
+  const showPartySpellSlots = useUIStore((s) => s.showPartySpellSlots);
+  const setPartySpellSlots = useUIStore((s) => s.setPartySpellSlots);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -276,6 +279,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setPartyInventoryRef.current(!showPartyInventoryRef.current); };
     window.addEventListener("toggle-dm-party-inventory", handler);
     return () => window.removeEventListener("toggle-dm-party-inventory", handler);
+  }, []);
+
+  const showPartySpellSlotsRef = useRef(showPartySpellSlots);
+  showPartySpellSlotsRef.current = showPartySpellSlots;
+  const setPartySpellSlotsRef = useRef(setPartySpellSlots);
+  setPartySpellSlotsRef.current = setPartySpellSlots;
+
+  useEffect(() => {
+    const handler = () => { setPartySpellSlotsRef.current(!showPartySpellSlotsRef.current); };
+    window.addEventListener("toggle-dm-party-spell-slots", handler);
+    return () => window.removeEventListener("toggle-dm-party-spell-slots", handler);
   }, []);
 
   // ── Quick Note custom event: sidebar button / programmatic ──
@@ -469,6 +483,14 @@ export default function AppShell({ children }: AppShellProps) {
           Search items, see party wealth, drag items between characters. */}
       {role === "dm" && (
         <PartyInventoryPanel />
+      )}
+
+      {/* ── DM Party Spell Slots Panel (Cycle 23) ──
+          View ALL party members' spell slot usage at a glance.
+          See who has slots remaining, concentration status,
+          and quick-restore slots per character. */}
+      {role === "dm" && (
+        <PartySpellSlotsPanel />
       )}
 
       {/* ── GLOBAL QUICK NOTE ──
