@@ -16427,3 +16427,59 @@ Total time: ~5 seconds vs navigating to Spells tab in character sheet
 - Vite build: Clean
 - Git savepoint: Sprint 69
 ---
+
+## Companion Attack Reference Panel (Cycle 70) (Updated: 2026-07-21 18:01)
+## Cycle 70 — Companion Attack/Cast Quick-Reference Panel: Player Combat Reference — COMPLETE
+
+### New Component Created
+- **`CompanionAttackRefPanel.tsx`** (~530 lines) — Rose/violet-accented glass popover
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Dual-tab layout** | Weapons tab (rose accent) + Spells tab (violet accent) |
+| **Weapon list** | Auto-detected from equipped inventory + SRD compendium resolution. Shows ATK bonus, damage expression, average damage, damage type emoji, range, weapon properties |
+| **Offensive spell list** | Prepared spells with damage/save/attack. Shows ATK bonus or save DC, damage expression, average damage, school badge |
+| **Cantrip section** | Separate "At Will" section above level 1+ spells |
+| **Target selector** | Pick from active encounter combatants by name + AC |
+| **AC comparison** | "Hit on d20 X+" — computed from ATK bonus vs target AC, color-coded (green ≤5, gold ≤10, amber ≤15, rose >15) |
+| **Save DC display** | For spells with saves — shows DC vs target AC for context |
+| **Average damage** | Informational avg per attack (e.g., "Avg 28") — deterministic computation |
+| **Damage type emojis** | 🔥 fire, ❄️ cold, ⚡ lightning, etc. per attack |
+| **No dice rolling** | Pure informational reference — all values computed from character stats |
+| **Premium glassmorphism** | Rose/violet accent tabs, staggered entrance, gold edge light |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `PlayerLiveEncounterView.tsx` | Companion view | Added "Attack & Cast" button + `CompanionAttackRefPanel` popover during player's turn |
+
+### Player Workflow
+```
+During combat, player's turn:
+1. Player sees "Attack & Cast" and "Spellbook" buttons in companion view
+2. Taps "Attack & Cast" → popover opens with Weapons tab active
+3. Sees equipped weapons: Longsword (+7, 1d8+5 slashing, Avg 9)
+4. Taps a target from the encounter: "Goblin Scout (AC 13)"
+5. AC comparison shows: "🎯 vs 13 AC · Hit on d20 6+" (green — easy hit)
+6. Switches to Spells tab → sees cantrips + prepared offensive spells
+7. Fireball shows: "8d6 fire, Avg 28, 🛡 Save DC 15 Dex"
+8. Player closes → back to encounter view
+Total time: ~8 seconds vs navigating through full character sheet
+```
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `CompanionAttackRefPanel.tsx` | ~530 | Player-facing attack/cast quick-reference popover |
+
+### Files Modified
+| File | Change |
+|:-----|:-------|
+| `PlayerLiveEncounterView.tsx` | Added import, state, button, popover rendering (2 new buttons: Attack & Cast + Spellbook) |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 70
+---
