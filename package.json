@@ -10,6 +10,8 @@
     "test:unit": "cd vtt && npx vitest run --config vitest.config.ts"
   },
   "dependencies": {
+    "@fontsource/playfair-display": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
     "source-map": "^0.7.6"
   },
   "devDependencies": {

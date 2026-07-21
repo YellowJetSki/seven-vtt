@@ -8,7 +8,27 @@
 @import "tailwindcss";
 @source "../src";
 
+/* ═══════════════════════════════════════════════════════════════
+   Premium Fonts — Overrrides/Lusion-grade typography
+   Plus Jakarta Sans (body) + Playfair Display (headings)
+   ═══════════════════════════════════════════════════════════════ */
+@import "@fontsource/plus-jakarta-sans/400.css";
+@import "@fontsource/plus-jakarta-sans/500.css";
+@import "@fontsource/plus-jakarta-sans/600.css";
+@import "@fontsource/plus-jakarta-sans/700.css";
+@import "@fontsource/plus-jakarta-sans/800.css";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/500.css";
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
+@import "@fontsource/playfair-display/800.css";
+
 @theme {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
   --color-surface-950: #0f1016;
   --color-surface-900: #181922;
   --color-surface-850: #1e1f2b;
@@ -86,9 +106,18 @@
     overscroll-behavior: none;
   }
   body {
-    @apply bg-obsidian text-[#e4e5f0];
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    @apply bg-obsidian text-[#eef0f8];
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Premium heading style ── */
+  h1, h2, h3, h4, h5, h6, .font-serif {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 }

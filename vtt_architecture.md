@@ -12356,3 +12356,37 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 | **10** | **Regression audit** | **All 4 bugs verified hardened** |
 
 ---
+
+## Sprint 11/40 — UI/UX Overhaul Phase (Cycle 1 of 10) (Updated: 2026-07-21 09:31)
+## Sprint 11/40 — UI/UX Overhaul Phase (Cycle 1 of 10)
+**Date:** 2026-07-21
+
+### Key Deliverables
+
+**1. Premium Fonts (Overrrides/Lusion-grade)**
+- Added `@fontsource/plus-jakarta-sans` (body) — clean, modern, responsive
+- Added `@fontsource/playfair-display` (headings) — premium serif for D&D manual feel
+- Configured in `index.css`: body uses "Plus Jakarta Sans", headings use "Playfair Display"
+- Increased body text contrast: `text-[#eef0f8]` (was `#e4e5f0`) on `bg-obsidian (#0a0b12)`
+
+**2. Login Page Refactored into 5 Sub-Components**
+- `LoginAuroraBackground.tsx` — 3-layer aurora + grid + particles
+- `LoginAmbientRune.tsx` — Giant ᚱ with pulsing glow
+- `LoginBrandHero.tsx` — Brand panel with features
+- `LoginMobileBrand.tsx` — Mobile brand header
+- `LoginForm.tsx` — Glass card with connection status + form
+- **LoginPage.tsx** reduced from ~380 lines to ~60 lines (pure orchestrator)
+
+**3. Build & Deploy**
+- Font packages saved to `vtt/package.json` dependencies
+- Production build: 7.64s, 2134 modules
+- Deployed + aliased to https://arkla.vercel.app
+- HTTP 200 verified
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ No monolith files — 5 new reusable components
+
+---
