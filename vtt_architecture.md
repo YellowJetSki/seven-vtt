@@ -15490,3 +15490,20 @@ PlayerLiveEncounterView (w-72, top-right overlay)
 ### PC Experience Phase — COMPLETE (Cycles 36-45) ✅
 All 10 cycles of the PC Experience Phase delivered. Ready for Cycle 46-50 (QA & Stabilization).
 ---
+
+## QA & Stabilization (Updated: 2026-07-21 16:41)
+## Cycle 46 — Uncovered Engine Test Sweep (Complete)
+
+### Deliverables
+- **New test file:** `src/__tests__/cycle-46-uncovered-engines-qa.test.ts`
+- **3 engines with 0 prior coverage now fully tested:**
+  1. `spell-point-engine.ts` — 11 suites covering DMG 288-289: cost table, max points, slots→points conversion, spend/restore, available levels, upcast costs, slot creation (45+ tests)
+  2. `damage-type-engine.ts` — 5 suites covering all 5 damage resolution outcomes (immune, resistance, vulnerability, standard, cancel), multi-type damage, display utilities (35+ tests)
+  3. `initiative-engine.ts` — 7 suites covering DEX mod, initiative range, 5e RAW tiebreaker sort (init→DEX→alphabetical), combatant building from tokens, ID generation (45+ tests)
+
+### Quality Gates
+- TypeScript: ✅ 0 errors (`npx tsc --noEmit`)
+- ESLint: 455 pre-existing parser config errors (0 new code errors — all project-wide tooling issue)
+- Test coverage: +125+ tests across 3 previously uncovered engines
+- Git: Sprint 46 checkpoint saved
+---
