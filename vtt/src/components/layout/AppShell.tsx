@@ -52,6 +52,7 @@ import DmEncounterAnalyzer from "@/components/control-center/DmEncounterAnalyzer
 import DmQuestTracker from "@/components/control-center/DmQuestTracker";
 import DmTimeTracker from "@/components/control-center/DmTimeTracker";
 import DmSessionRecap from "@/components/control-center/DmSessionRecap";
+import DmFactionTracker from "@/components/control-center/DmFactionTracker";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -116,6 +117,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setTimeTracker = useUIStore((s) => s.setTimeTracker);
   const showSessionRecap = useUIStore((s) => s.showSessionRecap);
   const setSessionRecap = useUIStore((s) => s.setSessionRecap);
+  const showFactionTracker = useUIStore((s) => s.showFactionTracker);
+  const setFactionTracker = useUIStore((s) => s.setFactionTracker);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -394,6 +397,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setSessionRecapRef.current(!showSessionRecapRef.current); };
     window.addEventListener("toggle-dm-session-recap", handler);
     return () => window.removeEventListener("toggle-dm-session-recap", handler);
+  }, []);
+
+  const showFactionTrackerRef = useRef(showFactionTracker);
+  showFactionTrackerRef.current = showFactionTracker;
+  const setFactionTrackerRef = useRef(setFactionTracker);
+  setFactionTrackerRef.current = setFactionTracker;
+
+  useEffect(() => {
+    const handler = () => { setFactionTrackerRef.current(!showFactionTrackerRef.current); };
+    window.addEventListener("toggle-dm-faction-tracker", handler);
+    return () => window.removeEventListener("toggle-dm-faction-tracker", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -676,6 +690,13 @@ export default function AppShell({ children }: AppShellProps) {
           Saves formatted recaps directly to the campaign journal. */}
       {role === "dm" && (
         <DmSessionRecap onClose={() => setSessionRecap(false)} />
+      )}
+
+      {/* ── DM Faction Tracker (Cycle 35 — FINAL) ──
+          Track NPC factions, inter-faction relations, party attitudes,
+          influence scores, and key NPC members. State persisted in localStorage. */}
+      {role === "dm" && (
+        <DmFactionTracker onClose={() => setFactionTracker(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──

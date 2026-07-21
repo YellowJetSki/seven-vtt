@@ -55,6 +55,7 @@ interface UIState {
   showPartyResources: boolean;
   showEncounterAnalyzer: boolean;
   showQuestTracker: boolean;
+  showFactionTracker: boolean;
 }
 
 interface UIActions {
@@ -103,6 +104,7 @@ interface UIActions {
   setPartyResources: (show: boolean) => void;
   setEncounterAnalyzer: (show: boolean) => void;
   setQuestTracker: (show: boolean) => void;
+  setFactionTracker: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -145,6 +147,8 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showQuestTracker: false,
   showTimeTracker: false,
   showSessionRecap: false,
+  showFactionTracker: false,
+  showFactionTracker: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -184,6 +188,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setQuestTracker: (show: boolean) => set({ showQuestTracker: show }),
   setTimeTracker: (show: boolean) => set({ showTimeTracker: show }),
   setSessionRecap: (show: boolean) => set({ showSessionRecap: show }),
+  setFactionTracker: (show: boolean) => set({ showFactionTracker: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

@@ -196,6 +196,14 @@ const dmTools: DmToolProps[] = [
     title: "Session Recap — Auto-generate session summaries from combat, XP, and journal data",
   },
   {
+    eventName: "toggle-dm-faction-tracker",
+    icon: "encounterComplete",
+    colorClass: "text-violet-400",
+    hoverClass: "hover:bg-violet-500/8 hover:border-violet-500/10",
+    label: "Factions",
+    title: "Faction Tracker — Track NPC factions, inter-faction relations, party attitudes, influence, and key members",
+  },
+  {
     eventName: "toggle-dm-damage-calculator",
     icon: "attack",
     colorClass: "text-rose-400",
@@ -307,6 +315,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-quest-tracker": "group-hover:text-emerald-400",
   "toggle-dm-time-tracker": "group-hover:text-gold-400",
   "toggle-dm-session-recap": "group-hover:text-gold-400",
+  "toggle-dm-faction-tracker": "group-hover:text-violet-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
   "toggle-dm-party-spell-slots": "group-hover:text-violet-400",
