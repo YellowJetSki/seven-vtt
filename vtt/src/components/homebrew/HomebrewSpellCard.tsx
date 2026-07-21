@@ -15,6 +15,7 @@ interface HomebrewSpellCardProps {
   onDelete: (id: string) => void;
   onDuplicate: (spell: HomebrewSpell) => void;
   onToggleVisibility: (id: string, visible: boolean) => void;
+  onViewDetail?: (spell: HomebrewSpell) => void;
   isBulkMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
@@ -33,7 +34,7 @@ const LEVEL_COLORS: Record<string, string> = {
   "9": "text-violet-400",
 };
 
-export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate, onToggleVisibility, isBulkMode, isSelected, onToggleSelect }: HomebrewSpellCardProps) {
+export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate, onToggleVisibility, onViewDetail, isBulkMode, isSelected, onToggleSelect }: HomebrewSpellCardProps) {
   const schoolColor = getSchoolColor(spell.school);
   const hasAoe = spell.shape && spell.areaSize;
   const hasDamage = spell.damageDice && spell.damageType;
@@ -63,7 +64,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
         <div className="flex-1 min-w-0">
           {/* Name + Level + School */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors cursor-pointer" onClick={() => onViewDetail?.(spell)}>
               {spell.name}
             </h4>
             <span className={`text-[9px] uppercase tracking-wider ${LEVEL_COLORS[String(spell.level)] || "text-surface-400"}`}>

@@ -16,6 +16,7 @@ interface HomebrewFeatCardProps {
   onDelete: (id: string) => void;
   onDuplicate: (feat: HomebrewFeat) => void;
   onToggleVisibility: (id: string, visible: boolean) => void;
+  onViewDetail?: (feat: HomebrewFeat) => void;
   isBulkMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
@@ -32,6 +33,7 @@ export default function HomebrewFeatCard({
   onDelete,
   onDuplicate,
   onToggleVisibility,
+  onViewDetail,
   isBulkMode,
   isSelected,
   onToggleSelect,
@@ -64,7 +66,7 @@ export default function HomebrewFeatCard({
         <div className="flex-1 min-w-0">
           {/* Name + Prerequisites Row */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors cursor-pointer" onClick={() => onViewDetail?.(feat)}>
               {feat.name}
             </h4>
             {feat.repeatable && (
