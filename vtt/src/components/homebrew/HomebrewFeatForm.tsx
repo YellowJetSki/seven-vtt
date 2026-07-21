@@ -103,7 +103,13 @@ export default function HomebrewFeatForm({ form, benefitsInput, onBenefitsChange
           {/* Description */}
           <div>
             <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Description</label>
-            <textarea value={form.description} onChange={(e) => onChange({ ...form, description: e.target.value })} className="input-arcane w-full py-2 px-3 text-sm resize-none h-20" placeholder="Feat description and flavor text..." />
+            <textarea value={form.description} onChange={(e) => onChange({ ...form, description: e.target.value })} className="input-arcane w-full py-2 px-3 text-sm resize-none h-20" placeholder="Feat description and mechanics..." />
+          </div>
+
+          {/* Flavor Text */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Flavor Text <span className="text-surface-600">(optional)</span></label>
+            <input value={form.flavorText || ""} onChange={(e) => onChange({ ...form, flavorText: e.target.value || undefined })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder='"You are what you do, not what you say."' />
           </div>
 
           {/* Ability Score Increase */}
@@ -183,6 +189,18 @@ export default function HomebrewFeatForm({ form, benefitsInput, onBenefitsChange
                 Add
               </button>
             </div>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Tags <span className="text-surface-600">(comma-separated)</span></label>
+            <input value={form.tags?.join(", ") || ""} onChange={(e) => onChange({ ...form, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder="combat, social, investigation" />
+          </div>
+
+          {/* Source */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Source</label>
+            <input value={form.source || ""} onChange={(e) => onChange({ ...form, source: e.target.value })} className="input-arcane w-full py-2.5 px-3 text-sm" placeholder="homebrew" />
           </div>
 
           {/* Toggles */}

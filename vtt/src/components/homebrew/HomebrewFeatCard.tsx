@@ -96,6 +96,11 @@ export default function HomebrewFeatCard({
             )}
           </div>
 
+          {/* Flavor Text */}
+          {feat.flavorText && (
+            <p className="text-[9px] text-gold-400/50 italic mt-1 leading-relaxed line-clamp-1">"{feat.flavorText}"</p>
+          )}
+
           {/* Benefits */}
           {feat.benefits && feat.benefits.length > 0 && (
             <div className="mt-1.5 text-[10px] text-surface-400 line-clamp-2 leading-relaxed">
@@ -104,6 +109,11 @@ export default function HomebrewFeatCard({
               ))}
               {feat.benefits.length > 2 && <span className="text-surface-500"> · +{feat.benefits.length - 2} more</span>}
             </div>
+          )}
+
+          {/* Source */}
+          {feat.source && feat.source !== "homebrew" && (
+            <span className="mt-1.5 text-[8px] text-surface-500 block">Source: {feat.source}</span>
           )}
         </div>
 

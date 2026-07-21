@@ -27,9 +27,10 @@ const emptySpell: Omit<HomebrewSpell, "id" | "createdAt" | "updatedAt"> = {
 };
 
 const emptyFeat: Omit<HomebrewFeat, "id" | "createdAt" | "updatedAt"> = {
-  name: "", description: "", prerequisites: [], benefits: [],
+  name: "", description: "", flavorText: "", prerequisites: [], benefits: [],
   repeatable: false, visibleToPlayers: true,
   tags: [], source: "homebrew", isHomebrew: true,
+  abilityScoreIncrease: undefined, skillProficiencies: undefined,
 };
 
 export function useHomebrewForms() {

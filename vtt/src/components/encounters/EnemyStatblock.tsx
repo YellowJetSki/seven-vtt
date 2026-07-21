@@ -203,6 +203,18 @@ export default function EnemyStatblock({ enemy, onSave, onDelete, onClose }: Ene
 function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; profBonus: number; passivePerception: number }) {
   return (
     <>
+      {/* Token Image Banner */}
+      {enemy.imageUrl && (
+        <div className="relative w-full h-32 rounded-xl overflow-hidden border border-gold/10 mb-3">
+          <img src={enemy.imageUrl} alt={enemy.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0c0d15] via-[#0c0d15]/20 to-transparent" />
+          <div className="absolute bottom-2 left-3 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gold-500" />
+            <span className="text-[9px] text-gold-400/70 uppercase tracking-wider">Token Preview</span>
+          </div>
+        </div>
+      )}
+
       {/* AC / HP / Speed */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl bg-gradient-to-br from-gold-500/10 to-amber-500/5 border border-gold-500/15 p-3 text-center">
@@ -361,6 +373,53 @@ function ReadView({ enemy, profBonus, passivePerception }: { enemy: EnemyDoc; pr
         <div>
           <h3 className="text-[9px] uppercase tracking-wider text-amber-400/60 font-bold mb-1">Legendary Actions</h3>
           <p className="text-[11px] text-surface-200 whitespace-pre-wrap leading-relaxed">{enemy.legendaryActions}</p>
+        </div>
+      )}
+
+      {/* Spellcasting */}
+      {enemy.spellcasting && (
+        <div className="rounded-xl bg-gradient-to-b from-violet-500/5 to-transparent border border-violet-500/10 p-3 space-y-2">
+          <h3 className="text-[9px] uppercase tracking-wider text-violet-400/80 font-bold">✦ Spellcasting</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {enemy.spellcasting.spellSaveDC > 0 && (
+              <div>
+                <span className="text-[8px] uppercase tracking-wider text-surface-500 block">Save DC</span>
+                <span className="text-sm font-bold text-violet-300">{enemy.spellcasting.spellSaveDC}</span>
+              </div>
+            )}
+            {enemy.spellcasting.spellAttackBonus > 0 && (
+              <div>
+                <span className="text-[8px] uppercase tracking-wider text-surface-500 block">ATK Bonus</span>
+                <span className="text-sm font-bold text-violet-300">+{enemy.spellcasting.spellAttackBonus}</span>
+              </div>
+            )}
+            <div>
+              <span className="text-[8px] uppercase tracking-wider text-surface-500 block">Type</span>
+              <span className="text-[11px] text-violet-300 capitalize">{enemy.spellcasting.casterType}</span>
+            </div>
+          </div>
+          <div>
+            <span className="text-[8px] uppercase tracking-wider text-surface-500 block">Ability</span>
+            <span className="text-[11px] text-violet-300 capitalize">{enemy.spellcasting.spellcastingAbility.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
+          </div>
+          {enemy.spellcasting.spells && enemy.spellcasting.spells.length > 0 && (
+            <div>
+              <span className="text-[8px] uppercase tracking-wider text-surface-500 block">Spells</span>
+              <p className="text-[11px] text-surface-300 mt-0.5">{enemy.spellcasting.spells.join(", ")}</p>
+            </div>
+          )}
+          {enemy.spellcasting.slotsPerLevel && Object.keys(enemy.spellcasting.slotsPerLevel).length > 0 && (
+            <div>
+              <span className="text-[8px] uppercase tracking-wider text-surface-500 block">Slots</span>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {Object.entries(enemy.spellcasting.slotsPerLevel).map(([level, slots]) => (
+                  <span key={level} className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/[0.06] text-surface-300 font-mono">
+                    Lv{level.replace("level", "")}: {slots.current}/{slots.max}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
