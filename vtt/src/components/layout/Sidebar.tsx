@@ -216,7 +216,7 @@ export default function Sidebar() {
             title="Party Rest & Recovery"
             aria-label="Toggle Party Rest"
           >
-            <span className="text-sm">😴</span>
+            <PremiumIcon name="restRecovery" className="w-3.5 h-3.5 text-emerald-400" />
             {sidebarOpen && (
               <span className="text-[9px] text-surface-400 hover:text-emerald-400 transition-colors truncate">
                 Party Rest
@@ -239,7 +239,7 @@ export default function Sidebar() {
             title="Combat Wrap-Up — XP, Loot, Condition Clearing"
             aria-label="Toggle Combat Wrap-Up"
           >
-            <span className="text-sm">🏆</span>
+            <PremiumIcon name="encounterComplete" className="w-3.5 h-3.5 text-gold-400" />
             {sidebarOpen && (
               <span className="text-[9px] text-surface-400 hover:text-gold-400 transition-colors truncate">
                 Combat Wrap-Up
