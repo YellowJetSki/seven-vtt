@@ -13851,3 +13851,41 @@ When users scrolled past the nav to see DM tools, the nav disappeared off-screen
 - ✅ Build: 11.45s local / 8.35s Vercel
 - ✅ Deployed + aliased: arkla.vercel.app
 ---
+
+## Cycle 7 — Foundation & Dashboards — DashboardPanel Extraction & Campaign Metrics (Updated: 2026-07-21 14:03)
+## Cycle 7 — Foundation & Dashboards (Cycle 2 of 10) — Complete
+**Date:** 2026-07-21
+
+### Deliverables
+
+#### 1. DashboardPanel Reusable Component (NEW — `src/components/ui/DashboardPanel.tsx`)
+Extracted the repeated glass gradient panel pattern used across ALL 6 dashboard sections into a single reusable component. Features:
+- Gold edge light (auto via `absolute top-0 left-[10%] right-[10%] h-px`)
+- Bottom edge light on hover (auto via `group-hover/panel:via-gold-500/10`)
+- Corner ambient glow pocket
+- Optional header slot with icon, title, count badge, and action
+- Staggered entrance via `animation-delay` prop
+- Consistent spacing and `from-[#141520] to-[#0f1019]` gradient
+
+**Refactored 5 dashboard components to use DashboardPanel:**
+- QuickNav.tsx — ⚡ Quick Navigation header
+- SessionTimer.tsx — ⏱ Session Timer header with Start/End action
+- ActiveMapCard.tsx — 🗺 Active Map header
+- CombatQuickStatus.tsx — ⚔ Combat Status header with LIVE badge
+- DmQuickRef.tsx — 📋 DM Quick Reference header
+
+#### 2. Campaign-Level Metrics (DmDashboard.tsx)
+Added computed at-a-glance metrics to the CampaignBanner stat cluster:
+- **Total XP** — sum of all characters' experience points
+- **Avg Level** — rounded average party level
+- **Max Level** — highest level in the party
+- All computed from actual campaign store data
+
+#### 3. Build & Deployment
+- TypeScript: 0 errors (2148 modules)
+- Vite build: 11.94s local / 7.70s Vercel
+- JS bundle: 2,206 KB (517 KB gzipped)
+- CSS bundle: 423 KB (52 KB gzipped)
+- Deployed + aliased to arkla.vercel.app
+- Verified in production: Global Quick Note present, Dashboard panel rendering, 4 gold edge lights active
+---
