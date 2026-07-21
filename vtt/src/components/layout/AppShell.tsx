@@ -37,6 +37,7 @@ import DmTreasureGeneratorPopover from "@/components/control-center/DmTreasureGe
 import DmConcentrationTimerPopover from "@/components/control-center/DmConcentrationTimerPopover";
 import DmLegendaryActionTracker from "@/components/control-center/DmLegendaryActionTracker";
 import DmSpellReferencePopover from "@/components/control-center/DmSpellReferencePopover";
+import DmWildShapeTracker from "@/components/control-center/DmWildShapeTracker";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -70,6 +71,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setLegendaryTracker = useUIStore((s) => s.setLegendaryTracker);
   const showSpellReference = useUIStore((s) => s.showSpellReference);
   const setSpellReference = useUIStore((s) => s.setSpellReference);
+  const showWildShapeTracker = useUIStore((s) => s.showWildShapeTracker);
+  const setWildShapeTracker = useUIStore((s) => s.setWildShapeTracker);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -205,6 +208,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setSpellReferenceRef.current(!showSpellReferenceRef.current); };
     window.addEventListener("toggle-dm-spell-reference", handler);
     return () => window.removeEventListener("toggle-dm-spell-reference", handler);
+  }, []);
+
+  const showWildShapeTrackerRef = useRef(showWildShapeTracker);
+  showWildShapeTrackerRef.current = showWildShapeTracker;
+  const setWildShapeTrackerRef = useRef(setWildShapeTracker);
+  setWildShapeTrackerRef.current = setWildShapeTracker;
+
+  useEffect(() => {
+    const handler = () => { setWildShapeTrackerRef.current(!showWildShapeTrackerRef.current); };
+    window.addEventListener("toggle-dm-wild-shape", handler);
+    return () => window.removeEventListener("toggle-dm-wild-shape", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -348,6 +362,10 @@ export default function AppShell({ children }: AppShellProps) {
           Filter by level, school, class. Full 5e statblock details. */}
       {role === "dm" && (
         <DmSpellReferencePopover />
+      )}
+
+      {role === "dm" && (
+        <DmWildShapeTracker />
       )}
     </div>
   );
