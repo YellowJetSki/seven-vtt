@@ -11,6 +11,11 @@
  * - sidebarOpen = false → hidden off-screen
  * - MobileBottomNav provides persistent bottom navigation
  *
+ * CRITICAL ARCHITECTURE: All navigation links AND DM tools live
+ * inside the SAME scrollable <nav> container. This ensures that
+ * in collapsed mode (w-16), all items scroll together without
+ * overlapping, and the main nav links are always visible first.
+ *
  * Architecture:
  *   - Responsive breakpoint: lg (1024px)
  *   - Uses useResponsive for accurate breakpoint detection
@@ -38,13 +43,185 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: "/campaign/dashboard", label: "Dashboard", icon: "📊" },
   { path: "/campaign/player-cards", label: "Player Cards", icon: "👥" },
-  { path: "/campaign/homebrew", label: "Homebrew", icon: "⚗️" },
+  { path: "/campaign/homebrew", label: "Homebrew", icon: "⚗" },
   { path: "/campaign/encounters", label: "Bestiary & Encounters", icon: "⚔" },
   { path: "/campaign/maps", label: "Battle Maps", icon: "🗺" },
   { path: "/campaign/journal", label: "Journal", icon: "📖" },
   { path: "/campaign/assets", label: "Asset Gallery", icon: "🎨" },
   { path: "/campaign/settings", label: "Settings", icon: "⚙" },
 ];
+
+/** All DM tool actions as a data array to eliminate repetition */
+interface DmToolProps {
+  /** Custom event name to dispatch */
+  eventName: string;
+  /** PremiumIcon name */
+  icon: string;
+  /** Icon color class */
+  colorClass: string;
+  /** Hover accent color class */
+  hoverClass: string;
+  /** Label shown when sidebar is open */
+  label: string;
+  /** Title/tooltip */
+  title: string;
+}
+
+const dmTools: DmToolProps[] = [
+  {
+    eventName: "toggle-dm-skill-check",
+    icon: "rollInitiative",
+    colorClass: "text-gold-400",
+    hoverClass: "hover:bg-amber-500/8 hover:border-amber-500/10",
+    label: "Skill Check",
+    title: "Skill Check — Call party skill checks & view passive scores",
+  },
+  {
+    eventName: "toggle-dm-treasure-generator",
+    icon: "loot",
+    colorClass: "text-amber-400",
+    hoverClass: "hover:bg-amber-500/8 hover:border-amber-500/10",
+    label: "Treasure",
+    title: "Treasure & Loot Generator — DMG treasure tables for individual parcels & hoards",
+  },
+  {
+    eventName: "toggle-dm-concentration-timer",
+    icon: "sparkles",
+    colorClass: "text-violet-400",
+    hoverClass: "hover:bg-violet-500/8 hover:border-violet-500/10",
+    label: "Concentration",
+    title: "Concentration Timer — Real-time countdown for active concentration spells",
+  },
+  {
+    eventName: "toggle-dm-legendary-tracker",
+    icon: "attack",
+    colorClass: "text-rose-400",
+    hoverClass: "hover:bg-rose-500/8 hover:border-rose-500/10",
+    label: "Legendary",
+    title: "Legendary Actions — Track legendary actions, resistances, lair actions, mythic phases & recharges",
+  },
+  {
+    eventName: "toggle-dm-spell-reference",
+    icon: "sparkles",
+    colorClass: "text-indigo-400",
+    hoverClass: "hover:bg-indigo-500/8 hover:border-indigo-500/10",
+    label: "Spell Reference",
+    title: "Spell Reference — Search and browse all SRD and homebrew spells with full 5e statblock details",
+  },
+  {
+    eventName: "toggle-dm-wild-shape",
+    icon: "sparkles",
+    colorClass: "text-emerald-400",
+    hoverClass: "hover:bg-emerald-500/8 hover:border-emerald-500/10",
+    label: "Wild Shape",
+    title: "Wild Shape & Polymorph — Track transformed creature statblocks, shape HP, and auto-revert on KO",
+  },
+  {
+    eventName: "toggle-dm-downtime",
+    icon: "restRecovery",
+    colorClass: "text-amber-400",
+    hoverClass: "hover:bg-amber-500/8 hover:border-amber-500/10",
+    label: "Rest & Downtime",
+    title: "Rest & Downtime — Between-session activities: training, crafting, research, carousing, scribing, pit fighting, religious service, work, luxury rest, and copying spells",
+  },
+  {
+    eventName: "toggle-dm-travel-pace",
+    icon: "",
+    colorClass: "",
+    hoverClass: "hover:bg-sky-500/8 hover:border-sky-500/10",
+    label: "Travel & Wilderness",
+    title: "Travel & Wilderness — Overland travel, navigation, foraging, weather, and random encounters",
+  },
+  {
+    eventName: "toggle-dm-ship-combat",
+    icon: "",
+    colorClass: "",
+    hoverClass: "hover:bg-cyan-500/8 hover:border-cyan-500/10",
+    label: "Naval & Ships",
+    title: "Naval Combat & Travel — Ship stats, sea encounters, siege weapons, crew management",
+  },
+  {
+    eventName: "toggle-dm-social-interaction",
+    icon: "",
+    colorClass: "",
+    hoverClass: "hover:bg-violet-500/8 hover:border-violet-500/10",
+    label: "Social & Knowledge",
+    title: "Social Interaction & Monster Knowledge — DMG social rules + creature lore checks",
+  },
+  {
+    eventName: "toggle-dm-combat-conditions",
+    icon: "conditions",
+    colorClass: "text-amber-400",
+    hoverClass: "hover:bg-amber-500/8 hover:border-amber-500/10",
+    label: "Conditions",
+    title: "Combat Conditions — Apply/remove 5.5e conditions to any combatant",
+  },
+  {
+    eventName: "toggle-dm-quick-actions",
+    icon: "quickActions",
+    colorClass: "text-rose-400",
+    hoverClass: "hover:bg-rose-500/8 hover:border-rose-500/10",
+    label: "Quick Actions",
+    title: "Quick Actions — Damage, Heal, Temp HP, Gold distribution from any page",
+  },
+  {
+    eventName: "toggle-dm-npc-quick-create",
+    icon: "npcs",
+    colorClass: "text-emerald-400",
+    hoverClass: "hover:bg-emerald-500/8 hover:border-emerald-500/10",
+    label: "NPC Quick Create",
+    title: "NPC Quick Create — Build a monster & add to combat instantly",
+  },
+  {
+    eventName: "toggle-dm-party-rest",
+    icon: "restRecovery",
+    colorClass: "text-emerald-400",
+    hoverClass: "hover:bg-emerald-500/8 hover:border-emerald-500/10",
+    label: "Party Rest",
+    title: "Party Rest & Recovery — Apply short/long rest to all party members",
+  },
+  {
+    eventName: "toggle-dm-combat-wrapup",
+    icon: "encounterComplete",
+    colorClass: "text-gold-400",
+    hoverClass: "hover:bg-gold-500/8 hover:border-gold/10",
+    label: "Combat Wrap-Up",
+    title: "Combat Wrap-Up — XP, Loot, Condition Clearing",
+  },
+];
+
+/** Renders a single DM tool button — reused for both expanded and collapsed modes */
+function DmToolButton({ tool, isOpen }: { tool: DmToolProps; isOpen: boolean }) {
+  const iconContent = tool.icon ? (
+    <PremiumIcon name={tool.icon as any} className={`w-3.5 h-3.5 ${tool.colorClass}`} />
+  ) : (
+    <span className="w-3.5 h-3.5 flex items-center justify-center text-[13px]">
+      {tool.label === "Travel & Wilderness" ? "🗺️" : tool.label === "Naval & Ships" ? "⚓" : "💬"}
+    </span>
+  );
+
+  return (
+    <div className={`px-2 ${!isOpen ? "flex justify-center" : ""}`}>
+      <button
+        onClick={() => { window.dispatchEvent(new CustomEvent(tool.eventName)); }}
+        className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 ${tool.hoverClass} ${
+          isOpen
+            ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+            : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+        }`}
+        title={tool.title}
+        aria-label={tool.label}
+      >
+        {iconContent}
+        {isOpen && (
+          <span className={`text-[9px] text-surface-400 hover:text-${tool.colorClass.replace('text-', '')} transition-colors truncate`}>
+            {tool.label}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+}
 
 export default function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
@@ -120,395 +297,74 @@ export default function Sidebar() {
         {/* ── BRAND BAR ── */}
         <SidebarBrand isOpen={sidebarOpen} />
 
-        {/* ── NAVIGATION ── */}
-        <nav className="flex-1 min-h-0 py-3 space-y-0.5 px-2 overflow-y-auto scrollbar-gold">
-          {navItems.map((item) => (
-            <SidebarNavLink
-              key={item.path}
-              path={item.path}
-              label={item.label}
-              icon={item.icon}
-              isOpen={sidebarOpen}
-            />
-          ))}
-        </nav>
+        {/* ── SCROLLABLE CONTENT ──
+            ALL items (nav + tools + panels) live inside a single
+            scrollable container. This prevents overflow overlap
+            in collapsed mode and keeps the nav always accessible. */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-gold py-3">
 
-        {/* ── DM TOOLS SEPARATOR ──
-            Only visible when sidebar is open (expanded mode).
-            Separates navigation links from DM combat tools. */}
-        {sidebarOpen && (
-          <div className="px-3 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="h-px flex-1 bg-gradient-to-r from-gold-500/15 to-transparent" />
-              <span className="text-[7px] uppercase tracking-[0.15em] font-bold text-gold-500/40">Tools</span>
-              <div className="h-px flex-1 bg-gradient-to-l from-gold-500/15 to-transparent" />
+          {/* ── NAVIGATION LINKS ── */}
+          <nav className="space-y-0.5 px-2">
+            {navItems.map((item) => (
+              <SidebarNavLink
+                key={item.path}
+                path={item.path}
+                label={item.label}
+                icon={item.icon}
+                isOpen={sidebarOpen}
+              />
+            ))}
+          </nav>
+
+          {/* ── DM TOOLS SEPARATOR ──
+              Only visible when sidebar is open (expanded mode). */}
+          {sidebarOpen && (
+            <div className="px-3 pt-4 pb-2">
+              <div className="flex items-center gap-2">
+                <div className="h-px flex-1 bg-gradient-to-r from-gold-500/15 to-transparent" />
+                <span className="text-[7px] uppercase tracking-[0.15em] font-bold text-gold-500/40">Tools</span>
+                <div className="h-px flex-1 bg-gradient-to-l from-gold-500/15 to-transparent" />
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* ── DM SKILL CHECK TOGGLE (Sprint 31) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-skill-check"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Skill Check — Call party skill checks & view passive scores"
-            aria-label="Toggle Skill Check"
-          >
-            <PremiumIcon name="rollInitiative" className="w-3.5 h-3.5 text-gold-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-gold-400 transition-colors truncate">
-                Skill Check
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM TREASURE GENERATOR TOGGLE (Sprint 33) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-treasure-generator"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Treasure & Loot Generator — DMG treasure tables for individual parcels & hoards"
-            aria-label="Toggle Treasure Generator"
-          >
-            <PremiumIcon name="loot" className="w-3.5 h-3.5 text-amber-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-amber-400 transition-colors truncate">
-                Treasure
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM CONCENTRATION DURATION TIMER TOGGLE (Sprint 34) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-concentration-timer"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-violet-500/8 hover:border-violet-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Concentration Timer — Real-time countdown for active concentration spells with expiry warnings"
-            aria-label="Toggle Concentration Timer"
-          >
-            <PremiumIcon name="sparkles" className="w-3.5 h-3.5 text-violet-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-violet-400 transition-colors truncate">
-                Concentration
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM LEGENDARY ACTION TRACKER TOGGLE (Sprint 35) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-legendary-tracker"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-rose-500/8 hover:border-rose-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Legendary Actions — Track legendary actions, resistances, lair actions, mythic phases & recharges"
-            aria-label="Toggle Legendary Action Tracker"
-          >
-            <PremiumIcon name="attack" className="w-3.5 h-3.5 text-rose-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-rose-400 transition-colors truncate">
-                Legendary
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM SPELL REFERENCE TOGGLE (Sprint 36) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-spell-reference"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-indigo-500/8 hover:border-indigo-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Spell Reference — Search and browse all SRD and homebrew spells with full 5e statblock details"
-            aria-label="Toggle Spell Reference"
-          >
-            <PremiumIcon name="sparkles" className="w-3.5 h-3.5 text-indigo-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-indigo-400 transition-colors truncate">
-                Spell Reference
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM WILD SHAPE / POLYMORPH TRACKER TOGGLE (Sprint 37) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-wild-shape")); }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-emerald-500/8 hover:border-emerald-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Wild Shape & Polymorph — Track transformed creature statblocks, shape HP, and auto-revert on KO"
-            aria-label="Toggle Wild Shape Tracker"
-          >
-            <PremiumIcon name="sparkles" className="w-3.5 h-3.5 text-emerald-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-emerald-400 transition-colors truncate">
-                Wild Shape
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM REST & DOWNTIME TRACKER TOGGLE (Sprint 38) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-downtime")); }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Rest & Downtime — Between-session activities: training, crafting, research, carousing, scribing, pit fighting, religious service, work, luxury rest, and copying spells"
-            aria-label="Toggle Downtime Tracker"
-          >
-            <PremiumIcon name="restRecovery" className="w-3.5 h-3.5 text-amber-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-amber-400 transition-colors truncate">
-                Rest & Downtime
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM TRAVEL PACE & WILDERNESS SURVIVAL TOGGLE (Sprint 39) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-travel-pace")); }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-sky-500/8 hover:border-sky-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Travel & Wilderness — Overland travel, navigation, foraging, weather, and random encounters"
-            aria-label="Toggle Travel & Wilderness Guide"
-          >
-            <span className="w-3.5 h-3.5 flex items-center justify-center text-[13px]">🗺️</span>
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-sky-400 transition-colors truncate">
-                Travel & Wilderness
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM SHIP-TO-SHIP COMBAT & NAVAL TRAVEL TOGGLE (Sprint 40 — FINAL) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-ship-combat")); }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-cyan-500/8 hover:border-cyan-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Naval Combat & Travel — Ship stats, sea encounters, siege weapons, crew management"
-            aria-label="Toggle Ship Combat Guide"
-          >
-            <span className="w-3.5 h-3.5 flex items-center justify-center text-[13px]">⚓</span>
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-cyan-400 transition-colors truncate">
-                Naval & Ships
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM SOCIAL INTERACTION & MONSTER KNOWLEDGE TOGGLE (Sprint 32) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-social-interaction"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-violet-500/8 hover:border-violet-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Social Interaction & Monster Knowledge — DMG social rules + creature lore checks"
-            aria-label="Toggle Social Interaction"
-          >
-            <span className="w-3.5 h-3.5 flex items-center justify-center text-[11px]">💬</span>
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-violet-400 transition-colors truncate">
-                Social & Knowledge
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM COMBAT CONDITIONS TOGGLE ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-combat-conditions"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Combat Conditions"
-            aria-label="Toggle Combat Conditions"
-          >
-            <PremiumIcon name="conditions" className="w-3.5 h-3.5 text-amber-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-amber-400 transition-colors truncate">
-                Conditions
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM QUICK ACTIONS TOGGLE (Sprint 27) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-quick-actions"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-rose-500/8 hover:border-rose-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Quick Actions — Damage, Heal, Temp HP, Gold"
-            aria-label="Toggle Quick Actions"
-          >
-            <PremiumIcon name="quickActions" className="w-3.5 h-3.5 text-rose-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-rose-400 transition-colors truncate">
-                Quick Actions
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM NPC QUICK CREATE TOGGLE (Sprint 28) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-npc-quick-create"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-emerald-500/8 hover:border-emerald-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="NPC Quick Create — Build a monster & add to combat instantly"
-            aria-label="Toggle NPC Quick Create"
-          >
-            <PremiumIcon name="npcs" className="w-3.5 h-3.5 text-emerald-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-emerald-400 transition-colors truncate">
-                NPC Quick Create
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM PARTY REST TOGGLE ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-party-rest"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-emerald-500/8 hover:border-emerald-500/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Party Rest & Recovery"
-            aria-label="Toggle Party Rest"
-          >
-            <PremiumIcon name="restRecovery" className="w-3.5 h-3.5 text-emerald-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-emerald-400 transition-colors truncate">
-                Party Rest
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── DM COMBAT WRAP-UP TOGGLE (Sprint 29) ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("toggle-dm-combat-wrapup"));
-            }}
-            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-gold-500/8 hover:border-gold/10 ${
-              sidebarOpen
-                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
-                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
-            }`}
-            title="Combat Wrap-Up — XP, Loot, Condition Clearing"
-            aria-label="Toggle Combat Wrap-Up"
-          >
-            <PremiumIcon name="encounterComplete" className="w-3.5 h-3.5 text-gold-400" />
-            {sidebarOpen && (
-              <span className="text-[9px] text-surface-400 hover:text-gold-400 transition-colors truncate">
-                Combat Wrap-Up
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── CONNECTED PLAYERS ── */}
-        {sidebarOpen && (
-          <div className="px-3 pb-2">
-            <div className="border-t border-white/[0.04] pt-2">
-              <ConnectedPlayersPanel compact />
-            </div>
-          </div>
-        )}
-
-        {/* ── SYNC HEALTH ── */}
-        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
-          {sidebarOpen ? (
-            <SyncHealthPanel />
-          ) : (
-            <button
-              onClick={() => {
-                const event = new CustomEvent("toggle-sync-health");
-                window.dispatchEvent(event);
-              }}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.04] hover:bg-white/[0.03] active:scale-95 transition-all duration-200"
-              title="System Status"
-              aria-label="Toggle System Status"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]" />
-            </button>
           )}
+
+          {/* ── ALL DM TOOLS ──
+              Rendered from data array. Each tool is a small button.
+              In collapsed mode, they stack vertically as icons.
+              In expanded mode, they show labels. */}
+          <div className={`flex flex-col ${!sidebarOpen ? "items-center" : ""} space-y-0.5`}>
+            {dmTools.map((tool) => (
+              <DmToolButton key={tool.eventName} tool={tool} isOpen={sidebarOpen} />
+            ))}
+          </div>
+
+          {/* ── CONNECTED PLAYERS ── */}
+          {sidebarOpen && (
+            <div className="px-3 pt-4 pb-2">
+              <div className="border-t border-white/[0.04] pt-3">
+                <ConnectedPlayersPanel compact />
+              </div>
+            </div>
+          )}
+
+          {/* ── SYNC HEALTH ── */}
+          <div className={`pt-2 ${!sidebarOpen ? "flex justify-center px-0" : "px-2"}`}>
+            {sidebarOpen ? (
+              <SyncHealthPanel />
+            ) : (
+              <button
+                onClick={() => {
+                  const event = new CustomEvent("toggle-sync-health");
+                  window.dispatchEvent(event);
+                }}
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.04] hover:bg-white/[0.03] active:scale-95 transition-all duration-200"
+                title="System Status"
+                aria-label="Toggle System Status"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── FOOTER ANCHOR ── */}
