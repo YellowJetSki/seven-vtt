@@ -282,6 +282,27 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* ── DM REST & DOWNTIME TRACKER TOGGLE (Sprint 38) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-downtime")); }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Rest & Downtime — Between-session activities: training, crafting, research, carousing, scribing, pit fighting, religious service, work, luxury rest, and copying spells"
+            aria-label="Toggle Downtime Tracker"
+          >
+            <PremiumIcon name="restRecovery" className="w-3.5 h-3.5 text-amber-400" />
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-amber-400 transition-colors truncate">
+                Rest & Downtime
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM SOCIAL INTERACTION & MONSTER KNOWLEDGE TOGGLE (Sprint 32) ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button

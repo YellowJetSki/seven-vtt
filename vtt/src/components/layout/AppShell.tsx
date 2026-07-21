@@ -38,6 +38,7 @@ import DmConcentrationTimerPopover from "@/components/control-center/DmConcentra
 import DmLegendaryActionTracker from "@/components/control-center/DmLegendaryActionTracker";
 import DmSpellReferencePopover from "@/components/control-center/DmSpellReferencePopover";
 import DmWildShapeTracker from "@/components/control-center/DmWildShapeTracker";
+import DmDowntimeTracker from "@/components/control-center/DmDowntimeTracker";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -73,6 +74,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setSpellReference = useUIStore((s) => s.setSpellReference);
   const showWildShapeTracker = useUIStore((s) => s.showWildShapeTracker);
   const setWildShapeTracker = useUIStore((s) => s.setWildShapeTracker);
+  const showDowntimeTracker = useUIStore((s) => s.showDowntimeTracker);
+  const setDowntimeTracker = useUIStore((s) => s.setDowntimeTracker);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -221,6 +224,17 @@ export default function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener("toggle-dm-wild-shape", handler);
   }, []);
 
+  const showDowntimeTrackerRef = useRef(showDowntimeTracker);
+  showDowntimeTrackerRef.current = showDowntimeTracker;
+  const setDowntimeTrackerRef = useRef(setDowntimeTracker);
+  setDowntimeTrackerRef.current = setDowntimeTracker;
+
+  useEffect(() => {
+    const handler = () => { setDowntimeTrackerRef.current(!showDowntimeTrackerRef.current); };
+    window.addEventListener("toggle-dm-downtime", handler);
+    return () => window.removeEventListener("toggle-dm-downtime", handler);
+  }, []);
+
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -366,6 +380,10 @@ export default function AppShell({ children }: AppShellProps) {
 
       {role === "dm" && (
         <DmWildShapeTracker />
+      )}
+
+      {role === "dm" && (
+        <DmDowntimeTracker />
       )}
     </div>
   );

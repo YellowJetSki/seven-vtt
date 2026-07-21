@@ -42,6 +42,7 @@ interface UIState {
   showLegendaryTracker: boolean;
   showSpellReference: boolean;
   showWildShapeTracker: boolean;
+  showDowntimeTracker: boolean;
 }
 
 interface UIActions {
@@ -78,6 +79,7 @@ interface UIActions {
   /** Set DM Spell Reference overlay visibility */
   setSpellReference: (show: boolean) => void;
   setWildShapeTracker: (show: boolean) => void;
+  setDowntimeTracker: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -105,6 +107,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showLegendaryTracker: false,
   showSpellReference: false,
   showWildShapeTracker: false,
+  showDowntimeTracker: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -129,6 +132,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setLegendaryTracker: (show: boolean) => set({ showLegendaryTracker: show }),
   setSpellReference: (show: boolean) => set({ showSpellReference: show }),
   setWildShapeTracker: (show: boolean) => set({ showWildShapeTracker: show }),
+  setDowntimeTracker: (show: boolean) => set({ showDowntimeTracker: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
