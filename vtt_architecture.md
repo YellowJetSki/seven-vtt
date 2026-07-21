@@ -13820,3 +13820,34 @@ When users scrolled past the nav to see DM tools, the nav disappeared off-screen
 | 4 | Sidebar tool/nav overlap fix — collapsible Tools section with `toolsOpen` state |
 | **5** | **Comprehensive deep audit + production verification — ALL 4 bug domains hardened** |
 ---
+
+## Cycle 6 — Foundation & Dashboards — Global Quick Note Implementation (Updated: 2026-07-21 13:57)
+## Cycle 6 — Foundation & Dashboards (Cycle 1 of 10) — Complete
+**Date:** 2026-07-21
+
+### Deliverable: Global Quick Note (Globally Accessible Floating Journal/Notepad)
+
+**New Component:** `src/components/ui/GlobalQuickNote.tsx` (170 lines)
+- Globally accessible floating FAB available from ANY page for BOTH DM and Player roles
+- Feather quill SVG icon with gold gradient and subtle pulse ring
+- Fixed position: `bottom-6 right-6 z-30` (above mobile bottom nav)
+- Premium glass modal with gold edge light, auto-timestamp, word/char counts
+- Cmd+Enter to save, Escape to cancel
+- Roll indicator shows "DM" or "Player" context
+- Saves directly to campaign journal via `campaignStore.addJournalEntry()`
+- Premium Overrrides/Lusion-grade glassmorphism with `from-[#181a2a]/95 to-[#0f1019]/95`
+
+**Files Modified:**
+- `AppShell.tsx` — Added `GlobalQuickNote` import + mount after all DM popovers (available for ALL roles)
+- `uiStore.ts` — Already has the 17 existing DM popover state flags (no new state needed — GlobalQuickNote manages its own local state)
+
+**Production Verification:**
+- ✅ `Quick Note (Ctrl+N)` FAB visible at bottom-right
+- ✅ Gold gradient styling
+- ✅ Pulse ring animation  
+- ✅ Click opens glass modal with textarea
+- ✅ Only benign Firestore console warning
+- ✅ TypeScript: 0 errors (2147 modules)
+- ✅ Build: 11.45s local / 8.35s Vercel
+- ✅ Deployed + aliased: arkla.vercel.app
+---
