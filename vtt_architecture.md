@@ -16654,3 +16654,56 @@ Total time: ~5 seconds for full combat awareness
 ### DM Tool Tally: 22 Globally Accessible Tools
 +1 (new): Initiative Draft (gold, `rollInitiative` icon)
 ---
+
+## DM Combatant Mover (Cycle 29/35) (Updated: 2026-07-21 18:15)
+## Cycle 29 — DM Combatant Mover — COMPLETE
+
+### New Component Created
+- **`DmCombatantMover.tsx`** (~570 lines) — Gold-accented glass popover for quick token repositioning
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Combatant List** | Reads all combatants from active encounter with type-based color coding (player=sky, enemy=rose, ally=emerald) |
+| **Coordinate Input** | X/Y grid coordinate fields with max boundary display from active map |
+| **Reposition Button** | Clamps coordinates to map bounds, creates waypoint, shows coordinate reveal flash |
+| **Pin System** | Drop labeled pins at specified coordinates (persists in local state, up to 10) |
+| **Pin Removal** | Per-pin delete button with hover state |
+| **Waypoint History** | Last 5 positions per combatant with map name + timestamp, click to auto-fill coordinates |
+| **Map Selector** | Dropdown-style map picker when multiple maps exist |
+| **Combat Active Badge** | Emerald badge in footer when combat phase is active |
+| **Quick Reference** | Collapsible doc with usage instructions |
+| **Stats Footer** | Combatant count, pin count, waypoint count, combat status |
+| **Empty State** | Premium icon + guidance text when no combat or no selection |
+| **Escape/Backdrop Dismiss** | Consistent with all 23 DM tools |
+| **Selected Combatant Card** | Detailed view with AC, HP, initiative, type-appropriate background |
+| **Time-ago Waypoints** | Human-readable relative timestamps (5m ago, 2h ago, etc.) |
+| **Coordinate Reveal Flash** | Emerald notification banner when position is locked in (2s auto-dismiss) |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showCombatantMover` + `setCombatantMover` |
+| `AppShell.tsx` | Layout | Added import, ref, event listener (`toggle-dm-combatant-mover`), rendering |
+| `Sidebar.tsx` | Layout | Added "Combat Mover" button (gold accent, `attack` icon) + hover mapping |
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `DmCombatantMover.tsx` | ~570 | DM Combatant Mover Panel |
+
+### Files Modified
+| File | Change |
+|:-----|:-------|
+| `uiStore.ts` | Added state + action |
+| `AppShell.tsx` | Added import, ref, event listener, rendering |
+| `Sidebar.tsx` | Added button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 74
+
+### DM Tool Tally: 23 Globally Accessible Tools
++1 (new): Combatant Mover (gold, `attack` icon)
+---
