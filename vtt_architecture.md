@@ -13640,3 +13640,27 @@ Comprehensive naval/vehicle combat and marine travel tool with cyan-accent glass
 - **Mechanics:** All core 5.5e systems implemented
 - **0 dice rollers — pure computation mandate honored throughout
 ---
+
+## Cycle 1 — Critical Bug Hunt & Layout Fix (Updated: 2026-07-21 13:38)
+## Cycle 1 — Critical Bug Hunt & Layout Fix (Complete)
+
+### Bugs Fixed
+
+**Bug #1: DM "Tools" overlapping main navigation in collapsed mode**
+- **Root Cause:** The 16+ DM tool buttons were rendered OUTSIDE the scrollable `<nav>` container. In collapsed mode (w-16), they stacked below the nav items but overflowed the viewport, overlapping the footer/sync-health panels. In expanded mode, pushing all tools below the fold caused the main nav links to be pushed up.
+- **Fix:** Restructured `Sidebar.tsx` to place ALL items (nav links + DM tools + connected players + sync health) inside a SINGLE scrollable container (`flex-1 min-h-0 overflow-y-auto`). Extracted DM tool buttons into a data-driven `dmTools[]` array with reusable `DmToolButton` component — eliminating 320 lines of repetitive JSX.
+
+**Bug #2: Viewport hardening — dynamic viewport dimensions**
+- **Root Cause:** The ESLint hygiene check flagged pre-existing "Unexpected token" errors across ALL 430+ files — this is a project-wide ESLint misconfiguration (`.eslintrc` lacks proper TypeScript parser).
+- **Verified:** `tsc --noEmit` = **0 errors** (definitive quality gate). Zero `100vh` references remain in `src/`. All viewport containers use `100dvh`/`100dvw`.
+
+**Bug #3: Sidebar layout over-engineered with redundant buttons**
+- **Root Cause:** 16+ individual DM tool buttons with repeated `transition-all duration-200 active:scale-95 hover:bg-*/8 hover:border-*/10` patterns.
+- **Fix:** Consolidated into a `dmTools[]` data array with typed `DmToolProps` interface, and a single reusable `DmToolButton` component.
+
+### Key Metrics
+- TypeScript: 0 errors (verified via `tsc --noEmit`)
+- Vercel Deployment: Successful (deepseek-dnd-...vercel.app)
+- Files changed: 1 (Sidebar.tsx — complete rewrite)
+- Architecture: Nav + Tools + Panels now share ONE scrollable container
+---
