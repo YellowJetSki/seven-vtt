@@ -11,6 +11,7 @@
  * Campaign: Arkla — Wendy Swiftfoot, Kehrfuffle Ironheart
  */
 
+import { motion } from "framer-motion";
 import type { Combatant } from "@/types/combat";
 
 // ── 5-tier HP status ──
@@ -50,7 +51,10 @@ export default function CombatantRowCard({
   const isDead = combatant.hitPoints.current <= 0;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -151,6 +155,6 @@ export default function CombatantRowCard({
       {isCurrent && (
         <span className="w-1.5 h-1.5 rounded-full bg-gold-400 shadow-[0_0_4px_rgba(234,179,8,0.5)] shrink-0 animate-pulse" />
       )}
-    </div>
+    </motion.div>
   );
 }

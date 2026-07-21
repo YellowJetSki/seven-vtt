@@ -38,6 +38,7 @@ import type { PlayerCharacter } from "@/types";
 import PlayerCompanionResources from "./PlayerCompanionResources";
 import CompanionConsumablePanel from "./CompanionConsumablePanel";
 import PlayerActionHints from "./PlayerActionHints";
+import CompanionStatEditor from "./CompanionStatEditor";
 
 interface PlayerLiveEncounterViewProps {
   /** The current player's character ID to highlight */
@@ -255,6 +256,11 @@ export default function PlayerLiveEncounterView({
       {/* ── Action Hints — Intended Action Signals ── */}
       {isPlayerTurn && (
         <PlayerActionHints onSignalAction={handleActionSignal} />
+      )}
+
+      {/* ── Companion Stat Editor (HP/XP/GP inline editing) ── */}
+      {character && (
+        <CompanionStatEditor character={character} onStatChange={() => {}} />
       )}
 
       {/* ── Player Companion Resources (spell slots, hit dice, class resources) ── */}
