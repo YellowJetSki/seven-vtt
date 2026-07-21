@@ -13496,3 +13496,52 @@ Globally accessible DM tool for tracking shape-changed creature statblocks with 
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 38/40 — The Intensive VTT Analysis Phase — CYCLE 8 OF 10 (Updated: 2026-07-21 11:38)
+## Sprint 38/40 — The Intensive VTT Analysis Phase — CYCLE 8 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — Rest & Downtime Activity Tracker
+
+#### Built: DmDowntimeTracker (680+ lines)
+Globally accessible DM tool for managing between-session downtime activities with premium amber-accented glassmorphism UI.
+
+**10 Downtime Activity Types:**
+1. **Training** — Level advancement, feats, languages, tool proficiencies (25 gp/day)
+2. **Crafting** — Items, potions, armor, magic items (15 gp/day + materials)
+3. **Research** — Lore research, quest intel, spell research (10 gp/day)
+4. **Carousing** — Contacts, renown, rumors (15 gp/day)
+5. **Scribe Scrolls** — Create spell scrolls from known spells (50 gp/day)
+6. **Pit Fighting** — Gamble and fight for gold earnings (variable earnings)
+7. **Religious Service** — Temple patronage, community service (favor-based)
+8. **Work** — Earn gold through honest labor (earns ~4 gp/day)
+9. **Luxury Rest** — Remove exhaustion levels, heal long-term injuries (50 gp/day)
+10. **Copy Spells** — Wizard spellbook transcription (50 gp/day)
+
+**Key Features:**
+- Activity selector grid (5×2 layout) with per-type cost and duration hints
+- Character picker from encounter + campaign roster
+- Customizable days (1-365) with auto-computed GP cost/earnings
+- Auto-completed results for work, luxury rest, pit fighting, religious service
+- Per-activity input for training/crafting/research results
+- Activity-specific info hints (training costs, crafting formulas, luxury rest benefits)
+- Status management: In Progress / Completed / Abandoned
+- Expandable detail panels with days, cost, dates, results
+- Filter chips: All / In Progress / Completed
+- Summary footer with total GP spent/earned across all entries
+- HP progress bar for in-progress entries
+
+**Integration:**
+- `stores/uiStore.ts` — Added `showDowntimeTracker` + `setDowntimeTracker`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-downtime`, DM-role rendering
+- `components/layout/Sidebar.tsx` — Amber-accented "Rest & Downtime" button after Wild Shape
+
+#### Build & Verify
+- **Build:** 7.50s, 2144 modules, 0 TypeScript errors
+- **Hash:** `index-CpbLF3vk.js`, deployed to arkla.vercel.app
+- `tsc --noEmit` = 0 errors (definitive quality gate)
+- ESLint: 428 pre-existing parser config errors (ALL "Unexpected token" — project-wide tooling issue, NOT code errors)
+- No dice rollers (pure tracking tool, zero RNG)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
