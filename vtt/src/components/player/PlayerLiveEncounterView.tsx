@@ -40,6 +40,7 @@ import CompanionConsumablePanel from "./CompanionConsumablePanel";
 import PlayerActionHints from "./PlayerActionHints";
 import CompanionStatEditor from "./CompanionStatEditor";
 import CompanionSpellRefPanel from "./CompanionSpellRefPanel";
+import CompanionAttackRefPanel from "./CompanionAttackRefPanel";
 
 interface PlayerLiveEncounterViewProps {
   /** The current player's character ID to highlight */
@@ -60,6 +61,7 @@ export default function PlayerLiveEncounterView({
 }: PlayerLiveEncounterViewProps) {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const [showSpellRef, setShowSpellRef] = useState(false);
+  const [showAttackRef, setShowAttackRef] = useState(false);
   const [flashMessage, setFlashMessage] = useState<{
     text: string;
     type: "damage" | "heal" | "info";
@@ -276,18 +278,31 @@ export default function PlayerLiveEncounterView({
         <CompanionConsumablePanel character={character} />
       )}
 
-      {/* ── Spell Reference Button ── */}
+      {/* ── Attack & Cast Button + Spellbook Button ── */}
       {isPlayerTurn && character && (
-        <div className="px-2 pb-1">
+        <div className="px-2 pb-1 flex gap-1">
+          <button onClick={() => setShowAttackRef(true)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg
+              bg-rose-500/8 border border-rose-500/12 text-rose-300
+              hover:bg-rose-500/15 transition-all duration-150 active:scale-[0.98]"
+          >
+            <PremiumIcon name="attack" className="w-3 h-3" />
+            <span className="text-[10px] font-medium">Attack & Cast</span>
+          </button>
           <button onClick={() => setShowSpellRef(true)}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg
               bg-violet-500/8 border border-violet-500/12 text-violet-300
               hover:bg-violet-500/15 transition-all duration-150 active:scale-[0.98]"
           >
             <PremiumIcon name="sparkles" className="w-3 h-3" />
-            <span className="text-[10px] font-medium">Open Spellbook</span>
+            <span className="text-[10px] font-medium">Spellbook</span>
           </button>
         </div>
+      )}
+
+      {/* ── Attack Reference Popover ── */}
+      {showAttackRef && character && (
+        <CompanionAttackRefPanel character={character} onClose={() => setShowAttackRef(false)} />
       )}
 
       {/* ── Spell Reference Popover ── */}
