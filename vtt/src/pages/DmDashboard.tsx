@@ -35,6 +35,7 @@ import CombatQuickStatus from "@/components/dashboard/CombatQuickStatus";
 import ActiveMapCard from "@/components/dashboard/ActiveMapCard";
 import PlayerStatusCard from "@/components/dashboard/PlayerStatusCard";
 import DmQuickRef from "@/components/dashboard/DmQuickRef";
+import RecentCampaignActivity from "@/components/dashboard/RecentCampaignActivity";
 import { entrance, duration, ease } from "@/lib/design-tokens";
 
 export default function DmDashboard() {
@@ -149,8 +150,19 @@ export default function DmDashboard() {
               <QuickNav />
             </div>
 
-            {/* Active Map Card (240ms) */}
-            <div style={entrance(240)}>
+            {/* Recent Campaign Activity (220ms) — NEW: at-a-glance live timeline */}
+            <div style={entrance(220)}>
+              <RecentCampaignActivity
+                journal={journal ?? []}
+                characters={characters}
+                meta={meta}
+                encounters={encounters ?? []}
+                onNavigate={(path) => { window.location.href = path; }}
+              />
+            </div>
+
+            {/* Active Map Card (260ms) */}
+            <div style={entrance(260)}>
               <ActiveMapCard />
             </div>
 
