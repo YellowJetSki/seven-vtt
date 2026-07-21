@@ -114,9 +114,14 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
                 ◯ {spell.shape} {spell.areaSize}ft
               </span>
             )}
-            {(spell as any).saveDC && (spell as any).savingThrowAbility && (
+            {spell.saveDC && spell.saveAbility && (
               <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/15 text-indigo-400">
-                🛡 DC {(spell as any).saveDC} {capitalize((spell as any).savingThrowAbility)}
+                🛡 DC {spell.saveDC} {capitalize(spell.saveAbility)}
+              </span>
+            )}
+            {spell.spellAttackBonus !== undefined && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/15 text-amber-400 font-mono">
+                🎯 +{spell.spellAttackBonus} ATK
               </span>
             )}
           </div>

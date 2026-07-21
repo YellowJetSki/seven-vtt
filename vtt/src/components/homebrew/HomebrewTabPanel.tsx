@@ -4,11 +4,14 @@
  * Enhanced with staggered card entrance animations, gold-accented
  * tab switching transitions, bulk-select mode support, and
  * consistent premium layout with direct glass gradient backgrounds.
+ * Cycle 22: Added HomebrewItemDetailModal integration for click-to-view.
  */
 
+import { useState } from "react";
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat } from "@/types/homebrew";
 import type { HomebrewTabId } from "./HomebrewTabs";
 import HomebrewItemCard from "./HomebrewItemCard";
+import HomebrewItemDetailModal from "./HomebrewItemDetailModal";
 import HomebrewSpellCard from "./HomebrewSpellCard";
 import HomebrewFeatCard from "./HomebrewFeatCard";
 import HomebrewEmptyState from "./HomebrewEmptyState";
@@ -57,31 +60,36 @@ export default function HomebrewTabPanel({
   onToggleSelect,
 }: HomebrewTabPanelProps) {
   const baseDelay = 50; // ms
+  const [detailItem, setDetailItem] = useState<HomebrewItem | null>(null);
 
   if (activeTab === "items") {
     if (items.length === 0) return <HomebrewEmptyState tabLabel="items" />;
     return (
-      <div style={{ animation: "slide-in-up 0.3s ease-out both" }}>
-        <div className="space-y-2">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              style={{ animation: `slide-in-up 0.35s ease-out ${baseDelay + Math.min(items.indexOf(item) * 25, 600)}ms both` }}
-            >
-              <HomebrewItemCard
-                item={item}
-                onEdit={() => onEditItem(item)}
-                onDelete={() => onDeleteItem(item.id)}
-                onDuplicate={() => onDuplicateItem(item)}
-                onToggleVisibility={(id, visible) => onToggleItemVisibility(id, visible)}
-                isBulkMode={isBulkMode}
-                isSelected={selectedIds?.has(item.id)}
-                onToggleSelect={onToggleSelect}
-              />
-            </div>
-          ))}
+      <>
+        <HomebrewItemDetailModal item={detailItem!} isOpen={!!detailItem} onClose={() => setDetailItem(null)} />
+        <div style={{ animation: "slide-in-up 0.3s ease-out both" }}>
+          <div className="space-y-2">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                style={{ animation: `slide-in-up 0.35s ease-out ${baseDelay + Math.min(items.indexOf(item) * 25, 600)}ms both` }}
+              >
+                <HomebrewItemCard
+                  item={item}
+                  onEdit={() => onEditItem(item)}
+                  onDelete={() => onDeleteItem(item.id)}
+                  onDuplicate={() => onDuplicateItem(item)}
+                  onToggleVisibility={(id, visible) => onToggleItemVisibility(id, visible)}
+                  onViewDetail={setDetailItem}
+                  isBulkMode={isBulkMode}
+                  isSelected={selectedIds?.has(item.id)}
+                  onToggleSelect={onToggleSelect}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

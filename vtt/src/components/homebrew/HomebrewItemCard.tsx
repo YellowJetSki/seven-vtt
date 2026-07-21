@@ -16,6 +16,7 @@ interface HomebrewItemCardProps {
   onDelete: (id: string) => void;
   onDuplicate: (item: HomebrewItem) => void;
   onToggleVisibility: (id: string, visible: boolean) => void;
+  onViewDetail?: (item: HomebrewItem) => void;
   isBulkMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
@@ -36,6 +37,7 @@ export default function HomebrewItemCard({
   onDelete,
   onDuplicate,
   onToggleVisibility,
+  onViewDetail,
   isBulkMode,
   isSelected,
   onToggleSelect,
@@ -68,7 +70,10 @@ export default function HomebrewItemCard({
         <div className="flex-1 min-w-0">
           {/* Name + Tags Row */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors">
+            <h4
+              className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors cursor-pointer"
+              onClick={() => onViewDetail?.(item)}
+            >
               {item.name}
             </h4>
             {item.rarity && (
@@ -105,9 +110,39 @@ export default function HomebrewItemCard({
                 +{item.attackBonus} ATK
               </span>
             )}
+            {isWeapon && item.weaponProperties && item.weaponProperties.length > 0 && (
+              <span className="text-[8px] px-1 py-0.5 rounded bg-surface-800/60 border border-white/[0.04] text-surface-400">
+                {item.weaponProperties.join(", ")}
+              </span>
+            )}
             {isArmor && item.acBonus !== undefined && item.acBonus !== 0 && (
               <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/15 text-cyan-400 font-mono">
                 🛡 AC +{item.acBonus}
+              </span>
+            )}
+            {isArmor && item.armorType && (
+              <span className="text-[8px] px-1 py-0.5 rounded bg-surface-800/60 border border-white/[0.04] text-surface-400">
+                {item.armorType}
+              </span>
+            )}
+            {isArmor && item.strengthRequirement && (
+              <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/10 border border-amber-500/15 text-amber-400">
+                STR {item.strengthRequirement}+
+              </span>
+            )}
+            {isArmor && item.stealthDisadvantage && (
+              <span className="text-[8px] px-1 py-0.5 rounded bg-rose-500/10 border border-rose-500/15 text-rose-400">
+                Disadv Stealth
+              </span>
+            )}
+            {item.healingDice && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 font-mono">
+                ❤ {item.healingDice}
+              </span>
+            )}
+            {item.temporaryHp && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/15 text-amber-400 font-mono">
+                🛡 {item.temporaryHp} THP
               </span>
             )}
             {item.weight > 0 && (
