@@ -1,7 +1,7 @@
 /**
  * STᚱ VTT — Role Selection (Premium Gold)
  *
- * Gold-accented role selection cards with hover-lift effects.
+ * Gold-accented role selection cards with premium glass + hover-lift.
  * DM button uses gold accent, Player button uses amber accent.
  */
 
@@ -16,7 +16,7 @@ export default function RoleSelection({ onSelect }: RoleSelectionProps) {
     <div className="space-y-4">
       <button
         onClick={() => onSelect("dm")}
-        className="w-full p-5 rounded-xl border border-gold/15 hover:border-gold/40 bg-premium-surface hover:bg-gold-500/8 transition-all duration-300 group hover-lift"
+        className="w-full p-5 rounded-xl border border-gold/15 hover:border-gold/40 bg-gradient-to-b from-white/[0.02] to-transparent hover:bg-gold-500/8 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] group"
       >
         <div className="flex items-center gap-4">
           <span className="text-3xl float-arcane" aria-hidden="true">👑</span>
@@ -32,7 +32,7 @@ export default function RoleSelection({ onSelect }: RoleSelectionProps) {
 
       <button
         onClick={() => onSelect("player")}
-        className="w-full p-5 rounded-xl border border-surface-700/30 hover:border-amber-500/40 bg-premium-surface hover:bg-amber-500/8 transition-all duration-300 group hover-lift"
+        className="w-full p-5 rounded-xl border border-surface-700/30 hover:border-amber-500/40 bg-gradient-to-b from-white/[0.02] to-transparent hover:bg-amber-500/8 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] group"
       >
         <div className="flex items-center gap-4">
           <span className="text-3xl float-delayed" aria-hidden="true">⚔</span>

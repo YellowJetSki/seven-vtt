@@ -123,7 +123,7 @@ export default function DmToolbar({
         {/* Recenter */}
         <button
           onClick={onRecenter}
-          className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-gold-400 hover:border-gold-500/15 hover:bg-gold-500/5 transition-all duration-150 font-medium"
+          className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-gold-400 hover:border-gold-500/15 hover:bg-gold-500/5 transition-all duration-200 font-medium active:scale-90"
           title="Recenter view"
         >
           ⌖
@@ -136,7 +136,7 @@ export default function DmToolbar({
           <ToolbarDivider />
           <button
             onClick={onRest}
-            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-emerald-400 hover:border-emerald-500/15 hover:bg-emerald-500/5 transition-all duration-150 font-medium flex items-center gap-1"
+            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-emerald-400 hover:border-emerald-500/15 hover:bg-emerald-500/5 transition-all duration-200 font-medium flex items-center gap-1 active:scale-90"
             title="Apply Short or Long Rest to the party"
           >
             <span>😴</span>
@@ -150,7 +150,7 @@ export default function DmToolbar({
         {onAoEDamage && (
           <button
             onClick={onAoEDamage}
-            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-rose-400 hover:border-rose-500/15 hover:bg-rose-500/5 transition-all duration-150 font-medium flex items-center gap-1"
+            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-rose-400 hover:border-rose-500/15 hover:bg-rose-500/5 transition-all duration-200 font-medium flex items-center gap-1 active:scale-90"
             title="Apply AoE damage to multiple targets"
           >
             <span>💥</span>
@@ -160,7 +160,7 @@ export default function DmToolbar({
         {onShare && (
           <button
             onClick={onShare}
-            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-cyan-400 hover:border-cyan-500/15 hover:bg-cyan-500/5 transition-all duration-150 font-medium"
+            className="px-2 py-1.5 rounded-lg text-[10px] bg-[#0c0d15] border border-white/[0.06] text-surface-400 hover:text-cyan-400 hover:border-cyan-500/15 hover:bg-cyan-500/5 transition-all duration-200 font-medium active:scale-90"
             title="Share image to player screens"
           >
             Share

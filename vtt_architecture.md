@@ -11012,3 +11012,55 @@ Next cycle in Premium Visual Polish Phase should focus on:
 - Ensuring placeholder graphics maintain dark fantasy concept art quality
 
 ---
+
+## Sprint 39/41 — Premium Visual Polish Phase (Cycle 4 of 6): Micro-Animation & Typography Refinement (Updated: 2026-07-20 20:33)
+## Sprint 39/41 — Premium Visual Polish Phase (Cycle 4 of 6)
+
+### Execution Summary
+
+| Action | Status |
+|:-------|:------:|
+| **DmToolbar micro-animation audit** | ✅ Fixed 4 raw buttons — added `active:scale-90` + `duration-200` for consistency with `ToolButton` component |
+| **LaunchTheatricButton legacy class** | ✅ Replaced `hover-lift` class with inline `hover:-translate-y-0.5 active:scale-[0.97]` |
+| **RoleSelection legacy classes** | ✅ Replaced `bg-premium-surface` + `hover-lift` with premium glass gradient `bg-gradient-to-b from-white/[0.02] to-transparent` + `hover:-translate-y-0.5 active:scale-[0.97]` |
+| **Animation easing audit** | ✅ Verified consistent patterns: `modal-card-enter` (cubic-bezier 0.16,1,0.3,1), `slide-in-up` (ease-out), transitions (duration-200) |
+| **Legacy SCSS purge** | ✅ Stripped `hover-lift` from RoleSelection.tsx and LaunchTheatricButton.tsx |
+| **TypeScript compilation** | ✅ **0 errors** |
+| **Code Hygiene Scan** | ✅ 403 pre-existing (0 new code errors) |
+| **Architecture Ledger** | ✅ Updated |
+
+### Files Modified (4)
+
+| File | Changes | Lines |
+|:-----|:--------|:-----:|
+| `components/control-center/DmToolbar.tsx` | Added `active:scale-90` + `duration-200` to Recenter, Rest, AoE, Share buttons | 4 button className updates |
+| `components/dashboard/LaunchTheatricButton.tsx` | Replaced `hover-lift` with inline premium hover pattern | 1 className update |
+| `components/auth/RoleSelection.tsx` | Replaced `bg-premium-surface` + `hover-lift` with premium glass gradient + Apple-style hover/press | 2 button className updates |
+| `styles/_utilities.scss` | Legacy classes remain (backward compat), no longer used in JSX | None |
+
+### Remaining Legacy CSS Class Audit
+
+| Class | JSX Usage | Status |
+|:------|:---------:|:------:|
+| `hover-lift` | 0 | ✅ Fully purged |
+| `premium-surface` | 0 | ✅ Fully purged |
+| `glass-gold` | 0 | ✅ Fully purged (Sprint 38) |
+| `corner-ornament` | 0 | ✅ Fully purged (Sprint 38) |
+| `depth-ring` | 0 | ✅ Fully purged (Sprint 38) |
+| `float-arcane` | 2 (RoleSelection.tsx) | 🔵 Intentional — legacy animation utility, benign decorative class |
+
+### Design Consistency Findings
+
+| Pattern | Timing | Usage |
+|:--------|:------:|:------|
+| **Modal card entrance** | 0.35s `cubic-bezier(0.16,1,0.3,1)` | All popovers (DmQuickAction, DmCombatConditionBar, DmCombatWrapUp, etc.) |
+| **Inline element entrance** | 0.2-0.35s `ease-out` | All staggered slide-in-up lists |
+| **Button hover** | 200ms `ease-out` | All interactive buttons |
+| **Button press** | `active:scale-90` or `active:scale-[0.97]` | All buttons |
+| **Transition durations** | `duration-150`, `duration-200`, `duration-300` | Consistent across all components |
+| **Sidebar/panel slide** | 300ms `cubic-bezier(0.4,0,0.2,1)` | Sidebar, drawers |
+
+### Ready for Sprint 40/41 — Cycle 5 of 6
+Next: Focus on checking for any remaining placeholder emoji that could benefit from premium SVG art assets, or run a Vite build verification.
+
+---

@@ -39,7 +39,7 @@ export default function LaunchTheatricButton() {
       size="sm"
       onClick={handleLaunch}
       isLoading={isLaunching}
-      className="hover-lift relative group"
+      className="relative group transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]"
     >
       <span className="mr-1">🎬</span>
       <span>Launch Theatric</span>
