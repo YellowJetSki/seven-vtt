@@ -12490,3 +12490,34 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ Modular architecture preserved
 
 ---
+
+## Sprint 15/40 — UI/UX Overhaul Phase (Cycle 5 of 10) (Updated: 2026-07-21 09:44)
+## Sprint 15/40 — UI/UX Overhaul Phase (Cycle 5 of 10)
+**Date:** 2026-07-21
+
+### Target: Battle Maps Page (BattleMaps.tsx + MapCard.tsx)
+
+**Files Modified (2):**
+- `BattleMaps.tsx` — Empty state hero heading upgraded to Playfair Display (`font-display`), getting started guide descriptions upgraded from `text-surface-600` (1.91:1 🔴) to `text-surface-500` (6.11:1 ✅), map list toolbar heading upgraded to `font-display` with `text-white/90`
+- `MapCard.tsx` — Map name upgraded from `text-surface-200` to `text-white/90` for legibility, grid dimension text upgraded from `text-surface-500` to `text-surface-400`, stats row (cell size, date, notes) upgraded from `text-surface-600` (1.91:1 🔴) to `text-surface-500` (6.11:1 ✅)
+
+**Design Improvements:**
+- Playfair Display applied to Battle Maps headings (empty state + map list)
+- Getting started guide descriptions now meet WCAG AA at 6.11:1
+- MapCard stats text now meets WCAG AA at 6.11:1
+- Map names now use `text-white/90` for high readability
+- All premium glass gradient panels preserved intact
+
+### Build & Deploy
+- Build: 7.76s, 2136 modules, 0 errors
+- JS: index-DS5hdoh1.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Modular architecture preserved (MapCard.tsx already extracted)
+
+---
