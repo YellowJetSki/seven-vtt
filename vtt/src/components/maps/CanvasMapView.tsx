@@ -187,47 +187,72 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     stateRef.current.image = imageElement;
   }, [imageElement]);
 
-  // ── Animation loop (60fps) ──
-  const renderFrame = useCallback(() => {
+  // ── Sync render state from props via refs (avoids stale closures) ──
+  const mapDataRef = useRef(mapData);
+  mapDataRef.current = mapData;
+  const tokensRef = useRef(tokens);
+  tokensRef.current = tokens;
+  const activeEncounterRef = useRef(activeEncounter);
+  activeEncounterRef.current = activeEncounter;
+  const showGridRef = useRef(showGrid);
+  showGridRef.current = showGrid;
+  const showFogRef = useRef(showFog);
+  showFogRef.current = showFog;
+  const isDmViewRef = useRef(isDmView);
+  isDmViewRef.current = isDmView;
+  const activeTurnTokenIdRef = useRef(activeTurnTokenId);
+  activeTurnTokenIdRef.current = activeTurnTokenId;
+
+  // ── Stable render callback — reads latest values from refs ──
+  const renderFrameRef = useRef<() => void>(() => {});
+  renderFrameRef.current = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const elapsed = (Date.now() - startTimeRef.current) / 1000;
+    const s = stateRef.current;
+    const md = mapDataRef.current;
 
-    Object.assign(stateRef.current, {
-      gridWidth: mapData.gridWidth, gridHeight: mapData.gridHeight, gridSize: mapData.gridSize,
-      gridColor: mapData.gridColor || "#808080", gridOpacity: mapData.gridOpacity ?? 0.4,
-      tokens, showGrid, showFog, dmView: isDmView,
+    Object.assign(s, {
+      gridWidth: md.gridWidth, gridHeight: md.gridHeight, gridSize: md.gridSize,
+      gridColor: md.gridColor || "#808080", gridOpacity: md.gridOpacity ?? 0.4,
+      tokens: tokensRef.current,
+      showGrid: showGridRef.current, showFog: showFogRef.current, dmView: isDmViewRef.current,
       time: elapsed,
-      activeEncounter,
-      activeTurnTokenId,
+      activeEncounter: activeEncounterRef.current,
+      activeTurnTokenId: activeTurnTokenIdRef.current,
     });
 
     const dpr = window.devicePixelRatio || 1;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    renderCanvas(ctx, canvas, stateRef.current);
+    renderCanvas(ctx, canvas, s);
 
-    animFrameRef.current = requestAnimationFrame(renderFrame);
-  }, [mapData, tokens, showGrid, showFog, isDmView, activeEncounter, activeTurnTokenId]);
+    animFrameRef.current = requestAnimationFrame(renderFrameRef.current);
+  };
+  const render = renderFrameRef.current;
 
-  // ── Start/stop animation loop ──
+  // ── Start/stop animation loop (stable deps — never re-creates) ──
   useEffect(() => {
-    animFrameRef.current = requestAnimationFrame(renderFrame);
+    animFrameRef.current = requestAnimationFrame(render);
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [renderFrame]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // ── Resize setup ──
+  // ── Canvas resize setup (stable — runs once on mount) ──
   useEffect(() => {
     if (!containerRef.current || !canvasRef.current) return;
     setupCanvas(canvasRef.current, containerRef.current);
-    const h = () => renderFrame();
+    const h = () => renderFrameRef.current();
     window.addEventListener("resize", h);
-    return () => window.removeEventListener("resize", h);
-  }, [renderFrame]);
+    return () => {
+      window.removeEventListener("resize", h);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Helper: pixel to grid conversion ──
   const getCanvasGridPos = useCallback((clientX: number, clientY: number) => {

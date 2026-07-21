@@ -254,7 +254,9 @@ export function setupCanvas(canvas: HTMLCanvasElement, container: HTMLElement): 
     canvas.style.height = `${rect.height}px`;
   };
   resize();
-  window.addEventListener("resize", resize);
+  // NOTE: Caller is responsible for resize listener cleanup.
+  // The resize listener is managed by the CanvasMapView useEffect to prevent
+  // leaked listeners when renderFrame dependencies change.
 
   const ctx = canvas.getContext("2d");
   if (ctx) {
