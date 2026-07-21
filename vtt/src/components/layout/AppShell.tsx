@@ -32,6 +32,7 @@ import DmQuickActionPopover from "@/components/control-center/DmQuickActionPopov
 import DmNpcQuickCreatePopover from "@/components/control-center/DmNpcQuickCreatePopover";
 import DmCombatWrapUpOverlay from "@/components/control-center/DmCombatWrapUpOverlay";
 import DmSkillCheckPopover from "@/components/control-center/DmSkillCheckPopover";
+import DmSocialInteractionPopover from "@/components/control-center/DmSocialInteractionPopover";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -55,6 +56,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setCombatWrapUp = useUIStore((s) => s.setCombatWrapUp);
   const showSkillCheck = useUIStore((s) => s.showSkillCheck);
   const setSkillCheck = useUIStore((s) => s.setSkillCheck);
+  const showSocialInteraction = useUIStore((s) => s.showSocialInteraction);
+  const setSocialInteraction = useUIStore((s) => s.setSocialInteraction);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -135,6 +138,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setSkillCheckRef.current(!showSkillCheckRef.current); };
     window.addEventListener("toggle-dm-skill-check", handler);
     return () => window.removeEventListener("toggle-dm-skill-check", handler);
+  }, []);
+
+  const showSocialInteractionRef = useRef(showSocialInteraction);
+  showSocialInteractionRef.current = showSocialInteraction;
+  const setSocialInteractionRef = useRef(setSocialInteraction);
+  setSocialInteractionRef.current = setSocialInteraction;
+
+  useEffect(() => {
+    const handler = () => { setSocialInteractionRef.current(!showSocialInteractionRef.current); };
+    window.addEventListener("toggle-dm-social-interaction", handler);
+    return () => window.removeEventListener("toggle-dm-social-interaction", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -243,6 +257,13 @@ export default function AppShell({ children }: AppShellProps) {
           view party passive perception/investigation/insight */}
       {role === "dm" && (
         <DmSkillCheckPopover />
+      )}
+
+      {/* ── DM Social Interaction & Monster Knowledge Popover (Sprint 32) ──
+          DMG social encounter rules (attitude, DC shifts, reaction rolls)
+          + monster knowledge checks (Arcana/Nature/Religion lore) */}
+      {role === "dm" && (
+        <DmSocialInteractionPopover />
       )}
     </div>
   );

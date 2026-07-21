@@ -36,6 +36,7 @@ interface UIState {
   showNpcQuickCreate: boolean;
   showCombatWrapUp: boolean;
   showSkillCheck: boolean;
+  showSocialInteraction: boolean;
 }
 
 interface UIActions {
@@ -61,6 +62,8 @@ interface UIActions {
   setCombatWrapUp: (show: boolean) => void;
   /** Set DM Skill Check overlay visibility */
   setSkillCheck: (show: boolean) => void;
+  /** Set DM Social Interaction overlay visibility */
+  setSocialInteraction: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -82,6 +85,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showNpcQuickCreate: false,
   showCombatWrapUp: false,
   showSkillCheck: false,
+  showSocialInteraction: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -100,6 +104,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setNpcQuickCreate: (show: boolean) => set({ showNpcQuickCreate: show }),
   setCombatWrapUp: (show: boolean) => set({ showCombatWrapUp: show }),
   setSkillCheck: (show: boolean) => set({ showSkillCheck: show }),
+  setSocialInteraction: (show: boolean) => set({ showSocialInteraction: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
