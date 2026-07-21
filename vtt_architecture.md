@@ -12263,3 +12263,44 @@ This meant the DM could open the Manage modal but had to click one of the explic
 - Bundle hash: `index-rIA_JN6f.js`
 - URL: https://arkla.vercel.app — HTTP 200 verified
 ---
+
+## Sprint 9/40 — Critical Bug Fix Phase (Viewport Hardening — `overscroll-behavior: none` + `100dvh` audit) (Updated: 2026-07-21 09:24)
+## Sprint 9/40 — Critical Bug Fix Phase (Viewport Hardening — Overscroll Fix) — Complete
+**Date:** 2026-07-21
+
+### Bug #3 Residual Fix: iOS Safari rubber-band scrolling
+
+**Problem:** On iOS Safari, `100dvh` is supported (iOS 15.4+), but the overscroll/bounce behavior could still cause the root body to reveal the grey background behind the app. The `@layer base` in `index.css` had `overflow-hidden` but no `overscroll-behavior: none`.
+
+**Fix:**
+- **`vtt/src/index.css`** — Added `overscroll-behavior: none` to the `html, body, #root` rule in `@layer base`. This prevents iOS rubber-band scrolling from breaking the fixed 100dvh layout.
+
+### Full `100dvh` audit (8 locations):
+- ✅ `AppShell.tsx` — `height: '100dvh', width: '100dvw'`
+- ✅ `AuthGuard.tsx` — Loading spinner
+- ✅ `PlayerSheet.tsx` — Sheet overlay
+- ✅ `Modal.tsx` — Modal backdrop
+- ✅ `LoginPage.tsx` — Login page
+- ✅ `PlayerJoinPage.tsx` — Join page
+- ✅ `PlayerLoginPage.tsx` — Player login page
+- ✅ `PlayerSheetPage.tsx` — Player sheet page (3 variants: loading, not found, sheet)
+- ✅ `TheatricPage.tsx` — Theatric display
+
+### Bug #4 Residual: `markCharacterDeleted` (Sprint 8 fix confirmed)
+Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s auto-clean timeout prevents set bloat.
+
+### Bug #3 Complete Status (Dynamic Viewport):
+| Fix | Status |
+|:----|:------:|
+| Zero `100vh` in source code | ✅ All `100dvh` |
+| `overscroll-behavior: none` on root | ✅ **Sprint 9 (NEW)** |
+| iOS safe-area-inset-bottom on nav | ✅ `safe-area-bottom` SCSS class |
+| MobileBottomNav scrollable overflow | ✅ `overflow-x-auto scrollbar-gold` |
+| Body scroll lock on modal/sidebar open | ✅ `useBodyScrollLock` hook |
+| All 9 viewport containers use `100dvh` | ✅ Verified |
+
+### Production Build
+- URL: https://arkla.vercel.app — HTTP 200 verified
+- Build: 6.97s, 2,129 modules, 0 errors, 0 warnings
+- Bundle: `index-BugE5o6_.js` (new hash)
+---
