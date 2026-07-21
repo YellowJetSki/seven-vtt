@@ -13426,3 +13426,37 @@ Complete legendary creature management popover with Lusion-grade premium glassmo
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 36/40 — The Intensive VTT Analysis Phase — CYCLE 6 OF 10 (Updated: 2026-07-21 11:25)
+## Sprint 36/40 — The Intensive VTT Analysis Phase — CYCLE 6 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — DM Spell Reference Popover
+
+#### Built: DmSpellReferencePopover (500+ lines)
+Globally accessible in-game spell reference tool with Lusion-grade premium glassmorphism UI:
+
+**Core Features:**
+- **Full SRD + Homebrew spell library** — Merges static SRD_SPELLS import with compendium store homebrew spells, deduplicating by ID
+- **Search by name, school, class, description, or tags** — Real-time filter as you type
+- **Level filter chips** — Cantrips through Lv.9, multi-select with clear-all
+- **School filter chips** — All 8 schools of magic with matching color schemes (Abjuration=cyan, Conjuration=amber, Divination=violet, Enchantment=pink, Evocation=rose, Illusion=indigo, Necromancy=emerald, Transmutation=orange)
+- **Compact/Detailed toggle** — Compact shows school badges + damage/healing/AoE chips; Detailed adds full statblock view
+- **Split-pane detail view** — Left: scrollable spell list. Right: full 5.5e statblock with casting time, range, duration, components, damage/healing dice, save DC, AoE shape/size, classes, tags, concentration/ritual badges
+- **Source badges** — 📖 SRD vs ⚒️ Homebrew
+- **Count indicators** — "Showing 12 of 48 spells" + per-school counts
+- **Clear filters** — One-click reset all filters
+- **Source toggles** — Show SRD / Show Homebrew checkboxes
+
+**Integration:**
+- `stores/uiStore.ts` — Added `showSpellReference` + `setSpellReference`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-spell-reference`, DM-role rendering block
+- `components/layout/Sidebar.tsx` — "Spell Reference" button with indigo-accent styling using PremiumIcon `sparkles`
+
+#### Build & Deploy
+- **Build:** 7.76s, 2142 modules, 0 TypeScript errors
+- **Hash:** `index-BWbxsF1a.js`, deployed to arkla.vercel.app
+- No dice rollers (pure reference tool, zero RNG)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
