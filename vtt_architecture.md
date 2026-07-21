@@ -11670,3 +11670,37 @@ Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the applica
 | **10** | **Console & Runtime Error Phase** | **React #185 eliminated, 0 runtime errors, duplicate ConnectionBanner removed** |
 
 ---
+
+## Sprint 11/20 — Console & Runtime Error Phase (Cycle 2 of 2) — Complete (Updated: 2026-07-20 22:56)
+## Sprint 11/20 — Console & Runtime Error Phase (Cycle 2 of 2)
+
+### Completed Actions
+
+| Action | Result |
+|:-------|:-------|
+| **Route traversal error capture (8 routes)** | ✅ ZERO runtime errors across all pages: Dashboard, Player Cards, Homebrew, Encounters, Maps, Journal, Settings, Asset Gallery |
+| **Memory leak audit: setInterval cleanup** | ✅ All 6 instances have proper `clearInterval` in cleanup |
+| **Memory leak audit: requestAnimationFrame** | ✅ All 4 instances have proper `cancelAnimationFrame` in cleanup |
+| **Memory leak audit: addEventListener/removeEventListener** | ✅ Found and fixed 1 critical leak |
+| **Critical memory leak fix: setupCanvas resize listener** | 🔴 `setupCanvas()` in `token-renderer.ts` was calling `window.addEventListener("resize", resize)` without providing cleanup. The `CanvasMapView` re-created renderFrame on prop changes, calling `setupCanvas()` each time — leaking resize listeners. **FIXED**: Removed `window.addEventListener("resize")` from `setupCanvas()`. Caller is now responsible for resize handling (already handled in `CanvasMapView`'s own useEffect). |
+| **Stable renderFrame refactoring** | 🔧 Replaced `useCallback`-based renderFrame (re-created on every prop change) with ref-based pattern. `renderFrameRef.current = () => {...}` reads all values from refs (`mapDataRef`, `tokensRef`, `showGridRef`, etc.). RAF loop and resize listener effects now use `[]` stable deps — NEVER re-subscribe. |
+| **TypeScript compilation** | ✅ `tsc --noEmit`: 0 errors |
+| **Production deploy** | ✅ Deployed to arkla.vercel.app |
+| **Runtime error verification** | ✅ 0 errors across all 8 routes |
+| **Hygiene check** | ✅ 404 pre-existing ESLint parser config errors (all known — no new code errors) |
+
+### Memory Leak Impact
+
+| Before | After |
+|:-------|:------|
+| `setupCanvas()` leaked `window.resize` listener on every call | `setupCanvas()` only sets initial canvas size. No listener attached. |
+| `CanvasMapView` re-created RAF loop + resize handler on every prop change | RAF loop and resize handler registered ONCE on mount with `[]` deps. Stable ref-based render callback reads latest values without re-subscription. |
+| Prop changes (tokens, grid, fog, encounter) triggered cascade of 3 effect re-subscriptions | Zero effect re-subscriptions. State updated via `ref.current` assignments only. |
+
+### Console & Runtime Error Phase — COMPLETE ✅
+| Sprint | Target | Deliverable |
+|:------:|:--------|:-----------|
+| 10 | Console & Runtime Error Phase | React #185 eliminated, duplicate ConnectionBanner removed |
+| **11** | **Console & Runtime Error Phase** | **Memory leak fix (resize listener), stable renderFrame refactor, 8 routes zero errors** |
+
+---
