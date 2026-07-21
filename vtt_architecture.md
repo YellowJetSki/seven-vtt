@@ -14331,3 +14331,53 @@ spellcasting?: {
 | 🧩 No monoliths | ✅ All components < 600 lines, 28 PremiumIcon SVGs |
 | 🏗 Production deployed | ✅ arkla.vercel.app — fresh build verified
 ---
+
+## Cycle 21 — The Homebrew Forge (Cycle 1 of 10) (Updated: 2026-07-21 14:50)
+## Sprint 21 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. HomebrewItem Types Expanded (`types/homebrew.ts`)
+| New Field | Type | Purpose |
+|-----------|------|---------|
+| `healingDice` | `string?` | Potion/consumable healing, e.g. "4d4+4" |
+| `temporaryHp` | `number?` | Temp HP from potions |
+| `armorType` | `string?` | light/medium/heavy/shield |
+| `dexCap` | `number?` | DEX maximum for armor |
+| `strengthRequirement` | `number?` | STR requirement for heavy armor |
+| `stealthDisadvantage` | `boolean?` | Stealth penalty flag |
+| `weaponProperties` | `string[]?` | Finesse, Heavy, Versatile, etc. |
+| `versatileDamage` | `string?` | Two-handed damage dice |
+
+#### 2. HomebrewSpell Types Expanded (`types/homebrew.ts`)
+| New Field | Type | Purpose |
+|-----------|------|---------|
+| `saveAbility` | `"strength"\|"dexterity"\|...` | Which ability save this spell targets |
+
+#### 3. EnemyCreator Expanded (`EnemyCreator.tsx`)
+- **Saving Throws Section**: 6 ability save toggles with proficiency bonus + custom bonus input
+- **Spellcasting Section**: Full 5.5e spellcasting config (caster type, ability, DC, ATK, spell list, slots JSON)
+- **SaveRow sub-component**: Reusable save toggle with bonus input
+
+#### 4. EnemyCreator JSX Integration
+- `handleSave` now serializes `spellcasting` data to the `EnemyDoc` document
+- Proper TypeScript type safety via `NonUndefined<T>` utility type for `EnemyDoc["spellcasting"]` access
+- Zero `any` type usage
+
+### Build & Deploy
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 7.91s, 0 warnings |
+| Modules | 2,152 |
+| Bundle hash | `index-B8wyDxA0.js` |
+| JS bundle | 2,242 KB (525 KB gzipped) |
+| Production URL | ✅ https://arkla.vercel.app |
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides/Lusion/Spotify premium design patterns
+- ✅ Glassmorphism enforced across all modified components
+---
