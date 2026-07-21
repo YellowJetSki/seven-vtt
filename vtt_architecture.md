@@ -13392,3 +13392,37 @@ Global real-time concentration spell duration tracker with premium Lusion-grade 
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 35/40 — The Intensive VTT Analysis Phase — CYCLE 5 OF 10 (Updated: 2026-07-21 11:19)
+## Sprint 35/40 — The Intensive VTT Analysis Phase — CYCLE 5 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — Legendary Action / Lair Action Tracker
+
+#### Built: DmLegendaryActionTracker (520+ lines)
+Complete legendary creature management popover with Lusion-grade premium glassmorphism UI:
+
+**Core Features (5.5e RAW):**
+- **Legendary Actions** — Track 3 per round, 1 per turn after another creature's turn. Use/Reset per creature.
+- **Legendary Resistances** — Per-day pool (configurable 0-5), expend to auto-succeed a failed save.
+- **Lair Actions** — 1 per round on initiative count 20. Quick toggle per creature.
+- **Mythic Phase** — Trigger at 50% HP threshold. Unlocks separate mythic action pool.
+- **Recharge Abilities** — Track "Recharge 5-6" abilities per creature. Toggle available/used.
+- **Round Reset** — One-click "Top of Round" reset restores legendary actions, lair actions, and mythic actions.
+- **Auto-Detection** — Scans active encounter combatants for legendary creature names (dragon, lich, demon lord, etc.).
+- **Custom Creatures** — Add any creature with manual legendary action/resistance/lair/mythic configuration.
+- **Expandable Cards** — Each creature shows collapsed summary (name + action pool) with expand section for full controls.
+- **Rules Reference** — Collapsible 5.5e rules summary for legendary actions, resistances, lair actions, mythic actions, and recharge mechanics.
+
+**Integration:**
+- `stores/uiStore.ts` — Added `showLegendaryTracker` + `setLegendaryTracker`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-legendary-tracker`, DM-role rendering block
+- `components/layout/Sidebar.tsx` — "Legendary" sidebar button with rose-accent styling using PremiumIcon `attack`
+
+#### Build & Deploy
+- Build: **7.44s**, 2141 modules, 0 TypeScript errors
+- Hash: `index-D9QeKXCN.js`, deployed to arkla.vercel.app
+- No dice rollers (all state-based tracking, zero RNG)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
