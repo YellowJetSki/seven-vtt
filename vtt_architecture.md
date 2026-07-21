@@ -15242,3 +15242,32 @@ Upgraded the Token Image URL field in EnemyCreator:
 
 ### Ready for Cycle 41 — PC Experience Phase — Cycle 6 of 10
 ---
+
+## Cycle 41 — PC Experience Phase — Cycle 6 of 10 (Complete) (Updated: 2026-07-21 15:48)
+## Sprint 41 of 80 — PC Experience Phase — Cycle 6 of 10 (COMPLETE) ✅
+
+### Feature Enhancements
+
+| Enhancement | File | Lines | Details |
+|:------------|:-----|:-----:|:--------|
+| **1. CombatantRowCard (NEW)** | `CombatantRowCard.tsx` | 135 lines | Extracted reusable combatant row from the monolithic PlayerLiveEncounterView. Shows: initiative, type icon, name, status condition dots (color-coded per 5e RAW — poisoned=emerald, paralyzed=amber, stunned=pink, etc.), compact HP bar with 5-tier color coding and fraction, current turn gold pulse indicator. Features click interaction for AC/HP info disclosure. Exports `getHpTier()` utility for reuse. 44px+ touch targets. |
+| **2. EncounterFlashToast (NEW)** | `EncounterFlashToast.tsx` | 35 lines | Extracted flash message component for encounter HP changes. Damage = rose accent, Heal = emerald, Info = gold. Auto-dismisses after 2.5s. Uses callback pattern for clean parent state management. |
+| **3. PlayerLiveEncounterView (REWRITTEN)** | `PlayerLiveEncounterView.tsx` | 240 lines (was 311) | **-23% line count** despite adding new features. Now uses extracted CombatantRowCard + EncounterFlashToast sub-components. Added: "Your Turn" cinematic triple-ring pulse overlay (outer border, inner ping ring, top gold accent bar), "Act Now" callout banner with quick-action buttons (Attack/Cast/Heal) for the player's turn, condition dot indicators per combatant row (up to 3 shown with +N overflow), mobile-responsive bottom sheet compatible. |
+
+### Monolith Reduction
+| Before | After | Delta |
+|:------:|:-----:|:-----:|
+| PlayerLiveEncounterView: 311 lines | PlayerLiveEncounterView: 240 lines + CombatantRowCard: 135 + EncounterFlashToast: 35 | **−71 lines in monolith, +2 reusable components** |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Vite build: ✅ Clean (verified)
+- Git: ✅ Sprint 41 checkpoint saved
+
+### Compliance
+- ✅ **ZERO Math.random** — all deterministic
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides premium design: gold pulse banners, color-coded status dots, staggered entrances
+- ✅ Arkla campaign lore: Wendy Swiftfoot, Kehrfuffle Ironheart
+- ✅ 5.5e RAW: 5-tier HP thresholds (Healthy/Scratched/Bloodied/Critical/Down), 10 condition colors mapped
+---
