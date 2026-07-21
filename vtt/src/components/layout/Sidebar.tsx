@@ -133,6 +133,19 @@ export default function Sidebar() {
           ))}
         </nav>
 
+        {/* ── DM TOOLS SEPARATOR ──
+            Only visible when sidebar is open (expanded mode).
+            Separates navigation links from DM combat tools. */}
+        {sidebarOpen && (
+          <div className="px-3 pb-2">
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-gradient-to-r from-gold-500/15 to-transparent" />
+              <span className="text-[7px] uppercase tracking-[0.15em] font-bold text-gold-500/40">Tools</span>
+              <div className="h-px flex-1 bg-gradient-to-l from-gold-500/15 to-transparent" />
+            </div>
+          </div>
+        )}
+
         {/* ── DM COMBAT CONDITIONS TOGGLE ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button
