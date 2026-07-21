@@ -63,7 +63,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
         <div className="flex-1 min-w-0">
           {/* Name + Level + School */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/90 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors">
               {spell.name}
             </h4>
             <span className={`text-[9px] uppercase tracking-wider ${LEVEL_COLORS[String(spell.level)] || "text-surface-400"}`}>
@@ -123,7 +123,7 @@ export default function HomebrewSpellCard({ spell, onEdit, onDelete, onDuplicate
 
           {/* Description */}
           {spell.description && (
-            <p className="text-[10px] text-surface-500 mt-1.5 line-clamp-2 leading-relaxed">
+            <p className="text-[10px] text-surface-400 mt-1.5 line-clamp-2 leading-relaxed">
               {spell.description}
             </p>
           )}

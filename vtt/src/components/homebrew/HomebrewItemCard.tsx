@@ -68,7 +68,7 @@ export default function HomebrewItemCard({
         <div className="flex-1 min-w-0">
           {/* Name + Tags Row */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/90 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors">
               {item.name}
             </h4>
             {item.rarity && (
@@ -122,7 +122,7 @@ export default function HomebrewItemCard({
 
           {/* Description */}
           {item.description && (
-            <p className="text-[10px] text-surface-500 mt-1.5 line-clamp-2 leading-relaxed">
+            <p className="text-[10px] text-surface-400 mt-1.5 line-clamp-2 leading-relaxed">
               {item.description}
             </p>
           )}

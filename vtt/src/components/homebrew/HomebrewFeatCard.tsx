@@ -64,7 +64,7 @@ export default function HomebrewFeatCard({
         <div className="flex-1 min-w-0">
           {/* Name + Prerequisites Row */}
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-white/90 truncate group-hover:text-gold-200 transition-colors">
+            <h4 className="text-sm font-semibold text-white/95 truncate group-hover:text-gold-200 transition-colors">
               {feat.name}
             </h4>
             {feat.repeatable && (
@@ -98,7 +98,7 @@ export default function HomebrewFeatCard({
 
           {/* Benefits */}
           {feat.benefits && feat.benefits.length > 0 && (
-            <div className="mt-1.5 text-[10px] text-surface-500 line-clamp-2 leading-relaxed">
+            <div className="mt-1.5 text-[10px] text-surface-400 line-clamp-2 leading-relaxed">
               {feat.benefits.slice(0, 2).map((b, i) => (
                 <span key={i}>{b}{i < Math.min(feat.benefits.length, 2) - 1 ? " · " : ""}</span>
               ))}
