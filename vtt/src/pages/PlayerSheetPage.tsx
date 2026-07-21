@@ -189,6 +189,7 @@ export default function PlayerSheetPage() {
         <PlayerLiveEncounterView
           playerCharacterId={character.id}
           playerCharacterName={character.name}
+          character={character}
         />
       </div>
 
