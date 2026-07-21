@@ -144,9 +144,9 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search journal..."
-            className="w-full py-1.5 pl-7 pr-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600 transition-all"
+            className="w-full py-1.5 pl-7 pr-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all"
           />
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-surface-600">🔍</span>
+          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-surface-500">🔍</span>
         </div>
       </div>
 
@@ -154,14 +154,14 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
       <div className="flex-1 overflow-y-auto scrollbar-gold">
         {groupedEntries.length === 0 && (
           <div className="p-4 text-center">
-            <p className="text-[10px] text-surface-600">No entries found</p>
+            <p className="text-[10px] text-surface-500">No entries found</p>
           </div>
         )}
 
         {groupedEntries.map((group) => (
           <div key={group.label}>
             <div className="px-2.5 py-1.5 flex items-center gap-1.5 border-b border-white/[0.02]">
-              <span className="text-[9px] text-surface-600 uppercase tracking-wider font-semibold">
+              <span className="text-[9px] text-surface-500 uppercase tracking-wider font-semibold">
                 {group.label}
               </span>
               <span className="text-[8px] text-surface-700">({group.entries.length})</span>
@@ -188,11 +188,11 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
                     </span>
                     <span className="text-[11px] truncate flex-1">{entry.title}</span>
                     {/* Relative time */}
-                    <span className="text-[8px] text-surface-700 shrink-0 tabular-nums">
+                    <span className="text-[8px] text-surface-500 shrink-0 tabular-nums">
                       {getRelativeTime(entry.updatedAt)}
                     </span>
                   </div>
-                  <div className="text-[9px] text-surface-600 mt-0.5 ml-5 truncate">
+                  <div className="text-[9px] text-surface-500 mt-0.5 ml-5 truncate">
                     {entry.content.slice(0, 60)}
                     {entry.content.length > 60 ? "..." : ""}
                   </div>
@@ -216,7 +216,7 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
 
       {/* ── Stats footer ── */}
       <div className="shrink-0 px-2.5 py-1.5 border-t border-white/[0.03]">
-        <div className="flex items-center justify-between text-[9px] text-surface-600">
+        <div className="flex items-center justify-between text-[9px] text-surface-500">
           <span>{entries.length} entries</span>
           <span>
             {entries.filter((e) => e.type === "session").length} sessions

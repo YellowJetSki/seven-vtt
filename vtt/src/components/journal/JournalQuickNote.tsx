@@ -128,15 +128,15 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
                 onKeyDown={handleKeyDown}
                 placeholder="Jot down an idea, NPC name, quest detail, or combat note..."
                 rows={4}
-                className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-xl px-3 py-2.5 text-xs text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 resize-none min-h-[100px] transition-all"
+                className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-xl px-3 py-2.5 text-xs text-surface-200 placeholder-surface-500 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 resize-none min-h-[100px] transition-all"
                 autoFocus
               />
 
               {/* Quick session context */}
               {lastSessionNumber > 0 && (
-                <div className="mt-2 text-[9px] text-surface-600 flex items-center gap-1.5">
+                <div className="mt-2 text-[9px] text-surface-500 flex items-center gap-1.5">
                   <span>🎲 Current session: #{lastSessionNumber}</span>
-                  <span className="text-surface-700">·</span>
+                  <span className="text-surface-500">·</span>
                   <span className="text-gold-500/40">Auto-timestamped on save</span>
                 </div>
               )}
@@ -144,7 +144,7 @@ export default function JournalQuickNote({ onSave, lastSessionNumber }: JournalQ
 
             {/* Footer */}
             <div className="shrink-0 px-4 py-3 border-t border-white/[0.06] flex items-center justify-between">
-              <div className="text-[9px] text-surface-600">
+              <div className="text-[9px] text-surface-500">
                 <kbd className="px-1 py-0.5 rounded bg-surface-800 border border-white/[0.06] text-[8px]">⌘↵</kbd> to save
               </div>
               <div className="flex gap-2">

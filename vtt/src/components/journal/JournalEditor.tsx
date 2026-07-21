@@ -192,7 +192,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
               className={`text-[10px] px-1.5 py-0.5 rounded transition-all active:scale-90 ${
                 isPinned
                   ? "bg-gold-500/15 border border-gold-500/25 text-gold-400"
-                  : "bg-transparent border border-transparent text-surface-600 hover:text-surface-400"
+                  : "bg-transparent border border-transparent text-surface-500 hover:text-surface-400"
               }`}
               title={isPinned ? "Unpin entry" : "Pin entry for quick access"}
             >
@@ -210,7 +210,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             )}
 
             {/* Relative timestamp */}
-            <span className="text-[9px] text-surface-600" title={new Date(entry.updatedAt).toLocaleString()}>
+            <span className="text-[9px] text-surface-500" title={new Date(entry.updatedAt).toLocaleString()}>
               Updated {relativeTime}
             </span>
 
@@ -259,7 +259,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
 
           {/* Word/char count */}
           {entry.content && (
-            <div className="text-[9px] text-surface-700 border-t border-white/[0.03] pt-3 flex items-center gap-3">
+            <div className="text-[9px] text-surface-500 border-t border-white/[0.03] pt-3 flex items-center gap-3">
               <span>{wordCount} words</span>
               <span>{charCount} characters</span>
             </div>
@@ -317,7 +317,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
               onChange={(e) =>
                 setSessionNumber(e.target.value ? parseInt(e.target.value) : undefined)
               }
-              className="w-16 py-1 px-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
+              className="w-16 py-1 px-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all"
             />
           </div>
         )}
@@ -329,9 +329,9 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Entry title..."
-            className="w-full py-2 px-3 rounded-lg text-sm font-bold bg-[#07080d]/70 border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 transition-all"
+            className="w-full py-2 px-3 rounded-lg text-sm font-bold bg-[#07080d]/70 border border-white/[0.06] text-gold-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all"
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] text-surface-700">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] text-surface-500">
             {title.length}/120
           </span>
         </div>
@@ -365,7 +365,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
           <div className="rounded-xl bg-[#07080d]/50 border border-white/[0.04] p-4 min-h-[200px]">
             <JournalMarkdownPreview content={content} />
             {!content.trim() && (
-              <span className="text-surface-600 italic text-[12px]">Nothing to preview</span>
+              <span className="text-surface-500 italic text-[12px]">Nothing to preview</span>
             )}
           </div>
         ) : (
@@ -374,12 +374,12 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your journal entry here... Use **bold**, *italic*, `code`, - lists, or # headers for markdown."
             rows={12}
-            className="w-full py-2 px-3 rounded-lg text-xs leading-relaxed bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-700 resize-y min-h-[200px] transition-all"
+            className="w-full py-2 px-3 rounded-lg text-xs leading-relaxed bg-[#07080d]/70 border border-white/[0.06] text-surface-300 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 resize-y min-h-[200px] transition-all"
           />
         )}
 
         {/* Word/char count */}
-        <div className="text-[9px] text-surface-700 flex items-center gap-3">
+        <div className="text-[9px] text-surface-500 flex items-center gap-3">
           <span>{wordCount} words</span>
           <span>{charCount} characters</span>
         </div>
@@ -415,7 +415,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
                 }
               }}
               placeholder="Add a tag..."
-              className="flex-1 py-1 px-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-600 transition-all"
+              className="flex-1 py-1 px-2 rounded text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 placeholder:text-surface-500 transition-all"
             />
             <button
               onClick={() => addTag(tagInput)}
@@ -433,7 +433,7 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
                 <button
                   key={t}
                   onClick={() => addTag(t)}
-                  className="text-[8px] px-1 py-0.5 rounded bg-white/[0.02] border border-white/[0.04] text-surface-600 hover:text-surface-400 hover:border-white/[0.08] active:scale-95 transition-all"
+                  className="text-[8px] px-1 py-0.5 rounded bg-white/[0.02] border border-white/[0.04] text-surface-500 hover:text-surface-400 hover:border-white/[0.08] active:scale-95 transition-all"
                 >
                   +{t}
                 </button>

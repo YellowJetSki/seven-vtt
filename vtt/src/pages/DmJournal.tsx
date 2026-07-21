@@ -164,7 +164,7 @@ export default function DmJournal() {
               <div className="min-w-0 pt-1 flex-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight font-display">
                       Journal
                     </h1>
                     <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
