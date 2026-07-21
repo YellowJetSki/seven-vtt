@@ -43,6 +43,7 @@ import DmTravelPaceGuide from "@/components/control-center/DmTravelPaceGuide";
 import DmShipCombatGuide from "@/components/control-center/DmShipCombatGuide";
 import GlobalQuickNote from "@/components/ui/GlobalQuickNote";
 import PartyInventoryPanel from "@/components/player/PartyInventoryPanel";
+import DmCombatProgressPanel from "@/components/control-center/DmCombatProgressPanel";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -89,6 +90,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setPartyInventory = useUIStore((s) => s.setPartyInventory);
   const showPartySpellSlots = useUIStore((s) => s.showPartySpellSlots);
   const setPartySpellSlots = useUIStore((s) => s.setPartySpellSlots);
+  const showCombatProgress = useUIStore((s) => s.showCombatProgress);
+  const setCombatProgress = useUIStore((s) => s.setCombatProgress);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -264,10 +267,21 @@ export default function AppShell({ children }: AppShellProps) {
   const setShipCombatRef = useRef(setShipCombat);
   setShipCombatRef.current = setShipCombat;
 
+  const showCombatProgressRef = useRef(showCombatProgress);
+  showCombatProgressRef.current = showCombatProgress;
+  const setCombatProgressRef = useRef(setCombatProgress);
+  setCombatProgressRef.current = setCombatProgress;
+
   useEffect(() => {
     const handler = () => { setShipCombatRef.current(!showShipCombatRef.current); };
     window.addEventListener("toggle-dm-ship-combat", handler);
     return () => window.removeEventListener("toggle-dm-ship-combat", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = () => { setCombatProgressRef.current(!showCombatProgressRef.current); };
+    window.addEventListener("toggle-dm-combat-progress", handler);
+    return () => window.removeEventListener("toggle-dm-combat-progress", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -476,6 +490,13 @@ export default function AppShell({ children }: AppShellProps) {
 
       {role === "dm" && (
         <DmShipCombatGuide />
+      )}
+
+      {/* ── DM Combat Progress Panel (Cycle 26) ──
+          Full encounter status dashboard with HP bars, turn order,
+          damage/healing totals, turn timer, and quick controls. */}
+      {role === "dm" && (
+        <DmCombatProgressPanel onClose={() => setCombatProgress(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──

@@ -140,6 +140,14 @@ const dmTools: DmToolProps[] = [
     title: "Travel & Wilderness — Overland travel, navigation, foraging, weather, and random encounters",
   },
   {
+    eventName: "toggle-dm-combat-progress",
+    icon: "encounterComplete",
+    colorClass: "text-gold-400",
+    hoverClass: "hover:bg-gold-500/8 hover:border-gold-500/10",
+    label: "Combat Progress",
+    title: "Combat Progress Dashboard — Full encounter status, HP bars, turn timer, damage/healing totals",
+  },
+  {
     eventName: "toggle-dm-ship-combat",
     icon: "ship",
     colorClass: "text-cyan-400",

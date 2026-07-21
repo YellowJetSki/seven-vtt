@@ -48,6 +48,7 @@ interface UIState {
   showQuickNote: boolean;
   showPartyInventory: boolean;
   showPartySpellSlots: boolean;
+  showCombatProgress: boolean;
 }
 
 interface UIActions {
@@ -122,6 +123,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showQuickNote: false,
   showPartyInventory: false,
   showPartySpellSlots: false,
+  showCombatProgress: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -152,6 +154,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setQuickNote: (show: boolean) => set({ showQuickNote: show }),
   setPartyInventory: (show: boolean) => set({ showPartyInventory: show }),
   setPartySpellSlots: (show: boolean) => set({ showPartySpellSlots: show }),
+  setCombatProgress: (show: boolean) => set({ showCombatProgress: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
