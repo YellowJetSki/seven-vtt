@@ -67,6 +67,8 @@ export interface HomebrewSpell {
   concentration: boolean;
   duration: string;
   range: string;
+  /** Optional image URL for spell card display */
+  imageUrl?: string;
   /** Flavor/quote text for premium card display */
   flavorText?: string;
   /** VTT area shape for AoE placement */
@@ -100,6 +102,8 @@ export interface HomebrewFeat {
   id: string;
   name: string;
   description: string;
+  /** Optional image URL for feat card display */
+  imageUrl?: string;
   flavorText?: string;
   prerequisites: FeatPrerequisite[];
   benefits: string[];

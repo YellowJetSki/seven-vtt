@@ -259,19 +259,56 @@ export default function HomebrewItemForm({ form, onChange, onSubmit, onClose, is
           </div>
 
           {/* Toggle Row */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.requiresAttunement} onChange={(e) => onChange({ ...form, requiresAttunement: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-gold-500" />
-              <span className="text-xs text-surface-300">Requires Attunement</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.visibleToPlayers} onChange={(e) => onChange({ ...form, visibleToPlayers: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-gold-500" />
-              <span className="text-xs text-surface-300">Visible to Players</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.isCursed} onChange={(e) => onChange({ ...form, isCursed: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-red-500" />
-              <span className="text-xs text-rose-300">Cursed</span>
-            </label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-4 flex-wrap">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.requiresAttunement} onChange={(e) => onChange({ ...form, requiresAttunement: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-gold-500" />
+                <span className="text-xs text-surface-300">Requires Attunement</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.visibleToPlayers} onChange={(e) => onChange({ ...form, visibleToPlayers: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-gold-500" />
+                <span className="text-xs text-surface-300">Visible to Players</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.isCursed} onChange={(e) => onChange({ ...form, isCursed: e.target.checked })} className="rounded border-surface-600 bg-surface-800 accent-red-500" />
+                <span className="text-xs text-rose-300">Cursed</span>
+              </label>
+            </div>
+            {form.requiresAttunement && (
+              <div>
+                <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Attunement Details <span className="text-surface-600">(optional)</span></label>
+                <input value={form.attunementDetails || ""} onChange={(e) => onChange({ ...form, attunementDetails: e.target.value || undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="e.g. by a ranger" />
+              </div>
+            )}
+            {form.isCursed && (
+              <div>
+                <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Curse Details <span className="text-surface-600">(optional)</span></label>
+                <input value={form.curseDetails || ""} onChange={(e) => onChange({ ...form, curseDetails: e.target.value || undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="e.g. cannot be removed by any means" />
+              </div>
+            )}
+          </div>
+
+          {/* Image URL */}
+          <div>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Image URL <span className="text-surface-600">(optional)</span></label>
+            <div className="flex gap-2">
+              <input
+                value={form.imageUrl || ""}
+                onChange={(e) => onChange({ ...form, imageUrl: e.target.value || undefined })}
+                className="input-arcane flex-1 py-2 px-3 text-sm"
+                placeholder="https://example.com/item-portrait.png"
+              />
+              {form.imageUrl && (
+                <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-gold/10 shrink-0">
+                  <img
+                    src={form.imageUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Source */}

@@ -106,6 +106,18 @@ export default function HomebrewItemDetailModal({ item, isOpen, onClose }: Homeb
             )}
           </div>
 
+          {/* Image Preview */}
+          {item.imageUrl && (
+            <div className="rounded-xl overflow-hidden border border-white/[0.04] bg-[#0c0d15]">
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="w-full h-48 object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+          )}
+
           {/* Description */}
           {item.description && (
             <div>

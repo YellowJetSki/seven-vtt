@@ -155,6 +155,20 @@ export default function HomebrewItemCard({
             )}
           </div>
 
+          {/* Image preview */}
+          {item.imageUrl && (
+            <div className="mt-1.5 flex items-start gap-2">
+              <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden border border-white/[0.04]">
+                <img
+                  src={item.imageUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Flavor Text */}
           {item.flavorText && (
             <p className="text-[9px] text-gold-400/50 italic mt-1 leading-relaxed line-clamp-1">"{item.flavorText}"</p>
