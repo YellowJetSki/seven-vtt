@@ -41,6 +41,7 @@ import DmWildShapeTracker from "@/components/control-center/DmWildShapeTracker";
 import DmDowntimeTracker from "@/components/control-center/DmDowntimeTracker";
 import DmTravelPaceGuide from "@/components/control-center/DmTravelPaceGuide";
 import DmShipCombatGuide from "@/components/control-center/DmShipCombatGuide";
+import GlobalQuickNote from "@/components/ui/GlobalQuickNote";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -421,6 +422,13 @@ export default function AppShell({ children }: AppShellProps) {
       {role === "dm" && (
         <DmShipCombatGuide />
       )}
+
+      {/* ── GLOBAL QUICK NOTE ──
+          Available from ANY page for BOTH DM and Player roles.
+          Floating FAB (bottom-right) for jotting ideas, quest details,
+          or combat notes without navigating to the Journal page.
+          Saves directly to campaign journal. */}
+      <GlobalQuickNote />
     </div>
   );
 }
