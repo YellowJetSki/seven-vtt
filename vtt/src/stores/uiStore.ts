@@ -54,6 +54,7 @@ interface UIState {
   showCombatantMover: boolean;
   showPartyResources: boolean;
   showEncounterAnalyzer: boolean;
+  showQuestTracker: boolean;
 }
 
 interface UIActions {
@@ -101,6 +102,7 @@ interface UIActions {
   setCombatantMover: (show: boolean) => void;
   setPartyResources: (show: boolean) => void;
   setEncounterAnalyzer: (show: boolean) => void;
+  setQuestTracker: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -140,6 +142,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showCombatantMover: false,
   showPartyResources: false,
   showEncounterAnalyzer: false,
+  showQuestTracker: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -176,6 +179,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setCombatantMover: (show: boolean) => set({ showCombatantMover: show }),
   setPartyResources: (show: boolean) => set({ showPartyResources: show }),
   setEncounterAnalyzer: (show: boolean) => set({ showEncounterAnalyzer: show }),
+  setQuestTracker: (show: boolean) => set({ showQuestTracker: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

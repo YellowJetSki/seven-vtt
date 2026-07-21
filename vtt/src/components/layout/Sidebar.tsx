@@ -172,6 +172,14 @@ const dmTools: DmToolProps[] = [
     title: "Encounter Analyzer — Party balance, difficulty, save targeting, recommendations",
   },
   {
+    eventName: "toggle-dm-quest-tracker",
+    icon: "loot",
+    colorClass: "text-emerald-400",
+    hoverClass: "hover:bg-emerald-500/8 hover:border-emerald-500/10",
+    label: "Quest Tracker",
+    title: "Session Tracker — Active quests, named NPCs, key locations with inline editing",
+  },
+  {
     eventName: "toggle-dm-damage-calculator",
     icon: "attack",
     colorClass: "text-rose-400",
@@ -280,6 +288,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-combatant-mover": "group-hover:text-gold-400",
   "toggle-dm-party-resources": "group-hover:text-gold-400",
   "toggle-dm-encounter-analyzer": "group-hover:text-amber-400",
+  "toggle-dm-quest-tracker": "group-hover:text-emerald-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
   "toggle-dm-party-spell-slots": "group-hover:text-violet-400",

@@ -49,6 +49,7 @@ import DmInitiativeDraft from "@/components/control-center/DmInitiativeDraft";
 import DmCombatantMover from "@/components/control-center/DmCombatantMover";
 import DmPartyResourcesQuickView from "@/components/control-center/DmPartyResourcesQuickView";
 import DmEncounterAnalyzer from "@/components/control-center/DmEncounterAnalyzer";
+import DmQuestTracker from "@/components/control-center/DmQuestTracker";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -107,6 +108,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setPartyResources = useUIStore((s) => s.setPartyResources);
   const showEncounterAnalyzer = useUIStore((s) => s.showEncounterAnalyzer);
   const setEncounterAnalyzer = useUIStore((s) => s.setEncounterAnalyzer);
+  const showQuestTracker = useUIStore((s) => s.showQuestTracker);
+  const setQuestTracker = useUIStore((s) => s.setQuestTracker);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -352,6 +355,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setEncounterAnalyzerRef.current(!showEncounterAnalyzerRef.current); };
     window.addEventListener("toggle-dm-encounter-analyzer", handler);
     return () => window.removeEventListener("toggle-dm-encounter-analyzer", handler);
+  }, []);
+
+  const showQuestTrackerRef = useRef(showQuestTracker);
+  showQuestTrackerRef.current = showQuestTracker;
+  const setQuestTrackerRef = useRef(setQuestTracker);
+  setQuestTrackerRef.current = setQuestTracker;
+
+  useEffect(() => {
+    const handler = () => { setQuestTrackerRef.current(!showQuestTrackerRef.current); };
+    window.addEventListener("toggle-dm-quest-tracker", handler);
+    return () => window.removeEventListener("toggle-dm-quest-tracker", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -609,6 +623,14 @@ export default function AppShell({ children }: AppShellProps) {
           for encounter adjustment based on 5.5e RAW. */}
       {role === "dm" && (
         <DmEncounterAnalyzer onClose={() => setEncounterAnalyzer(false)} />
+      )}
+
+      {/* ── DM Quest Tracker (Cycle 32) ──
+          Session-side reference for active quests, named NPCs with
+          attitudes, and key campaign locations. Inline editable,
+          searchable across all 3 categories, color-coded statuses. */}
+      {role === "dm" && (
+        <DmQuestTracker onClose={() => setQuestTracker(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──
