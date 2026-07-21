@@ -12832,3 +12832,54 @@ Tested the Player-facing UI workflow — a completely different system than Spri
 - ✅ Zero new ESLint errors (421 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 24/40 — The Extensive QA Phase (Cycle 4 of 10) (Updated: 2026-07-21 10:21)
+## Sprint 24/40 — The Extensive QA Phase (Cycle 4 of 10)
+**Date:** 2026-07-21
+
+### Target: Encounter Builder → CR Calculator → Initiative Engine Pipeline
+
+Tested the DM's end-to-end encounter-building workflow — a completely different system than Sprints 21 (DM Share), 22 (Level-Up → Rest), and 23 (Player Sheet Tabs). This covers monster CR math, difficulty calculation, initiative roll/sort with 5e RAW tiebreakers, and combatant builder from tokens.
+
+### Key Gap Identified
+- **Initiative engine (`initiative-engine.ts`) had ZERO test coverage** — `rollInitiativeDie()`, `sortByInitiative()`, `buildCombatantFromToken()`, `buildCombatantsFromTokens()`, `getInitiativeRange()` were completely untested
+- 5e RAW tiebreaker rules (init → DEX mod → alphabetical) had no validation
+
+### New Test File Created
+**`src/__tests__/sprint-24-encounter-initiative-pipeline-qa.test.ts`** — **55+ tests across 11 suites:**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. CR → XP Table Integrity | 4 | Fractional CRs, integer CRs 1-30, unknown/NaN, parseCr |
+| 2. Encounter Multiplier Math (DMG pg. 83) | 7 | All 6 monster count brackets, 0 enemies |
+| 3. Difficulty Thresholds | 7 | Wendy+Kehrfuffle vs 4 goblins (medium), various L1-L20 scenarios, level 0 → trivial |
+| 4. DEX Modifier & Initiative Range | 8 | All DEX 1-30 modifiers, range min/max/avg |
+| 5. sortByInitiative (5e RAW Tiebreaker) | 7 | Descending init, DEX mod tie, alphabetical tie, immutability, 10+ combatants, empty, single |
+| 6. buildCombatantFromToken | 6 | Structure validation, DEX adjustment, missing HP/AC fallbacks, NPC→ally |
+| 7. buildCombatantsFromTokens (Group) | 3 | Group of 2, initiative sort, empty list |
+| 8. Difficulty Label & Color | 2 | All 6 ratings have valid labels and colors |
+| 9. Full Pipeline (Integration) | 1 | DM builds encounter → calculates CR → sorts by initiative → all structures valid |
+| 10. Real-World DM Scenarios | 6 | Sunless Citadel, forest patrol, young dragon, mixed groups, CR range |
+| 11. Initiative Engine Edge Cases | 5 | generateCombatantId uniqueness, extremes, single token, sorted results |
+
+### Key RAW Validations
+- ✅ DMG pg. 83 multiplier table: 1(×1), 2(×1.5), 3-6(×2), 7-10(×2.5), 11-14(×3), 15+(×4)
+- ✅ 4 goblins (50 XP each = 200, ×2 = 400) vs 2 L5 = Medium (threshold 750)
+- ✅ Initiative ties broken by DEX mod → alphabetical per 5e RAW
+- ✅ DEX 1 = -5 mod → initiative range avg 5.5; DEX 30 = +10 → avg 20.5
+- ✅ buildCombatantFromToken handles missing HP/AC with 10/10 fallback
+- ✅ buildCombatantsFromTokens sorts results descending by initiative
+- ✅ generateCombatantId produces 100 unique IDs from 100 calls
+
+### Build & Deploy
+- Build: **7.90s**, 2136 modules, 0 errors
+- Hash: `index-CjKjZVYf.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (422 pre-existing parser config errors — all project-wide)
+
+---
