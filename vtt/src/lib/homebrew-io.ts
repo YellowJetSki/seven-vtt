@@ -1,22 +1,24 @@
 /**
- * STᚱ VTT — Homebrew Import/Export Utilities
+ * STᚱ VTT — Homebrew Import/Export Utilities (v2 — Enemies Integration)
  *
  * Pure functions for serializing and deserializing homebrew collections.
  * Handles validation, deduplication, and file I/O.
+ * Extended to support enemies/NPCs alongside items/spells/feats.
  */
 
 import type { HomebrewItem, HomebrewSpell, HomebrewFeat, HomebrewExport } from "@/types/homebrew";
+import type { EnemyDoc } from "@/types";
 import { HOME_EXPORT_VERSION } from "@/types/homebrew";
 
 /**
- * Export all homebrew as a downloadable JSON blob.
- * Triggers a browser download with a descriptive filename.
+ * Export homebrew + enemies as a downloadable JSON blob.
  */
 export function exportHomebrewToJSON(
   items: HomebrewItem[],
   spells: HomebrewSpell[],
   feats: HomebrewFeat[],
-  campaignName?: string
+  campaignName?: string,
+  enemies?: EnemyDoc[]
 ): void {
   const payload: HomebrewExport = {
     version: HOME_EXPORT_VERSION,
@@ -25,6 +27,7 @@ export function exportHomebrewToJSON(
     items,
     spells,
     feats,
+    enemies: enemies && enemies.length > 0 ? enemies : undefined,
   };
 
   const json = JSON.stringify(payload, null, 2);
@@ -42,7 +45,6 @@ export function exportHomebrewToJSON(
 
 /**
  * Parse and validate a homebrew JSON export.
- * Returns parsed data or a descriptive error string.
  */
 export function parseHomebrewJSON(json: string): { ok: true; data: HomebrewExport } | { ok: false; error: string } {
   try {
@@ -63,6 +65,14 @@ export function parseHomebrewJSON(json: string): { ok: true; data: HomebrewExpor
     for (const feat of parsed.feats) {
       if (!feat.name) return { ok: false, error: `Feat missing name: ${JSON.stringify(feat).slice(0, 80)}` };
     }
+    if (parsed.enemies !== undefined && !Array.isArray(parsed.enemies)) {
+      return { ok: false, error: "Invalid format: enemies must be an array." };
+    }
+    if (parsed.enemies) {
+      for (const enemy of parsed.enemies) {
+        if (!enemy.name) return { ok: false, error: `Enemy missing name: ${JSON.stringify(enemy).slice(0, 80)}` };
+      }
+    }
     return { ok: true, data: parsed as HomebrewExport };
   } catch (e) {
     return { ok: false, error: `Parse error: ${(e as Error).message}` };
@@ -70,11 +80,7 @@ export function parseHomebrewJSON(json: string): { ok: true; data: HomebrewExpor
 }
 
 /**
- * Merge imported entries with existing ones.
- * Deduplicates by name (case-insensitive) — existing entries keep their IDs.
- */
-/**
- * Merge imported entries with existing ones.
+ * Merge imported items with existing ones.
  * Deduplicates by name (case-insensitive) — existing entries keep their IDs.
  */
 export function mergeHomebrewImport<T extends { id: string; name: string; createdAt: number; updatedAt: number }>(
@@ -88,7 +94,7 @@ export function mergeHomebrewImport<T extends { id: string; name: string; create
 
   for (const entry of imported) {
     const key = entry.name.toLowerCase().trim();
-    if (existingByName.has(key)) continue; // skip duplicates
+    if (existingByName.has(key)) continue;
 
     const merged = {
       ...entry,
@@ -98,6 +104,36 @@ export function mergeHomebrewImport<T extends { id: string; name: string; create
       createdAt: now,
       updatedAt: now,
     } as unknown as T;
+    newEntries.push(merged);
+    existingByName.add(key);
+  }
+
+  return [...existing, ...newEntries];
+}
+
+/**
+ * Merge imported enemies with existing ones.
+ * Deduplicates by name (case-insensitive).
+ */
+export function mergeEnemyImport(
+  existing: EnemyDoc[],
+  imported: EnemyDoc[]
+): EnemyDoc[] {
+  const existingByName = new Set(existing.map((e) => e.name.toLowerCase().trim()));
+  const now = Date.now();
+  const newEntries: EnemyDoc[] = [];
+
+  for (const entry of imported) {
+    const key = entry.name.toLowerCase().trim();
+    if (existingByName.has(key)) continue;
+
+    const merged: EnemyDoc = {
+      ...entry,
+      id: `imp_enemy_${now}_${Math.random().toString(36).slice(2, 8)}`,
+      isHomebrew: true,
+      createdAt: now,
+      updatedAt: now,
+    };
     newEntries.push(merged);
     existingByName.add(key);
   }

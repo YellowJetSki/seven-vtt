@@ -10,7 +10,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useCompendiumStore } from "@/stores/compendium/compendiumStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { SRD_ITEMS, SRD_SPELLS, SRD_FEATS } from "@/stores/compendium/compendiumData";
-import { exportHomebrewToJSON, parseHomebrewJSON, mergeHomebrewImport } from "@/lib/homebrew-io";
+import { exportHomebrewToJSON, parseHomebrewJSON, mergeHomebrewImport, mergeEnemyImport } from "@/lib/homebrew-io";
 import HomebrewTabs, { type HomebrewTabId } from "./HomebrewTabs";
 import HomebrewSearchBar from "./HomebrewSearchBar";
 import HomebrewTabPanel from "./HomebrewTabPanel";
@@ -173,13 +173,14 @@ export default function HomebrewManager() {
     }, [enemies, setEnemies]
   );
 
-  // ── Export ──
+  // ── Export (including enemies) ──
   const handleExport = useCallback(() => {
-    exportHomebrewToJSON(items, spells, feats, "Arkla");
-    showToast({ message: `Exported ${items.length + spells.length + feats.length} entries`, type: "info" });
-  }, [items, spells, feats]);
+    exportHomebrewToJSON(items, spells, feats, "Arkla", enemies);
+    const total = items.length + spells.length + feats.length + enemies.length;
+    showToast({ message: `Exported ${items.length} items, ${spells.length} spells, ${feats.length} feats, ${enemies.length} monsters`, type: "info" });
+  }, [items, spells, feats, enemies]);
 
-  // ── Import ──
+  // ── Import (including enemies) ──
   const handleImport = useCallback(
     (file: File) => {
       const reader = new FileReader();
@@ -194,15 +195,26 @@ export default function HomebrewManager() {
         const mergedItems = mergeHomebrewImport(items, data.items, true);
         const mergedSpells = mergeHomebrewImport(spells, data.spells, true);
         const mergedFeats = mergeHomebrewImport(feats, data.feats, true);
+        const mergedEnemies = data.enemies ? mergeEnemyImport(enemies, data.enemies) : enemies;
 
-        if (mergedItems.length > items.length || mergedSpells.length > spells.length || mergedFeats.length > feats.length) {
+        const newItems = mergedItems.length - items.length;
+        const newSpells = mergedSpells.length - spells.length;
+        const newFeats = mergedFeats.length - feats.length;
+        const newEnemies = mergedEnemies.length - enemies.length;
+
+        if (newItems > 0 || newSpells > 0 || newFeats > 0 || newEnemies > 0) {
           mergedItems.forEach((item) => { if (!items.find((i) => i.id === item.id)) store.addItem(item as HomebrewItem); });
           mergedSpells.forEach((spell) => { if (!spells.find((s) => s.id === spell.id)) store.addSpell(spell as HomebrewSpell); });
           mergedFeats.forEach((feat) => { if (!feats.find((f) => f.id === feat.id)) store.addFeat(feat as HomebrewFeat); });
-          showToast({
-            message: `Imported ${mergedItems.length - items.length} items, ${mergedSpells.length - spells.length} spells, ${mergedFeats.length - feats.length} feats`,
-            type: "success",
-          });
+          if (newEnemies > 0) {
+            setEnemies(mergedEnemies);
+          }
+          const parts: string[] = [];
+          if (newItems > 0) parts.push(`${newItems} items`);
+          if (newSpells > 0) parts.push(`${newSpells} spells`);
+          if (newFeats > 0) parts.push(`${newFeats} feats`);
+          if (newEnemies > 0) parts.push(`${newEnemies} monsters`);
+          showToast({ message: `Imported ${parts.join(", ")}`, type: "success" });
         } else {
           showToast({ message: "No new entries found to import (duplicates skipped)", type: "info" });
         }
@@ -211,7 +223,7 @@ export default function HomebrewManager() {
         showToast({ message: "Import failed: Could not read file.", type: "error", duration: 6000 });
       };
       reader.readAsText(file);
-    }, [items, spells, feats, store]
+    }, [items, spells, feats, enemies, store, setEnemies]
   );
 
   // ── Bulk delete ──

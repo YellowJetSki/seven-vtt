@@ -135,6 +135,8 @@ export interface HomebrewExport {
   items: HomebrewItem[];
   spells: HomebrewSpell[];
   feats: HomebrewFeat[];
+  /** Enemies/NPCs — added in v2 for Homebrew Forge integration */
+  enemies?: import("@/types").EnemyDoc[];
 }
 
-export const HOME_EXPORT_VERSION = 1;
+export const HOME_EXPORT_VERSION = 2;

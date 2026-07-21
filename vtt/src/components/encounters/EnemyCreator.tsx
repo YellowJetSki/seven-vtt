@@ -364,12 +364,22 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Token Image URL</label>
-                  <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/token.png" className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+                  <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Token Image</label>
+                  <div className="flex items-center gap-2">
+                    <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/token.png" className="flex-1 py-2 px-3 rounded-lg text-xs bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+                    {imageUrl && (
+                      <button onClick={() => setImageUrl("")} className="shrink-0 p-1.5 rounded-lg text-surface-500 hover:text-red-400 hover:bg-red-500/10 active:scale-90 transition-all" title="Clear image">
+                        <span className="text-xs">✕</span>
+                      </button>
+                    )}
+                  </div>
                   {imageUrl && (
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <img src={imageUrl} alt="Token preview" className="w-8 h-8 rounded-lg object-cover border border-white/[0.06]" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                      <span className="text-[9px] text-surface-500">Token preview</span>
+                    <div className="mt-2 flex items-center gap-3">
+                      <img src={imageUrl} alt="Token preview" className="w-12 h-12 rounded-xl object-cover border border-white/[0.06] shadow-[0_0_8px_rgba(0,0,0,0.3)]" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <div className="flex flex-col">
+                        <span className="text-[9px] text-surface-500">Token preview</span>
+                        <span className="text-[8px] text-surface-600 mt-0.5">This image will appear on the battlemap token</span>
+                      </div>
                     </div>
                   )}
                 </div>
