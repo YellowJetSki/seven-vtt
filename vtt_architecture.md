@@ -16238,3 +16238,51 @@ When a combatant dies:
 - Vite build: Clean
 - Git savepoint: Sprint 65
 ---
+
+## PC Shared Party Inventory View (Cycle 66) (Updated: 2026-07-21 17:49)
+## Cycle 66 — PC Shared Party Inventory View — COMPLETE
+
+### What Was Built
+A globally accessible DM-facing popover showing ALL player characters' inventories in one unified view, with search, drag-and-drop item transfer, and party wealth statistics.
+
+### Components & Files Modified
+
+**1. `PartyInventoryPanel.tsx` (NEW — 390 lines)**
+- Lists ALL characters with collapsible inventory sections
+- Party wealth strip (total GP across all characters, item counts, weight)
+- Real-time search across names and inventory items
+- Drag-and-drop item transfer between characters (HTML5 drag/drop API)
+- Per-item expandable detail view (shows ATK, DMG, AC, type, description)
+- Category icons auto-detected (weapon, armor, potion, scroll, ring, etc.)
+- Premium Lusion-grade glassmorphism: gold edge light, staggered entrance, backdrop blur
+- Flash toast notifications for transfers
+
+**2. `uiStore.ts` (MODIFIED)**
+- Added `showPartyInventory` state + `setPartyInventory` action
+
+**3. `AppShell.tsx` (MODIFIED)**
+- Import + event listener for `toggle-dm-party-inventory` custom event
+- Rendering block: `<PartyInventoryPanel />` wrapped in `role === "dm"` guard
+
+**4. `Sidebar.tsx` (MODIFIED)**
+- Added "Party Inventory" tool button to dmTools[] array (cyan accent)
+- Added `toggle-dm-party-inventory` → `group-hover:text-cyan-400` hover mapping
+
+### DM Workflow
+```
+1. DM clicks "Party Inventory" in sidebar (cyan-accented button)
+2. Panel opens showing all characters with gold wealth strip at top
+3. Type in search bar → instantly filters characters AND items
+4. Click character name → expands showing all their items
+5. Click an item → expands showing its full stats (ATK, DMG, AC, weight, description)
+6. Drag an item from one character → drop on another → instant transfer
+7. Flash toast: "Moved Health Potion → Kehrfuffle"
+8. Gold wealth updates in real-time (currency changes reflected)
+9. Close via × button or clicking Close in footer
+```
+
+### Build
+- TypeScript: 0 errors
+- Vite build: Clean
+- Git savepoint: Sprint 66
+---
