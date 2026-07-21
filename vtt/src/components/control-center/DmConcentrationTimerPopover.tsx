@@ -13,6 +13,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
+import { useDMSelectionStore } from "@/stores/dmSelectionStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface ConcentrationEntry {
@@ -73,6 +74,20 @@ export default function DmConcentrationTimerPopover() {
     window.addEventListener("keydown", hk);
     return () => window.removeEventListener("keydown", hk);
   }, [show]);
+
+  // Cycle 18: Canvas token click → highlight matching concentration entry
+  useEffect(() => {
+    if (!show) return;
+    const unsub = useDMSelectionStore.subscribe((state) => {
+      const selectedId = state.selectedCombatantId;
+      if (!selectedId) return;
+      const match = entries.find((e) => e.combatantId === selectedId);
+      if (match) {
+        setExpandedId(match.id);
+      }
+    });
+    return () => unsub();
+  }, [show, entries]);
 
   useEffect(() => {
     if (showAddForm && addFormRef.current) addFormRef.current.focus();

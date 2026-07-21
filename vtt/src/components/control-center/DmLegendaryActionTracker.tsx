@@ -18,6 +18,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
+import { useDMSelectionStore } from "@/stores/dmSelectionStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface LegendaryCombatant {
@@ -97,6 +98,23 @@ export default function DmLegendaryActionTracker() {
     window.addEventListener("keydown", hk);
     return () => window.removeEventListener("keydown", hk);
   }, [show]);
+
+  // Cycle 18: Canvas token click → auto-expand matching creature
+  useEffect(() => {
+    if (!show) return;
+    const unsub = useDMSelectionStore.subscribe((state) => {
+      const selectedId = state.selectedCombatantId;
+      if (!selectedId) return;
+
+      // Check if any legendary creature matches the selected combatant ID
+      const allCreatures = [...customCombatants, ...encounterLegendaries];
+      const match = allCreatures.find((c) => c.id === selectedId);
+      if (match) {
+        setExpandedId(match.id);
+      }
+    });
+    return () => unsub();
+  }, [show, customCombatants, encounterLegendaries]);
 
   const handleClose = useCallback(() => {
     setAnimPhase("exiting");

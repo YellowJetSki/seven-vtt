@@ -19,6 +19,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
+import { useDMSelectionStore } from "@/stores/dmSelectionStore";
 import { useFirestoreTokenSync } from "@/hooks/useFirestoreTokenSync";
 import { useTokenMutations } from "@/hooks/useTokenMutations";
 import { useMapSelection } from "./useMapSelection";
@@ -66,6 +67,7 @@ export function useDmControlCenter() {
   /**
    * Enhanced token click handler: opens HP popover at click position
    * while also opening the inspector for detailed management.
+   * Also publishes to dmSelectionStore so open DM tools can auto-select.
    */
   const handleTokenClickEx = useCallback(
     (token: MapToken, clientX: number, clientY: number) => {
@@ -74,6 +76,8 @@ export function useDmControlCenter() {
       setHpPopoverToken(token);
       // Also set selected token for the inspector panel
       handleTokenClick(token);
+      // Cycle 18: Publish to DM selection store for popover auto-select
+      useDMSelectionStore.getState().selectCombatant(token.id);
     },
     [handleTokenClick]
   );

@@ -21,6 +21,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
+import { useDMSelectionStore } from "@/stores/dmSelectionStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface BeastPreset {
@@ -112,6 +113,20 @@ export default function DmWildShapeTracker() {
     window.addEventListener("keydown", hk);
     return () => window.removeEventListener("keydown", hk);
   }, [show]);
+
+  // Cycle 18: Canvas token click → expand matching transformation
+  useEffect(() => {
+    if (!show) return;
+    const unsub = useDMSelectionStore.subscribe((state) => {
+      const selectedId = state.selectedCombatantId;
+      if (!selectedId) return;
+      const match = transforms.find((t) => t.combatantId === selectedId);
+      if (match) {
+        setExpandId(match.id);
+      }
+    });
+    return () => unsub();
+  }, [show, transforms]);
 
   const handleClose = () => {
     setAnim("exiting");
