@@ -11915,3 +11915,45 @@ Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the applica
 | Production URL | arkla.vercel.app — stable |
 
 ---
+
+## Sprint 18/20 — UI Bug & Visual Polish Phase (Cycle 2 of 3) — Complete (Updated: 2026-07-20 23:19)
+## Sprint 18/20 — UI Bug & Visual Polish Phase (Cycle 2 of 3)
+
+### Mobile Touch Target Audit
+- **44px minimum** verified across all interactive elements
+  - Sidebar nav links: `min-h-[44px]` ✅
+  - HP quick buttons: `min-w-[44px]` ✅
+  - CombatHpHud toggle: `w-12 h-12` ✅
+  - CompendiumToggleButton: `w-11 h-11` ✅
+  - PlayerCardQuickActions: `min-w-[44px]` ✅
+- All mobile touch targets meet Apple HIG guidelines
+
+### Fantasy Placeholder Imagery Audit
+- **27 inline SVG assets** — working (zero-latency, inline)
+- **32 PNG campaign assets** — exist at root `images/` directory
+- **Vite plugin** (`vite-plugins/copy-assets.mjs`) configured to copy on build
+- `AssetImage.tsx` has robust fallback: loading → error with retry → SVG fallback
+- On next Vercel build, PNGs will be auto-copied to `public/images/`
+
+### Responsive Layout Audit
+- Main content padding: `1.5rem 1.5rem 5rem` — provides 80px clearance on mobile for bottom nav
+- MobileBottomNav: all 8 routes, `fixed bottom-0`, safe-area-awareness
+- Desktop sidebar: persistent (w-64/w-16), never hidden
+- Z-index hierarchy: z-0 (atmo) → z-10 (content) → z-40/50/60/70/75/99/100 (modals)
+- No clipping, no overflow in any responsive state
+
+### Prohibited Content Scan
+- "Tick race": 0 matches ✅
+- "food machine": 0 matches ✅  
+- "occult" in feature code: 0 matches (only in test compliance headers) ✅
+
+### TypeScript & Build Status
+| Metric | Value |
+|:-------|:------|
+| TypeScript errors | ✅ **0** (tsc --noEmit clean) |
+| Git savepoint | ✅ Sprint 18 |
+| Architecture ledger | ✅ Updated |
+
+### Ready for Sprint 19/20 (Final Hardening Phase)
+
+---
