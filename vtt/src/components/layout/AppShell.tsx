@@ -46,6 +46,7 @@ import PartyInventoryPanel from "@/components/player/PartyInventoryPanel";
 import DmCombatProgressPanel from "@/components/control-center/DmCombatProgressPanel";
 import DmDamageCalculator from "@/components/control-center/DmDamageCalculator";
 import DmInitiativeDraft from "@/components/control-center/DmInitiativeDraft";
+import DmCombatantMover from "@/components/control-center/DmCombatantMover";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -98,6 +99,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setDamageCalculator = useUIStore((s) => s.setDamageCalculator);
   const showInitiativeDraft = useUIStore((s) => s.showInitiativeDraft);
   const setInitiativeDraft = useUIStore((s) => s.setInitiativeDraft);
+  const showCombatantMover = useUIStore((s) => s.showCombatantMover);
+  const setCombatantMover = useUIStore((s) => s.setCombatantMover);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -310,6 +313,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setInitiativeDraftRef.current(!showInitiativeDraftRef.current); };
     window.addEventListener("toggle-dm-initiative-draft", handler);
     return () => window.removeEventListener("toggle-dm-initiative-draft", handler);
+  }, []);
+
+  const showCombatantMoverRef = useRef(showCombatantMover);
+  showCombatantMoverRef.current = showCombatantMover;
+  const setCombatantMoverRef = useRef(setCombatantMover);
+  setCombatantMoverRef.current = setCombatantMover;
+
+  useEffect(() => {
+    const handler = () => { setCombatantMoverRef.current(!showCombatantMoverRef.current); };
+    window.addEventListener("toggle-dm-combatant-mover", handler);
+    return () => window.removeEventListener("toggle-dm-combatant-mover", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -541,6 +555,15 @@ export default function AppShell({ children }: AppShellProps) {
           sort, lock, and one-click commit/start combat. */}
       {role === "dm" && (
         <DmInitiativeDraft onClose={() => setInitiativeDraft(false)} />
+      )}
+
+      {/* ── DM Combatant Mover (Cycle 29) ──
+          Quick-reposition combatant tokens from any page. Teleport,
+          drop pins, waypoint history, and coordinate input without
+          navigating to the battle map. Reads combatants from active
+          encounter. */}
+      {role === "dm" && (
+        <DmCombatantMover onClose={() => setCombatantMover(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──

@@ -148,6 +148,14 @@ const dmTools: DmToolProps[] = [
     title: "Initiative Quick-Draft — Rapid initiative entry, sort, lock, and one-click commit to combat",
   },
   {
+    eventName: "toggle-dm-combatant-mover",
+    icon: "attack",
+    colorClass: "text-gold-400",
+    hoverClass: "hover:bg-gold-500/8 hover:border-gold-500/10",
+    label: "Combat Mover",
+    title: "Combatant Mover — Quick-reposition tokens, drop pins, waypoint history, coordinate input",
+  },
+  {
     eventName: "toggle-dm-damage-calculator",
     icon: "attack",
     colorClass: "text-rose-400",
@@ -253,6 +261,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-quick-actions": "group-hover:text-rose-400",
   "toggle-dm-npc-quick-create": "group-hover:text-emerald-400",
   "toggle-dm-party-rest": "group-hover:text-emerald-400",
+  "toggle-dm-combatant-mover": "group-hover:text-gold-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
   "toggle-dm-party-spell-slots": "group-hover:text-violet-400",
