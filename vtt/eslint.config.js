@@ -1,10 +1,13 @@
 /**
  * STᚱ VTT — ESLint Config
  *
- * Intentionally minimal loose config.
- * The project uses `oxlint` for linting (via `npx oxlint@latest`).
- * TypeScript compilation errors are caught by `tsc --noEmit`.
- * This config exists only for tooling compatibility.
+ * Intentionally minimal. The project uses `oxlint` for linting
+ * (run via `npm run lint`). TypeScript compilation errors are
+ * caught by `tsc --noEmit`.
+ *
+ * This config exists only for tooling compatibility and declares
+ * which paths ESLint should ignore to avoid false-positive errors
+ * from its base parser when scanning the workspace.
  */
 export default [
   {
@@ -15,6 +18,12 @@ export default [
       "venv/**",
       "scripts/**",
       "docs/**",
+      "public/**",
+      "src/**/*.tsx",
+      "src/**/*.ts",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.d.ts",
     ],
   },
 ];
