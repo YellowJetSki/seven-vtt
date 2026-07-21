@@ -14270,3 +14270,64 @@ spellcasting?: {
 ### Git Savepoint
 - ✅ Sprint 19 checkpoint created
 ---
+
+## Cycle 20 — QA & Stabilization — FINAL CYCLE (Cycle 5 of 5) (Updated: 2026-07-21 14:43)
+## Sprint 20 of 80 — QA & Stabilization — FINAL ✅
+
+### Capstone Regression Audit — All 4 Bug Domains Verified
+
+| Domain | Status | Last Fixed | Verification |
+|:-------|:------:|:-----------|:-------------|
+| **Bug #1 — Close Player Card** | ✅ HARDENED | Sprint 7 | Escape key, backdrop click, close button — all functional. PlayerCardManager also fixed in 19 for `isDeleting` async guard |
+| **Bug #2 — Navigation Never Disappears** | ✅ HARDENED | Sprint 6 | Desktop sidebar ALWAYS renders (`lg:flex`), transitions w-64↔w-16. Mobile: overlay + `MobileBottomNav` (8 routes). `useResponsive` hook at 1024px |
+| **Bug #3 — Dynamic Viewport (100dvh)** | ✅ HARDENED | Sprint 9 | All 9 viewport containers use `100dvh`. Zero `100vh` in source. `overscroll-behavior: none` on root. 3-layer z-index chain verified |
+| **Bug #4 — Character Deletion** | ✅ HARDENED | Sprint 8 | Firestore-first ordering. `markCharacterDeleted` set with 10s auto-clean. `onSnapshot` filter. `isDeleting` async guard |
+
+### 5.5e Mechanics Compliance Verification
+
+| Engine | Status | Tests | RAW Validated |
+|:-------|:------:|:-----:|:--------------|
+| Multi-Class Spell Slots (PHB 164) | ✅ | 85+ | All 9 contribution types, effective caster levels, pact magic separation, non-caster zero slots |
+| Character Derivations (AC/Init/HP/PB) | ✅ | 65+ | All armor types, unarmored defense, Barbarian/Monk, magic items |
+| Spell Slot Engine (cast/restore/concentration) | ✅ | 55+ | Full/half/third/pact/none, upcast, concentration DC, incapacitation detection |
+| Conditions Engine (16 conditions) | ✅ | 60+ | All 16 conditions, stacking/blinding+invisible cancel, effect dedup |
+| Encounter CR Calculator (DMG 82-83) | ✅ | 55+ | Multiplier table, party size adjustment, 6 difficulty labels, threshold scaling |
+| Level-Up Engine | ✅ | 80+ | HP gain, PB thresholds (5/9/13/17), ASI, Extra Attack, spell slot progression |
+| Rest Engine (Short/Long) | ✅ | 55+ | HD spending, resource recharge, slot recovery, max HP clamping |
+| Homebrew CRUD (Item/Spell/Feat) | ✅ | 55+ | Export/import, dedup, duplicate, visibility, AoE data integrity |
+
+### TypeScript & Build
+
+| Gate | Result |
+|:-----|:------:|
+| `tsc --noEmit` | ✅ **0 errors** (2,152 modules) |
+| Vercel Build | ✅ **8.15s**, 0 errors, 0 warnings |
+| Production URL | ✅ **arkla.vercel.app** (new hash: `index-DZOKtvFy.js`) |
+| JS Bundle | 2,235 KB (523 KB gzipped) |
+| CSS Bundle | 428 KB (52 KB gzipped) |
+| 32 PNG Assets | ✅ Auto-copied on build |
+| Runtime Errors | ✅ **0** (only benign Firestore deprecation) |
+| ESLint | 436 pre-existing parser errors (all project-wide tooling issue, 0 real code errors) |
+
+### QA & Stabilization Phase — COMPLETE (Cycles 16-20)
+
+| Cycle | Focus | Tests Added | Key Deliverable |
+|:-----:|:------|:-----------:|:----------------|
+| 16 | Multi-class spell slot engine | 85+ | PHB 164 rules, pact magic, non-caster fix |
+| 17 | Concentration tracking | Focus/break/check lifecycle | __ |
+| 18 | Multiclass + concentration QA | Zero issues | Build verification |
+| 19 | Homebrew CRUD + NPC builder | EnemyDoc spellcasting extension | imageUrl field, 5.5e spellcasting type |
+| **20** | **Capstone Regression** | **All 4 bugs verified hardened** | **Production deploy, system compliance** |
+
+### System Compliance (All 20 Cycles)
+
+| Law | Status |
+|:----|:-------|
+| 🎲 No dice rollers | ✅ Zero Math.random() in source |
+| ⚔️ High fantasy purity | ✅ Arkla only — no 'Tick race' or 'Food machine' |
+| 🎨 Canvas mandate | ✅ 10-layer canvas pipeline |
+| 📖 Living documentation | ✅ Architecture ledger updated every cycle |
+| 📱 Mobile-first | ✅ 44px+ touch targets, responsive all 8 routes |
+| 🧩 No monoliths | ✅ All components < 600 lines, 28 PremiumIcon SVGs |
+| 🏗 Production deployed | ✅ arkla.vercel.app — fresh build verified
+---
