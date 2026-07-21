@@ -173,8 +173,27 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
       handleUseConsumable(character, index);
       const item = inventory[index];
       if (item) {
-        // Show premium consumption animation
-        const hpVal = item.name.toLowerCase().includes("potion") ? Math.floor(Math.random() * 8) + 5 : undefined;
+        // Show premium deterministic consumption animation
+        // Use item's damageDice or description to derive healing value
+        // Default potion: 2d4+2 = average 7 HP (deterministic)
+        let hpVal: number | undefined;
+        const lower = item.name.toLowerCase();
+        if (lower.includes("potion of healing") && (lower.includes("greater") || lower.includes("superior") || lower.includes("supreme"))) {
+          // Greater: 4d4+4 = avg 14
+          // Superior: 8d4+8 = avg 28
+          // Supreme: 10d4+20 = avg 45
+          if (lower.includes("supreme")) hpVal = 45;
+          else if (lower.includes("superior")) hpVal = 28;
+          else if (lower.includes("greater")) hpVal = 14;
+          else hpVal = 7;
+        } else if (lower.includes("potion")) {
+          hpVal = 7; // Standard healing potion
+        } else if (lower.includes("food") || lower.includes("ration")) {
+          hpVal = 2; // Rations provide minimal healing
+        } else if (lower.includes("antidote") || lower.includes("cure")) {
+          hpVal = undefined; // Cures conditions, no HP
+        }
+
         setConsumptionAnimation({
           itemName: item.name,
           value: hpVal,

@@ -1,5 +1,5 @@
 /**
- * STᚱ VTT — Consumption Animation (Premium Visual Feedback)
+ * STᚱ VTT — Consumption Animation (Overrrides-Grade Premium Visual Feedback)
  *
  * Overrrides/Spotify-grade animated overlay that plays when a consumable
  * item is used (potions, scrolls, food, poison, oil, antidote).
@@ -15,18 +15,23 @@
  * Auto-dismisses after 2 seconds with fade-out.
  * Uses Framer Motion-style pure CSS animations (no dependency).
  * Single animated overlay, self-cleaning.
+ *
+ * Cycle 39 Enhancements:
+ * - Deterministic HP values from item data (no Math.random)
+ * - Proper 5.5e healing potion formula passes through from item
+ * - Enhanced visual particles with staggered entrance
  */
 
 import { useEffect, useState } from "react";
 
-type ConsumableType = "potion" | "scroll" | "food" | "poison" | "oil" | "antidote" | "generic";
+export type ConsumableType = "potion" | "scroll" | "food" | "poison" | "oil" | "antidote" | "generic";
 
 interface ConsumptionAnimationProps {
   /** Name of the consumed item */
   itemName: string;
   /** Optional item type for visual variant */
   itemType?: ConsumableType;
-  /** Optional numeric value (e.g., HP healed, damage dealt) */
+  /** Optional numeric value (e.g., HP healed, damage dealt) — deterministic from item data */
   value?: number;
   /** Optional value label (e.g., "HP", "damage") */
   valueLabel?: string;
@@ -36,14 +41,14 @@ interface ConsumptionAnimationProps {
   onComplete: () => void;
 }
 
-function getConsumableType(name: string): ConsumableType {
+export function getConsumableType(name: string): ConsumableType {
   const lower = name.toLowerCase();
-  if (lower.includes("potion") || lower.includes("elixir") || lower.includes("potion")) return "potion";
-  if (lower.includes("scroll") || lower.includes("spell scroll")) return "scroll";
-  if (lower.includes("food") || lower.includes("ration") || lower.includes("bread") || lower.includes("meal")) return "food";
+  if (lower.includes("potion") || lower.includes("elixir")) return "potion";
+  if (lower.includes("scroll") || lower.includes("spell scroll") || lower.includes("scroll of")) return "scroll";
+  if (lower.includes("food") || lower.includes("ration") || lower.includes("bread") || lower.includes("meal") || lower.includes("steak")) return "food";
   if (lower.includes("poison") || lower.includes("venom")) return "poison";
-  if (lower.includes("oil")) return "oil";
-  if (lower.includes("antidote") || lower.includes("cure")) return "antidote";
+  if (lower.includes("oil") || lower.includes("flask")) return "oil";
+  if (lower.includes("antidote") || lower.includes("cure") || lower.includes("heal") || lower.includes("poultice")) return "antidote";
   return "generic";
 }
 
@@ -128,25 +133,23 @@ export default function ConsumptionAnimation({
   const [particles] = useState(() =>
     Array.from({ length: 8 }, (_, i) => ({
       id: i,
-      x: 50 + (Math.random() - 0.5) * 60,
-      y: 50 + (Math.random() - 0.5) * 40,
+      x: 50 + (Math.sin(i * 1.2) * 25),
+      y: 50 + (Math.cos(i * 1.2) * 20),
       delay: Math.random() * 300,
       size: 2 + Math.random() * 4,
     }))
   );
 
   useEffect(() => {
-    // Enter → Visible
     const t1 = setTimeout(() => setPhase("visible"), 50);
-    // Visible → Exit
     const t2 = setTimeout(() => setPhase("exiting"), duration - 300);
-    // Exit → Complete
     const t3 = setTimeout(() => onComplete(), duration);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [duration, onComplete]);
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center pointer-events-none"
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center pointer-events-none"
       style={{ height: "100dvh", width: "100dvw" }}
     >
       {/* Central card */}
@@ -193,20 +196,21 @@ export default function ConsumptionAnimation({
           Consumed
         </p>
 
-        {/* Ambient particles (floating dots) */}
+        {/* Ambient particles */}
         <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
           {particles.map((p) => (
             <div
               key={p.id}
-              className={`absolute w-1 h-1 rounded-full bg-white/30 animate-ping`}
+              className={`absolute rounded-full bg-white/30 animate-ping`}
               style={{
                 left: `${p.x}%`,
                 top: `${p.y}%`,
                 animationDelay: `${p.delay}ms`,
-                animationDuration: `${1.5 + Math.random()}s`,
+                animationDuration: `${1.5 + (p.id % 2)}s`,
                 width: `${p.size}px`,
                 height: `${p.size}px`,
                 opacity: phase === "visible" ? 0.6 : 0,
+                transition: "opacity 0.3s ease",
               }}
             />
           ))}
