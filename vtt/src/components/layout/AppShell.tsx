@@ -33,6 +33,7 @@ import DmNpcQuickCreatePopover from "@/components/control-center/DmNpcQuickCreat
 import DmCombatWrapUpOverlay from "@/components/control-center/DmCombatWrapUpOverlay";
 import DmSkillCheckPopover from "@/components/control-center/DmSkillCheckPopover";
 import DmSocialInteractionPopover from "@/components/control-center/DmSocialInteractionPopover";
+import DmTreasureGeneratorPopover from "@/components/control-center/DmTreasureGeneratorPopover";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -58,6 +59,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setSkillCheck = useUIStore((s) => s.setSkillCheck);
   const showSocialInteraction = useUIStore((s) => s.showSocialInteraction);
   const setSocialInteraction = useUIStore((s) => s.setSocialInteraction);
+  const showTreasureGenerator = useUIStore((s) => s.showTreasureGenerator);
+  const setTreasureGenerator = useUIStore((s) => s.setTreasureGenerator);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -149,6 +152,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setSocialInteractionRef.current(!showSocialInteractionRef.current); };
     window.addEventListener("toggle-dm-social-interaction", handler);
     return () => window.removeEventListener("toggle-dm-social-interaction", handler);
+  }, []);
+
+  const showTreasureGeneratorRef = useRef(showTreasureGenerator);
+  showTreasureGeneratorRef.current = showTreasureGenerator;
+  const setTreasureGeneratorRef = useRef(setTreasureGenerator);
+  setTreasureGeneratorRef.current = setTreasureGenerator;
+
+  useEffect(() => {
+    const handler = () => { setTreasureGeneratorRef.current(!showTreasureGeneratorRef.current); };
+    window.addEventListener("toggle-dm-treasure-generator", handler);
+    return () => window.removeEventListener("toggle-dm-treasure-generator", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -264,6 +278,13 @@ export default function AppShell({ children }: AppShellProps) {
           + monster knowledge checks (Arcana/Nature/Religion lore) */}
       {role === "dm" && (
         <DmSocialInteractionPopover />
+      )}
+
+      {/* ── DM Treasure & Loot Generator Popover (Sprint 33) ──
+          DMG treasure tables for individual parcels and hoards
+          with magic items, art, and gems per CR tier */}
+      {role === "dm" && (
+        <DmTreasureGeneratorPopover />
       )}
     </div>
   );

@@ -37,6 +37,7 @@ interface UIState {
   showCombatWrapUp: boolean;
   showSkillCheck: boolean;
   showSocialInteraction: boolean;
+  showTreasureGenerator: boolean;
 }
 
 interface UIActions {
@@ -64,6 +65,8 @@ interface UIActions {
   setSkillCheck: (show: boolean) => void;
   /** Set DM Social Interaction overlay visibility */
   setSocialInteraction: (show: boolean) => void;
+  /** Set DM Treasure Generator overlay visibility */
+  setTreasureGenerator: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -86,6 +89,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showCombatWrapUp: false,
   showSkillCheck: false,
   showSocialInteraction: false,
+  showTreasureGenerator: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -105,6 +109,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setCombatWrapUp: (show: boolean) => set({ showCombatWrapUp: show }),
   setSkillCheck: (show: boolean) => set({ showSkillCheck: show }),
   setSocialInteraction: (show: boolean) => set({ showSocialInteraction: show }),
+  setTreasureGenerator: (show: boolean) => set({ showTreasureGenerator: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
