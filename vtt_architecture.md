@@ -16371,3 +16371,59 @@ Total time: ~10 seconds vs navigating character sheets individually
 - Vite build: Clean
 - Git savepoint: Sprint 68
 ---
+
+## Companion Spell Reference Panel (Cycle 69) (Updated: 2026-07-21 17:59)
+## Cycle 69 — Companion Spell Reference Panel: Player Quick-Reference Spellbook — COMPLETE
+
+### New Component Created
+- **`CompanionSpellRefPanel.tsx`** (~430 lines) — Violet-accented glass popover
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Spell list from compendium** | Resolves prepared spells + class cantrips from SRD/homebrew compendium |
+| **Level-grouped display** | Dedicated Cantrip section + Lv.1 through Lv.9 sections |
+| **Search** | Matches name, school, description |
+| **Level filter chips** | All / Cantrips / Lv.1..9 with multi-select toggle |
+| **School color badges** | 8 school colors matching SRD system (Abjuration=cyan, Evocation=rose, etc.) |
+| **Damage/Healing chips** | Inline 💥 8d6 Fire / ❤ 2d4+2 badges for quick scanning |
+| **Concentration/Ritual indicators** | 🧘 / 📜 badges per spell |
+| **Expandable detail cards** | Shows full statblock: casting time, range, components, duration, damage/save info, description |
+| **Spellcasting stats header** | Save DC + ATK bonus shown at top |
+| **Count indicator** | "Showing 12 of 48 spells" footer |
+| **Non-caster detection** | Graceful "Non-Caster" badge + empty state |
+| **Premium glassmorphism** | Violet-accented edge light, school color badges, staggered entrance |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `PlayerLiveEncounterView.tsx` | Companion view | Added "Open Spellbook" button + `CompanionSpellRefPanel` popover during player's turn |
+
+### Player Workflow
+```
+During combat, player's turn:
+1. Companion encounter view shows at top of screen
+2. Player sees "Act Now" + action hints + resources + consumables
+3. Player clicks "Open Spellbook" button (violet, sparkles icon)
+4. Popover opens with all prepared spells + class cantrips
+5. Player searches "fire" → filters to Fireball, Burning Hands, etc.
+6. Player taps Fireball → expanded to see 8d6 fire damage, 150ft range
+7. Player closes popover → back to encounter view
+Total time: ~5 seconds vs navigating to Spells tab in character sheet
+```
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `CompanionSpellRefPanel.tsx` | ~430 | Player-facing spell quick-reference popover |
+
+### Files Modified
+| File | Change |
+|:-----|:-------|
+| `PlayerLiveEncounterView.tsx` | Added import, state, button, popover rendering |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 69
+---
