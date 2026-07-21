@@ -92,8 +92,8 @@ export function useFirestoreEntitySync(): void {
           },
           (err) => {
             console.warn("[Firestore/Entities] Enemies error:", err);
-            if (!mounted) return;
-            setEnemies([]);
+            // CRITICAL: Do NOT clear enemies on transient connection blips.
+            // The retry mechanism will reconnect and restore data.
           }
         );
         unsubsRef.current.push(unsubEnemies);
@@ -109,8 +109,7 @@ export function useFirestoreEntitySync(): void {
           },
           (err) => {
             console.warn("[Firestore/Entities] Encounters error:", err);
-            if (!mounted) return;
-            setEncounters([]);
+            // CRITICAL: Do NOT clear encounters on transient connection blips.
           }
         );
         unsubsRef.current.push(unsubEncounters);
@@ -126,8 +125,7 @@ export function useFirestoreEntitySync(): void {
           },
           (err) => {
             console.warn("[Firestore/Entities] Maps error:", err);
-            if (!mounted) return;
-            setBattleMaps([]);
+            // CRITICAL: Do NOT clear battle maps on transient connection blips.
           }
         );
         unsubsRef.current.push(unsubMaps);
@@ -143,8 +141,7 @@ export function useFirestoreEntitySync(): void {
           },
           (err) => {
             console.warn("[Firestore/Entities] Journal error:", err);
-            if (!mounted) return;
-            setJournal([]);
+            // CRITICAL: Do NOT clear journal on transient connection blips.
           }
         );
         unsubsRef.current.push(unsubJournal);

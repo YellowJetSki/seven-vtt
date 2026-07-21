@@ -12178,3 +12178,25 @@ Performed comprehensive static analysis verifying all 4 core bugs across the ent
 - Bundle hash: `index-DTVMTvBC.js`
 - URL: https://arkla.vercel.app — verified HTTP 200
 ---
+
+## Sprint 6/40 — Critical Bug Fix Phase (Entity Service Transient Wipe Fix) (Updated: 2026-07-21 09:15)
+## Sprint 6/40 — Critical Bug Fix Phase (Entity Service Transient Wipe Fix) — Complete
+**Date:** 2026-07-21
+
+### Key Fixes
+
+**Bug #4 Residual: Transient data wipe in entity service + entity sync hook**
+
+**Root Cause discovered:** Three locations had the same `callback([])` / `setEntities([])` anti-pattern that was fixed for characters in Sprint 5:
+
+1. **`entity-service.ts`** — `listenMapTokens()` `onSnapshot` error handler called `callback([])`, wiping all map tokens on transient Firestore blips
+2. **`useFirestoreEntitySync.ts`** — 4 `onSnapshot` error handlers (enemies, encounters, battleMaps, journal) called `setEnemies([])`, `setEncounters([])`, `setBattleMaps([])`, `setJournal([])` on transient connection errors
+3. **Cumulative impact**: A single connection blip would simultaneously wipe characters (fixed Sprint 5), map tokens, enemies, encounters, battleMaps, and journal from Zustand state + localStorage persist
+
+**Fix:** Removed all 5 `setEmptyArray([])` calls from error handlers. Now only `.catch()` on initialization failure (no existing state to preserve) retains its `callback([])` call. All `onSnapshot` error handlers only log the error.
+
+### Production Build
+- Build: 7.15s, 2,129 modules, 0 errors, 0 warnings
+- Bundle hash: `index-1ij60ZdI.js`
+- URL: https://arkla.vercel.app — verified HTTP 200
+---

@@ -114,7 +114,9 @@ export function listenMapTokens(
         },
         (err) => {
           console.warn("[Firestore/Tokens] Listener error:", err);
-          if (!cancelled) callback([]);
+          // CRITICAL: Do NOT call callback([]) on transient connection blips.
+          // The retry mechanism in useFirestoreTokenSync handles reconnection.
+          // Clearing tokens here would wipe map state during live sessions.
         }
       );
     })
