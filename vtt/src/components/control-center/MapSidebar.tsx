@@ -28,7 +28,7 @@ export default function MapSidebar({ activeMapId, onSelectMap }: MapSidebarProps
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Gold-accented header */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-gold/10 shrink-0">
         <span className="text-sm font-bold text-gold-300 tracking-wide drop-shadow-[0_0_6px_rgba(234,179,8,0.1)]">

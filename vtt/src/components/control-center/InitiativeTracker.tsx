@@ -210,7 +210,7 @@ export default function InitiativeTracker({
     dragOverIdx.current === idx && dragIdx !== null && dragOverIdx.current !== dragIdx;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       <InitiativeHeader
         combatantCount={sortedCombatants.length}
         round={encounter.round ?? 1}

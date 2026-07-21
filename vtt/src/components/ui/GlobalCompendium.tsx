@@ -30,7 +30,7 @@ export default function GlobalCompendium() {
   const feats = getCompendiumFeats(store.feats, { searchQuery, categoryFilter, schoolFilter, showSRD });
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* ── Header ── */}
       <div className="relative mb-4 pb-3 border-b border-white/[0.04]">
         <div className="absolute top-0 left-[20%] right-[20%] h-px bg-gradient-to-r from-transparent via-gold-500/15 to-transparent" />

@@ -15,7 +15,7 @@ const FEATURES = [
 export default function LoginBrandHero() {
   return (
     <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 xl:p-16 relative">
-      <div className="relative flex flex-col h-full">
+      <div className="relative flex flex-col h-full min-h-0">
         {/* Brand header */}
         <div
           className="animate-slide-in-up opacity-0"

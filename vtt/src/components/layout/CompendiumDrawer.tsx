@@ -78,7 +78,7 @@ export default function CompendiumDrawer() {
         {/* Ambient glow at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gold-500/[0.015] to-transparent pointer-events-none" />
 
-        <div className="flex flex-col h-full p-5 relative z-10">
+        <div className="flex flex-col h-full min-h-0 p-5 relative z-10">
           {/* ── Header ── */}
           <CompendiumHeader onClose={handleClose} />
 

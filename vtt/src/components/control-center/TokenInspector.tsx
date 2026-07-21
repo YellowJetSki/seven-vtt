@@ -58,7 +58,7 @@ export default function TokenInspector({
   } = useTokenInspector(token, mapId, onClose, onTokenUpdated);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       <InspectorHeader icon={token.icon} onClose={onClose} />
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">

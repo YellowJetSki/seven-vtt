@@ -90,7 +90,7 @@ export default function PlayerSheet({ character, onClose }: PlayerSheetProps) {
     >
       {/* Ambient gold gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-gold-500/[0.02] via-transparent to-transparent pointer-events-none" />
-      <div className="relative z-10 flex flex-col h-full">
+      <div className="relative z-10 flex flex-col h-full min-h-0">
         {/* Header (with optional banner portrait) */}
         <PlayerSheetHeader character={character} onClose={onClose} />
 

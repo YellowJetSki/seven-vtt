@@ -118,7 +118,7 @@ export default function JournalSidebar({ entries, activeEntryId, onSelectEntry }
   };
 
   return (
-    <div className="w-64 border-r border-white/[0.04] flex flex-col h-full bg-gradient-to-b from-[#141520]/60 to-[#0f1019]/70">
+    <div className="w-64 border-r border-white/[0.04] flex flex-col h-full min-h-0 bg-gradient-to-b from-[#141520]/60 to-[#0f1019]/70">
       {/* ── Type Filters ── */}
       <div className="shrink-0 p-2.5 space-y-2">
         <div className="flex flex-wrap gap-1">

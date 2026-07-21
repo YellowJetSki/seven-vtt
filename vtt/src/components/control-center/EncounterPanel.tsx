@@ -202,7 +202,7 @@ export default function EncounterPanel({ mapId, onTokensAdded }: EncounterPanelP
   }, [selectedEncounter, enemies, mapId, addMapToken, createCombatEncounter, addCombatant, onTokensAdded]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       <EncounterPanelHeader
         encounterCount={encounters.length}
         partyConfig={partyConfig}

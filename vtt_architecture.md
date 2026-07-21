@@ -13690,3 +13690,35 @@ Comprehensive naval/vehicle combat and marine travel tool with cyan-accent glass
 ### Files Modified
 - `Sidebar.tsx` — Fixed Tailwind JIT dynamic class bug in `DmToolButton`
 ---
+
+## Cycle 3 — Critical Bug Hunt & Layout (Deep Flexbox Hardening) (Updated: 2026-07-21 13:46)
+## Cycle 3 — Critical Bug Hunt & Layout (Deep Flexbox Hardening) — Complete
+
+### Bugs Found & Fixed
+
+**Bug #1: Missing `min-h-0` on 8 flex-col containers (CRITICAL — FIXED)**
+- **Root Cause:** `flex flex-col h-full` without `min-h-0` is a classic CSS flexbox overflow bug. When a flex column has `h-full` (height from parent) and contains a `flex-1 overflow-y-auto` child, the child will **overflow** the parent rather than shrink to fit, because `min-height: auto` (default) prevents the flex item from shrinking below its content size.
+- **Affected files (8 fixed):**
+  - `EncounterPanel.tsx` — `flex flex-col h-full` → `flex flex-col h-full min-h-0`
+  - `InitiativeTracker.tsx` — same fix
+  - `MapSidebar.tsx` — same fix
+  - `TokenInspector.tsx` — same fix
+  - `CompendiumDrawer.tsx` — same fix
+  - `GlobalCompendium.tsx` — same fix
+  - `JournalSidebar.tsx` — same fix
+  - `PlayerSheet.tsx` — same fix
+  - `LoginBrandHero.tsx` — same fix
+
+### Verified Clean
+- ✅ TypeScript: 0 errors (`tsc --noEmit` clean)
+- ✅ Vite build: 9.44s, 0 errors, 0 warnings (chunk size warning is Vite default threshold, not an error)
+- ✅ 32 PNG assets auto-copied to public/images/
+- ✅ 2146 modules transformed
+
+### Remaining Safety Checks
+- ✅ `100vh`: 0 references
+- ✅ Stale closure patterns: All documented and ref-based
+- ✅ Firestore retry exhaustion: 3×2s retry across entities, combat, characters
+- ✅ Prohibited content: 0 matches for "Tick race", "Food machine"
+- ✅ Dice rollers: 0 standalone features
+---
