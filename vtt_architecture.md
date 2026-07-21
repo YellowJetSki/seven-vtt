@@ -12304,3 +12304,55 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - Build: 6.97s, 2,129 modules, 0 errors, 0 warnings
 - Bundle: `index-BugE5o6_.js` (new hash)
 ---
+
+## Sprint 10/40 — Critical Bug Fix Phase — FINAL CYCLE (Capstone Regression Audit) (Updated: 2026-07-21 09:25)
+## Sprint 10/40 — Critical Bug Fix Phase — FINAL CYCLE (Capstone Regression Audit)
+**Date:** 2026-07-21
+
+### Capstone Audit — All 4 Bug Domains Verified
+
+**Bug #1 — Close Player Card View**
+- ✅ Escape key: `window.addEventListener("keydown", ...)` calls `onClose()`
+- ✅ Backdrop click: `onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}`
+- ✅ Close button: `PlayerSheetHeader` receives `onClose` prop
+- ✅ Viewport: `100dvh` + `100dvw` prevents layout collapse
+- Status: **HARDENED** (Sprints 5–10)
+
+**Bug #2 — Navigation Never Disappears**
+- ✅ `ensureDesktopVisible` callback re-opens sidebar if closed on desktop
+- ✅ Desktop sidebar ALWAYS renders — `lg:flex`, transitions `w-64`↔`w-16`
+- ✅ Mobile: overlay with backdrop + `MobileBottomNav` (8 routes)
+- ✅ `useResponsive` at 1024px breakpoint prevents render loops
+- Status: **HARDENED** (Sprints 5–10)
+
+**Bug #3 — Dynamic Viewport (100dvh)**
+- ✅ All 9 viewport containers use `100dvh` — zero `100vh` in source
+- ✅ `overscroll-behavior: none` on root (Sprint 9)
+- ✅ `safe-area-bottom` SCSS class for iOS notch
+- ✅ `useBodyScrollLock` hook for modal/sidebar
+- ✅ All scrollable regions use `scrollbar-gold`
+- Status: **HARDENED** (Sprints 5–10)
+
+**Bug #4 — Character Deletion (Firestore)**
+- ✅ Firestore-first delete ordering: `markCharacterDeleted.mark(id)` → `deleteCharacter()` → Zustand remove
+- ✅ `onSnapshot` filters: `characters.filter(c => !markCharacterDeleted.has(c.id))`
+- ✅ 10s auto-clean timeout on deleted set
+- ✅ `isDeleting` guard prevents rapid re-delete
+- Status: **HARDENED** (All gap coverage verified Sprints 5–10)
+
+### Build & Deploy
+- `tsc --noEmit`: **0 errors** (verified)
+- Production URL: `https://arkla.vercel.app` — HTTP 200 (verified)
+- No code changes this cycle — pure regression audit
+
+### Critical Bug Fix Phase — COMPLETE (10 Cycles)
+| Sprint | Gap | Fix |
+|:------:|:----|:----|
+| 5 | Bug #3 (Primary) | 100vh → 100dvh |
+| 6 | Bug #2 (Navigation) | Sidebar persistent rendering |
+| 7 | Bug #1 (Close modal) | Escape + backdrop + close button |
+| 8 | Bug #4 (Deletion) | markCharacterDeleted + Firestore ordering |
+| 9 | Bug #3 (Overscroll) | overscroll-behavior: none |
+| **10** | **Regression audit** | **All 4 bugs verified hardened** |
+
+---
