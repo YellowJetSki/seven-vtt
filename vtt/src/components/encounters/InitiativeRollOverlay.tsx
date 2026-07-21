@@ -158,7 +158,7 @@ export default function InitiativeRollOverlay({
     const combatants: Combatant[] = [];
 
     allSources.forEach((source, idx) => {
-      const dexScore = (source as any).dexScore ?? source.type === "player" ? 10 : 10;
+      const dexScore = source.dexScore ?? source.type === "player" ? 10 : 10;
       const dexMod = getDexModifier(dexScore);
       const roll = Math.floor(Math.random() * 20) + 1;
       const total = roll + dexMod;
@@ -178,7 +178,7 @@ export default function InitiativeRollOverlay({
         name: source.name,
         type: source.type === "player" ? "player" : source.type === "npc" ? "ally" : "enemy",
         initiative: total,
-        armorClass: (source as any).armorClass ?? 10,
+        armorClass: source.armorClass ?? 10,
         hitPoints: { current: hp.current, max: hp.max, temporary: 0 },
         statusEffects: [],
         isDead: false,
@@ -189,7 +189,7 @@ export default function InitiativeRollOverlay({
 
     // Sort by initiative with tiebreaker
     const sorted = sortByInitiative(combatants);
-    const sortedResults = sorted.map((c) => results.find((r) => r.combatantId === (c as any).tokenId || r.name === c.name)).filter(Boolean) as InitiativeRollResult[];
+    const sortedResults = sorted.map((c) => results.find((r) => r.combatantId === (c as { tokenId?: string }).tokenId || r.name === c.name)).filter(Boolean) as InitiativeRollResult[];
 
     // Stagger the reveal (simulate rolling animation)
     setTimeout(() => {
@@ -206,7 +206,7 @@ export default function InitiativeRollOverlay({
       const updated = [...prev];
       const source = allSources[index];
       if (!source) return prev;
-      const dexScore = (source as any).dexScore ?? 10;
+      const dexScore = source.dexScore ?? 10;
       const dexMod = getDexModifier(dexScore);
       const roll = Math.floor(Math.random() * 20) + 1;
       const total = roll + dexMod;
@@ -219,7 +219,7 @@ export default function InitiativeRollOverlay({
       const updated = [...prev];
       const source = allSources[index];
       if (!source) return prev;
-      const dexScore = (source as any).dexScore ?? 10;
+      const dexScore = source.dexScore ?? 10;
       const dexMod = getDexModifier(dexScore);
       const roll = Math.floor(Math.random() * 20) + 1;
       const total = roll + dexMod;

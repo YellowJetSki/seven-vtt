@@ -239,7 +239,7 @@ export default function ConcentrationTracker({
       const char = characters.find((c) => c.id === charId);
       if (!char) return;
       const conditions = (char.conditions || []).filter((c) => c !== "concentration");
-      updateCharacter(charId, { conditions } as any);
+      updateCharacter(charId, { conditions } as Partial<PlayerCharacter>);
     },
     [characters, updateCharacter]
   );
@@ -249,7 +249,7 @@ export default function ConcentrationTracker({
       const char = characters.find((c) => c.id === charId);
       if (!char) return;
       const conditions = [...(char.conditions || []).filter((c) => c !== "concentration"), "concentration"];
-      updateCharacter(charId, { conditions } as any);
+      updateCharacter(charId, { conditions } as Partial<PlayerCharacter>);
     },
     [characters, updateCharacter]
   );

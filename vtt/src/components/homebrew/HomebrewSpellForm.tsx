@@ -219,15 +219,15 @@ export default function HomebrewSpellForm({ form, onChange, onSubmit, onClose, i
             <label className="text-[10px] uppercase tracking-widest font-black text-gold-400/70 block mb-1.5">Image URL <span className="text-surface-600">(optional)</span></label>
             <div className="flex gap-2">
               <input
-                value={(form as any).imageUrl || ""}
-                onChange={(e) => onChange({ ...form, imageUrl: e.target.value || undefined } as any)}
+                value={(form as unknown as Record<string, string>).imageUrl || ""}
+                onChange={(e) => onChange({ ...form, imageUrl: e.target.value || undefined } as unknown as HomebrewSpell)}
                 className="input-arcane flex-1 py-2 px-3 text-sm"
                 placeholder="https://example.com/spell-art.png"
               />
-              {(form as any).imageUrl && (
+              {(form as unknown as Record<string, string>).imageUrl && (
                 <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-gold/10 shrink-0">
                   <img
-                    src={(form as any).imageUrl}
+                    src={(form as unknown as Record<string, string>).imageUrl}
                     alt=""
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}

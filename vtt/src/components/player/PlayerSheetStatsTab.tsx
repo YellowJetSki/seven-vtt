@@ -43,7 +43,7 @@ export default function PlayerSheetStatsTab({ character }: PlayerSheetStatsTabPr
   // ── Determine bonuses display ──
   const abilityKeys = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
   const abilityTotalMod = abilityKeys.reduce((sum, k) => {
-    const raw = (c as any)[k] as number;
+    const raw = (c as unknown as Record<string, number>)[k] ?? 10;
     return sum + Math.floor((raw - 10) / 2);
   }, 0);
 

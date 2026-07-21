@@ -95,7 +95,7 @@ export default function PlayerCompanionResources({ character }: PlayerCompanionR
     : "d8";
   const hitDieNum = hitDieMap[primaryHitDie] || 8;
   const totalHd = character.level;
-  const spentHd = (character as any).spentHitDice ?? 0;
+  const spentHd = (character as unknown as { spentHitDice?: number }).spentHitDice ?? 0;
   const remainingHd = Math.max(0, totalHd - spentHd);
 
   const hasAnything = isCaster || hasResources || remainingHd > 0;

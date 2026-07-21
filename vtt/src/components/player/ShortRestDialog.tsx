@@ -109,7 +109,7 @@ export default function ShortRestDialog({
   const handleSpend = useCallback(() => {
     if (hdToSpend > availHd) return;
     const updates = applyShortRest(character, { hitDiceToSpend: hdToSpend });
-    updateCharacter(character.id, updates as any);
+    updateCharacter(character.id, updates as Partial<PlayerCharacter>);
     setApplied(true);
     setFlash(
       `✨ Short rest complete! Recovered ${hpHealed} HP`

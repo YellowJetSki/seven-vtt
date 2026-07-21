@@ -524,7 +524,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
         <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Saving Throws (optional)</label>
         <div className="grid grid-cols-6 gap-1.5">
           {ABILITY_LABELS.map((abl) => (
-            <input key={abl} type="number" value={(edited.savingThrows as any)[abl] ?? ""} placeholder="—"
+            <input key={abl} type="number" value={(edited.savingThrows as Record<string, number>)[abl] ?? ""} placeholder="—"
               onChange={(e) => updateSave(abl, e.target.value ? parseInt(e.target.value) : 0)}
               className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-1 py-1 text-center text-[10px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
           ))}
@@ -538,7 +538,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
           {["acrobatics", "athletics", "stealth", "perception", "arcana", "history", "religion", "insight", "intimidation", "investigation", "nature", "survival"].map((skill) => (
             <div key={skill} className="flex items-center gap-1">
               <span className="text-[8px] text-surface-500 w-10 text-right truncate">{skill}</span>
-              <input type="number" value={(edited.skills as any)[skill] ?? ""} placeholder="—"
+              <input type="number" value={(edited.skills as Record<string, number>)[skill] ?? ""} placeholder="—"
                 onChange={(e) => updateSkill(skill, e.target.value ? parseInt(e.target.value) : 0)}
                 className="flex-1 bg-[#07080d]/70 border border-white/[0.06] rounded px-1 py-0.5 text-center text-[9px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />
             </div>
@@ -550,7 +550,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
       {(["traits", "actions", "reactions", "legendaryActions"] as const).map((field) => (
         <div key={field}>
           <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">{field}</label>
-          <textarea value={(edited as any)[field] || ""} rows={3}
+          <textarea value={(edited as unknown as Record<string, string>)[field] || ""} rows={3}
             onChange={(e) => update(field, e.target.value)}
             placeholder={`Describe ${field.toLowerCase()}...`}
             className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[10px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700 resize-y min-h-[48px]" />
@@ -580,7 +580,7 @@ function EditView({ edited, setEdited }: { edited: EnemyDoc; setEdited: (e: Enem
             <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">
               {field === "damageResistances" ? "Resistances" : field === "damageImmunities" ? "Immunities" : "Cond. Immunities"}
             </label>
-            <input value={(edited as any)[field]?.join(", ") || ""}
+            <input value={(edited as unknown as Record<string, string[]>)[field]?.join(", ") || ""}
               onChange={(e) => update(field, e.target.value ? e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean) : [])}
               placeholder="fire, poison"
               className="w-full bg-[#07080d]/70 border border-white/[0.06] rounded-lg px-2 py-1 text-[9px] text-surface-200 focus:outline-none focus:border-gold-500/25 focus:ring-1 focus:ring-gold-500/15 transition-all placeholder:text-surface-700" />

@@ -119,7 +119,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
   const handleFeatToggle = useCallback(
     (featId: string, newActive: boolean) => {
       const current: Array<{ featId: string; featName: string; isActive: boolean }> =
-        (c as any).activeFeats || [];
+        (c as unknown as { activeFeats?: Array<{ featId: string; featName: string; isActive: boolean }> }).activeFeats || [];
       const existing = current.findIndex((a) => a.featId === featId);
       let next: Array<{ featId: string; featName: string; isActive: boolean }>;
       if (existing >= 0) {
@@ -129,7 +129,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         const feat = combatEntities.feats.find((f) => f.sourceId === featId || f.id === featId);
         next = [...current, { featId, featName: feat?.name || featId, isActive: newActive }];
       }
-      updateCharacter(c.id, { activeFeats: next } as any);
+      updateCharacter(c.id, { activeFeats: next } as Partial<PlayerCharacter>);
     },
     [c, combatEntities.feats, updateCharacter]
   );
@@ -247,7 +247,7 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
             spellSaveDC={derived.spellcasting.spellSaveDC}
             spellAttackBonus={derived.spellcasting.spellAttackBonus}
             onCast={(level) => handleCastSpell(c, level)}
-            onRestore={(level) => handleRestoreSlots(c, level as any)}
+            onRestore={(level) => handleRestoreSlots(c, Number(level) as 1|2|3|4|5|6|7|8|9)}
           />
         );
       })()}

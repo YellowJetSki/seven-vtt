@@ -26,6 +26,7 @@ import {
   computeHitDieType,
 } from "@/lib/mechanics/rest-engine";
 import { useCampaignStore } from "@/stores/campaignStore";
+import type { PlayerCharacter } from "@/types";
 
 interface RestBreakdownProps {
   /** The character to rest */
@@ -63,7 +64,7 @@ export default function RestBreakdown({ character, onClose, initialMode = "short
   const handleShortRest = useCallback(() => {
     setIsApplying(true);
     const updates = applyShortRest(character, { hitDiceToSpend });
-    updateCharacter(character.id, updates as any);
+    updateCharacter(character.id, updates as Partial<PlayerCharacter>);
     setIsApplying(false);
     onClose();
   }, [character, hitDiceToSpend, updateCharacter, onClose]);
@@ -76,7 +77,7 @@ export default function RestBreakdown({ character, onClose, initialMode = "short
     }
     setIsApplying(true);
     const updates = applyLongRest(character);
-    updateCharacter(character.id, updates as any);
+    updateCharacter(character.id, updates as Partial<PlayerCharacter>);
     setIsApplying(false);
     onClose();
   }, [character, confirmLong, updateCharacter, onClose]);

@@ -26,8 +26,8 @@ export default function ClassFeatureList({ features }: ClassFeatureListProps) {
       <div className="space-y-1">
         {features.map((feat, idx) => {
           const featName = typeof feat === "string" ? feat : feat.name;
-          const featDesc = typeof feat !== "string" && (feat as any).description
-            ? (feat as any).description
+          const featDesc = typeof feat !== "string" && (feat as { name: string; description?: string }).description
+            ? (feat as { name: string; description?: string }).description
             : "";
           return (
             <div

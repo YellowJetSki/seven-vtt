@@ -86,7 +86,7 @@ export default function LongRestDialog({
 
   const handleApply = useCallback(() => {
     const updates = applyLongRest(character);
-    updateCharacter(character.id, updates as any);
+    updateCharacter(character.id, updates as Partial<PlayerCharacter>);
     setApplied(true);
     setFlash("✨ Long rest complete! Fully recovered.");
     setTimeout(() => onClose(), 2000);

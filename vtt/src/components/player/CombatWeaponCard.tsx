@@ -56,8 +56,8 @@ export default function CombatWeaponCard({ entity, showSource = false }: CombatW
               {name}
             </span>
             {showSource && sourceType && (
-              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as any).className}`}>
-                {getSourceBadge(sourceType as any).icon} {getSourceBadge(sourceType as any).label}
+              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as EntitySource).className}`}>
+                {getSourceBadge(sourceType as EntitySource).icon} {getSourceBadge(sourceType as EntitySource).label}
               </span>
             )}
             {isMelee && (

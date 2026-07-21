@@ -12,7 +12,7 @@
  */
 
 import type { CombatEntity } from "@/types/unified-entities";
-import { getSourceBadge } from "@/lib/combat/compendium-bridge";
+import { getSourceBadge, type EntitySource } from "@/lib/combat/compendium-bridge";
 
 interface CombatSpellCardProps {
   entity: CombatEntity;
@@ -54,8 +54,8 @@ export default function CombatSpellCard({ entity, showSource = false }: CombatSp
               {name}
             </span>
             {showSource && sourceType && (
-              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as any).className}`}>
-                {getSourceBadge(sourceType as any).icon} {getSourceBadge(sourceType as any).label}
+              <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider border ${getSourceBadge(sourceType as EntitySource).className}`}>
+                {getSourceBadge(sourceType as EntitySource).icon} {getSourceBadge(sourceType as EntitySource).label}
               </span>
             )}
             <span className={`px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${

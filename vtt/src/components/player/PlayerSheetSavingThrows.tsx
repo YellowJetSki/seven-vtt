@@ -43,7 +43,7 @@ export default function PlayerSheetSavingThrows({ character }: PlayerSheetSaving
   const saveData = useMemo(() =>
     ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"].map((s) => {
       const save = c.savingThrows[s];
-      const mod = getAbilityMod((c as any)[s] as number);
+      const mod = getAbilityMod((c as unknown as Record<string, number>)[s] ?? 10);
       const isProf = save?.proficient || false;
       const pbBonus = isProf ? pb : 0;
       const bonus = save?.bonus || 0;

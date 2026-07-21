@@ -26,6 +26,7 @@ import {
   type LevelUpPreview,
 } from "@/lib/mechanics/level-up-engine";
 import { useCampaignStore } from "@/stores/campaignStore";
+import type { PlayerCharacter } from "@/types";
 
 interface LevelUpPanelProps {
   character: PlayerCharacter;
@@ -122,7 +123,7 @@ export default function LevelUpPanel({ character, onClose }: LevelUpPanelProps) 
   const handleApply = useCallback(() => {
     if (!canLevelUp) return;
     const updates = applyLevelUp(character, manualRoll ?? undefined);
-    updateCharacter(character.id, updates as any);
+    updateCharacter(character.id, updates as Partial<PlayerCharacter>);
     setApplied(true);
     setFlash(`✨ ${character.name} is now level ${currentLevel + 1}!`);
     setTimeout(() => onClose(), 2500);

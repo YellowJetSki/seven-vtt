@@ -188,7 +188,7 @@ export default function PlayerSheetRulesTab({ character }: PlayerSheetRulesTabPr
         ].map((s) => (
           <button
             key={s.id}
-            onClick={() => setSection(s.id as any)}
+            onClick={() => setSection(s.id)}
             className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 ${
               section === s.id
                 ? "bg-gold-500/10 text-gold-400 border border-gold/25"

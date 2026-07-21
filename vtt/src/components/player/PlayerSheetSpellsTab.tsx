@@ -89,33 +89,37 @@ export default function PlayerSheetSpellsTab({ character }: PlayerSheetSpellsTab
     const spellsByLevel: Record<number, KnownSpell[]> = {};
     for (let i = 0; i <= 9; i++) spellsByLevel[i] = [];
 
+    // Cast once with a generic record accessor for runtime-safe field extraction
+    const s = (spell: Record<string, unknown>) => spell;
+
     for (const spell of allCompendiumSpells) {
-      const spellLevel = (spell as any).level ?? (spell as any).spellLevel ?? 0;
+      const raw = s(spell);
+      const spellLevel = (raw.level ?? raw.spellLevel ?? 0) as number;
       if (spellLevel > 9) continue;
-      const description = (spell as any).description || (spell as any).shortDescription || "";
+      const description = (raw.description || raw.shortDescription || "") as string;
 
       spellsByLevel[spellLevel].push({
         name: spell.name,
         level: spellLevel,
-        school: (spell as any).school || "Unknown",
-        castingTime: (spell as any).castingTime || "1 action",
-        range: (spell as any).range || "Self",
-        components: (spell as any).components || "V, S",
-        duration: (spell as any).duration || "Instantaneous",
+        school: (raw.school || "Unknown") as string,
+        castingTime: (raw.castingTime || "1 action") as string,
+        range: (raw.range || "Self") as string,
+        components: (raw.components || "V, S") as string,
+        duration: (raw.duration || "Instantaneous") as string,
         description,
-        ritual: (spell as any).ritual || false,
-        concentration: (spell as any).requiresConcentration || (spell as any).concentration || false,
-        damageDice: (spell as any).damageDice || extractDamageDice(description),
-        damageType: (spell as any).damageType || extractDamageType(description),
-        healDice: (spell as any).healDice || extractHealDice(description),
-        saveDC: (spell as any).saveDC ?? undefined,
-        saveAbility: (spell as any).saveAbility ?? undefined,
-        attackRoll: (spell as any).attackRoll || (spell as any).requiresAttackRoll || false,
+        ritual: !!(raw.ritual),
+        concentration: !!(raw.requiresConcentration || raw.concentration),
+        damageDice: (raw.damageDice || extractDamageDice(description)) as string,
+        damageType: (raw.damageType || extractDamageType(description)) as string,
+        healDice: (raw.healDice || extractHealDice(description)) as string,
+        saveDC: raw.saveDC as number | undefined,
+        saveAbility: raw.saveAbility as string | undefined,
+        attackRoll: !!(raw.attackRoll || raw.requiresAttackRoll),
       });
     }
 
     const maxSlotLevel = Object.entries(spellcasting.spellSlots)
-      .filter(([, v]) => (v as any).max > 0)
+      .filter(([, v]) => (v as { max: number }).max > 0)
       .map(([k]) => parseInt(k.replace("level", ""), 10))
       .reduce((a, b) => Math.max(a, b), 0);
 
