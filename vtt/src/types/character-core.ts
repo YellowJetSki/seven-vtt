@@ -60,6 +60,16 @@ export interface InventoryItem {
   weight: number;
   description: string;
   isEquipped: boolean;
+  /** Optional image URL for visual display in the item detail modal */
+  imageUrl?: string;
+  /** Weapon attack bonus (e.g., +5) */
+  attackBonus?: number;
+  /** Weapon damage dice expression (e.g., "1d8" or "2d6+3") */
+  damageDice?: string;
+  /** Weapon damage type (e.g., "slashing", "piercing", "fire") */
+  damageType?: string;
+  /** Armor class bonus (e.g., +1 for shield, +2 for ring of protection) */
+  acBonus?: number;
 }
 
 export interface Currency {

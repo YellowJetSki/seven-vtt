@@ -25,6 +25,7 @@ interface InventoryItemRowProps {
   encumbranceLevel: EncumbranceState["encumbranceLevel"];
   onToggleEquip: (index: number) => void;
   onUseConsumable: (index: number) => void;
+  onViewDetail: (index: number) => void;
   onEdit: () => void;
   onDelete: () => void;
   onSell: () => void;
@@ -38,7 +39,7 @@ interface InventoryItemRowProps {
 
 export default function InventoryItemRow({
   item, index, isEditing, isDeleteConfirm, isSellConfirm, encumbranceLevel,
-  onToggleEquip, onUseConsumable, onEdit, onDelete, onSell,
+  onToggleEquip, onUseConsumable, onViewDetail, onEdit, onDelete, onSell,
   onCancelDelete, onCancelSell, onConfirmSell, onConfirmDelete,
   onSaveEdit, onCancelEdit,
 }: InventoryItemRowProps) {
@@ -88,15 +89,16 @@ export default function InventoryItemRow({
           {/* Name + description */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span
-                className={`text-[11px] truncate transition-colors duration-200 ${
+              <button
+                onClick={() => onViewDetail(index)}
+                className={`text-[11px] truncate transition-colors duration-200 text-left hover:text-gold-300 ${
                   item.isEquipped
                     ? "text-gold-400 font-semibold drop-shadow-[0_0_4px_rgba(234,179,8,0.05)]"
                     : "text-surface-300"
                 }`}
               >
                 {item.name}
-              </span>
+              </button>
               {item.isEquipped && (
                 <span className="text-[6px] uppercase tracking-wider bg-gold-500/10 text-gold-400/80 px-1.5 py-0.5 rounded-full border border-gold/15 font-bold shrink-0">
                   Equipped

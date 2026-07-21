@@ -76,14 +76,19 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
           </span>
         </div>
 
-        {/* XP — Tappable */}
+        {/* XP — Tappable, premium Overrrides-grade gold stat */}
         <div
           onClick={() => { setShowXpControls(!showXpControls); setShowHpControls(false); }}
-          className="flex flex-col items-center justify-center bg-gold-500/8 rounded-xl border border-gold/15 py-2 cursor-pointer active:scale-95 transition-all duration-150 relative overflow-hidden"
+          className="flex flex-col items-center justify-center bg-gradient-to-br from-amber-500/8 to-gold-500/5 rounded-xl border border-gold/15 py-2 cursor-pointer active:scale-[0.97] transition-all duration-150 relative overflow-hidden group"
         >
+          {/* Hover glow */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-gold-500/[0.03] via-transparent to-amber-500/[0.03]" />
+          {/* Edge light on hover */}
+          <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/0 group-hover:via-gold-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+          
           {c.level < 20 && (
             <div
-              className="absolute bottom-0 left-0 h-[3px] bg-amber-400/50 rounded-full transition-all duration-500"
+              className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-amber-600 via-amber-500 to-gold-500 rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, c.level < 20 ? (c.experiencePoints / (c.level * 1000)) * 100 : 100)}%` }}
             />
           )}
@@ -91,6 +96,12 @@ export default function PlayerSheetPersistentStats({ character }: PlayerSheetPer
           <span className="text-sm font-black tabular-nums leading-none mt-0.5 text-amber-300">
             {c.experiencePoints.toLocaleString()}
           </span>
+          {/* Next level hint */}
+          {c.level < 20 && (
+            <span className="text-[6px] text-amber-500/30 mt-0.5 tabular-nums">
+              / {(c.level * 1000).toLocaleString()} next
+            </span>
+          )}
         </div>
 
         {/* Initiative */}

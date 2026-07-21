@@ -35,6 +35,7 @@ import InventoryItemRow from "./InventoryItemRow";
 import ItemFormModal from "./ItemFormModal";
 import SellConfirmModal from "./SellConfirmModal";
 import CompendiumDropTarget from "./CompendiumDropTarget";
+import InventoryItemDetailModal from "./InventoryItemDetailModal";
 
 interface PlayerSheetInventoryTabProps {
   character: PlayerCharacter;
@@ -65,6 +66,7 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortField>("name");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
+  const [detailItemIndex, setDetailItemIndex] = useState<number | null>(null);
 
   // ── Derived data ──
   const inventory = character.inventory || [];
@@ -408,6 +410,7 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
                   encumbranceLevel={encResult.encumbrance.encumbranceLevel}
                   onToggleEquip={toggleEquip}
                   onUseConsumable={useConsumable}
+                  onViewDetail={(i) => setDetailItemIndex(i)}
                   onEdit={() => setEditItemIndex(idx)}
                   onDelete={() => setDeleteConfirmIndex(idx)}
                   onSell={() => setSellConfirmIndex(idx)}
@@ -443,6 +446,18 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
           estimatedValue={Math.max(1, Math.round((inventory[sellConfirmIndex]?.weight || 1) * 5))}
           onConfirm={() => quickSell(sellConfirmIndex)}
           onCancel={() => setSellConfirmIndex(null)}
+        />
+      )}
+
+      {/* Item detail modal (tap any item to view full detail with image) */}
+      {detailItemIndex !== null && (
+        <InventoryItemDetailModal
+          item={inventory[detailItemIndex]}
+          index={detailItemIndex}
+          onClose={() => setDetailItemIndex(null)}
+          onToggleEquip={(idx) => { toggleEquip(idx); setDetailItemIndex(null); }}
+          onUseConsumable={(idx) => { useConsumable(idx); setDetailItemIndex(null); }}
+          onDelete={(idx) => { deleteItem(idx); setDetailItemIndex(null); }}
         />
       )}
     </div>
