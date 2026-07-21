@@ -1,11 +1,12 @@
 /**
- * STᚱ VTT — Homebrew Tabs (Premium Pill Indicator v3.1)
+ * STᚱ VTT — Homebrew Tabs (Premium Pill Indicator v3.2)
  *
- * Premium tab navigation for Items / Spells / Feats with gold pill indicator,
- * hover scale feedback, staggered entrance, and consistent gold accent styling.
+ * Premium tab navigation for Items / Spells / Feats / Monsters
+ * with gold pill indicator, hover scale feedback, staggered entrance,
+ * and consistent gold accent styling.
  */
 
-export type HomebrewTabId = "items" | "spells" | "feats";
+export type HomebrewTabId = "items" | "spells" | "feats" | "enemies";
 
 interface HomebrewTabsProps {
   activeTab: HomebrewTabId;
@@ -16,6 +17,7 @@ const TABS: { id: HomebrewTabId; label: string; icon: string }[] = [
   { id: "items", label: "📦 Items", icon: "📦" },
   { id: "spells", label: "🔮 Spells", icon: "🔮" },
   { id: "feats", label: "🏅 Feats", icon: "🏅" },
+  { id: "enemies", label: "👾 Monsters", icon: "👾" },
 ];
 
 export default function HomebrewTabs({ activeTab, onChange }: HomebrewTabsProps) {
