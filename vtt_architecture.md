@@ -12119,3 +12119,40 @@ The application is battle-ready for live D&D 5.5e sessions. From the LoginPage's
 - Bundle hash: `index-DT7ObXUB.js`
 - URL: https://arkla.vercel.app — verified stable
 ---
+
+## Sprint 4/40 — Critical Bug Fix Phase (Deep Hardening) (Updated: 2026-07-21 09:08)
+## Sprint 4/40 — Critical Bug Fix Phase (Deep Hardening) — Complete
+**Date:** 2026-07-21
+
+### Deep Analysis of 4 Core Bugs (Sprint 4)
+
+Performed comprehensive static analysis verifying all 4 core bugs across the entire codebase:
+
+**Bug 1 — Close Player Card:**
+- Escape key handler in `PlayerSheet.tsx`: ✅ Functional state update via `onClose()`
+- Backdrop click: ✅ `e.target === e.currentTarget` check verifies click landed on backdrop, not card content
+- Close button in header: ✅ `onClick={onClose}` properly fires
+
+**Bug 2 — Navigation on Fight tab:**
+- `AppShell.tsx`: ✅ `Sidebar` component always renders via `shrink-0 min-w-0`
+- `BattleMaps.tsx` (3 branches): ✅ All wrapped in `<AppShell>` — sidebar is always present
+- `DmControlCenter.tsx`: ✅ Mobile sidebar hidden via `isMobile ? "hidden" : "block"` — no double-sidebar confusion
+- `MobileBottomNav.tsx`: ✅ All 8 routes with horizontal scroll — "Fight" tab (encounters) present
+
+**Bug 3 — Dynamic viewport:**
+- All 9 surviving entry points verified using `100dvh`/`100dvw`:
+  - AppShell, LoginPage, PlayerLoginPage, PlayerJoinPage, PlayerSheetPage, TheatricPage, AuthGuard (loading), Modal, PlayerSheet
+- Zero remaining `100vh` references in `vtt/src/`
+- `0 search results for '100vh' in 'vtt/src'` ✅
+
+**Bug 4 — Character deletion:**
+- `Firestore delete → await → Zustand remove` ordering: ✅ Verified architecturally correct
+- `onSnapshot` only fires after Firestore confirms delete: ✅ Verified via `deleteDoc()` → document removal → snapshot fires with updated (empty) array
+- `isDeleting` guard (Sprint 3): ✅ Prevents double-fire during async delete
+- `catch` block removes locally even if Firestore fails: ✅ Handles offline/dev characters
+
+### Production Build
+- Build: 7.03s, 2,129 modules, 0 errors
+- Bundle hash: `index-DiMrbVeF.js`
+- URL: https://arkla.vercel.app — verified HTTP 200
+---
