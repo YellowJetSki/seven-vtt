@@ -35,6 +35,7 @@ import CombatQuickStatus from "@/components/dashboard/CombatQuickStatus";
 import ActiveMapCard from "@/components/dashboard/ActiveMapCard";
 import PlayerStatusCard from "@/components/dashboard/PlayerStatusCard";
 import DmQuickRef from "@/components/dashboard/DmQuickRef";
+import SessionStatusBar from "@/components/dashboard/SessionStatusBar";
 import RecentCampaignActivity from "@/components/dashboard/RecentCampaignActivity";
 import { entrance, duration, ease } from "@/lib/design-tokens";
 
@@ -122,11 +123,20 @@ export default function DmDashboard() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════
-           Tier 3: Campaign Meta Summary (120ms)
+           Tier 3: Session Status Bar (100ms)
+           Live session timer, party health overview, and
+           combat indicator — true at-a-glance awareness
+           ═══════════════════════════════════════════════════════ */}
+        <div className="mt-3" style={entrance(100)}>
+          <SessionStatusBar meta={meta} />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════
+           Tier 4: Campaign Meta Summary (140ms)
            Compact KPI strip — campaign age, sessions, party size,
            monsters, encounters, maps, journal
            ═══════════════════════════════════════════════════════ */}
-        <div className="mt-4" style={entrance(120)}>
+        <div className="mt-3" style={entrance(140)}>
           <CampaignMetaSummary
             meta={meta}
             characterCount={characters.length}
