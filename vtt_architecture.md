@@ -16175,3 +16175,66 @@ Premium glassmorphism floating menu at right-click position with:
 - Vite build: Clean
 - Git savepoint: Sprint 64
 ---
+
+## Combat Damage Log Visualizer (Cycle 65) (Updated: 2026-07-21 17:45)
+## Cycle 65 — Combat Damage Log Visualizer — COMPLETE
+
+### What Was Built
+Animated floating damage/heal numbers on the canvas. When HP changes occur (via context menu, combat store mutations, or DM popovers), colored numbers float upward and fade out on the affected token.
+
+**1. `damageNumberStore.ts` (NEW — 85 lines)**
+- Zustand store tracking active `DamageNumber` entries
+- Each entry: id, tokenId, value (+/-), type, damageType, createdAt, duration, xOffset (random horizontal drift)
+- `addNumber()`, `cleanExpired()`, `clearAll()`
+- `addDamageFloater()` convenience function for one-liner publishing
+
+**2. `damage-number-renderer.ts` (NEW — 150 lines)**
+- Pure canvas rendering function `renderDamageNumbers()`
+- Animated lifecycle: born → float up (0.6 cells) → fade out → expire
+- Color coding per type + per damage type:
+  - Damage: rose-400 (#fb7185) | Fire: orange, Cold: blue, Lightning: gold, etc.
+  - Heal: emerald-400 (#34d399)
+  - Crit: gold (#eab308) with larger font (28px)
+  - Kill: 💀 prefix + rose-500
+  - Temp: amber (#fbbf24)
+- Glow drop shadow (12px blur + 20px blur pass)
+- JetBrains Mono monospace font for numbers
+- Expired number cleanup
+
+**3. `useDamageNumberEffect.ts` (NEW — 120 lines)**
+- React hook subscribing to combat store's `combatLog` for damage/heal/death/revive events
+- Also monitors HP diffs via `activeEncounter.combatants` for edge cases
+- Duplicate suppression (500ms window between log-triggered and HP-diff-triggered)
+- Fires `addDamageFloater()` with correct type and value
+- Periodic cleanup interval (every 500ms)
+
+**4. `CanvasMapView.tsx` (MODIFIED)**
+- `useDamageNumberEffect()` hook mounted
+- Render frame reads `useDamageNumberStore.getState().numbers` every frame
+- Passes `damageNumbers` through canvas render state
+
+**5. `lighting-renderer.ts` (MODIFIED)**
+- New Layer 7.5: Floating damage/heal numbers (between initiative overlays and ping effects)
+- `renderDamageNumbers()` called with token positions for grid-to-screen mapping
+
+**6. `TokenContextMenu.tsx` (MODIFIED)**
+- Context menu damage/heal buttons now call `addDamageFloater()` directly for instant feedback
+
+### Output
+When the DM right-clicks a token and clicks "-5":
+→ Floating rose "-5" number rises from token and fades over 2s
+
+When the DM heals +10:
+→ Floating emerald "+10" number rises from token
+
+When a Dragon crits for 28:
+→ Floating gold "⚡ 28" rises at larger font
+
+When a combatant dies:
+→ Floating rose "💀" rises with 2.5s duration
+
+### Build
+- TypeScript: 0 errors
+- Vite build: Clean
+- Git savepoint: Sprint 65
+---
