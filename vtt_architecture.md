@@ -15507,3 +15507,32 @@ All 10 cycles of the PC Experience Phase delivered. Ready for Cycle 46-50 (QA & 
 - Test coverage: +125+ tests across 3 previously uncovered engines
 - Git: Sprint 46 checkpoint saved
 ---
+
+## QA & Stabilization (Updated: 2026-07-21 16:45)
+## Cycle 47 — Dead Code & Redundancy Audit (Complete)
+
+### Files Deleted (18 orphaned files)
+
+**Initiative sub-components (inlined in Sprint 7):**
+- `CombatantHpBar.tsx`, `CombatantTypeIndicator.tsx`, `CombatantQuickInput.tsx`
+- `DeathToggle.tsx`, `EffectQuickInput.tsx`
+- `StatusDotIndicators.tsx`, `StatusEffectsList.tsx`, `StatusEffectBadge.tsx`
+
+**Inspector sub-components (inlined in TokenInspector rewrite):**
+- `InspectorColorPicker.tsx`, `InspectorFooter.tsx`, `InspectorHeader.tsx`
+- `InspectorHpSection.tsx`, `InspectorLabelInput.tsx`, `InspectorPositionInput.tsx`
+- `InspectorVisibilityToggle.tsx`
+
+**Orphaned toolbar/player/page files:**
+- `ToolbarDivider.tsx` (inlined in DmToolbar)
+- `PlayerSheetHpPersistent.tsx` (replaced by PlayerSheetPersistentStats)
+- `PlayerSheetCombatStats.tsx` (never imported)
+- `Encounters.tsx` (replaced by UnifiedEncounterHub)
+- `DmEnemies.tsx` (redirected to /campaign/encounters)
+
+### Quality Gates
+- TypeScript: ✅ 0 errors (`npx tsc --noEmit`)
+- ESLint errors dropped: 462 → 442 (all pre-existing parser issue)
+- Component count reduced: ~18 unused files eliminated
+- Git: Sprint 47 checkpoint saved
+---
