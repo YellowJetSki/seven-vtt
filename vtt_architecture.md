@@ -10867,3 +10867,44 @@ Executed the capstone E2E integrated stress test for the Post-Feature QA Phase. 
 | **35** | **E2E Integrated Stress Test** | **DM+Player concurrent writes, 7-phase chain, 35+ tests** |
 
 ---
+
+## Sprint 36/41 — Premium Visual Polish Phase (Cycle 1 of 6): Visual Audit & ConnectedPlayersPanel Polish (Updated: 2026-07-20 20:25)
+## Sprint 36/41 — Premium Visual Polish Phase (Cycle 1 of 6)
+
+### Comprehensive Visual Audit: 23 DM Popover Components
+
+Conducted a thorough visual audit of all 23 newly built components from the Feature Expansion Phase (Sprints 20-29):
+
+| Category | Components | Visual Grade |
+|----------|-----------|:------------:|
+| **Core DM Popovers** (6) | DmQuickActionPopover, DmPartyRestOverlay, DmCombatConditionBar, DmNpcQuickCreatePopover, DmCombatWrapUpOverlay, ConcentrationCheckPopover | ✅ Premium — glass gradients, edge lights, staggered entrance |
+| **Supporting UI** (3) | ConnectedPlayersPanel, SyncHealthPanel, ConnectionBanner | 🟡 ConnectedPlayersPanel needed polish |
+| **Combat Tools** (5) | AttackResolutionPopover, CombatLogPanel, EncounterLaunchModal, InitiativeRollOverlay, MultiTargetAoEPopover | ✅ Premium |
+| **Player Tools** (3) | CombatHpHud, LootDepositPanel, ConditionQuickToggle | ✅ Premium |
+| **Reference** (1) | DmQuickReferenceOverlay | ✅ Premium |
+| **Infrastructure** (5) | TokenHpPopover, DmSharePicker, CombatLogPanel, EncounterLaunchModal, InitiativeRollOverlay | ✅ Premium |
+
+### Fixes Applied
+
+**ConnectedPlayersPanel.tsx** — 3 visual polish upgrades:
+1. **Empty state**: Added premium icon container (`w-8 h-8 rounded-xl bg-surface-800/30 border border-white/[0.03]`) with centered positioning
+2. **Player rows**: Changed from basic `bg-white/[0.02]` to premium glass gradient `bg-gradient-to-b from-white/[0.03] to-transparent` with hover feedback
+3. **Role badges**: Changed from flat `bg-gold-500/10` to gradient `bg-gradient-to-r from-gold-500/12 to-amber-500/8` matching the design system
+
+### Key Findings
+- The codebase from Sprints 20-29 was **already premium-grade** — all components use glass gradients, edge lights, staggered entrances, and gold accent colors
+- Zero components needed major restructuring
+- Most impactful fix was ConnectedPlayersPanel (empty state + row hover + badge gradient)
+- All 23 components share consistent `from-[#14151f]/95 to-[#0f1019]/95` glass gradient, `via-gold-500/25` edge lights, and `slide-in-up` entrance animations
+
+### Quality Metrics
+| Metric | Result |
+|:------:|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| ESLint (new code) | ✅ 410 pre-existing (all parser config, 0 new code errors) |
+| Components audited | **23** across control-center, encounters, player, and ui directories |
+| Components polished | **1** (ConnectedPlayersPanel — 3 upgrades) |
+| Git saved | ✅ Sprint 36 checkpoint |
+| Architecture ledger | ✅ Updated |
+
+---
