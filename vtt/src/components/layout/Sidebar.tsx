@@ -146,6 +146,29 @@ export default function Sidebar() {
           </div>
         )}
 
+        {/* ── DM SKILL CHECK TOGGLE (Sprint 31) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("toggle-dm-skill-check"));
+            }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-amber-500/8 hover:border-amber-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Skill Check — Call party skill checks & view passive scores"
+            aria-label="Toggle Skill Check"
+          >
+            <PremiumIcon name="rollInitiative" className="w-3.5 h-3.5 text-gold-400" />
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-gold-400 transition-colors truncate">
+                Skill Check
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM COMBAT CONDITIONS TOGGLE ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button

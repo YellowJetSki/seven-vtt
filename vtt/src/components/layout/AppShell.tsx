@@ -31,6 +31,7 @@ import DmCombatConditionBar from "@/components/control-center/DmCombatConditionB
 import DmQuickActionPopover from "@/components/control-center/DmQuickActionPopover";
 import DmNpcQuickCreatePopover from "@/components/control-center/DmNpcQuickCreatePopover";
 import DmCombatWrapUpOverlay from "@/components/control-center/DmCombatWrapUpOverlay";
+import DmSkillCheckPopover from "@/components/control-center/DmSkillCheckPopover";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -52,6 +53,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setNpcQuickCreate = useUIStore((s) => s.setNpcQuickCreate);
   const showCombatWrapUp = useUIStore((s) => s.showCombatWrapUp);
   const setCombatWrapUp = useUIStore((s) => s.setCombatWrapUp);
+  const showSkillCheck = useUIStore((s) => s.showSkillCheck);
+  const setSkillCheck = useUIStore((s) => s.setSkillCheck);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -121,6 +124,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setCombatWrapUpRef.current(!showCombatWrapUpRef.current); };
     window.addEventListener("toggle-dm-combat-wrapup", handler);
     return () => window.removeEventListener("toggle-dm-combat-wrapup", handler);
+  }, []);
+
+  const showSkillCheckRef = useRef(showSkillCheck);
+  showSkillCheckRef.current = showSkillCheck;
+  const setSkillCheckRef = useRef(setSkillCheck);
+  setSkillCheckRef.current = setSkillCheck;
+
+  useEffect(() => {
+    const handler = () => { setSkillCheckRef.current(!showSkillCheckRef.current); };
+    window.addEventListener("toggle-dm-skill-check", handler);
+    return () => window.removeEventListener("toggle-dm-skill-check", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -222,6 +236,13 @@ export default function AppShell({ children }: AppShellProps) {
           isOpen={showCombatWrapUp}
           onClose={() => setCombatWrapUp(false)}
         />
+      )}
+
+      {/* ── DM Skill Check & Passive Awareness Popover (Sprint 31) ──
+          Call skill/ability checks, track advantage/disadvantage,
+          view party passive perception/investigation/insight */}
+      {role === "dm" && (
+        <DmSkillCheckPopover />
       )}
     </div>
   );
