@@ -144,6 +144,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showEncounterAnalyzer: false,
   showQuestTracker: false,
   showTimeTracker: false,
+  showSessionRecap: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -182,6 +183,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setEncounterAnalyzer: (show: boolean) => set({ showEncounterAnalyzer: show }),
   setQuestTracker: (show: boolean) => set({ showQuestTracker: show }),
   setTimeTracker: (show: boolean) => set({ showTimeTracker: show }),
+  setSessionRecap: (show: boolean) => set({ showSessionRecap: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

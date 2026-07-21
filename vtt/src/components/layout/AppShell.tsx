@@ -51,6 +51,7 @@ import DmPartyResourcesQuickView from "@/components/control-center/DmPartyResour
 import DmEncounterAnalyzer from "@/components/control-center/DmEncounterAnalyzer";
 import DmQuestTracker from "@/components/control-center/DmQuestTracker";
 import DmTimeTracker from "@/components/control-center/DmTimeTracker";
+import DmSessionRecap from "@/components/control-center/DmSessionRecap";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -113,6 +114,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setQuestTracker = useUIStore((s) => s.setQuestTracker);
   const showTimeTracker = useUIStore((s) => s.showTimeTracker);
   const setTimeTracker = useUIStore((s) => s.setTimeTracker);
+  const showSessionRecap = useUIStore((s) => s.showSessionRecap);
+  const setSessionRecap = useUIStore((s) => s.setSessionRecap);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -380,6 +383,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setTimeTrackerRef.current(!showTimeTrackerRef.current); };
     window.addEventListener("toggle-dm-time-tracker", handler);
     return () => window.removeEventListener("toggle-dm-time-tracker", handler);
+  }, []);
+
+  const showSessionRecapRef = useRef(showSessionRecap);
+  showSessionRecapRef.current = showSessionRecap;
+  const setSessionRecapRef = useRef(setSessionRecap);
+  setSessionRecapRef.current = setSessionRecap;
+
+  useEffect(() => {
+    const handler = () => { setSessionRecapRef.current(!showSessionRecapRef.current); };
+    window.addEventListener("toggle-dm-session-recap", handler);
+    return () => window.removeEventListener("toggle-dm-session-recap", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -654,6 +668,14 @@ export default function AppShell({ children }: AppShellProps) {
           ticking time-based events. */}
       {role === "dm" && (
         <DmTimeTracker onClose={() => setTimeTracker(false)} />
+      )}
+
+      {/* ── DM Session Recap (Cycle 34) ──
+          Auto-generates structured session summaries from combat
+          activity, XP awards, journal entries, and condition tracking.
+          Saves formatted recaps directly to the campaign journal. */}
+      {role === "dm" && (
+        <DmSessionRecap onClose={() => setSessionRecap(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──
