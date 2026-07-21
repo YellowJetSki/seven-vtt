@@ -13923,3 +13923,36 @@ Added quaternary aurora wave (deep amber, 26s drift, reversed) plus a soft gold 
 - CSS bundle: 425 KB (52 KB gzipped)
 - Deployed + aliased to arkla.vercel.app
 ---
+
+## Cycle 9 — Foundation & Dashboards — Global Quick Note Refactor (DM + PC) (Updated: 2026-07-21 14:09)
+## Cycle 9 — Foundation & Dashboards (Cycle 4 of 10) — Complete
+**Date:** 2026-07-21
+
+### Deliverables
+
+#### 1. GlobalQuickNote.tsx — Overrrides-Grade Premium Elevation
+Complete refactor of the globally accessible floating quick-note (both DM + PC):
+
+**New Features Added:**
+- **Note history mini-list** — shows last 3 'note' type journal entries from campaign store, sorted by recency, with timestamp labels ("5m ago"), preview of title + content, and a "History" toggle button
+- **5 color-coded category chips** — Idea (gold), NPC (sky), Quest (rose), Loot (emerald), Combat (red) with icon, active/inactive styling, and tag propagation to journal entry
+- **Character limit progress bar** — 500-char max with tier-based coloring (emerald <50%, gold <75%, amber <90%, red >90%)
+- **Corner ornaments** — 4-corner gold-accented decorative border markers
+- **Bottom edge glow** — subtle gold gradient line at card bottom
+- **Staggered entrance animation** — 5-step choreography: header (0.05s), history/category (0.1s), textarea (0.15s), footer (0.2s)
+- **Active note indicator on FAB** — small gold dot when recent notes exist
+- **Staggered fade-in backdrop** — `fade-in 0.15s ease-out` backdrop with `slide-in-up 0.35s cubic-bezier(0.16,1,0.3,1)` card entrance
+- **Char count warning** — "X chars left" appears when typing exceeds 80% of limit
+
+#### 2. JournalQuickNote.tsx — Premium Parity Upgrade
+All same features as GlobalQuickNote (category chips, progress bar, corner ornaments, staggered entrance, char warning), plus session context display.
+
+### Build Metrics
+| Metric | Value |
+|--------|:------:|
+| TypeScript | ✅ 0 errors (2148 modules) |
+| Vite build | ✅ 7.61s Vercel |
+| JS bundle | 2,219 KB (520 KB gzipped) |
+| CSS bundle | 425 KB (52 KB gzipped) |
+| Production URL | ✅ arkla.vercel.app
+---
