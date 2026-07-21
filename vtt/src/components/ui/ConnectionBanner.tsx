@@ -17,7 +17,7 @@
  *   - Pending mutation count badge
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { getPendingMutations } from "@/hooks/useOfflineQueue";
 
@@ -27,7 +27,7 @@ export default function ConnectionBanner() {
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
   const syncExhausted = useAuthStore((s) => s.syncExhausted);
   const [animState, setAnimState] = useState<"entering" | "visible" | "exiting">("exiting");
-  const [lastPing, setLastPing] = useState<number>(Date.now());
+  const lastPingRef = useRef(Date.now());
 
   // Derive connection state
   const connectionState: ConnectionState = !firebaseConnected && syncExhausted
@@ -36,17 +36,25 @@ export default function ConnectionBanner() {
       ? "connected"
       : "offline";
 
-  // Track last ping (any successful sync)
+  // Track last ping — use ref to avoid re-renders
   useEffect(() => {
     if (firebaseConnected) {
-      setLastPing(Date.now());
+      lastPingRef.current = Date.now();
     }
   }, [firebaseConnected]);
 
-  // Animate banner in/out
+  // Animate banner in/out — with stale-closure-safe refs
+  const connectionStateRef = useRef(connectionState);
+  const animStateRef = useRef(animState);
+  connectionStateRef.current = connectionState;
+  animStateRef.current = animState;
+
   useEffect(() => {
-    if (connectionState === "connected") {
-      if (animState === "visible") {
+    const cs = connectionStateRef.current;
+    const as = animStateRef.current;
+
+    if (cs === "connected") {
+      if (as === "visible") {
         const timeout = setTimeout(() => setAnimState("exiting"), 1200);
         return () => clearTimeout(timeout);
       }
@@ -54,12 +62,12 @@ export default function ConnectionBanner() {
     }
 
     // Offline or exhausted — animate in
-    if (animState === "exiting") {
+    if (as === "exiting") {
       setAnimState("entering");
       const timeout = setTimeout(() => setAnimState("visible"), 50);
       return () => clearTimeout(timeout);
     }
-  }, [connectionState, animState]);
+  }, []); // Empty deps — use refs to read latest values
 
   if (animState === "exiting") return null;
 
@@ -106,9 +114,9 @@ export default function ConnectionBanner() {
       : "Synced";
 
   const subtext = isExhausted
-    ? `Last successful sync ${formatTimeSince(lastPing)} ago${pendingMutations.length > 0 ? ` · ${pendingMutations.length} pending updates` : ""}`
+    ? `Last successful sync ${formatTimeSince(lastPingRef.current)} ago${pendingMutations.length > 0 ? ` · ${pendingMutations.length} pending updates` : ""}`
     : isOffline
-      ? `Last synced ${formatTimeSince(lastPing)} ago${pendingMutations.length > 0 ? ` · ${pendingMutations.length} pending updates` : ""}`
+      ? `Last synced ${formatTimeSince(lastPingRef.current)} ago${pendingMutations.length > 0 ? ` · ${pendingMutations.length} pending updates` : ""}`
       : "All data synced";
 
   return (

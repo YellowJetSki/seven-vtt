@@ -50,7 +50,7 @@ export default function ActiveMapCard() {
                 Create your first battle map to start running encounters
               </p>
               <button
-                onClick={() => navigate("/campaign/battle-maps")}
+                onClick={() => navigate("/campaign/maps")}
                 className="mt-3 px-3 py-1.5 rounded-lg text-[10px] font-semibold bg-gold-500/10 border border-gold-500/20 text-gold-400 hover:bg-gold-500/15 hover:shadow-[0_0_12px_rgba(234,179,8,0.06)] active:scale-95 transition-all duration-150"
               >
                 → Create Map
@@ -101,7 +101,7 @@ export default function ActiveMapCard() {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => navigate("/campaign/battle-maps")}
+                    onClick={() => navigate("/campaign/maps")}
                     className="px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-white/[0.04] border border-white/[0.06] text-surface-400 hover:text-white/80 hover:bg-white/[0.06] hover:border-white/[0.10] active:scale-95 transition-all duration-150"
                   >
                     Open

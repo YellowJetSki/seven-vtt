@@ -34,7 +34,7 @@ export default function CombatQuickStatus() {
     .reduce((sum, e) => sum + (e.value ?? 0), 0);
 
   const handleLaunch = useCallback(() => {
-    navigate("/campaign/battle-maps");
+    navigate("/campaign/maps");
   }, [navigate]);
 
   return (

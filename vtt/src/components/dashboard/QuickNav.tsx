@@ -32,7 +32,7 @@ const NAV_TILES: NavTile[] = [
     icon: "🗺",
     label: "Battle Maps",
     description: "DM control center with tokens, fog, and initiative",
-    path: "/campaign/battle-maps",
+    path: "/campaign/maps",
     shortcut: "B",
     accent: "gold",
     glow: "rgba(234,179,8,0.06)",
