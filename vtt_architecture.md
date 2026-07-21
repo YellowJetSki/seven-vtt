@@ -13889,3 +13889,37 @@ Added computed at-a-glance metrics to the CampaignBanner stat cluster:
 - Deployed + aliased to arkla.vercel.app
 - Verified in production: Global Quick Note present, Dashboard panel rendering, 4 gold edge lights active
 ---
+
+## Cycle 8 — Foundation & Dashboards — DM Login Refactor & Premium Elevation (Updated: 2026-07-21 14:07)
+## Cycle 8 — Foundation & Dashboards (Cycle 3 of 10) — Complete
+**Date:** 2026-07-21
+
+### Deliverables
+
+#### 1. LoginForm.tsx — Overrrides-Grade Premium Refactor
+Completed rewrite with 7 premium UX upgrades:
+- **Staggered field entrances** — card header (0.3s), username (0.4s), password (0.5s), remember me (0.55s), submit (0.6s), footer (0.7s)
+- **Password visibility toggle** — eye icon button with show/hide SVG icons
+- **"Remember me" checkbox** — custom gold-styled checkbox with checkmark + shadow glow
+- **Subtle decorative pattern** — 24px dot-grid overlay at 2% opacity on the card surface
+- **Bottom edge glow** — gold gradient line at card bottom
+- **Enhanced error banner** — icon container with gold-styled border and amber animation
+- **Premium gold icon coloring** — icons transition to gold on field focus
+
+#### 2. LoginBrandHero.tsx — Lusion-Grade Premium Enhancement
+Added architectural depth:
+- **Gold decorative conic ring** — slowly rotating behind the brand icon
+- **Feature hover elevation** — feature items lift on hover with directional gold glow sweep
+- **Inner glow on icon containers** — blur backdrop with opacity transition on hover
+- **Enhanced footer** — split into "Arkla Campaign · Premium VTT" layout
+
+#### 3. LoginAuroraBackground.tsx — 4th Atmospheric Layer
+Added quaternary aurora wave (deep amber, 26s drift, reversed) plus a soft gold glow pocket on the right side near the form area for atmospheric cohesion.
+
+#### 4. Build & Deployment
+- TypeScript: 0 errors (2148 modules)
+- Vite build: 11.55s local / 8.13s Vercel
+- JS bundle: 2,211 KB (518 KB gzipped)
+- CSS bundle: 425 KB (52 KB gzipped)
+- Deployed + aliased to arkla.vercel.app
+---
