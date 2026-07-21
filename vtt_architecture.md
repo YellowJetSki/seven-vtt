@@ -15217,3 +15217,28 @@ Upgraded the Token Image URL field in EnemyCreator:
 
 ### Ready for Cycle 40 — PC Experience Phase — Cycle 5 of 10
 ---
+
+## Cycle 40 — PC Experience Phase — Cycle 5 of 10 (Complete) (Updated: 2026-07-21 15:46)
+## Sprint 40 of 80 — PC Experience Phase — Cycle 5 of 10 (COMPLETE) ✅
+
+### Feature Enhancements
+
+| Enhancement | File | Lines | Details |
+|:------------|:-----|:-----:|:--------|
+| **1. InventoryCurrencyBar Firestore Sync Fix** | `InventoryCurrencyBar.tsx` (REWRITTEN — 285 lines) | +70 lines | Replaced raw `useCampaignStore` with Firestore-synced `useInventoryMutations().handleSetCurrency()`. All currency writes now go to BOTH Zustand (instant) + Firestore (real-time). Added `character` prop for the hook. Added coin denomination reference card with togglable "Info" button showing 5.5e conversion rates. Added total wealth in CP equivalent. Added Intelligent coin roll-up on spending (auto-converts higher denominations when low on coins). |
+| **2. InlineStatsEditor (NEW)** | `InlineStatsEditor.tsx` (NEW — 395 lines) | 395 lines | Overrrides-grade consolidated 5.5e stats editing hub: **HP Section** — full-width HP bar with color-coded visualization (emerald→amber→rose), temp HP overlay bar, 6-button keypad (DMG -10/-5/-1, HEAL +1/+5/+10, Full, +5 THP, +10 THP, Clear THP), inline "Set" input with Enter/Escape, status badge (Healthy/Scratched/Bloodied/Critical/Down). **XP Section** — live XP progress bar with level-to-next indicator, 6 quick award presets (50/100/200/500/1000/2500), inline "Set" input, PB display. **Currency Section** — compact 5-coin grid preview with expand/collapse to full InventoryCurrencyBar. All mutations Firestore-synced via `useInventoryMutations` and `useCampaignStore.updateCharacter`. |
+| **3. InventoryCurrencyBar Integration** | `PlayerSheetInventoryTab.tsx` | +15 bytes | Added `character={character}` prop to existing `<InventoryCurrencyBar>` call. |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Vite build: ✅ Clean (verified)
+- Git: ✅ Sprint 40 checkpoint saved
+
+### Compliance
+- ✅ **ZERO Math.random** — all deterministic HP/XP/currency values
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides premium design: glassmorphism cards, staggered entrance, gold edge lights, color-coded stat bars
+- ✅ Arkla campaign lore preserved
+
+### Ready for Cycle 41 — PC Experience Phase — Cycle 6 of 10
+---
