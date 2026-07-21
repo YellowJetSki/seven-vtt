@@ -26,7 +26,7 @@
  *               └─► updateCharacter() → Zustand + Firestore
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 import { useRestMutations } from "@/hooks/useCharacterMutations";
@@ -136,6 +136,19 @@ export default function DmPartyRestOverlay({ isOpen, onClose }: DmPartyRestOverl
   const [appliedShort, setAppliedShort] = useState(false);
   const [appliedLong, setAppliedLong] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // ── Player characters only ──
   const party = useMemo(
@@ -144,33 +157,35 @@ export default function DmPartyRestOverlay({ isOpen, onClose }: DmPartyRestOverl
   );
 
   // ── Apply Short Rest to ALL characters ──
-  const handleShortRest = useCallback(async () => {
+  const handleShortRest = useCallback(() => {
     setApplyingShort(true);
     setError(null);
-    try {
-      handleApplyShortRest(party);
-      setAppliedShort(true);
-      setTimeout(() => { setAppliedShort(false); onClose(); }, 1500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to apply Short Rest");
-    } finally {
-      setApplyingShort(false);
-    }
+    handleApplyShortRest(party);
+    if (!mountedRef.current) return;
+    setAppliedShort(true);
+    closeTimeoutRef.current = setTimeout(() => {
+      if (mountedRef.current) {
+        setAppliedShort(false);
+        onClose();
+      }
+    }, 1500);
+    setApplyingShort(false);
   }, [party, handleApplyShortRest, onClose]);
 
   // ── Apply Long Rest to ALL characters ──
-  const handleLongRest = useCallback(async () => {
+  const handleLongRest = useCallback(() => {
     setApplyingLong(true);
     setError(null);
-    try {
-      handleApplyLongRest(party);
-      setAppliedLong(true);
-      setTimeout(() => { setAppliedLong(false); onClose(); }, 1500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to apply Long Rest");
-    } finally {
-      setApplyingLong(false);
-    }
+    handleApplyLongRest(party);
+    if (!mountedRef.current) return;
+    setAppliedLong(true);
+    closeTimeoutRef.current = setTimeout(() => {
+      if (mountedRef.current) {
+        setAppliedLong(false);
+        onClose();
+      }
+    }, 1500);
+    setApplyingLong(false);
   }, [party, handleApplyLongRest, onClose]);
 
   if (!isOpen) return null;

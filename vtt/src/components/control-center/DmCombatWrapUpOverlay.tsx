@@ -116,6 +116,20 @@ export default function DmCombatWrapUpOverlay({ isOpen, onClose }: DmCombatWrapU
   const [selectedLoot, setSelectedLoot] = useState<number | null>(null);
   const [individualXp, setIndividualXp] = useState<Record<string, string>>({});
   const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const confettiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (confettiTimeoutRef.current) {
+        clearTimeout(confettiTimeoutRef.current);
+        confettiTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const showFlash = useCallback((text: string, type: "success" | "info" | "warning" = "success") => {
     if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
@@ -183,8 +197,12 @@ export default function DmCombatWrapUpOverlay({ isOpen, onClose }: DmCombatWrapU
       handleAddXp(c, xpPerAlive);
     }
     setXpAwarded(true);
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 2500);
+    if (mountedRef.current) {
+      setShowConfetti(true);
+      confettiTimeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) setShowConfetti(false);
+      }, 2500);
+    }
     showFlash("Awarded " + xpPerAlive + " XP to " + aliveChars.length + " characters", "success");
   }, [characters, activeEncounter, xpPerAlive, handleAddXp, showFlash]);
 

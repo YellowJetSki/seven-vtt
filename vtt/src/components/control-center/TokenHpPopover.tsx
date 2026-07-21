@@ -247,30 +247,36 @@ export default function TokenHpPopover({
         setDeathSaveFailures(0);
         setDeathSaveStabilized(false);
       } else if (roll >= 10) {
-        // Success
-        const newSuccesses = deathSaveSuccesses + 1;
-        setDeathSaveSuccesses(newSuccesses);
-        if (newSuccesses >= 3) {
-          setDeathSaveStabilized(true);
-        }
+        // Success — use functional updater to avoid stale closure
+        setDeathSaveSuccesses((prev: number) => {
+          const next = prev + 1;
+          if (next >= 3) {
+            setDeathSaveStabilized(true);
+          }
+          return next;
+        });
       } else if (roll === 1) {
-        // Natural 1: 2 failures
-        const newFailures = deathSaveFailures + 2;
-        setDeathSaveFailures(newFailures);
-        if (newFailures >= 3) {
-          setDeathSaveDead(true);
-        }
+        // Natural 1: 2 failures — use functional updater
+        setDeathSaveFailures((prev: number) => {
+          const next = prev + 2;
+          if (next >= 3) {
+            setDeathSaveDead(true);
+          }
+          return next;
+        });
       } else {
-        // Failure
-        const newFailures = deathSaveFailures + 1;
-        setDeathSaveFailures(newFailures);
-        if (newFailures >= 3) {
-          setDeathSaveDead(true);
-        }
+        // Failure — use functional updater
+        setDeathSaveFailures((prev: number) => {
+          const next = prev + 1;
+          if (next >= 3) {
+            setDeathSaveDead(true);
+          }
+          return next;
+        });
       }
       setDeathSaveRolling(false);
     }, 600);
-  }, [deathSaveSuccesses, deathSaveFailures, applyHp]);
+  }, [applyHp]);
 
   const handleToggleDeathSaveSuccess = useCallback((index: number) => {
     const newSucc = index < deathSaveSuccesses ? index : index + 1;
