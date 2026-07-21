@@ -111,7 +111,7 @@ export default function Header() {
           <div className="flex items-center gap-2.5 pl-1">
             {/* App Icon — brand mark */}
             <img
-              src="/AppIcon.png"
+              src="/AppIcon.svg"
               alt="STᚱ VTT"
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 drop-shadow-[0_0_8px_rgba(234,179,8,0.15)]"
             />

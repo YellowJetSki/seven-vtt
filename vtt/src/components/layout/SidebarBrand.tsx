@@ -30,7 +30,7 @@ export default function SidebarBrand({ isOpen }: SidebarBrandProps) {
 
       {/* AppIcon brand mark — always visible */}
       <img
-        src="/AppIcon.png"
+        src="/AppIcon.svg"
         alt="STᚱ VTT"
         className={`select-none transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           isOpen

@@ -10908,3 +10908,41 @@ Conducted a thorough visual audit of all 23 newly built components from the Feat
 | Architecture ledger | ✅ Updated |
 
 ---
+
+## Sprint 37/41 — Premium Visual Polish Phase (Cycle 2 of 6): AppIcon Extension Fix (Updated: 2026-07-20 20:27)
+## Sprint 37/41 — Premium Visual Polish Phase (Cycle 2 of 6)
+
+### Visual Bug Fix: Broken AppIcon References
+
+**Problem:** Five references to `/AppIcon.png` existed across the codebase — but only `AppIcon.svg` (an SVG file) exists in `vtt/public/`. This meant all brand icons rendered as broken images.
+
+**Files Fixed (8 locations in 5 files):**
+
+| File | Location | Change |
+|------|----------|--------|
+| `index.html` | line 5 (favicon) | `type="image/png"` → `type="image/svg+xml"`, `AppIcon.png` → `AppIcon.svg` |
+| `index.html` | line 6 (apple-touch-icon) | `AppIcon.png` → `AppIcon.svg` |
+| `index.html` | line 9 (og:image) | `AppIcon.png` → `AppIcon.svg` |
+| `Header.tsx` | line 114 | `AppIcon.png` → `AppIcon.svg` |
+| `SidebarBrand.tsx` | line 33 | `AppIcon.png` → `AppIcon.svg` |
+| `LoginPage.tsx` | line 171 | `AppIcon.png` → `AppIcon.svg` |
+| `LoginPage.tsx` | line 249 | `AppIcon.png` → `AppIcon.svg` |
+| `PlayerLoginPage.tsx` | line 126 | `AppIcon.png` → `AppIcon.svg` |
+
+**Verification:**
+- Zero remaining `AppIcon.png` references across the entire `vtt/` directory
+- TypeScript compiles: **0 errors**
+- The `AppIcon.svg` is a premium 512×512 SVG with gold gradient rune, decorative rings, corner ornaments, and drop shadows — perfectly matching the premium design system
+
+### Quality Metrics
+| Metric | Result |
+|:------:|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| ESLint (new code) | ✅ 410 pre-existing (all parser config, 0 new code errors) |
+| Files patched | **5** across `index.html` + 4 component/page files |
+| Locations fixed | **8** total `AppIcon.png` → `AppIcon.svg` |
+| Verification | ✅ Zero remaining `.png` icon references |
+| Git saved | ✅ Sprint 37 checkpoint |
+| Architecture ledger | ✅ Updated |
+
+---

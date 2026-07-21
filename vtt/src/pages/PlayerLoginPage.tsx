@@ -123,7 +123,7 @@ export default function PlayerLoginPage() {
                 {/* Brand icon */}
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-3">
                   <img
-                    src="/AppIcon.png"
+                    src="/AppIcon.svg"
                     alt="STᚱ VTT"
                     className="w-9 h-9 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]"
                   />
