@@ -13722,3 +13722,50 @@ Comprehensive naval/vehicle combat and marine travel tool with cyan-accent glass
 - ✅ Prohibited content: 0 matches for "Tick race", "Food machine"
 - ✅ Dice rollers: 0 standalone features
 ---
+
+## Cycle 4 — Critical Bug Hunt & Layout (Sidebar Nav/Tool Overlap Fix) (Updated: 2026-07-21 13:51)
+## Cycle 4 — Critical Bug Hunt & Layout (Sidebar Nav/Tool Overlap Fix) — Complete
+
+### Root Cause: Sidebar content overflow — 15 DM tools + panels exceeded container height
+
+**Diagnosis via live DOM analysis on arkla.vercel.app (1280×720 viewport):**
+- Nav section: 366px height (8 items)
+- Tools section: **442px** (15 buttons — MORE THAN THE NAV)
+- ConnectedPlayers: 160px
+- SyncHealth: 39px
+- **Total content: ~1,041px**
+- **Container height: ~667px**
+- **~374px of content scrolled off-screen at all times**
+
+When users scrolled past the nav to see DM tools, the nav disappeared off-screen. The 15 tools (442px) dominating the scroll space effectively "overlapped" the navigation by pushing it out of the initial viewport.
+
+### Fix: Collapsible DM Tools Section
+
+**Changed:** The "Tools" separator in expanded sidebar mode is now a **clickable toggle button** (▸/▾ arrow indicator).
+
+- **Default state:** `toolsOpen = false` — tools section collapsed (hidden) on page load
+- **Click:** Toggles visibility of all 15 DM tool buttons
+- **Collapsed mode (w-16):** Tools ALWAYS visible as icon-only (no toggle needed in collapsed mode)
+- **Title attribute:** Shows "Expand DM Tools (15 tools)" when collapsed
+- **Visual feedback:** Gold text brightens from 40% to 60% on hover; arrow flips ▸→▾
+- **Persists per session** via Zustand (resets on page refresh — nav-first experience)
+
+### Sidebar Architecture Verification
+- ✅ All 8 nav items + 15 DM tools + ConnectedPlayers + SyncHealth in single scrollable container
+- ✅ Nav section has no min-height constraint (tools can collapse to reclaim ~440px)
+- ✅ Collapsed mode (w-16): All items show as icon-only, no toggle visible
+- ✅ After fix: default view shows nav + ConnectedPlayers + SyncHealth without scrolling
+
+### Additional Checks
+- ✅ `100vh`: 0 references across entire `vtt/src/`
+- ✅ `w-screen`: 0 references in JSX (only in comments)
+- ✅ `min-h-screen`: 0 references
+- ✅ `h-screen`: 0 references in JSX (only in comment)
+- ✅ TypeScript: 0 errors (tsc --noEmit clean)
+- ✅ Vite build: 7.88s, 2146 modules, 0 errors, 0 warnings
+
+### Production Deploy
+- URL: https://arkla.vercel.app
+- JS: index-CnecY5oa.js, 2,201 KB (515 KB gzipped)
+- CSS: index-D9i4njcm.css, 422 KB (52 KB gzipped)
+---
