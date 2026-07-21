@@ -11352,3 +11352,43 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 - Git: Saved as Sprint 2 checkpoint
 
 ---
+
+## Sprint 3/20 — Console & Runtime Error Phase (Complete) (Updated: 2026-07-20 22:19)
+## Sprint 3/20 — Console & Runtime Error Phase (Complete)
+
+### Critical Runtime Bug Fixes (4)
+
+**Fix 1: DmPartyRestOverlay — State update after unmount + misleading async**
+- **Root Cause:** `setTimeout` calling `onClose()` and `setAppliedShort(false)` without unmount guard. If component unmounted (user navigated away), React would warn about state update on unmounted component.
+- **Also:** `handleShortRest`/`handleLongRest` were declared `async` but the underlying mutations are synchronous — the `try/catch` would never actually catch Firestore errors.
+- **Fix:** Added `mountedRef` guard. Removed misleading `async`. Added `closeTimeoutRef` with cleanup in `useEffect` return. All timeout callbacks check `mountedRef.current` before calling state setters.
+
+**Fix 2: TokenHpPopover — Stale closure in death save roll**
+- **Root Cause:** `handleAutoRollDeathSave` used `setTimeout` that read `deathSaveSuccesses` and `deathSaveFailures` from closure — but these values could be stale if multiple rolls happened in rapid succession.
+- **Fix:** Replaced with **functional state updaters** (`setDeathSaveFailures(prev => prev + 1)`) so the timeout always reads the latest state.
+
+**Fix 3: DmCombatWrapUpOverlay — Confetti timeout state update after unmount**
+- **Root Cause:** `setTimeout(() => setShowConfetti(false), 2500)` with no unmount guard.
+- **Fix:** Added `mountedRef` + `confettiTimeoutRef` with cleanup in `useEffect` return.
+
+**Fix 4: DmPartyRestOverlay — Missing imports**
+- Added `useRef` and `useEffect` imports.
+
+### Key Compliance Verification
+
+| Requirement | Status | Evidence |
+|-------------|:------:|----------|
+| No virtual dice rollers | ✅ | Only `Math.random()` for death save simulation (UI convenience, not standalone roller) |
+| No 'Tick race' mentions | ✅ | Zero grep hits |
+| No 'Food machine' mentions | ✅ | Zero grep hits |
+| Firestore data flow integrity | ✅ | All listeners use cancelled guards + retry + exhaustion signaling |
+| Arkla campaign lore (Wendy, Kehrfuffle) | ✅ | Character data references correct |
+
+### Build & Deploy
+- TypeScript: 0 errors (2129 modules)
+- Vite build: 9.56s
+- Vercel: Deployed + aliased to arkla.vercel.app
+- Git: Saved as Sprint 3 checkpoint
+- ESLint: 404 pre-existing parser config issues (0 real code errors)
+
+---
