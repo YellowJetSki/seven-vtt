@@ -16707,3 +16707,46 @@ Total time: ~5 seconds for full combat awareness
 ### DM Tool Tally: 23 Globally Accessible Tools
 +1 (new): Combatant Mover (gold, `attack` icon)
 ---
+
+## DM Party Resources Quick-View (Cycle 30/35) (Updated: 2026-07-21 18:17)
+## Cycle 30 — DM Party Resources Quick-View — COMPLETE
+
+### New Component Created
+- **`DmPartyResourcesQuickView.tsx`** (~520 lines) — Gold-accented glass popover for at-a-glance party resource overview
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Character Cards** | Collapsible per-character with AC/HP/initiative status header |
+| **Spell Slot Grid** | 9-level mini gauges per caster, tier-colored (emerald/gold/amber/rose), DC/ATK displayed |
+| **Class Resources** | Progress bars per resource type, color-coded (rage=rose, ki=indigo, channel=gold, wild shape=emerald, etc.) |
+| **Hit Dice** | Progress bar with remaining/total display |
+| **Conditions** | Active conditions shown as rose-colored chips |
+| **Concentration** | Pulse emoji indicator in header |
+| **Filter Chips** | All / Casters / Martials toggle |
+| **Aggregate Stats Bar** | Total HD, total slots, alive/down counts, condition count |
+| **Empty State** | Per-filter guidance when no characters match |
+| **Escape/Backdrop Dismiss** | Consistent with all 24 DM tools |
+| **Progressive Reveal** | Staggered entrance (30ms per character), slide-in-up animation |
+| **Color-Coded HP Dots** | Emerald (>25%), amber (≤25%), rose (0) with glow |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showPartyResources` + `setPartyResources` |
+| `AppShell.tsx` | Layout | Added import, ref, event listener, rendering block |
+| `Sidebar.tsx` | Layout | Added "Resources" button + hover mapping |
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `DmPartyResourcesQuickView.tsx` | ~520 | Party Resources Quick-View Panel |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 75
+
+### DM Tool Tally: 24 Globally Accessible Tools
++1 (new): Party Resources Quick-View (gold, `hud` icon)
+---
