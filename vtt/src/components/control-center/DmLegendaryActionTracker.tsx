@@ -17,6 +17,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useCombatStore } from "@/stores/combatStore";
+import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface LegendaryCombatant {
@@ -423,6 +424,16 @@ export default function DmLegendaryActionTracker() {
                       <div className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
                         <span className="text-[11px] font-bold text-white/80">{creature.name}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            useCanvasFocusStore.getState().setFocusToken(creature.id);
+                          }}
+                          className="w-4 h-4 rounded flex items-center justify-center hover:bg-gold-500/10 hover:text-gold-400 active:scale-90 transition-all text-surface-500"
+                          title="Locate on battle map"
+                        >
+                          <PremiumIcon name="search" className="w-3 h-3" />
+                        </button>
                         {creature.hasMythicPhase && creature.mythicTriggered && (
                           <span className="text-[8px] text-violet-400 bg-violet-500/10 border border-violet-500/15 rounded px-1 py-0.5">Mythic</span>
                         )}

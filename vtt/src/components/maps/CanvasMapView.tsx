@@ -76,12 +76,19 @@ export interface CanvasMapViewProps {
   onNextTurn?: () => void;
   onPrevTurn?: () => void;
   viewOnly?: boolean;
+  /**
+   * Token ID to highlight on the canvas. Set by DM popover "Locate on map" buttons.
+   * When non-null, a golden pulsing ring is rendered around the matching token.
+   * The focus auto-clears after 3 seconds (handled by canvasFocusStore).
+   */
+  focusTokenId?: string | null;
 }
 
 const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   mapData, tokens, lights = [], walls = [], dmView = true,
   onTokenClick, onCellClick, onMoveToken,
   activeEncounter, onNextTurn, onPrevTurn, viewOnly = false,
+  focusTokenId = null,
 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -202,6 +209,8 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
   isDmViewRef.current = isDmView;
   const activeTurnTokenIdRef = useRef(activeTurnTokenId);
   activeTurnTokenIdRef.current = activeTurnTokenId;
+  const focusTokenIdRef = useRef(focusTokenId);
+  focusTokenIdRef.current = focusTokenId;
 
   // ── Stable render callback — reads latest values from refs ──
   const renderFrameRef = useRef<() => void>(() => {});
@@ -223,6 +232,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
       time: elapsed,
       activeEncounter: activeEncounterRef.current,
       activeTurnTokenId: activeTurnTokenIdRef.current,
+      focusTokenId: focusTokenIdRef.current,
     });
 
     const dpr = window.devicePixelRatio || 1;

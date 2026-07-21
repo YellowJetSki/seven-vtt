@@ -12,6 +12,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useCombatStore } from "@/stores/combatStore";
+import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface ConcentrationEntry {
@@ -301,6 +302,13 @@ export default function DmConcentrationTimerPopover() {
                       <div className="flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${pct >= 90 ? "bg-red-400 animate-ping" : "bg-violet-400"}`} />
                         <span className="text-[11px] font-bold text-white/80">{entry.spellName}</span>
+                        <button
+                          onClick={() => useCanvasFocusStore.getState().setFocusToken(entry.combatantId)}
+                          className="w-4 h-4 rounded flex items-center justify-center hover:bg-gold-500/10 hover:text-gold-400 active:scale-90 transition-all text-surface-500"
+                          title="Locate concentrating creature on map"
+                        >
+                          <PremiumIcon name="search" className="w-3 h-3" />
+                        </button>
                         {pct >= 75 && (
                           <span className="text-[8px] text-amber-400 bg-amber-500/10 border border-amber-500/15 rounded px-1 py-0.5">
                             {pct >= 90 ? "⚠️ Expiring" : "⚠️ Almost Done"}

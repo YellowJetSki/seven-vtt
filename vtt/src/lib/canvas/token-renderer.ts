@@ -73,7 +73,8 @@ export function drawToken(
   isSelected: boolean = false,
   isDmView: boolean = true,
   time: number = 0,
-  isCurrentTurn: boolean = false
+  isCurrentTurn: boolean = false,
+  isFocused: boolean = false
 ): void {
   const tx = token.x * gridSize + gridSize / 2;
   const ty = token.y * gridSize + gridSize / 2;
@@ -132,6 +133,22 @@ export function drawToken(
       ctx.arc(tx, ty, radius + ringPulse, 0, Math.PI * 2);
       ctx.strokeStyle = hexToRgba("#eab308", 0.15);
       ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Cycle 17: Focus highlight ring (from DM tool "Locate on map" buttons)
+    if (isFocused) {
+      const focusPulse = Math.sin(time * 5) * 3 + 8;
+      ctx.beginPath();
+      ctx.arc(tx, ty, radius + focusPulse, 0, Math.PI * 2);
+      ctx.strokeStyle = hexToRgba("#eab308", 0.45);
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      // Inner glow ring
+      ctx.beginPath();
+      ctx.arc(tx, ty, radius + focusPulse * 0.5, 0, Math.PI * 2);
+      ctx.strokeStyle = hexToRgba("#eab308", 0.15);
+      ctx.lineWidth = 1;
       ctx.stroke();
     }
 
@@ -232,12 +249,14 @@ export function drawTokens(
   dmView: boolean,
   selectedTokenId?: string,
   time: number = 0,
-  activeTurnTokenId?: string | null
+  activeTurnTokenId?: string | null,
+  focusTokenId?: string | null
 ): void {
   for (const token of tokens) {
     if (!token.visible && !dmView) continue;
     const isCurrentTurn = token.id === activeTurnTokenId;
-    drawToken(ctx, token, gridSize, token.id === selectedTokenId, dmView, time, isCurrentTurn);
+    const isFocused = token.id === focusTokenId;
+    drawToken(ctx, token, gridSize, token.id === selectedTokenId, dmView, time, isCurrentTurn, isFocused);
   }
 }
 

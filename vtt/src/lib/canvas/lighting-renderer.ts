@@ -84,6 +84,8 @@ export interface CanvasRenderState {
   activePings?: PingState["activePings"];
   /** Cycle 24: Ruler measurement state */
   rulerState?: RulerState;
+  /** Cycle 17: Token ID to highlight with a golden pulsing ring */
+  focusTokenId?: string | null;
 }
 
 // ── Renderer ─────────────────────────────────────────────
@@ -100,6 +102,7 @@ export function renderCanvas(
     time = 0, dragPreview, dragTokenColor, dragTokenLabel, dragTokenSize,
     activeEncounter, activeTurnTokenId,
     activePings, rulerState,
+    focusTokenId,
   } = state;
 
   const mapWidth = gridWidth * gridSize;
@@ -141,7 +144,7 @@ export function renderCanvas(
   const visibleTokens = draggedTokenId
     ? tokens.filter((t) => t.id !== draggedTokenId)
     : tokens;
-  drawTokens(ctx, visibleTokens, gridSize, dmView, undefined, time, activeTurnTokenId);
+  drawTokens(ctx, visibleTokens, gridSize, dmView, undefined, time, activeTurnTokenId, focusTokenId);
 
   // ── 7. Initiative overlay ──
   if (activeEncounter && activeEncounter.phase === "active" && dmView) {

@@ -18,6 +18,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useCombatStore } from "@/stores/combatStore";
+import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
 import { useFirestoreTokenSync } from "@/hooks/useFirestoreTokenSync";
 import { useTokenMutations } from "@/hooks/useTokenMutations";
 import { useMapSelection } from "./useMapSelection";
@@ -100,6 +101,9 @@ export function useDmControlCenter() {
     [activeMap, updateToken]
   );
 
+  // ── Cycle 17: Canvas Focus Bridge ──────────────
+  const focusTokenId = useCanvasFocusStore((s) => s.focusTokenId);
+
   // ── Token Drag Handler ─────────────────────────
   const handleMoveToken = useCallback(
     (tokenId: string, gridX: number, gridY: number) => {
@@ -157,6 +161,8 @@ export function useDmControlCenter() {
     handleTokenClickEx,
     handleCloseHpPopover,
     handleHpChangeFromPopover,
+    // Cycle 17: Canvas Focus
+    focusTokenId,
     // View setters
     setPlacementMode,
     setShowGrid,

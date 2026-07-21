@@ -116,6 +116,7 @@ export default function DmControlCenter() {
             tokens={state.activeTokens}
             dmView={state.isDmView}
             activeEncounter={state.activeEncounter}
+            focusTokenId={state.focusTokenId}
             onNextTurn={nextTurn}
             onPrevTurn={prevTurn}
             onTokenClick={(token) => handleCanvasTokenClick(token)}

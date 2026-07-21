@@ -20,6 +20,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useCampaignStore } from "@/stores/campaignStore";
+import { useCanvasFocusStore } from "@/stores/canvasFocusStore";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface BeastPreset {
@@ -280,6 +281,13 @@ export default function DmWildShapeTracker() {
                           <span className="w-2 h-2 rounded-full bg-surface-600 flex-shrink-0" />
                         )}
                         <span className="text-[10px] font-bold text-white/70 truncate">{tf.combatantName}</span>
+                        <button
+                          onClick={() => useCanvasFocusStore.getState().setFocusToken(tf.combatantId)}
+                          className="w-4 h-4 rounded flex items-center justify-center hover:bg-gold-500/10 hover:text-gold-400 active:scale-90 transition-all text-surface-500 flex-shrink-0"
+                          title="Locate transformed creature on map"
+                        >
+                          <PremiumIcon name="search" className="w-3 h-3" />
+                        </button>
                         <span className="text-[8px] text-emerald-400 bg-emerald-500/10 rounded px-1 py-0.5 truncate max-w-[100px]">{tf.transformation.name}</span>
                         {!tf.isActive && <span className="text-[8px] text-rose-400">Reverted</span>}
                       </div>
