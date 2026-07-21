@@ -36,6 +36,7 @@ import ItemFormModal from "./ItemFormModal";
 import SellConfirmModal from "./SellConfirmModal";
 import CompendiumDropTarget from "./CompendiumDropTarget";
 import InventoryItemDetailModal from "./InventoryItemDetailModal";
+import ConsumptionAnimation from "./ConsumptionAnimation";
 
 interface PlayerSheetInventoryTabProps {
   character: PlayerCharacter;
@@ -67,6 +68,11 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
   const [sortBy, setSortBy] = useState<SortField>("name");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
   const [detailItemIndex, setDetailItemIndex] = useState<number | null>(null);
+  const [consumptionAnimation, setConsumptionAnimation] = useState<{
+    itemName: string;
+    value?: number;
+    valueLabel?: string;
+  } | null>(null);
 
   // ── Derived data ──
   const inventory = character.inventory || [];
@@ -167,6 +173,13 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
       handleUseConsumable(character, index);
       const item = inventory[index];
       if (item) {
+        // Show premium consumption animation
+        const hpVal = item.name.toLowerCase().includes("potion") ? Math.floor(Math.random() * 8) + 5 : undefined;
+        setConsumptionAnimation({
+          itemName: item.name,
+          value: hpVal,
+          valueLabel: hpVal !== undefined ? "HP" : undefined,
+        });
         flash(`\uD83E\uDDEA Used 1 ${item.name}`);
       }
     },
@@ -458,6 +471,16 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
           onToggleEquip={(idx) => { toggleEquip(idx); setDetailItemIndex(null); }}
           onUseConsumable={(idx) => { useConsumable(idx); setDetailItemIndex(null); }}
           onDelete={(idx) => { deleteItem(idx); setDetailItemIndex(null); }}
+        />
+      )}
+
+      {/* Premium consumption animation overlay */}
+      {consumptionAnimation && (
+        <ConsumptionAnimation
+          itemName={consumptionAnimation.itemName}
+          value={consumptionAnimation.value}
+          valueLabel={consumptionAnimation.valueLabel}
+          onComplete={() => setConsumptionAnimation(null)}
         />
       )}
     </div>
