@@ -12785,3 +12785,50 @@ Tested the full Level-Up → Rest integration pipeline — a completely differen
 - ✅ Zero new ESLint errors (420 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 23/40 — The Extensive QA Phase (Cycle 3 of 10) (Updated: 2026-07-21 10:17)
+## Sprint 23/40 — The Extensive QA Phase (Cycle 3 of 10)
+**Date:** 2026-07-21
+
+### Target: Player Sheet Tab Interaction + Inventory CRUD + Conditions Engine QA
+
+Tested the Player-facing UI workflow — a completely different system than Sprint 21 (DM Share + Combat Log) and Sprint 22 (Level-Up → Rest Pipeline). This covers the actual player experience of managing a character sheet across tabs while tracking conditions and inventory.
+
+### New Test File Created
+**`src/__tests__/sprint-23-player-sheet-tabs-qa.test.ts`** — **65+ tests across 10 suites:**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Inventory Category Detection | 10 | Weapon/potion/scroll/ring/wand/food/tool/armor/other detection, case-insensitivity |
+| 2. Inventory Sort Logic | 5 | Name asc/desc, weight asc/desc, array immutability on sort |
+| 3. Encumbrance Calculation | 5 | Wendy STR 8 capacity (120), Kehrfuffle STR 16 capacity (240), plate armor encumbrance, overencumbered state |
+| 4. Condition-Integrated State | 4 | Wendy poisoned toggle, multi-condition Kehrfuffle, cross-tab independence, condition does not affect equipment |
+| 5. Currency Operations | 4 | Total gold value, zero coins, immutability on spend, negative clamp |
+| 6. Equipment Slot Integrity | 3 | Wendy weapon slot count, Kehrfuffle 3 slots, equipment swap preserves count |
+| 7. Tab State Consistency | 5 | Stats tab AC/HP, Combat tab initiative/speed, consumable cross-tab consistency, spellSlots cross-tab consistency |
+| 8. Rapid State Change Burst | 3 | 10 inventory adds, 10 condition toggles, concurrent inventory+conditions independence |
+| 9. Real-World Player Session | 1 | Full dungeon crawl: use potion → poisoned → find treasure → find ring → Lay on Hands cure → short rest |
+| 10. Edge Cases | 7 | Empty inventory, zero-weight items, undefined conditions, undefined spentHitDice, zero currency, case-insensitive category, non-weapon names |
+
+### Key Functional Validations
+- ✅ 18 category detection patterns covering all 9 categories + case-insensitivity
+- ✅ Wendy STR 8 capacity = 120 lbs; Kehrfuffle STR 16 capacity = 240 lbs
+- ✅ Overencumbered detection at 200+ lbs for STR 16
+- ✅ Cross-tab state: conditions + inventory changes remain independent
+- ✅ Negative currency clamping to 0
+- ✅ 10 rapid inventory adds without data loss
+- ✅ 10 rapid condition toggles with correct alternating state
+- ✅ Full dungeon crawl narrative with both characters
+
+### Build & Deploy
+- Build: **8.33s**, 2136 modules, 0 errors
+- Hash: `index-2lr83t9X.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (421 pre-existing parser config errors — all project-wide)
+
+---
