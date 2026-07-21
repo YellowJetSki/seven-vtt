@@ -13284,3 +13284,45 @@ Combined ALL 9 previously tested workflows (Sprints 21-29) into a single compreh
 - Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
 
 ---
+
+## Sprint 32/40 — The Intensive VTT Analysis Phase — CYCLE 2 OF 10 (Updated: 2026-07-21 11:04)
+## Sprint 32/40 — The Intensive VTT Analysis Phase — CYCLE 2 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tools — Social Interaction + Monster Knowledge
+
+#### Built: DmSocialInteractionPopover (650+ lines)
+Two integrated tools in one globally accessible popover:
+
+**Tab 1: Social Interaction (DMG pg. 244-245)**
+- Creature type selector with automatic starting attitude mapping:
+  - Celestial → Friendly, Humanoid/Beast/Fey → Indifferent, Dragon/Fiend/Undead → Hostile
+- Attitude toggle (Friendly / Indifferent / Hostile) with color-coded badges (emerald/amber/rose)
+- DC Shifts table — 3 request tiers (Willing to help / Crucial info / Major sacrifice) with attitude-adjusted DCs
+- Party CHA modifier input for Persuasion rolls
+- Bribe offered (-5 DC) and Threat used (+5 DC) toggle modifiers
+- Effective DC display with real-time attitude & modifier adjustments
+- Roll Persuasion button with animated pass/fail result
+- Collapsible DMG rules reference section
+
+**Tab 2: Monster Knowledge Check**
+- Monster selector from campaign bestiary (searchable, filterable)
+- Monster stats preview (name, type, CR, AC, HP, Speed)
+- Auto-detected knowledge skill (Arcana/Nature/Religion/History) based on creature type
+- CR-based DC calculation (10-30) with tier labels (Common → Legendary)
+- Knowledge bonus input + Roll button with pass/fail result
+- Auto-generated monster lore descriptions at DC-5/DC/DC+5/DC+10 tiers
+- Collapsible knowledge check tiers reference
+
+#### Integration:
+- `stores/uiStore.ts` — Added `showSocialInteraction` + `setSocialInteraction`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-social-interaction`, rendering for DM role
+- `components/layout/Sidebar.tsx` — "Social & Knowledge" sidebar button with violet-accent styling
+
+#### Build & Deploy
+- Build: **8.10s**, 2138 modules, 0 errors
+- Hash: `index-C_U_h4X9.js`, deployed to arkla.vercel.app
+- No dice rollers (all simulation follows 5e RAW: d20 + modifiers)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
