@@ -29,13 +29,15 @@
  * Campaign: Arkla — Wendy Swiftfoot (Rogue 5), Kehrfuffle Ironheart (Paladin 5)
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useCombatStore } from "@/stores/combatStore";
 import CombatantRowCard from "./CombatantRowCard";
 import EncounterFlashToast from "./EncounterFlashToast";
 
 import type { PlayerCharacter } from "@/types";
 import PlayerCompanionResources from "./PlayerCompanionResources";
+import CompanionConsumablePanel from "./CompanionConsumablePanel";
+import PlayerActionHints from "./PlayerActionHints";
 
 interface PlayerLiveEncounterViewProps {
   /** The current player's character ID to highlight */
@@ -66,6 +68,15 @@ export default function PlayerLiveEncounterView({
   // Flash message auto-dismiss callback
   const handleFlashDismiss = useRef(() => setFlashMessage(null));
   handleFlashDismiss.current = () => setFlashMessage(null);
+
+  // Handle action hints — signals intended action to DM via flash message
+  const handleActionSignal = useCallback((actionId: string, label: string) => {
+    const playerName = character?.name || playerCharacterName || "Player";
+    setFlashMessage({
+      text: `${playerName} intends to ${actionId}: ${label}`,
+      type: "info",
+    });
+  }, [character?.name, playerCharacterName]);
 
   // Detect HP changes per combatant and show flash messages with actual values
   useEffect(() => {
@@ -241,26 +252,19 @@ export default function PlayerLiveEncounterView({
         </div>
       </div>
 
-      {/* ── "Act Now" Callout — Full-width action prompt ── */}
+      {/* ── Action Hints — Intended Action Signals ── */}
       {isPlayerTurn && (
-        <div className="relative px-4 py-2 bg-gradient-to-r from-gold-500/8 via-gold-500/3 to-transparent border-b border-gold-500/10 z-[1]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-gold-400 animate-ping opacity-60" />
-              <span className="text-[11px] font-bold text-gold-300 tracking-wider">
-                Act Now
-              </span>
-            </div>
-            <span className="text-[9px] text-gold-500/60">
-              ⚔ Attack · 🧙 Cast · ❤️ Heal
-            </span>
-          </div>
-        </div>
+        <PlayerActionHints onSignalAction={handleActionSignal} />
       )}
 
       {/* ── Player Companion Resources (spell slots, hit dice, class resources) ── */}
       {isPlayerTurn && character && (
         <PlayerCompanionResources character={character} />
+      )}
+
+      {/* ── Companion Consumable Panel (quick-use potions/scrolls/items) ── */}
+      {isPlayerTurn && character && (
+        <CompanionConsumablePanel character={character} />
       )}
 
       {/* ── Turn order list ── */}
