@@ -11425,3 +11425,33 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 | Git savepoint | ✅ Sprint 4 |
 
 ---
+
+## Sprint 5/20 — Feature & Logic Validation Phase (Complete) (Updated: 2026-07-20 22:27)
+## Sprint 5/20 — Feature & Logic Validation Phase (Complete)
+
+### Feature Integrity Validation Results
+
+| Check | Method | Result |
+|-------|--------|:------:|
+| **Combat undo pipeline (real HP reversal)** | Full code review of `combatHpSlice.ts` — `undoLastAction` correctly finds last entry with `undoPayload`, applies `applyUndo()` with HP snapshots via `mapCombatants`, removes log entry | ✅ Correct architecture |
+| **Combat nextTurn() dead-skip** | Code review of `combatFlowSlice.ts` — `maxAttempts` guard prevents infinite loop, all-dead auto-ends combat with "💀 Combat Over" log | ✅ Correct |
+| **Debounce zero-write-drop** | Code review of `useCharacterMutations.ts` — `useWriteCharacter` uses microtask accumulator: Zustand writes go through instantly (all 4 rapid -5HP clicks apply), Firestore debounces at 50ms into single batch write | ✅ Correct |
+| **DM popover stale-closure fix** | AppShell `toggleXxxRef` pattern verified — all 6 event handlers use `useRef` with `[]` deps | ✅ Verified (Sprint 34 fix) |
+| **Hydration / React root** | `main.tsx` uses `createRoot` not `hydrateRoot` — no SSR mismatch risk | ✅ Clean |
+| **Arkla campaign lore** | Combat tests validate Wendy + Kehrfuffle with Dragon encounter narrative across 3 test suites | ✅ Validated |
+| **No "Tick race" / "Food machine"** | Grep entire `vtt/src/` directory | ✅ Zero matches |
+| **No dice rollers** | Only `Math.random()` in TokenHpPopover death save simulation (convenience, not standalone roller) | ✅ Compliant |
+| **CasterType complete** | `"pact"`, `"none"`, `"full"`, `"half"`, `"third"` all handled in type, data, and engine | ✅ Complete |
+
+### Deployed Build
+
+| Metric | Value |
+|--------|:------:|
+| TypeScript errors | **0** (2129 modules) |
+| Vite build time | 8.91s |
+| Vercel build | 45s |
+| Script hash (prod) | `index-UfD-p7ji.js` |
+| Console errors | **0** (benign Firestore deprecation only) |
+| Git savepoint | ✅ Sprint 5 |
+
+---
