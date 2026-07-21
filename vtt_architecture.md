@@ -11064,3 +11064,81 @@ Next cycle in Premium Visual Polish Phase should focus on:
 Next: Focus on checking for any remaining placeholder emoji that could benefit from premium SVG art assets, or run a Vite build verification.
 
 ---
+
+## Sprint 40/41 — Premium Visual Polish Phase (Cycle 5 of 6): Premium Icon Art Integration (Updated: 2026-07-20 20:38)
+## Sprint 40/41 — Premium Visual Polish Phase (Cycle 5 of 6): Premium SVG Icon Art Integration
+
+### Execution Summary
+
+| Action | Status |
+|:-------|:------:|
+| **PremiumIcon component** | ✅ Created — 28 SVG icons (24px viewBox, 1.5px stroke, currentColor for CSS control) |
+| **DM popover header icons replaced** | ✅ **6 popovers**: DmQuickActionPopover (⚡→quickActions), DmCombatConditionBar (⚡→conditions), DmCombatWrapUpOverlay (🏆→encounterComplete), DmPartyRestOverlay (😴→restRecovery), DmNpcQuickCreatePopover (👾→npcs), ConcentrationCheckPopover (🕯️→sparkles) |
+| **Sidebar DM action buttons replaced** | ✅ **3 buttons**: Conditions (⚡→PremiumIcon conditions), Quick Actions (⚡→PremiumIcon quickActions), NPC Quick Create (👾→PremiumIcon npcs) |
+| **TypeScript compilation** | ✅ **0 errors** (2033 modules) |
+| **Code Hygiene Scan** | ✅ 404 pre-existing (0 new code errors) |
+| **Architecture ledger** | ✅ Updated |
+| **Git saved** | ✅ Sprint 40 checkpoint |
+
+### PremiumIcon Component — 28 Icon Catalog
+
+| Icon Name | Description | Used In |
+|:----------|:------------|:--------|
+| `quickActions` | Lightning bolt with arcane particles | DmQuickActionPopover, Sidebar |
+| `conditions` | Crossed swords with shield | DmCombatConditionBar, Sidebar |
+| `encounterComplete` | Trophy with star | DmCombatWrapUpOverlay |
+| `restRecovery` | Crescent moon with bed | DmPartyRestOverlay |
+| `npcs` | Goblinoid silhouette | DmNpcQuickCreatePopover, Sidebar |
+| `battlemap` | Hex grid | (future nav integration) |
+| `homebrew` | Anvil & hammer | (future nav integration) |
+| `journal` | Scroll | (future nav integration) |
+| `settings` | Gear | (future nav integration) |
+| `player` | Wizard hat silhouette | (future nav integration) |
+| `rollInitiative` | Dice d20 | (future buttons) |
+| `attack` | Crossed swords | (future buttons) |
+| `aoe` | Explosion | (future buttons) |
+| `share` | Upload arrow | (future buttons) |
+| `hud` | Bars/chart | (future buttons) |
+| `loot` | Treasure chest | (future buttons) |
+| `search` | Magnifying glass | (future search inputs) |
+| `close` | X | (replacement for inline SVG close buttons) |
+| `chevronRight`/`chevronDown` | Arrow indicators | (future collapse controls) |
+| `check`/`plus`/`minus` | Action icons | (future use) |
+| `edit`/`delete`/`copy` | CRUD icons | (future use) |
+| `heart`/`shield`/`sword` | Stat icons | (future use) |
+| `sparkles` | Magic effects | ConcentrationCheckPopover |
+
+### Design Consistency: Emoji → PremiumIcon Migration
+
+| Location | Before (Emoji) | After (PremiumIcon) |
+|:---------|:---------------|:--------------------|
+| DmQuickActionPopover header | ⚡ | `quickActions` — Lightning bolt with particles |
+| DmCombatConditionBar header | ⚡ | `conditions` — Crossed swords with shield |
+| DmCombatWrapUpOverlay header | 🏆 | `encounterComplete` — Trophy with star |
+| DmPartyRestOverlay header | 😴 | `restRecovery` — Crescent moon with bed |
+| DmNpcQuickCreatePopover header | 👾 | `npcs` — Goblinoid silhouette |
+| ConcentrationCheckPopover header | 🕯️ | `sparkles` — Magic sparkles |
+| Sidebar: Conditions button | ⚡ | `conditions` (amber) |
+| Sidebar: Quick Actions button | ⚡ | `quickActions` (rose) |
+| Sidebar: NPC Quick Create button | 👾 | `npcs` (emerald) |
+
+### Files Created (1)
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `components/ui/PremiumIcon.tsx` | 390 | 28 premium SVG icons, reusable component with IconName type |
+
+### Files Modified (7)
+| File | Changes | 
+|:-----|:--------|
+| `control-center/DmQuickActionPopover.tsx` | ⚡ → PremiumIcon quickActions |
+| `control-center/DmCombatConditionBar.tsx` | ⚡ → PremiumIcon conditions |
+| `control-center/DmCombatWrapUpOverlay.tsx` | 🏆 → PremiumIcon encounterComplete |
+| `control-center/DmPartyRestOverlay.tsx` | 😴 → PremiumIcon restRecovery |
+| `control-center/DmNpcQuickCreatePopover.tsx` | 👾 → PremiumIcon npcs |
+| `control-center/ConcentrationCheckPopover.tsx` | 🕯️ → PremiumIcon sparkles |
+| `layout/Sidebar.tsx` | 3 DM action button emojis → PremiumIcon |
+
+### Ready for Sprint 41/41 — Cycle 6 of 6 (FINAL)
+**Next:** Comprehensive visual end-to-end review, final build verification, and production deploy.
+
+---
