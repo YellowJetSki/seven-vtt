@@ -12426,3 +12426,36 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ No monolithic files — 2 new reusable components
 
 ---
+
+## Sprint 13/40 — UI/UX Overhaul Phase (Cycle 3 of 10) (Updated: 2026-07-21 09:37)
+## Sprint 13/40 — UI/UX Overhaul Phase (Cycle 3 of 10)
+**Date:** 2026-07-21
+
+### Target: Player Cards Page — Overrrides-Grade Premium DM Roster Overhaul
+
+**Files Modified (4):**
+- `PlayerCards.tsx` — Applied Playfair Display (`font-display`) to page heading, added Firestore sync state badge (emerald/amber indicator), enhanced meta badge strip with premium gold glass
+- `PlayerListHeader.tsx` — Refactored into premium Overrrides style: gold-accented icon container matching section header pattern, extracted `ToggleButton` sub-component for Matrix/Loot/Status toggles, improved high-contrast text
+- `PlayerCardCompact.tsx` — Character name now uses Playfair Display (`font-display`) + high-contrast `text-white/90` (up from `text-surface-200` at ~5.4:1)
+- `PartyPowerMatrix.tsx` — Table headers changed from `text-surface-600` (1.91:1) to `text-surface-400` (6.11:1), footer stat labels from `text-surface-600` → `text-surface-500`
+
+**Design Improvements:**
+- High-contrast heading: Playfair Display + `text-white/90` on character names
+- Sync state indicator (emerald connected / amber offline) in page header
+- Premium gold glow active states for toggle buttons
+- `font-display` heading hierarchy applied to both PlayerCards page and card names
+- WCAG-compliant text contrast across PartyPowerMatrix headers
+
+### Build & Deploy
+- Build: 6.97s, 2136 modules, 0 errors
+- JS: index-BkP0KjEx.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Modular architecture preserved — no monolithic files
+
+---
