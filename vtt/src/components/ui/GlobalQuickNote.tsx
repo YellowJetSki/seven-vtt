@@ -53,6 +53,20 @@ export default function GlobalQuickNote({ onSave }: GlobalQuickNoteProps) {
       .slice(0, 3);
   }, [journal]);
 
+  // Listen for global toggle event (from sidebar button or Ctrl+N)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.open !== undefined) {
+        setIsOpen(detail.open);
+      } else {
+        setIsOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("global-quicknote-toggle", handler);
+    return () => window.removeEventListener("global-quicknote-toggle", handler);
+  }, []);
+
   // Auto-focus textarea when opening
   useEffect(() => {
     if (isOpen && textareaRef.current) {
@@ -142,7 +156,7 @@ export default function GlobalQuickNote({ onSave }: GlobalQuickNoteProps) {
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 z-30 w-12 h-12 rounded-full bg-gradient-to-br from-gold-500/20 to-amber-500/10 border border-gold-500/25 text-gold-400 shadow-[0_4px_20px_rgba(234,179,8,0.12)] hover:shadow-[0_4px_24px_rgba(234,179,8,0.2)] hover:from-gold-500/25 hover:border-gold-500/35 active:scale-90 transition-all duration-200 flex items-center justify-center group"
-          title="Quick Note (Ctrl+N)"
+          title="Quick Note (Ctrl+N / Cmd+N)"
           aria-label="Open quick note"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

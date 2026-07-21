@@ -264,12 +264,39 @@ export default function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener("toggle-dm-ship-combat", handler);
   }, []);
 
-  // ── Keyboard shortcut: ? key to toggle ──
+  // ── Quick Note custom event: sidebar button / programmatic ──
+  useEffect(() => {
+    // Toggle open/close via a shared ref to avoid stale state
+    let quickNoteOpen = false;
+    const handler = () => {
+      quickNoteOpen = !quickNoteOpen;
+      window.dispatchEvent(
+        new CustomEvent("global-quicknote-toggle", { detail: { open: quickNoteOpen } })
+      );
+    };
+    window.addEventListener("toggle-dm-quicknote", handler);
+    return () => window.removeEventListener("toggle-dm-quicknote", handler);
+  }, []);
+
+  // ── Keyboard shortcut:  Ctrl+N / Cmd+N to open Quick Note ──
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "n" && !e.repeat) {
+        const activeTag = document.activeElement?.tagName.toLowerCase();
+        if (activeTag === "input" || activeTag === "textarea") return;
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("toggle-dm-quicknote"));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // ── Keyboard shortcut: ? key to toggle Quick Reference ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Shift+/ on most keyboards
       if (e.key === "/" && e.shiftKey && !e.repeat) {
-        // Don't trigger if in an input/textarea
         const activeTag = document.activeElement?.tagName.toLowerCase();
         if (activeTag === "input" || activeTag === "textarea") return;
         e.preventDefault();

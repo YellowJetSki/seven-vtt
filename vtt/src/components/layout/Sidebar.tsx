@@ -51,6 +51,11 @@ const navItems: NavItem[] = [
   { path: "/campaign/settings", label: "Settings", icon: "⚙" },
 ];
 
+/** Nav items + non-link utility buttons that blend into the nav list */
+const navActions: { action: string; label: string; icon: string; eventName: string }[] = [
+  { action: "custom", label: "Quick Note", icon: "📝", eventName: "toggle-dm-quicknote" },
+];
+
 /** All DM tool actions as a data array to eliminate repetition */
 interface DmToolProps {
   /** Custom event name to dispatch */
@@ -337,6 +342,33 @@ export default function Sidebar() {
                 icon={item.icon}
                 isOpen={sidebarOpen}
               />
+            ))}
+            {/* ── Quick Note (non-link nav action) ──
+                Available for BOTH DM and Player roles.
+                Opens the globally accessible quick-note FAB/journal modal
+                via custom event toggle-dm-quicknote. */}
+            {navActions.map((action) => (
+              <button
+                key={action.eventName}
+                onClick={() => window.dispatchEvent(new CustomEvent(action.eventName))}
+                className={`group relative flex items-center transition-all duration-200 active:scale-95 rounded-lg ${
+                  sidebarOpen
+                    ? "w-full gap-2.5 px-2.5 py-2"
+                    : "w-9 h-9 justify-center mx-auto"
+                }`}
+                title={action.label}
+                aria-label={action.label}
+              >
+                {/* Hover glow effect matching SidebarNavLink */}
+                <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-r from-gold-500/[0.03] to-transparent pointer-events-none" />
+
+                <span className="relative z-10 text-base shrink-0">{action.icon}</span>
+                {sidebarOpen && (
+                  <span className="relative z-10 text-[10px] text-surface-500 group-hover:text-gold-400 transition-colors duration-200 truncate">
+                    {action.label}
+                  </span>
+                )}
+              </button>
             ))}
           </nav>
 
