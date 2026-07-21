@@ -552,7 +552,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
       stateRef.current.zoom = n;
       setZoom(n);
     },
-  }), [renderFrame, zoom, showFog, isDmView]);
+  }), [zoom, showFog, isDmView]);
 
   const hasMeasurements = (stateRef.current.rulerState?.measurements.length ?? 0) > 0;
 
