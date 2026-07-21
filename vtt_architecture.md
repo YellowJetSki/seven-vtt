@@ -13594,3 +13594,49 @@ Comprehensive overland travel and wilderness survival tool with sky-blue accent 
 - Arkla campaign compliant — party of 4 adventurers referenced in resource consumption
 
 ---
+
+## FINAL — Sprint 40/40: Ship-to-Ship Combat & Naval Travel Guide (Updated: 2026-07-21 11:55)
+## Sprint 40/40 — FINAL SPRINT: Ship-to-Ship / Vehicle Combat & Naval Travel Guide
+
+### Mission: Build the FINAL missing VTT tool — Naval Combat & Marine Travel for D&D 5.5e
+
+#### Built: DmShipCombatGuide (700+ lines)
+Comprehensive naval/vehicle combat and marine travel tool with cyan-accent glassmorphism. 
+3-tab layout: Reference (ship stats), Combat (ship HP/crew/maneuvers), Encounters (sea events).
+
+**12 Ship Types:** Keelboat, Longship, Sailing Ship, Warship, Galley, Caravel, Galleon, Dragonship, Spelljammer, Pirate Ship, Merchant Cog, Fishing Vessel — each with speed, hull HP, damage threshold, crew, cargo, siege slots, cost, AC, and description
+
+**7 Sea States:** Calm → Light Breeze → Moderate → Rough → Rough (High) → Storm → Hurricane
+
+**6 Maneuvers:** Broadside, Ram, Board, Escape, Chase, Hold Position — with 5e rule descriptions
+
+**5 Siege Weapons:** Ballista, Cannon, Mangonel, Trebuchet, Greek Fire — with damage, range, crew
+
+**8 Encounter Types:** Sea Monster, Pirates, Storm, Sirens, Merchant, Naval Patrol, Reef, Port
+
+**Integration:**
+- `uiStore.ts` — Added `showShipCombat` + `setShipCombat`
+- `AppShell.tsx` — Event listener + DM-role rendering
+- `Sidebar.tsx` — Cyan "Naval & Ships" button after Travel & Wilderness
+
+### 40-Sprint Development Program — COMPLETE ✅
+
+| Phase | Sprints | Key Deliverables |
+|:-----:|:-------:|------------------|
+| Premium UI/UX | 1-5 | Glassmorphism, gold theme, premium icons, design system |
+| DM Mechanics | 6-15 | Initiative, encounters, battles, combat mutations, Homebrew 2.0 |
+| Deep 5e Systems | 13-17 | Rest engine, conditions, spell slots, level-up, multi-class |
+| Player Mechanics | 16-20 | Premium sheets, inventory, spellbook, combat tab |
+| Feature Expansion | 21-30 | 10 globally accessible DM popovers, multi-target AoE |
+| VTT Tools (Expansion) | 31-40 | Skill checks, social interaction, treasure generator, concentration timer, legendary/lair actions, spell reference, wild shape tracker, downtime tracker, travel guide, ship combat |
+
+### Final Production Metrics
+- **URL:** arkla.vercel.app — Hash: `index-0xXLd-xP.js`
+- **Modules:** 2,146
+- **Build:** 8.26s (Vercel), 0 TS errors, 0 warnings
+- **JS:** 2,206 KB (515 KB gzipped)
+- **CSS:** 421 KB (52 KB gzipped)
+- **Total DM tools:** 16 globally accessible popovers
+- **Mechanics:** All core 5.5e systems implemented
+- **0 dice rollers — pure computation mandate honored throughout
+---
