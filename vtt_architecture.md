@@ -16874,3 +16874,40 @@ Total time: ~5 seconds for full combat awareness
 ### DM Tool Tally: 27 Globally Accessible Tools
 +1 (new): Time & Calendar Tracker (gold, `restRecovery` icon)
 ---
+
+## DM Session Recap Generator (Cycle 34/35) (Updated: 2026-07-21 18:27)
+## Cycle 34 — DM Session Recap Generator — COMPLETE
+
+### New Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `control-center/DmSessionRecap.tsx` | ~420 | Auto-generates structured session summaries from combat, XP, and journal data |
+
+### Features
+| Section | Detail |
+|:--------|:--------|
+| **📝 Narrative Tab** | Free-form session notes editor, auto-timestamp display, "Save to Journal" button (creates session-type journal entry), "Copy to Clipboard" formatted recap, char counter |
+| **⚔️ Combat Log Tab** | Last 20 combat actions displayed with type-colored icons (💥damage/❤️heal/💀death/✨revive/⚡status/🔥AoE/🔄turn), live count of total combat log entries |
+| **🏆 Wrap-Up Tab** | Stats grid (Rounds, Kills, Revives, Damage Evt, Heal Evt, Status Chg), Party Status list with HP bar visualizations (emerald→gold→amber→red→rose), Total Party XP display, Save/Copy/Clear actions |
+| **💾 Save to Journal** | Creates a session-type journal entry with auto-generated markdown recap, auto-increments session number, "✅ Saved!" confirmation |
+| **📋 Copy to Clipboard** | Copies full structured markdown recap for external use, "✅ Copied" confirmation |
+| **🗑 Clear Session** | Resets notes and title for a fresh session |
+| **Data Sources** | Campaign store (characters, XP, maps, journal), Combat store (active encounter state, combat log entries) |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showSessionRecap` + `setSessionRecap` |
+| `AppShell.tsx` | Layout | Added import, refs, listener (`toggle-dm-session-recap`), rendering block |
+| `Sidebar.tsx` | Layout | Added "Session Recap" button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 79
+
+### DM Tool Tally: 29 Globally Accessible Tools
++1 (new): Session Recap Generator (gold, `encounterComplete` icon)
+
+### One Sprint Remaining (Cycle 35/35)
+---
