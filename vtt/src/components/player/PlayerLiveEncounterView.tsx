@@ -39,6 +39,7 @@ import PlayerCompanionResources from "./PlayerCompanionResources";
 import CompanionConsumablePanel from "./CompanionConsumablePanel";
 import PlayerActionHints from "./PlayerActionHints";
 import CompanionStatEditor from "./CompanionStatEditor";
+import CompanionSpellRefPanel from "./CompanionSpellRefPanel";
 
 interface PlayerLiveEncounterViewProps {
   /** The current player's character ID to highlight */
@@ -58,6 +59,7 @@ export default function PlayerLiveEncounterView({
   compact = false,
 }: PlayerLiveEncounterViewProps) {
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
+  const [showSpellRef, setShowSpellRef] = useState(false);
   const [flashMessage, setFlashMessage] = useState<{
     text: string;
     type: "damage" | "heal" | "info";
@@ -272,6 +274,25 @@ export default function PlayerLiveEncounterView({
       {/* ── Companion Consumable Panel (quick-use potions/scrolls/items) ── */}
       {isPlayerTurn && character && (
         <CompanionConsumablePanel character={character} />
+      )}
+
+      {/* ── Spell Reference Button ── */}
+      {isPlayerTurn && character && (
+        <div className="px-2 pb-1">
+          <button onClick={() => setShowSpellRef(true)}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg
+              bg-violet-500/8 border border-violet-500/12 text-violet-300
+              hover:bg-violet-500/15 transition-all duration-150 active:scale-[0.98]"
+          >
+            <PremiumIcon name="sparkles" className="w-3 h-3" />
+            <span className="text-[10px] font-medium">Open Spellbook</span>
+          </button>
+        </div>
+      )}
+
+      {/* ── Spell Reference Popover ── */}
+      {showSpellRef && character && (
+        <CompanionSpellRefPanel character={character} onClose={() => setShowSpellRef(false)} />
       )}
 
       {/* ── Turn order list ── */}
