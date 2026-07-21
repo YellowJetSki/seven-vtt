@@ -16094,3 +16094,43 @@ DM clicks 🔍 in Legendary Tracker → `canvasFocusStore.setFocusToken(creature
 - Vite build: Clean
 - Production deploy: Successful
 ---
+
+## Canvas → DM Tool Selection Bridge (Cycle 63) (Updated: 2026-07-21 17:40)
+## Cycle 63 — Canvas → DM Tool Selection Bridge — COMPLETE
+
+### What Was Built
+A bidirectional selection bridge that connects canvas token clicks with open DM popover tools. When the DM clicks a token on the battle map, all open DM tools auto-select that creature.
+
+**1. `dmSelectionStore.ts` (NEW — 65 lines)**
+- Zustand store: `selectedCombatantId`, `selectionType`
+- Three actions: `selectCombatant()` (from canvas), `selectFromPopover()` (from inside popover), `clearSelection()`
+
+**2. Canvas → Store wiring (`useDmControlCenter.ts`)**
+- `handleTokenClickEx()` now calls `useDMSelectionStore.getState().selectCombatant(token.id)` in addition to its existing logic
+- Every click on a canvas token publishes to the DM selection store
+
+**3. DM Popover Subscriptions (3 popovers modified)**
+- `DmLegendaryActionTracker.tsx` — subscribes to dmSelectionStore → auto-expands matching legendary creature card
+- `DmConcentrationTimerPopover.tsx` — subscribes → auto-expands matching concentration timer entry
+- `DmWildShapeTracker.tsx` — subscribes → auto-expands matching transformation entry
+
+### Bidirectional Flow (Complete)
+```
+DM Tool ───(focusTokenId)───► Canvas  (Cycle 17: "Locate on Map" button)
+Canvas ───(selectedCombatantId)───► DM Tool  (Cycle 18: token click → popover auto-select)
+```
+
+### Files Created
+- `vtt/src/stores/dmSelectionStore.ts` (65 lines)
+
+### Files Modified
+- `vtt/src/components/control-center/useDmControlCenter.ts`
+- `vtt/src/components/control-center/DmLegendaryActionTracker.tsx`
+- `vtt/src/components/control-center/DmConcentrationTimerPopover.tsx`
+- `vtt/src/components/control-center/DmWildShapeTracker.tsx`
+
+### Build
+- TypeScript: 0 errors
+- Git savepoint: Sprint 63
+- Production deploy: Deferred (free tier rate-limited — build is clean)
+---
