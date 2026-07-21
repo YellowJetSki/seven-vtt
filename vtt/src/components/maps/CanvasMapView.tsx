@@ -52,6 +52,8 @@ import MapPingRulerTools from "./MapPingRulerTools";
 import CanvasZoomIndicator from "./CanvasZoomIndicator";
 import KeyboardShortcutHints from "./KeyboardShortcutHints";
 import InitiativeOverlay from "./InitiativeOverlay";
+import TokenContextMenu from "./TokenContextMenu";
+import { useContextMenuStore } from "@/stores/contextMenuStore";
 
 export interface CanvasMapHandle {
   recenter: () => void;
@@ -406,6 +408,41 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     if (dragConsumed) return;
   }, [handleTokenDragUp, viewOnly, getCanvasGridPos]);
 
+  // ── Cycle 19: Right-click context menu ──
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    if (viewOnly) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const s = stateRef.current;
+    const canvasX = e.clientX - rect.left;
+    const canvasY = e.clientY - rect.top;
+
+    // Hit-test tokens
+    const tokens = props.tokens || [];
+    // Iterate in reverse (topmost first)
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      const token = tokens[i];
+      const tokenGridX = (token.x || 0) * s.gridSize;
+      const tokenGridY = (token.y || 0) * s.gridSize;
+      const tokenScreenX = tokenGridX * s.zoom + s.panX;
+      const tokenScreenY = tokenGridY * s.zoom + s.panY;
+      const tokenRadius = ((token.size || 1) * s.gridSize * s.zoom) / 2;
+
+      const dx = canvasX - tokenScreenX;
+      const dy = canvasY - tokenScreenY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist <= tokenRadius) {
+        useContextMenuStore.getState().openMenu(token, e.clientX, e.clientY);
+        return;
+      }
+    }
+  }, [viewOnly, props.tokens]);
+
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const n = Math.max(0.25, Math.min(4, stateRef.current.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
@@ -508,6 +545,8 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
       }
       // Close shortcut hints if open
       setShowShortcutHints(false);
+      // Close context menu if open (Cycle 19)
+      useContextMenuStore.getState().closeMenu();
     },
     onToggleInitiative: () => setShowInitiativeOverlay((prev) => !prev),
   };
@@ -596,6 +635,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
           handleMouseUp(e);
         }}
         onWheel={handleWheel}
+        onContextMenu={handleContextMenu}
       />
 
       {/* ── Zoom controls (bottom-right) ── */}
@@ -676,6 +716,9 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
           onDismiss={() => setShowShortcutHints(false)}
         />
       )}
+
+      {/* ── Cycle 19: Token context menu (right-click) ── */}
+      <TokenContextMenu />
     </div>
   );
 });
