@@ -40,6 +40,7 @@ import DmSpellReferencePopover from "@/components/control-center/DmSpellReferenc
 import DmWildShapeTracker from "@/components/control-center/DmWildShapeTracker";
 import DmDowntimeTracker from "@/components/control-center/DmDowntimeTracker";
 import DmTravelPaceGuide from "@/components/control-center/DmTravelPaceGuide";
+import DmShipCombatGuide from "@/components/control-center/DmShipCombatGuide";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -79,6 +80,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setDowntimeTracker = useUIStore((s) => s.setDowntimeTracker);
   const showTravelPace = useUIStore((s) => s.showTravelPace);
   const setTravelPace = useUIStore((s) => s.setTravelPace);
+  const showShipCombat = useUIStore((s) => s.showShipCombat);
+  const setShipCombat = useUIStore((s) => s.setShipCombat);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -249,6 +252,17 @@ export default function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener("toggle-dm-travel-pace", handler);
   }, []);
 
+  const showShipCombatRef = useRef(showShipCombat);
+  showShipCombatRef.current = showShipCombat;
+  const setShipCombatRef = useRef(setShipCombat);
+  setShipCombatRef.current = setShipCombat;
+
+  useEffect(() => {
+    const handler = () => { setShipCombatRef.current(!showShipCombatRef.current); };
+    window.addEventListener("toggle-dm-ship-combat", handler);
+    return () => window.removeEventListener("toggle-dm-ship-combat", handler);
+  }, []);
+
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -402,6 +416,10 @@ export default function AppShell({ children }: AppShellProps) {
 
       {role === "dm" && (
         <DmTravelPaceGuide />
+      )}
+
+      {role === "dm" && (
+        <DmShipCombatGuide />
       )}
     </div>
   );

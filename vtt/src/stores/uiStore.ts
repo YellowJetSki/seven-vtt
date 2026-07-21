@@ -44,6 +44,7 @@ interface UIState {
   showWildShapeTracker: boolean;
   showDowntimeTracker: boolean;
   showTravelPace: boolean;
+  showShipCombat: boolean;
 }
 
 interface UIActions {
@@ -82,6 +83,7 @@ interface UIActions {
   setWildShapeTracker: (show: boolean) => void;
   setDowntimeTracker: (show: boolean) => void;
   setTravelPace: (show: boolean) => void;
+  setShipCombat: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -111,6 +113,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showWildShapeTracker: false,
   showDowntimeTracker: false,
   showTravelPace: false,
+  showShipCombat: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -137,6 +140,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setWildShapeTracker: (show: boolean) => set({ showWildShapeTracker: show }),
   setDowntimeTracker: (show: boolean) => set({ showDowntimeTracker: show }),
   setTravelPace: (show: boolean) => set({ showTravelPace: show }),
+  setShipCombat: (show: boolean) => set({ showShipCombat: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

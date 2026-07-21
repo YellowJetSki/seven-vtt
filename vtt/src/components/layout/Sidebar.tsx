@@ -324,6 +324,27 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* ── DM SHIP-TO-SHIP COMBAT & NAVAL TRAVEL TOGGLE (Sprint 40 — FINAL) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-ship-combat")); }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-cyan-500/8 hover:border-cyan-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Naval Combat & Travel — Ship stats, sea encounters, siege weapons, crew management"
+            aria-label="Toggle Ship Combat Guide"
+          >
+            <span className="w-3.5 h-3.5 flex items-center justify-center text-[13px]">⚓</span>
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-cyan-400 transition-colors truncate">
+                Naval & Ships
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM SOCIAL INTERACTION & MONSTER KNOWLEDGE TOGGLE (Sprint 32) ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button
