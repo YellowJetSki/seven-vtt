@@ -13326,3 +13326,38 @@ Two integrated tools in one globally accessible popover:
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 33/40 — The Intensive VTT Analysis Phase — CYCLE 3 OF 10 (Updated: 2026-07-21 11:11)
+## Sprint 33/40 — The Intensive VTT Analysis Phase — CYCLE 3 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — Treasure & Loot Generator
+
+#### Built: DmTreasureGeneratorPopover (450+ lines)
+DMG-based treasure generation tool with premium Lusion-grade glassmorphism UI:
+
+**Two generation modes:**
+1. **Individual Treasure** — Per-CR tier parcel generation (CR 0-4, 5-10, 11-16, 17+)
+2. **Treasure Hoard** — Full hoard with coins, art objects, gems, and magic items
+
+**Features:**
+- All 4 CR tiers with color-coded badges (emerald/gold/rose/violet)
+- DMG-inspired coin economies scaling per tier (CP/SP/EP/GP/PP)
+- Live total GP estimate per generated hoard
+- Magic item generation from appropriate DMG treasure tables (A-H)
+- Individual item copy-to-clipboard with visual feedback
+- Reroll button with generated item preservation
+- Premium gold glass gradient styling matching all other popovers
+
+#### Integration:
+- `stores/uiStore.ts` — Added `showTreasureGenerator` + `setTreasureGenerator`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-treasure-generator`, DM-role rendering
+- `components/layout/Sidebar.tsx` — "Treasure" sidebar button with amber-accent styling using PremiumIcon `loot`
+
+#### Build & Deploy
+- Build: **8.08s**, 2139 modules, 0 errors
+- Hash: `index-B5VouTWg.js`, deployed to arkla.vercel.app
+- No dice rollers (all simulation follows 5e RAW with Math.random for randomization)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
