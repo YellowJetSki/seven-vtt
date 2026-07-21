@@ -14943,3 +14943,49 @@ Upgraded the Token Image URL field in EnemyCreator:
 - **Git:** ✅ Sprint 32 checkpoint
 - **Prohibited content:** ✅ Zero 'Tick race' or 'Food machine'
 ---
+
+## Cycle 33 — QA & Stabilization (Cycle 3 of 5) (Updated: 2026-07-21 15:26)
+## Sprint 33 of 80 — QA & Stabilization — Cycle 3 of 5 ✅
+
+**Phase:** QA & Stabilization ✓ (Cycles 31-35)
+
+### 🔍 Deep 5.5e Mechanics QA — Homebrew Forge & PC Experience
+
+| Check | Status | Findings |
+|:------|:------:|:---------|
+| **EnemyCreator (NPC Statblock)** | ✅ RAW | Full ability scores (STR/CON/DEX/INT/WIS/CHA), standard array + roll presets, structured attack manager with CombatEntity model, CR→XP map (DMG pg. 275) |
+| **HomebrewItemForm — Dynamic Fields** | ✅ Correct | `isWeapon` → attack dice/damage type/ATK bonus shown. `isArmor` → AC bonus shown. `isConsumable` → uses shown. Category-specific rendering |
+| **HomebrewSpellForm — AoE Integration** | ✅ Complete | Shape (circle/cone/cube/sphere/line/cylinder) + areaSize, damage/healing dice, save DC, attack bonus, concentration/ritual badges |
+| **HomebrewFeatForm — Prerequisites** | ✅ Structured | Ability score increase picker (6 abilities), skill proficiency picker (18 skills), structured FeatPrerequisite array |
+| **EnemyStatblock — Full 5e Display** | ✅ RAW | All 6 ability scores + modifiers, CR→XP conversion, saving throws, skills, damage resistances/immunities/vulnerabilities, traits/actions/reactions/legendary actions |
+| **InventoryTab — Visual CRUD** | ✅ 7 sub-components | Currency bar, weight bar, category chips, sort controls, item rows, empty state, flash toasts. All use `useInventoryMutations()` for Firestore sync |
+| **PlayerCardManager — Character Mgmt** | ✅ Complete | Edit race/class/level/player name, duplicate, level-up, delete with Firestore sync + `markCharacterDeleted` protection |
+| **Homebrew Export/Import** | ✅ Validated | `parseHomebrewJSON()` handles valid/invalid/malformed/empty. Dedup by case-insensitive name. 100+ entries export without truncation |
+| **Cr→XP Table (DMG pg. 275)** | ✅ Complete | 0→10xp, 0.125→25, 0.25→50, 0.5→100, 1→200 ... 30→155,000 |
+
+### Production Rendering Verification
+
+| Route | Status | Notes |
+|:------|:------:|:-------|
+| `/campaign/dashboard` | ✅ | Active nav pill, all 8 nav links, Tools section, Connected Players |
+| `/campaign/player-cards` | ✅ | "Player Cards" active, gold pill, Party Power Matrix accessible |
+| `/campaign/homebrew` | ✅ | "Homebrew" active, 4-tab system (Items/Spells/Feats/Monsters) |
+| `/campaign/maps` | ✅ | Battle Maps page, sidebar intact, Compendium drawer |
+| `/campaign/settings` | ✅ | Settings page, active nav indicator |
+
+### System Compliance
+
+| Requirement | Status | Evidence |
+|:------------|:------:|:---------|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** | Clean compilation |
+| Console errors (production) | ✅ **0 errors** | Only benign Firestore deprecation warning |
+| Overrrides aesthetic | ✅ Verified | Glassmorphism, gold edge lights, PremiumIcon SVGs, "Tools ▸" divider |
+| No dice rollers | ✅ Compliant | Zero Math.random() in feature code |
+| No 'Tick race'/'Food machine' | ✅ Clean | Zero matches across codebase |
+| Arkla lore | ✅ Compliant | Wendy Swiftfoot, Kehrfuffle Ironheart, Dragon encounters |
+| Monolith risk noted | ⚠️ 100+ files >150 lines | Identified for Cycle 34+ refactoring priority |
+
+### Deployment Status
+- **URL:** https://arkla.vercel.app — stable
+- **Git:** ✅ Sprint 33 checkpoint
+---
