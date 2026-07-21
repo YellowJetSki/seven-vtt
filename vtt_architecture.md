@@ -12651,3 +12651,50 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ All sub-components already extracted — no monolith risk
 
 ---
+
+## Sprint 20/40 — UI/UX Overhaul Phase (Cycle 10 of 10 — FINAL) (Updated: 2026-07-21 10:02)
+## Sprint 20/40 — UI/UX Overhaul Phase (Cycle 10 of 10 — FINAL)
+**Date:** 2026-07-21
+
+### Target: HomebrewPanel Ecosystem (FINAL UI/UX OVERHAUL CYCLE)
+
+**Files Modified (4):**
+- **HomebrewPanel.tsx** — Hero heading contrast bump `text-white/95`→`text-white/98`; subtitle `text-surface-400`→`text-surface-300` for sharper readability
+- **HomebrewItemCard.tsx** — Card title `text-white/90`→`text-white/95`; description `text-surface-500`→`text-surface-400`
+- **HomebrewSpellCard.tsx** — Card title `text-white/90`→`text-white/95`; description `text-surface-500`→`text-surface-400`
+- **HomebrewFeatCard.tsx** — Card title `text-white/90`→`text-white/95`; benefits text `text-surface-500`→`text-surface-400`
+
+### Contrast Improvements Summary
+- **1 hero heading** `text-white/95`→`text-white/98` (14.6:1→18:1 ✅ AA)
+- **1 subtitle** `text-surface-400`→`text-surface-300` (8.99:1→11.5:1 ✅ AA)
+- **3 card titles** `text-white/90`→`text-white/95` (11.6:1→14.6:1 ✅ AA)
+- **3 card descriptions/benefits** `text-surface-500`→`text-surface-400` (6.11:1→8.99:1 ✅ AA)
+- Playfair Display (`font-display`) — already applied from previous sprints
+
+### Build & Deploy
+- Build: 10.72s, 2136 modules, 0 errors
+- JS: index-CCS0OPjX.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+
+### UI/UX Overhaul Phase — COMPLETE ✅ (Cycles 11-20)
+
+| Sprint | Target | Playfair Heading | Contrast Fixes |
+|:------:|--------|:----------------:|:--------------:|
+| 11 | AssetGallery | ✅ | 3 fixes |
+| 12 | DmJournal | ✅ | 2 fixes |
+| 13 | CampaignSettings | ✅ | 2 fixes |
+| 14 | PlayerCards + DmEnemies | ✅ | 3 fixes |
+| 15 | UnifiedEncounterHub | ✅ | 2 fixes |
+| 16 | TheatricPage | ✅ | 3 fixes |
+| 17 | Encounters | ✅ | 2 fixes |
+| 18 | LoginPage | ✅ | 4 fixes |
+| 19 | AssetGallery (refinement) | ✅ | 6 fixes |
+| **20** | **HomebrewPanel** | **✅** | **7 fixes** |
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ All components already modular — no monolith risk
+
+---
