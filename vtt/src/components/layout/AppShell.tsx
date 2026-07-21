@@ -48,6 +48,7 @@ import DmDamageCalculator from "@/components/control-center/DmDamageCalculator";
 import DmInitiativeDraft from "@/components/control-center/DmInitiativeDraft";
 import DmCombatantMover from "@/components/control-center/DmCombatantMover";
 import DmPartyResourcesQuickView from "@/components/control-center/DmPartyResourcesQuickView";
+import DmEncounterAnalyzer from "@/components/control-center/DmEncounterAnalyzer";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -104,6 +105,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setCombatantMover = useUIStore((s) => s.setCombatantMover);
   const showPartyResources = useUIStore((s) => s.showPartyResources);
   const setPartyResources = useUIStore((s) => s.setPartyResources);
+  const showEncounterAnalyzer = useUIStore((s) => s.showEncounterAnalyzer);
+  const setEncounterAnalyzer = useUIStore((s) => s.setEncounterAnalyzer);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -338,6 +341,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setPartyResourcesRef.current(!showPartyResourcesRef.current); };
     window.addEventListener("toggle-dm-party-resources", handler);
     return () => window.removeEventListener("toggle-dm-party-resources", handler);
+  }, []);
+
+  const showEncounterAnalyzerRef = useRef(showEncounterAnalyzer);
+  showEncounterAnalyzerRef.current = showEncounterAnalyzer;
+  const setEncounterAnalyzerRef = useRef(setEncounterAnalyzer);
+  setEncounterAnalyzerRef.current = setEncounterAnalyzer;
+
+  useEffect(() => {
+    const handler = () => { setEncounterAnalyzerRef.current(!showEncounterAnalyzerRef.current); };
+    window.addEventListener("toggle-dm-encounter-analyzer", handler);
+    return () => window.removeEventListener("toggle-dm-encounter-analyzer", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -586,6 +600,15 @@ export default function AppShell({ children }: AppShellProps) {
           and conditions without opening individual sheets. */}
       {role === "dm" && (
         <DmPartyResourcesQuickView onClose={() => setPartyResources(false)} />
+      )}
+
+      {/* ── DM Encounter Analyzer (Cycle 31) ──
+          Analyzes the current encounter against the party's actual
+          capabilities. Shows difficulty breakdown, save targeting
+          warnings, action economy analysis, and recommendations
+          for encounter adjustment based on 5.5e RAW. */}
+      {role === "dm" && (
+        <DmEncounterAnalyzer onClose={() => setEncounterAnalyzer(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──

@@ -164,6 +164,14 @@ const dmTools: DmToolProps[] = [
     title: "Party Resources — Spell slots, class resources, hit dice, conditions at a glance",
   },
   {
+    eventName: "toggle-dm-encounter-analyzer",
+    icon: "conditions",
+    colorClass: "text-amber-400",
+    hoverClass: "hover:bg-amber-500/8 hover:border-amber-500/10",
+    label: "Analyzer",
+    title: "Encounter Analyzer — Party balance, difficulty, save targeting, recommendations",
+  },
+  {
     eventName: "toggle-dm-damage-calculator",
     icon: "attack",
     colorClass: "text-rose-400",
@@ -271,6 +279,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-party-rest": "group-hover:text-emerald-400",
   "toggle-dm-combatant-mover": "group-hover:text-gold-400",
   "toggle-dm-party-resources": "group-hover:text-gold-400",
+  "toggle-dm-encounter-analyzer": "group-hover:text-amber-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
   "toggle-dm-party-spell-slots": "group-hover:text-violet-400",

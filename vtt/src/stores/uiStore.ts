@@ -53,6 +53,7 @@ interface UIState {
   showInitiativeDraft: boolean;
   showCombatantMover: boolean;
   showPartyResources: boolean;
+  showEncounterAnalyzer: boolean;
 }
 
 interface UIActions {
@@ -99,6 +100,7 @@ interface UIActions {
   setInitiativeDraft: (show: boolean) => void;
   setCombatantMover: (show: boolean) => void;
   setPartyResources: (show: boolean) => void;
+  setEncounterAnalyzer: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -137,6 +139,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showInitiativeDraft: false,
   showCombatantMover: false,
   showPartyResources: false,
+  showEncounterAnalyzer: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -172,6 +175,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setInitiativeDraft: (show: boolean) => set({ showInitiativeDraft: show }),
   setCombatantMover: (show: boolean) => set({ showCombatantMover: show }),
   setPartyResources: (show: boolean) => set({ showPartyResources: show }),
+  setEncounterAnalyzer: (show: boolean) => set({ showEncounterAnalyzer: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
