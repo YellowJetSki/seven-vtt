@@ -16548,3 +16548,54 @@ Total time: ~5 seconds for full combat awareness
 - Vite build: Clean
 - Git savepoint: Sprint 71
 ---
+
+## DM Damage/Healing Calculator (Cycle 27/35) (Updated: 2026-07-21 18:09)
+## Cycle 27 — DM Damage/Healing Calculator Popover — COMPLETE
+
+### New Component Created
+- **`DmDamageCalculator.tsx`** (~550 lines) — Rose/emerald-accented glass popover for quick damage/healing resolution
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Mode toggle** | Damage / Healing with color-coded accent change (rose/emerald) and icon swap |
+| **7 damage presets** | DMG improvised damage table: Trivial (1d4=3) through Massive (12d8=54) |
+| **6 healing presets** | Minor Heal (1d4+1=4) through Heal L6 (6d8+6=33) |
+| **13 damage type chips** | Acid through Thunder, each with unique color-accented active state |
+| **Custom amount input** | Manual numeric input with live `(X base, ÷2 = Y)` preview when DEX save active |
+| **DEX save halving toggle** | Halves computed base damage (rounds up) |
+| **Multi-target selector** | Checkbox list of all encounter combatants with live HP bars |
+| **Per-target resistance** | Toggle per combatant: none/½ resistance/×2 vulnerable/0 immune |
+| **Per-target final damage preview** | Shows computed final damage per target accounting for save + resistance |
+| **Running total** | Σ sum of all per-target final damage before applying |
+| **Select All / Clear** | Quick multi-target selection with dead combatant filtering |
+| **Apply to combatants** | Writes damage/heal to combat store + appends combat log entry |
+| **History log** | Last 50 calculations with undo capability (mark as undone) |
+| **DMG improvised damage reference** | Collapsible rules section with example scenarios per damage tier |
+| **Party HP bar** | Live summary bar in mode toggle section |
+| **No dice rolling** | Pure computation with deterministic preset values |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showDamageCalculator` + `setDamageCalculator` |
+| `AppShell.tsx` | Layout | Added import, ref, event listener (`toggle-dm-damage-calculator`), rendering |
+| `Sidebar.tsx` | Layout | Added "Damage Calc" button (rose accent, `attack` icon) + hover text mapping |
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `DmDamageCalculator.tsx` | ~550 | DM Damage/Healing Calculator |
+
+### Files Modified
+| File | Change |
+|:-----|:-------|
+| `uiStore.ts` | Added state + action |
+| `AppShell.tsx` | Added import, ref, event listener, rendering |
+| `Sidebar.tsx` | Added sidebar button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 72
+---
