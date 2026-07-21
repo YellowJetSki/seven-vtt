@@ -12985,3 +12985,50 @@ The existing `homebrew-crud-qa.test.ts` tested the **engine layer** (`homebrew-i
 - ✅ Zero new ESLint errors (424 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 27/40 — The Extensive QA Phase (Cycle 7 of 10) (Updated: 2026-07-21 10:36)
+## Sprint 27/40 — The Extensive QA Phase (Cycle 7 of 10)
+**Date:** 2026-07-21
+
+### Target: Player Login → Sheet → Combat Interaction Flow
+
+Tested the complete player-side experience — a 7th completely different workflow from Sprints 21-26. Covers: login state machine, character sheet tab rendering, HP management during combat, death saves, conditions, spell casting, long rest recovery, real-time combat sync with DM, and a full player lifecycle integration scenario.
+
+### Key Gap Identified
+Previous QA cycles covered individual player components (Sprint 23: sheet tabs rendering, Sprint 25: spellcasting UI) but NONE tested the **complete player lifecycle**: from login flow → sheet loads → HP management during live combat → death saves → conditions → spell casting → long rest → all syncing correctly with the combat tracker.
+
+### New Test File Created
+**`src/__tests__/sprint-27-player-login-combat-flow-qa.test.ts`** — **60+ tests across 10 suites**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Player Login State Machine | 7 | Connected, loading, exhausted, character not found, empty name, no character selected, presence heartbeat |
+| 2. Character Sheet Tab Rendering | 6 | 4 vs 5 tabs (caster/non-caster), tab swipe, edge-of-list swipe resistance, default combat tab |
+| 3. HP Management | 11 | Damage clamping, 0-floor, healing cap, temp HP absorption (partial/exact), temp stacking, death trigger, stable at 3 successes, dead at 3 failures, nat20 revive, nat1 double failure, heal-from-0 resets saves, 10 rapid clicks |
+| 4. Conditions During Combat | 7 | Add, remove, double-toggle, accumulation, clear all, duplicate prevention, 10 rapid toggles settle correctly |
+| 5. Spell Casting | 5 | Decrement correct level, no slots = can't cast, cantrip exemption, restore all to max, half-caster limits |
+| 6. Long Rest Recovery | 5 | Full HP, clear death saves, clear conditions, restore all slots, full damage→heal→rest cycle |
+| 7. Combat Sync (Player ≤> DM) | 5 | Player HP mirrors combatant HP after DM damage, temp HP shows, death reflects, revive reflects, initiative order sorted correctly |
+| 8. Full Player Lifecycle | 1 | Wendy vs Dragon: 9-step complete cycle (login→sheet→breath→death→death saves→heal→poisoned→long rest→XP) |
+| 9. Edge Cases | 6 | undefined HP, undefined deathSaves, negative damage, overheal, unauthorized sheet access, unmount removes presence |
+| 10. Rapid State Change Stress | 5 | 20 damage clicks→0, 20 heals→max, 20 alternating→net 0, 10 condition toggles→settled, 10 death save alternates→capped |
+
+### Key RAW Validations
+- ✅ HP clamped [0, max] — no negatives, no overheals
+- ✅ Temp HP absorbs damage before real HP (10 temp + 44 real = 54 effective HP pool)
+- ✅ 3 death save failures = dead, 3 successes = stable
+- ✅ Natural 20 revives to 1 HP; Natural 1 causes 2 failures
+- ✅ Full long rest cycle: damage→heal→rest→full HP → all conditions cleared → all saves reset
+- ✅ Wendy vs Dragon (CR 8, 3900 XP): damage→0 HP→death saves→healed→poisoned→long rest→XP(8450)
+
+### Build & Deploy
+- Build: **7.80s**, 2136 modules, 0 errors
+- Hash: `index-CJ5VY1P0.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (425 pre-existing parser config errors — all project-wide)
+
+---
