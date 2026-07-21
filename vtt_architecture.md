@@ -13093,3 +13093,65 @@ Previous QA cycles tested combat, spells, and player sheets (Sprints 21-27) but 
 - Zero new ESLint errors (426 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 29/40 — The Extensive QA Phase (Cycle 9 of 10) (Updated: 2026-07-21 10:44)
+## Sprint 29/40 — The Extensive QA Phase (Cycle 9 of 10)
+**Date:** 2026-07-21
+
+### Target: Session Management Pipeline
+
+Tested the complete administrative backbone of a campaign: campaign settings persistence, XP/currency toggling, race/class restrictions, journal CRUD (create/edit/save/delete/pin), type filtering and search, asset gallery category browsing, join code generation/expiration/verification, campaign stats live counts, and the complete DM setup-to-player-join workflow. This is the 9th completely different workflow.
+
+### Key Gap Identified
+Previous QA cycles (Sprints 21-28) tested combat, spells, player sheets, homebrew, theatric display, and player login flows, but NONE tested the administrative session management tools: CampaignSettings, DmJournal, AssetGallery, and PlayerJoinPage. These are the DM's tools for building and organizing the campaign before and between sessions.
+
+### New Test File Created
+**`src/__tests__/sprint-29-session-management-pipeline-qa.test.ts`** — **70+ tests across 10 suites**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Campaign Settings Save/Load | 10 | Name, description, DM name, hasChanges flag, empty name prevention, updatedAt, createdAt preservation, null meta, default xp, milestone toggle |
+| 2. XP System & Currency Presets | 7 | Labels (Experience Points/Milestone), standard/silver/custom presets, mutually exclusive toggle, multi-toggle state integrity |
+| 3. Race/Class Restrictions | 12 | 34 races, 14 classes, add race, remove race, add class, remove class, select all races, clear all, hasChanges flag, save disabled when unchanged |
+| 4. Journal CRUD | 9 | Create, edit title, edit content, edit tags, delete, delete non-existent no-op, updatedAt on save, createdAt preserved, empty state |
+| 5. Journal Pin/Filter/Search | 10 | Pin on/off, pinned sort order first, filter by session/quest/lore, all filter, search by title/content/tags |
+| 6. Asset Gallery Categories | 8 | 4 categories, portrait/token/map/item filtering, tag search, clipboard feature exists, asset ID selection |
+| 7. Join Code Generation/Verification | 11 | 6-char length, valid charset (no I/O/0/1), uniqueness, active time display, expired detection, undefined/empty, 24h TTL, case-insensitive match, wrong code failure, error state reset |
+| 8. Campaign Stats Live Counts | 9 | Character/enemy/encounter/map/journal counts, session increment, add/delete updates, 0-count stability |
+| 9. Edge Cases | 9 | Null meta, empty journal, missing settings defaults, undefined races/classes arrays, empty join code, zero session count, NaN timestamp, empty search, empty string matching all |
+| 10. Full Integration | 1 | Complete DM lifecycle: create campaign -> configure settings (xp/currency/restrictions) -> write journal entries -> pin important ones -> generate join code -> player verifies code -> campaign stats reflect setup -> full state integrity check |
+
+### Key Validations
+- Campaign settings: name/description/DM name save/load cycle, empty name prevention, createdAt preserved on edit
+- XP & currency: mutually exclusive toggle, silver/custom presets, 7-toggle state integrity
+- Race/class restrictions: 34 races, 14 classes, add/remove, select all/clear
+- Journal CRUD: create, edit title/content/tags, delete, pin/unpin, pinned sort order
+- Type filtering: session/quest/lore/all, search by title/content/tags, empty search returns all
+- Asset gallery: 4 categories, tag search filters correctly
+- Join code: 6-char, valid charset (no I/O/0/1), 24h TTL, case-insensitive match, expired detection
+- Campaign stats: live counts reflect actual data, session increment, all 0-count fields stable
+
+### Build & Deploy
+- Build: **7.80s**, 2136 modules, 0 errors
+- Hash: `index-DdlgG9Q0.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### QA Coverage So Far (Sprints 21-29 = 9 of 10 workflows)
+| Sprint | Workflow Tested |
+|:------:|-----------------|
+| 21 | DM Share + Combat Log Pipeline |
+| 22 | Level-Up -> Rest Pipeline |
+| 23 | Player Sheet Tabs + Inventory + Conditions |
+| 24 | Encounter Builder -> CR -> Initiative Pipeline |
+| 25 | Player Spellcasting UI Pipeline |
+| 26 | Homebrew Panel CRUD UI Pipeline (DM content creation) |
+| 27 | Player Login -> Sheet -> Combat Interaction Flow |
+| 28 | Theatric Display + DM Screen-Share Pipeline |
+| **29** | **Session Management Pipeline (Settings, Journal, Assets, Join Code)** |
+
+### Compliance
+- No virtual dice rollers
+- No 'Tick race' or 'Food machine' references
+- Zero new ESLint errors (427 pre-existing parser config errors — all project-wide)
+
+---
