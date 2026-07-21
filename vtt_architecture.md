@@ -12557,3 +12557,29 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ Modular architecture preserved — all sub-components already extracted
 
 ---
+
+## Sprint 17/40 — UI/UX Overhaul Phase (Cycle 7 of 10) (Updated: 2026-07-21 09:51)
+## Sprint 17/40 — UI/UX Overhaul Phase (Cycle 7 of 10)
+**Date:** 2026-07-21
+
+### Target: DmJournal Ecosystem
+
+**Files Modified (5):**
+- `DmJournal.tsx` — Hero heading "Journal" upgraded to Playfair Display (`font-display`)
+- `JournalSidebar.tsx` — Search input placeholder `text-surface-600`→`text-surface-500` (1.91:1 🔴→6.11:1 ✅), search icon `text-surface-600`→`text-surface-500`, empty state "No entries found" `text-surface-600`→`text-surface-500`, group labels `text-surface-600`→`text-surface-500`, entry preview `text-surface-600`→`text-surface-500`, relative timestamps `text-surface-700`→`text-surface-500`, footer `text-surface-600`→`text-surface-500`
+- `JournalEditor.tsx` — Timestamp `text-surface-600`→`text-surface-500`, word count `text-surface-700`→`text-surface-500` (2 fixes), pin toggle inactive `text-surface-600`→`text-surface-500`, preview empty `text-surface-600`→`text-surface-500`, tag input placeholder `text-surface-600`→`text-surface-500` + input text `text-white/60`→`text-white/80`, tag suggestion buttons `text-surface-600`→`text-surface-500`, title placeholder `text-surface-700`→`text-surface-500` + char counter `text-surface-700`→`text-surface-500`, textarea placeholder `text-surface-700`→`text-surface-500`, edit mode word count `text-surface-700`→`text-surface-500`, session number input `text-white/60`→`text-white/80`
+- `JournalQuickNote.tsx` — Textarea placeholder `placeholder-surface-600`→`placeholder-surface-500`, session context `text-surface-600`→`text-surface-500`, footer `text-surface-600`→`text-surface-500`, separator `text-surface-700`→`text-surface-500`
+
+### Build & Deploy
+- Build: 7.77s, 2136 modules, 0 errors
+- JS: index-DgdFYTkW.js, 2,035 KB (482 KB gzipped)
+- Deployed + aliased to https://arkla.vercel.app — HTTP 200
+- TypeScript: 0 errors
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore preserved (Wendy, Kehrfuffle)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Modular architecture — all sub-components already extracted
+
+---
