@@ -14540,3 +14540,48 @@ Verified `EnemyCreator.tsx` already has `imageUrl` input with live preview, and 
 - `components/homebrew/HomebrewItemCard.tsx` — flavorText + source display
 - `components/homebrew/HomebrewSpellCard.tsx` — flavorText + source display
 ---
+
+## Cycle 25 — The Homebrew Forge (Cycle 5 of 10) (Updated: 2026-07-21 15:04)
+## Sprint 25 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. EnemyCreator — Saving Throw State Hoisting (CRITICAL BUG FIX)
+
+**Before:** `SaveRow` used local `useState(false)` for proficiency and `useState("")` for bonus override. When `handleSave` ran, it wrote `savingThrows: {}` — ALL saving throw data was lost on save.
+
+**After:** Saving throw state (`saveProfs`, `saveBonuses`) is hoisted to the parent `EnemyCreator` component. The `SaveRow` now accepts parent-controlled props (`isProficient`, `bonusOverride`, `onToggle`, `onBonusChange`). On save, `handleSave` properly computes:
+```typescript
+savingThrows: Object.fromEntries(
+  ["strength","dexterity","constitution","intelligence","wisdom","charisma"]
+    .filter((k) => saveProfs[k])
+    .map((k) => [k, bonus ? mod + Number(bonus) : mod + pb])
+)
+```
+
+#### 2. EnemyCreator — Visual Spell Slot Grid (UX Upgrade)
+
+**Before:** Spell slots were a raw JSON input field — users had to type: `{"1":{"current":4,"max":4},"2":{"current":2,"max":2}}`
+
+**After:** A 3x3 visual grid displays all 9 spell levels with numeric inputs. Each level shows "L1" through "L9" with a slot count input (0-9). Behind the scenes, values are written back to the same `spSlots` JSON string state, ensuring full backward-compatibility with the existing save pipeline.
+
+#### 3. EnemyCreator — Edit Mode Restores Saving Throw State
+
+When editing an existing enemy, `saveProfs` is initialized from `existingEnemy?.savingThrows` keys. `saveBonuses` restores any bonus overrides.
+
+### Build & Verify
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 11.73s, 0 warnings |
+| Modules | 2,153 |
+| Bundle hash | `index-BwmO1Hjx.js` |
+| CSS | 429.2 kB (52.5 kB gz) |
+| JS | 2,262.7 kB (527.3 kB gz) |
+| Vercel deploy | ⚠️ Free tier daily limit reached — local build verified |
+| Git | ✅ Sprint 25 checkpoint |
+
+### Files Modified (1)
+- `components/encounters/EnemyCreator.tsx` — SaveRow state hoisting, visual slot grid, edit-mode restore
+---
