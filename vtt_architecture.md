@@ -14697,3 +14697,70 @@ Added `imageUrl?: string` field and form/card/detail UI to ALL homebrew entity t
 | `components/homebrew/HomebrewSpellForm.tsx` | Added imageUrl input with preview |
 | `components/homebrew/HomebrewFeatForm.tsx` | Added imageUrl input with preview |
 ---
+
+## Cycle 28 — The Homebrew Forge (Cycle 8 of 10) (Updated: 2026-07-21 15:16)
+## Sprint 28 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. "Monsters" Tab — 4th Homebrew Panel Tab
+Added a new **"👾 Monsters" tab** to the Homebrew panel, alongside existing Items/Spells/Feats tabs:
+
+| Component | Status | Description |
+|-----------|:------:|-------------|
+| `HomebrewTabs.tsx` | ✅ MODIFIED | Added `"enemies"` to `HomebrewTabId` type and "👾 Monsters" tab entry |
+| `HomebrewTabPanel.tsx` | ✅ MODIFIED | Added enemies props, `HomebrewEnemyCard`/`HomebrewEnemyDetailModal` rendering |
+| `HomebrewManager.tsx` | ✅ REWRITTEN | Integrated `useCampaignStore` enemies, added `enemyFormOpen`/`editingEnemy` state, search/filter/duplicate/delete/bulk-delete for enemies, SRD toggle hidden on enemies tab |
+
+#### 2. `HomebrewEnemyCard.tsx` (NEW — 260 lines)
+Premium glass gradient card matching ItemCard/SpellCard/FeatCard pattern:
+- Type icon (16 creature types mapped to emoji)
+- CR badge (fractional support: 1/8, 1/4, 1/2)
+- Size, type, AC, HP, Speed meta row
+- Full 6-ability-score strip with computed modifiers
+- Image URL thumbnail preview
+- Hover-reveal action buttons (duplicate, edit, delete with two-step confirm)
+- Gold edge light, hover elevation, active press feedback
+
+#### 3. `HomebrewEnemyDetailModal.tsx` (NEW — 300 lines)
+Premium full statblock viewer matching the HomebrewItemDetailModal pattern:
+- Header with name + size/type
+- Image banner if `imageUrl` is set
+- 6-stat card grid (CR, XP, PB, AC, HP, Speed)
+- Full ability score grid (6 stats with modifiers)
+- Saving throws (prof-bonus-aware), skills, damage resistances/immunities, condition immunities
+- Senses, languages, traits, actions, reactions, legendary actions
+- Spellcasting section (DC, ATK, ability, type, spell list)
+- Gold corner ornaments, staggered entrance, edge light, Escape key dismiss
+
+#### 4. EnemyCreator Integration
+- `HomebrewManager` renders `EnemyCreator` directly (reuses existing full statblock creator)
+- Edit mode supported via `existingEnemy` prop
+- Create mode adds to campaign store via `setEnemies`
+- Source search filter added for enemies (name, type, traits, actions, senses, languages)
+
+### Build & Verify
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 11.60s, 0 warnings |
+| Modules | 2,157 |
+| Bundle hash | `index-DsfQpX7y.js` |
+| JS | 2,299 kB (532 kB gz) |
+| CSS | 433 kB (52.7 kB gz) |
+| Git | ✅ Sprint 28 checkpoint |
+
+### Files Created (2)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/homebrew/HomebrewEnemyCard.tsx` | ~260 | Enemy card for Homebrew panel |
+| `components/homebrew/HomebrewEnemyDetailModal.tsx` | ~300 | Full enemy statblock detail modal |
+
+### Files Modified (4)
+| File | Changes |
+|------|---------|
+| `components/homebrew/HomebrewTabs.tsx` | Added "enemies" tab to type and TABS array |
+| `components/homebrew/HomebrewTabPanel.tsx` | Added enemies props, EnemyCard/DetailModal rendering |
+| `components/homebrew/HomebrewManager.tsx` | Integrated campaign store enemies, EnemyCreator, search/filter/duplicate/bulk for enemies |
+---
