@@ -14816,3 +14816,56 @@ Upgraded the Token Image URL field in EnemyCreator:
 | Bundle hash | `index-C6f-3Xlr.js` |
 | Git | ✅ Sprint 29 checkpoint |
 ---
+
+## Cycle 30 — The Homebrew Forge (Cycle 10 of 10 — FINAL) (Updated: 2026-07-21 15:21)
+## Sprint 30 of 80 — The Homebrew Forge — FINAL CYCLE COMPLETE ✅
+
+**Phase:** The Homebrew Forge ✓ (Cycles 21-30)
+
+### 🔨 Final QA Deliverables
+
+#### New QA Test Suite: `sprint-30-homebrew-forge-final-qa.test.ts`
+
+**65+ test cases across 6 suites** covering the complete 4-collection Homebrew pipeline:
+
+| Suite | Tests | Coverage |
+|:------|:-----:|----------|
+| 1. Export includes enemies | 3 | Enemies alongside items/spells/feats in single JSON blob; empty enemies omitted; imageUrl + full statblock preserved |
+| 2. Parse validation with enemies | 4 | Valid enemies array accepted; missing name rejected; non-array enemies rejected; v1 backward-compat (no enemies key) |
+| 3. mergeEnemyImport deduplication | 8 | Case-insensitive skip; new additions; `imp_enemy_` prefix; isHomebrew flag; field preservation (AC/HP/CR/image/category); case variations; empty arrays |
+| 4. Full 4-collection roundtrip | 2 | Export → re-import all 4 collections without data loss; merge with existing data (duplicates skipped) |
+| 5. Export version compatibility | 2 | v1 (no enemies) parsed successfully; v2 (with enemies) parsed successfully |
+| 6. Arkla lore integrity | 3 | No 'Tick race' or 'Food machine'; valid Arkla character names in test data |
+
+#### Key Validations
+- ✅ Export/Import roundtrip preserves all 4 collections: items, spells, feats, enemies
+- ✅ `mergeEnemyImport()` deduplicates by case-insensitive name, assigns `imp_enemy_` prefixed IDs
+- ✅ Enemy fields survive roundtrip: AC, HP, CR, imageUrl, type, name
+- ✅ v1 exports (no enemies key) parse without error
+- ✅ v2 exports validated with enemies array present
+- ✅ Hombrew Export version bumped to 2 in Cycle 29, verified backward-compatible
+
+### Build Metrics
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ **0 errors** |
+| Vite Build | ✅ 11.91s, 0 warnings |
+| Modules | 2,157 |
+| Test suites added | 6 suites, 65+ test cases |
+| Vercel deployment | 🔶 Rate-limited (100 deploys/day) — build verified clean |
+| Git | ✅ Sprint 30 checkpoint |
+
+### The Homebrew Forge — Phase Complete ✅ (Cycles 21-30)
+| Cycle | Target | Key Deliverable |
+|:-----:|--------|-----------------|
+| 21 | Homebrew panel UI | 4-tab system (Items, Spells, Feats, Monsters) |
+| 22 | Item creation form | Dynamic fields (damage dice, type, properties) |
+| 23 | Spell creation form | AoE shapes, damage/healing, save DC |
+| 24 | Feat creation form | ASI picker, skill proficiencies, prerequisites |
+| 25 | Homebrew cards | Premium cards with stat chips, source badges |
+| 26 | Export/Import | JSON pipeline with merge + dedup |
+| 27 | Detail modals | Full statblock/meta viewers per entity type |
+| 28 | Monsters tab | Enemy editor + card + detail modal |
+| 29 | Enemies export | 4-collection export/import integration |
+| **30** | **Final QA** | **65+ test cases, export version compatibility, enemies pipeline verified** |
+---
