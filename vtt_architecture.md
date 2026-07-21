@@ -16836,3 +16836,41 @@ Total time: ~5 seconds for full combat awareness
 ### DM Tool Tally: 26 Globally Accessible Tools
 +1 (new): Quest Tracker (emerald, `loot` icon)
 ---
+
+## DM Time & Calendar Tracker (Cycle 33/35) (Updated: 2026-07-21 18:24)
+## Cycle 33 — DM Time & Calendar Tracker — COMPLETE
+
+### New Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `control-center/DmTimeTracker.tsx` | ~400 | In-game time & calendar management tool with event timers |
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Calendar Date** | Year (DR), 12 fantasy months, day-of-month tracking with +1d/-1d/+1m/-1m quick-adjust |
+| **Time of Day** | 24-hour clock with automatic Dawn/Morning/Noon/Afternoon/Dusk/Night/Midnight detection and color-coding |
+| **Moon Phase** | 8-phase lunar cycle (New → Waxing Crescent → First Quarter → Waxing Gibbous → Full → Waning Gibbous → Last Quarter → Waning Crescent) |
+| **Clock Controls** | Start/Pause with play/pause icon. Reset restores defaults (9AM, Tarsakh 15, 1495 DR) |
+| **Speed Multiplier** | 1× (real-time), 1m/s, 10m/s, 1h/s — for fast-forwarding travel and downtime |
+| **Event Timers** | Add named events with configurable duration (1 min to 24 hours), real-time countdown |
+| **Color-Coded Urgency** | Normal (gold), <5m remaining (amber), <1m remaining (rose, ⚠️ Expiring) |
+| **Per-Event Actions** | ✓ Complete (toggles strikethrough) and ✕ Delete |
+| **Footer Stats** | Active/total events count, current speed indicator, time-of-day icon |
+| **Escape/Backdrop Dismiss** | Consistent with all 27 DM tools |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showTimeTracker` + `setTimeTracker` |
+| `AppShell.tsx` | Layout | Added import, refs, listener, rendering block |
+| `Sidebar.tsx` | Layout | Added "Time & Calendar" button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 78
+
+### DM Tool Tally: 27 Globally Accessible Tools
++1 (new): Time & Calendar Tracker (gold, `restRecovery` icon)
+---
