@@ -30,43 +30,54 @@ import { generateId, clampHP, createLogEntry } from "@/stores/combat/combat-help
 import { enqueueMutation, dequeueMutation } from "@/hooks/useOfflineQueue";
 
 // ── Helper: Read current encounter + write to both stores ──
+// Fixed (Sprint 6): Microtask accumulator — eliminates dropped mutations.
+// Zustand writes go through INSTANTLY. Firestore debounces at 50ms.
 
 function useWriteCombat() {
-  const pendingWrites = useRef(false);
+  const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mutationQueue = useRef<Array<{ encounter: CombatEncounter }>>([]);
 
   return useCallback(
     (mutator: (encounter: CombatEncounter) => CombatEncounter) => {
-      if (pendingWrites.current) return;
-      pendingWrites.current = true;
-
+      // 1. Read latest encounter state from Zustand
       const state = useCombatStore.getState();
       const current = state.activeEncounter;
-      if (!current) {
-        pendingWrites.current = false;
-        return;
-      }
+      if (!current) return;
 
+      // 2. Apply mutation to get updated encounter
       const updated = mutator(current);
 
-      // Snapshot the mutation for offline queue
-      const mutationSnapshot = { encounterId: updated.id, combatantIds: updated.combatants.map(c => c.id) };
+      // 3. Queue the latest encounter for Firestore flush
+      //    (stores only the latest — intermediate states collapse)
+      mutationQueue.current.push({ encounter: updated });
 
-      // Update Zustand immediately
+      // 4. INSTANT Zustand update — always goes through
       state.setEncounter(updated);
 
-      // Write to Firestore async
-      setActiveEncounter(FALLBACK_CAMPAIGN_ID, updated).catch((err) => {
-        console.warn("[Firestore/Combat] Write failed, queuing for retry:", err);
-        enqueueMutation("combat", "setActiveEncounter", {
-          campaignId: FALLBACK_CAMPAIGN_ID,
-          encounter: updated,
-          mutationSnapshot,
-        });
-      });
+      // 5. Debounced Firestore flush (50ms window)
+      if (!pendingTimer.current) {
+        pendingTimer.current = setTimeout(() => {
+          pendingTimer.current = null;
+          const queue = mutationQueue.current;
+          mutationQueue.current = [];
 
-      setTimeout(() => {
-        pendingWrites.current = false;
-      }, 50);
+          // Send the LATEST encounter state to Firestore (merge sequential writes)
+          const latestEncounter = queue[queue.length - 1]?.encounter;
+          if (!latestEncounter) return;
+
+          // Snapshot for offline queue
+          const snapshot = { encounterId: latestEncounter.id, combatantIds: latestEncounter.combatants.map(c => c.id) };
+
+          setActiveEncounter(FALLBACK_CAMPAIGN_ID, latestEncounter).catch((err) => {
+            console.warn("[Firestore/Combat] Write failed, queuing for retry:", err);
+            enqueueMutation("combat", "setActiveEncounter", {
+              campaignId: FALLBACK_CAMPAIGN_ID,
+              encounter: latestEncounter,
+              mutationSnapshot: snapshot,
+            });
+          });
+        }, 50);
+      }
     },
     []
   );
