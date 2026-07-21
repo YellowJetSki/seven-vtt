@@ -62,10 +62,10 @@ export default function BattleMaps() {
                 </div>
 
                 <div className="min-w-0 pt-1">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white/95 tracking-tight leading-tight font-display">
                     Battle Maps
                   </h1>
-                  <p className="text-xs sm:text-sm text-surface-400 mt-1.5 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-surface-400 mt-1 leading-relaxed font-sans">
                     Tactical command center for your encounters
                   </p>
                   <div className="flex items-center gap-3 mt-3 flex-wrap">
@@ -99,24 +99,24 @@ export default function BattleMaps() {
 
               <div className="relative bg-gradient-to-b from-[#141520]/80 to-[#0f1019]/90 border border-white/[0.04] rounded-2xl p-4">
                 <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
-                <h3 className="text-[10px] uppercase tracking-widest text-gold-400/60 font-bold mb-3">
+                <h3 className="text-[10px] uppercase tracking-widest text-gold-400/70 font-bold mb-3">
                   Getting Started
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="bg-[#07080d] rounded-xl p-3 border border-white/[0.04]">
                     <div className="text-lg mb-1">1</div>
                     <div className="text-[10px] font-semibold text-surface-300">Create a Map</div>
-                    <div className="text-[8px] text-surface-600 mt-0.5">Add a name, optional image, and set grid dimensions</div>
+                    <div className="text-[8px] text-surface-500 mt-0.5">Add a name, optional image, and set grid dimensions</div>
                   </div>
                   <div className="bg-[#07080d] rounded-xl p-3 border border-white/[0.04]">
                     <div className="text-lg mb-1">2</div>
                     <div className="text-[10px] font-semibold text-surface-300">Place Tokens</div>
-                    <div className="text-[8px] text-surface-600 mt-0.5">Add player tokens and NPCs directly on the map</div>
+                    <div className="text-[8px] text-surface-500 mt-0.5">Add player tokens and NPCs directly on the map</div>
                   </div>
                   <div className="bg-[#07080d] rounded-xl p-3 border border-white/[0.04]">
                     <div className="text-lg mb-1">3</div>
                     <div className="text-[10px] font-semibold text-surface-300">Run Encounters</div>
-                    <div className="text-[8px] text-surface-600 mt-0.5">Track initiative, HP, and conditions in real-time</div>
+                    <div className="text-[8px] text-surface-500 mt-0.5">Track initiative, HP, and conditions in real-time</div>
                   </div>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function BattleMaps() {
         <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
           <div className="shrink-0 border-b border-white/[0.04] bg-gradient-to-r from-[#14151f]/90 to-[#0f1019]/95 px-4 py-2 flex items-center justify-between z-10">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-white/80 tracking-tight">Battle Maps</span>
+              <span className="text-sm font-bold text-white/90 tracking-tight font-display">Battle Maps</span>
               <span className="text-[10px] text-surface-500 px-1.5 py-0.5 rounded bg-[#07080d] border border-white/[0.04]">
                 {battleMaps.length} map{battleMaps.length !== 1 ? "s" : ""}
               </span>

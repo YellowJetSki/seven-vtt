@@ -90,14 +90,14 @@ export default function MapCard({
         ) : (
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-surface-200 truncate max-w-[180px]">{map.name}</h3>
-              <div className="text-[9px] text-surface-500 mt-0.5">{gridDimFt} · {gridTotalCells.toLocaleString()} cells</div>
+              <h3 className="text-sm font-semibold text-white/90 truncate max-w-[180px]">{map.name}</h3>
+              <div className="text-[9px] text-surface-400 mt-0.5">{gridDimFt} · {gridTotalCells.toLocaleString()} cells</div>
             </div>
           </div>
         )}
 
         {/* Stats row */}
-        <div className="flex items-center justify-between text-[8px] text-surface-600">
+        <div className="flex items-center justify-between text-[8px] text-surface-500">
           <div className="flex gap-2">
             <span>{map.gridSize}px cells</span>
             {map.notes && <span>· Has notes</span>}
