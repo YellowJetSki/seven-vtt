@@ -148,6 +148,18 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
   const [editAbility, setEditAbility] = useState<keyof AbilityScores | null>(null);
   const [editAbilityVal, setEditAbilityVal] = useState(10);
 
+  // ── Spellcasting state ──
+  type NonUndefined<T> = T extends undefined ? never : T;
+  type SpellcastingType = NonUndefined<EnemyDoc["spellcasting"]>;
+
+  const [showSpellcasting, setShowSpellcasting] = useState(!!existingEnemy?.spellcasting);
+  const [spCasterType, setSpCasterType] = useState<SpellcastingType["casterType"]>(existingEnemy?.spellcasting?.casterType || "full");
+  const [spAbility, setSpAbility] = useState<SpellcastingType["spellcastingAbility"]>(existingEnemy?.spellcasting?.spellcastingAbility || "intelligence");
+  const [spDC, setSpDC] = useState(existingEnemy?.spellcasting?.spellSaveDC || 14);
+  const [spATK, setSpATK] = useState(existingEnemy?.spellcasting?.spellAttackBonus || 6);
+  const [spSpells, setSpSpells] = useState(existingEnemy?.spellcasting?.spells?.join(", ") || "");
+  const [spSlots, setSpSlots] = useState(existingEnemy?.spellcasting?.slotsPerLevel ? JSON.stringify(existingEnemy.spellcasting.slotsPerLevel) : "{}");
+
   const pb = crToProfBonus(challengeRating);
   const strMod = getModNum(abilities.strength);
   const dexMod = getModNum(abilities.dexterity);
@@ -226,6 +238,19 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
 
   const handleSave = useCallback(() => {
     if (!name.trim()) return;
+    let parsedSlots: Record<string, { current: number; max: number }> | undefined;
+    try {
+      const parsed = JSON.parse(spSlots);
+      if (typeof parsed === "object" && !Array.isArray(parsed)) parsedSlots = parsed;
+    } catch { /* ignore invalid JSON */ }
+    const spellcastingData = showSpellcasting ? {
+      casterType: spCasterType,
+      spellcastingAbility: spAbility,
+      spellSaveDC: spDC,
+      spellAttackBonus: spATK,
+      spells: spSpells.split(",").map((s) => s.trim()).filter(Boolean),
+      slotsPerLevel: parsedSlots && Object.keys(parsedSlots).length > 0 ? parsedSlots : undefined,
+    } : undefined;
     const enemy: EnemyDoc = {
       id: existingEnemy?.id || ("enemy_" + Date.now()),
       name: name.trim(), type: creatureType, size, armorClass,
@@ -237,6 +262,7 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
       specialAbilities, legendaryActions,
       attacks: attacks.length > 0 ? attacks : undefined,
       imageUrl: imageUrl || undefined,
+      spellcasting: spellcastingData,
       isHomebrew: true, createdAt: existingEnemy?.createdAt || Date.now(), updatedAt: Date.now(),
     };
     if (isEditMode && onSaved) {
@@ -249,7 +275,8 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
   }, [name, creatureType, size, speed, armorClass, hitPoints, challengeRating,
       abilities, attacks, senses, languages, traits, actions, reactions,
       specialAbilities, legendaryActions, dmgResist, dmgImmune, condImmune,
-      imageUrl, isEditMode, existingEnemy, enemies, setEnemies, onCreated, onSaved, onClose]);
+      imageUrl, isEditMode, existingEnemy, enemies, setEnemies, onCreated, onSaved, onClose,
+      showSpellcasting, spCasterType, spAbility, spDC, spATK, spSpells, spSlots]);
 
   const isValid = name.trim().length > 0;
 
@@ -382,6 +409,19 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
               </div>
             </Section>
 
+            {/* Saving Throws Section */}
+            <Section title={"Saving Throws"} icon={String.fromCharCode(128737)}>
+              <p className="text-[9px] text-surface-600 mb-3">Saves are computed from ability scores + proficiency bonus (+{pb}). Toggle to mark proficient.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <SaveRow ability="strength" label="STR" score={abilities.strength} pb={pb} />
+                <SaveRow ability="dexterity" label="DEX" score={abilities.dexterity} pb={pb} />
+                <SaveRow ability="constitution" label="CON" score={abilities.constitution} pb={pb} />
+                <SaveRow ability="intelligence" label="INT" score={abilities.intelligence} pb={pb} />
+                <SaveRow ability="wisdom" label="WIS" score={abilities.wisdom} pb={pb} />
+                <SaveRow ability="charisma" label="CHA" score={abilities.charisma} pb={pb} />
+              </div>
+            </Section>
+
             <Section title={"Attacks (" + attacks.length + ")"} icon={String.fromCharCode(9876)}>
               <div className="space-y-3">
                 {attacks.length > 0 && (
@@ -493,6 +533,58 @@ export default function EnemyCreator({ isOpen, onClose, onCreated, onSaved, exis
               </div>
             </Section>
 
+            {/* Spellcasting Section */}
+            <Section title={"Spellcasting" + (showSpellcasting ? " \u2713" : "")} icon={String.fromCharCode(128302)}>
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer mb-2">
+                  <input type="checkbox" checked={showSpellcasting} onChange={(e) => setShowSpellcasting(e.target.checked)} className="rounded border-surface-600 bg-surface-800 accent-gold-500" />
+                  <span className="text-[10px] text-surface-300">This monster can cast spells</span>
+                </label>
+                {showSpellcasting && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Caster Type</label>
+                        <select value={spCasterType} onChange={(e) => setSpCasterType(e.target.value as SpellcastingType["casterType"])} className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25">
+                          <option value="full">Full Caster</option>
+                          <option value="half">Half Caster</option>
+                          <option value="third">Third Caster</option>
+                          <option value="pact">Pact Magic</option>
+                          <option value="innate">Innate</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Spellcasting Ability</label>
+                        <select value={spAbility} onChange={(e) => setSpAbility(e.target.value as SpellcastingType["spellcastingAbility"])} className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25">
+                          <option value="intelligence">INT</option>
+                          <option value="wisdom">WIS</option>
+                          <option value="charisma">CHA</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Spell Save DC</label>
+                        <input type="number" value={spDC} onChange={(e) => setSpDC(Number(e.target.value) || 10)} className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Spell Attack Bonus</label>
+                        <input type="number" value={spATK} onChange={(e) => setSpATK(Number(e.target.value) || 0)} className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold/25" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Spell List (comma-separated)</label>
+                      <input value={spSpells} onChange={(e) => setSpSpells(e.target.value)} placeholder="Fireball, Shield, Counterspell" className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold/25 placeholder:text-surface-700" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] uppercase tracking-widest font-black text-gold-500/60 mb-1">Slots Per Level (JSON)</label>
+                      <input value={spSlots} onChange={(e) => setSpSlots(e.target.value)} placeholder='{"1":{"current":4,"max":4},"2":{"current":2,"max":2}}' className="w-full py-1.5 px-2 rounded-lg text-[10px] bg-[#07080d]/70 border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold/25 placeholder:text-surface-700 font-mono" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Section>
+
           </div>
         </div>
 
@@ -568,6 +660,43 @@ function TagInput({ value, onChange, options, placeholder }: {
             </button>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+/** A single saving throw toggle row */
+function SaveRow({ ability, label, score, pb }: { ability: string; label: string; score: number; pb: number }) {
+  const [enabled, setEnabled] = useState(false);
+  const [bonus, setBonus] = useState("");
+  const baseMod = getModNum(score);
+  const totalBonus = enabled ? (bonus && bonus !== "0" ? baseMod + Number(bonus) : baseMod + pb) : undefined;
+  return (
+    <div className="rounded-xl bg-[#0c0d15] border border-white/[0.04] p-2.5 text-center">
+      <span className="text-[9px] uppercase tracking-wider text-gold-400/50 font-bold">{label}</span>
+      <div className="flex items-center justify-center gap-1.5 mt-1">
+        <label className="flex items-center gap-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={() => { setEnabled(!enabled); if (enabled) setBonus(""); }}
+            className="rounded w-3 h-3 border-surface-600 bg-surface-800 accent-gold-500"
+          />
+          <span className={`text-[8px] ${enabled ? "text-gold-400" : "text-surface-600"}`}>Prof</span>
+        </label>
+        {enabled && (
+          <input
+            value={bonus}
+            onChange={(e) => setBonus(e.target.value)}
+            placeholder={"+0"}
+            className="w-10 px-1 py-0.5 rounded text-[9px] bg-[#07080d] border border-white/[0.06] text-white/60 text-center focus:outline-none focus:border-gold/25"
+          />
+        )}
+      </div>
+      {enabled && (
+        <span className="text-[10px] font-bold text-cyan-400 block mt-0.5">
+          {(totalBonus ?? 0) >= 0 ? "+" : ""}{totalBonus}
+        </span>
       )}
     </div>
   );

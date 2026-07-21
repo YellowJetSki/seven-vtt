@@ -165,6 +165,18 @@ export default function HomebrewSpellForm({ form, onChange, onSubmit, onClose, i
                 <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Save DC</label>
                 <input type="number" value={form.saveDC ?? ""} onChange={(e) => onChange({ ...form, saveDC: e.target.value ? Number(e.target.value) : undefined })} className="input-arcane w-full py-1.5 px-2 text-xs" placeholder="14" />
               </div>
+              <div>
+                <label className="text-[9px] uppercase tracking-wider text-surface-500 block mb-1">Save Ability</label>
+                <select value={form.saveAbility ?? ""} onChange={(e) => onChange({ ...form, saveAbility: (e.target.value || undefined) as HomebrewSpell["saveAbility"] })} className="input-arcane w-full py-1.5 px-2 text-xs">
+                  <option value="">— None —</option>
+                  <option value="strength">STR</option>
+                  <option value="dexterity">DEX</option>
+                  <option value="constitution">CON</option>
+                  <option value="intelligence">INT</option>
+                  <option value="wisdom">WIS</option>
+                  <option value="charisma">CHA</option>
+                </select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

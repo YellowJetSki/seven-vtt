@@ -22,6 +22,22 @@ export interface HomebrewItem {
   attackBonus?: number;
   /** AC bonus (armor) */
   acBonus?: number;
+  /** Healing dice for potions/consumables, e.g. "4d4+4" */
+  healingDice?: string;
+  /** Temporary HP (potions) */
+  temporaryHp?: number;
+  /** Armor type (light/medium/heavy/shield) */
+  armorType?: string;
+  /** DEX maximum for armor calculations */
+  dexCap?: number;
+  /** Strength requirement for heavy armor */
+  strengthRequirement?: number;
+  /** Whether this armor imposes stealth disadvantage */
+  stealthDisadvantage?: boolean;
+  /** Weapon properties like Finesse, Heavy, Versatile */
+  weaponProperties?: string[];
+  /** Versatile damage dice e.g. "1d10" */
+  versatileDamage?: string;
   charges?: number;
   chargesMax?: number;
   chargesRecharge?: string;
@@ -57,6 +73,8 @@ export interface HomebrewSpell {
   areaSize?: number;
   /** Spell save DC override (if not using caster's) */
   saveDC?: number;
+  /** Which ability this spell's save targets (STR/DEX/CON/INT/WIS/CHA) */
+  saveAbility?: "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
   /** Spell attack bonus override (if not using caster's) */
   spellAttackBonus?: number;
   /** Damage dice, e.g. "8d6" */
