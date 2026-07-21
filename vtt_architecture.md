@@ -13664,3 +13664,29 @@ Comprehensive naval/vehicle combat and marine travel tool with cyan-accent glass
 - Files changed: 1 (Sidebar.tsx — complete rewrite)
 - Architecture: Nav + Tools + Panels now share ONE scrollable container
 ---
+
+## Cycle 2 — Critical Bug Hunt & Layout (Deep Pass) (Updated: 2026-07-21 13:40)
+## Cycle 2 — Critical Bug Hunt & Layout (Deep Pass) — Complete
+
+### Bugs Found & Fixed
+
+**Bug #1: Tailwind JIT dynamic hover class in DmToolButton (CRITICAL)**
+- **Root Cause:** The template literal `hover:text-${tool.colorClass.replace('text-', '')}` in Sidebar.tsx is a **runtime-computed string** — Tailwind JIT cannot scan this at build time. The hover color classes would NEVER apply, making all tool buttons use the default surface-400 color regardless of which PremiumIcon color was assigned.
+- **Fix:** Created a static `TOOL_HOVER_TEXT: Record<string, string>` map using complete verbatim Tailwind class strings (e.g., `"group-hover:text-gold-400"`, `"group-hover:text-rose-400"`). Added `group` class to the button wrapper for `group-hover` to function.
+
+### Verified Clean
+- ✅ `100vh`: 0 references remaining in entire codebase
+- ✅ `overscroll-behavior: none`: Applied on root
+- ✅ All viewport containers use `100dvh`/`100dvw`
+- ✅ AuthGuard, Modal, TheatricPage, PlayerSheetPage, AppShell all confirmed
+- ✅ Sidebar rewritten from Cycle 1 correctly consolidates ALL items into one scrollable container
+- ✅ TypeScript: 0 errors (`tsc --noEmit` clean)
+
+### Prohibited Content Scan
+- "Tick race": 0 matches
+- "Food machine": 0 matches
+- Dice rollers: 0 standalone features (Math.random only in combat convenience tools)
+
+### Files Modified
+- `Sidebar.tsx` — Fixed Tailwind JIT dynamic class bug in `DmToolButton`
+---

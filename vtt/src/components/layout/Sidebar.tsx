@@ -190,8 +190,29 @@ const dmTools: DmToolProps[] = [
   },
 ];
 
+/** Map of tool event name → hover text color class (Tailwind JIT-safe) */
+const TOOL_HOVER_TEXT: Record<string, string> = {
+  "toggle-dm-skill-check": "group-hover:text-gold-400",
+  "toggle-dm-treasure-generator": "group-hover:text-amber-400",
+  "toggle-dm-concentration-timer": "group-hover:text-violet-400",
+  "toggle-dm-legendary-tracker": "group-hover:text-rose-400",
+  "toggle-dm-spell-reference": "group-hover:text-indigo-400",
+  "toggle-dm-wild-shape": "group-hover:text-emerald-400",
+  "toggle-dm-downtime": "group-hover:text-amber-400",
+  "toggle-dm-travel-pace": "group-hover:text-sky-400",
+  "toggle-dm-ship-combat": "group-hover:text-cyan-400",
+  "toggle-dm-social-interaction": "group-hover:text-violet-400",
+  "toggle-dm-combat-conditions": "group-hover:text-amber-400",
+  "toggle-dm-quick-actions": "group-hover:text-rose-400",
+  "toggle-dm-npc-quick-create": "group-hover:text-emerald-400",
+  "toggle-dm-party-rest": "group-hover:text-emerald-400",
+  "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
+};
+
 /** Renders a single DM tool button — reused for both expanded and collapsed modes */
 function DmToolButton({ tool, isOpen }: { tool: DmToolProps; isOpen: boolean }) {
+  const hoverTextClass = TOOL_HOVER_TEXT[tool.eventName] || "group-hover:text-surface-300";
+
   const iconContent = tool.icon ? (
     <PremiumIcon name={tool.icon as any} className={`w-3.5 h-3.5 ${tool.colorClass}`} />
   ) : (
@@ -204,7 +225,7 @@ function DmToolButton({ tool, isOpen }: { tool: DmToolProps; isOpen: boolean }) 
     <div className={`px-2 ${!isOpen ? "flex justify-center" : ""}`}>
       <button
         onClick={() => { window.dispatchEvent(new CustomEvent(tool.eventName)); }}
-        className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 ${tool.hoverClass} ${
+        className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 group ${tool.hoverClass} ${
           isOpen
             ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
             : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
@@ -214,7 +235,7 @@ function DmToolButton({ tool, isOpen }: { tool: DmToolProps; isOpen: boolean }) 
       >
         {iconContent}
         {isOpen && (
-          <span className={`text-[9px] text-surface-400 hover:text-${tool.colorClass.replace('text-', '')} transition-colors truncate`}>
+          <span className={`text-[9px] text-surface-400 transition-colors truncate ${hoverTextClass}`}>
             {tool.label}
           </span>
         )}
