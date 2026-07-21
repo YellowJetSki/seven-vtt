@@ -19,7 +19,7 @@
  * Atmospheric depth ring and particle overlay for premium feel.
  */
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -55,65 +55,74 @@ export default function AppShell({ children }: AppShellProps) {
   const setCombatWrapUp = useUIStore((s) => s.setCombatWrapUp);
   const role = useAuthStore((s) => s.role);
 
-  // ── Listen for custom "toggle-dm-quickref" event from sidebar ──
-  const handleToggleQuickRef = useCallback(() => {
-    toggleQuickRef();
-  }, [toggleQuickRef]);
+  // ── Ref-based handlers for stale-closure safety ──
+  // Each handler stores the latest closure-safe toggle function
+  // and the current toggle state, so the event listener always
+  // reads the LATEST values without needing re-subscription.
+
+  const toggleQuickRefRef = useRef(toggleQuickRef);
+  toggleQuickRefRef.current = toggleQuickRef;
 
   useEffect(() => {
-    window.addEventListener("toggle-dm-quickref", handleToggleQuickRef);
-    return () => window.removeEventListener("toggle-dm-quickref", handleToggleQuickRef);
-  }, [handleToggleQuickRef]);
+    const handler = () => { toggleQuickRefRef.current(); };
+    window.addEventListener("toggle-dm-quickref", handler);
+    return () => window.removeEventListener("toggle-dm-quickref", handler);
+  }, []);
 
-  // ── Listen for custom "toggle-dm-party-rest" event from sidebar ──
-  const handleTogglePartyRest = useCallback(() => {
-    setPartyRest(!showPartyRest);
-  }, [setPartyRest, showPartyRest]);
-
-  useEffect(() => {
-    window.addEventListener("toggle-dm-party-rest", handleTogglePartyRest);
-    return () => window.removeEventListener("toggle-dm-party-rest", handleTogglePartyRest);
-  }, [handleTogglePartyRest]);
-
-  // ── Listen for custom "toggle-dm-combat-conditions" event from sidebar ──
-  const handleToggleCombatConditions = useCallback(() => {
-    setCombatConditions(!showCombatConditions);
-  }, [setCombatConditions, showCombatConditions]);
+  const showPartyRestRef = useRef(showPartyRest);
+  showPartyRestRef.current = showPartyRest;
+  const setPartyRestRef = useRef(setPartyRest);
+  setPartyRestRef.current = setPartyRest;
 
   useEffect(() => {
-    window.addEventListener("toggle-dm-combat-conditions", handleToggleCombatConditions);
-    return () => window.removeEventListener("toggle-dm-combat-conditions", handleToggleCombatConditions);
-  }, [handleToggleCombatConditions]);
+    const handler = () => { setPartyRestRef.current(!showPartyRestRef.current); };
+    window.addEventListener("toggle-dm-party-rest", handler);
+    return () => window.removeEventListener("toggle-dm-party-rest", handler);
+  }, []);
 
-  // ── Listen for custom "toggle-dm-quick-actions" event from sidebar ──
-  const handleToggleQuickActions = useCallback(() => {
-    setQuickActions(!showQuickActions);
-  }, [setQuickActions, showQuickActions]);
-
-  useEffect(() => {
-    window.addEventListener("toggle-dm-quick-actions", handleToggleQuickActions);
-    return () => window.removeEventListener("toggle-dm-quick-actions", handleToggleQuickActions);
-  }, [handleToggleQuickActions]);
-
-  // ── Listen for NPC Quick Create toggle event ──
-  const handleToggleNpcQuickCreate = useCallback(() => {
-    setNpcQuickCreate(!showNpcQuickCreate);
-  }, [setNpcQuickCreate, showNpcQuickCreate]);
+  const showCombatConditionsRef = useRef(showCombatConditions);
+  showCombatConditionsRef.current = showCombatConditions;
+  const setCombatConditionsRef = useRef(setCombatConditions);
+  setCombatConditionsRef.current = setCombatConditions;
 
   useEffect(() => {
-    window.addEventListener("toggle-dm-npc-quick-create", handleToggleNpcQuickCreate);
-    return () => window.removeEventListener("toggle-dm-npc-quick-create", handleToggleNpcQuickCreate);
-  }, [handleToggleNpcQuickCreate]);
+    const handler = () => { setCombatConditionsRef.current(!showCombatConditionsRef.current); };
+    window.addEventListener("toggle-dm-combat-conditions", handler);
+    return () => window.removeEventListener("toggle-dm-combat-conditions", handler);
+  }, []);
 
-  // ── Listen for combat wrap-up toggle event ──
-  const handleToggleCombatWrapUp = useCallback(() => {
-    setCombatWrapUp(!showCombatWrapUp);
-  }, [setCombatWrapUp, showCombatWrapUp]);
+  const showQuickActionsRef = useRef(showQuickActions);
+  showQuickActionsRef.current = showQuickActions;
+  const setQuickActionsRef = useRef(setQuickActions);
+  setQuickActionsRef.current = setQuickActions;
 
   useEffect(() => {
-    window.addEventListener("toggle-dm-combat-wrapup", handleToggleCombatWrapUp);
-    return () => window.removeEventListener("toggle-dm-combat-wrapup", handleToggleCombatWrapUp);
-  }, [handleToggleCombatWrapUp]);
+    const handler = () => { setQuickActionsRef.current(!showQuickActionsRef.current); };
+    window.addEventListener("toggle-dm-quick-actions", handler);
+    return () => window.removeEventListener("toggle-dm-quick-actions", handler);
+  }, []);
+
+  const showNpcQuickCreateRef = useRef(showNpcQuickCreate);
+  showNpcQuickCreateRef.current = showNpcQuickCreate;
+  const setNpcQuickCreateRef = useRef(setNpcQuickCreate);
+  setNpcQuickCreateRef.current = setNpcQuickCreate;
+
+  useEffect(() => {
+    const handler = () => { setNpcQuickCreateRef.current(!showNpcQuickCreateRef.current); };
+    window.addEventListener("toggle-dm-npc-quick-create", handler);
+    return () => window.removeEventListener("toggle-dm-npc-quick-create", handler);
+  }, []);
+
+  const showCombatWrapUpRef = useRef(showCombatWrapUp);
+  showCombatWrapUpRef.current = showCombatWrapUp;
+  const setCombatWrapUpRef = useRef(setCombatWrapUp);
+  setCombatWrapUpRef.current = setCombatWrapUp;
+
+  useEffect(() => {
+    const handler = () => { setCombatWrapUpRef.current(!showCombatWrapUpRef.current); };
+    window.addEventListener("toggle-dm-combat-wrapup", handler);
+    return () => window.removeEventListener("toggle-dm-combat-wrapup", handler);
+  }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
