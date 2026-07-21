@@ -13232,3 +13232,55 @@ Combined ALL 9 previously tested workflows (Sprints 21-29) into a single compreh
 - Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart, DM MikeJello)
 
 ---
+
+## Sprint 31/40 — The Intensive VTT Analysis Phase — CYCLE 1 OF 10 (Updated: 2026-07-21 11:00)
+## Sprint 31/40 — The Intensive VTT Analysis Phase — CYCLE 1 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Deep architectural analysis + Build missing 5.5e VTT tools
+
+#### Analysis: Top 10 Missing VTT Tools
+1. **🔴 Skill Check / Ability Check Tool** — DM calls checks with DC, party rolls, advantage/disadvantage tracking
+2. **🔴 NPC Conversation / Reaction Tool** — DMG social interaction rules (attitude, DC shifts)
+3. **🟡 Encounter Difficulty Calculator (per-character)** — Individual XP thresholds
+4. **🟡 Legendary / Lair Action Tracker** — Per-round legendary action tracking
+5. **🟡 Treasure Generator** — Hoard/loot tables
+6. **🟡 Passive Perception Auto-Calculator** — Party-wide passive scores for hidden things
+7. **🟡 Spell Reference Popover** — Quick SRD spell lookup
+8. **🟢 Monster Knowledge Check** — Nature/Arcana/Religion checks vs monster lore
+9. **🟢 Exhaustion Level Tracker** — Visual tier display
+10. **🟢 Concentration Duration Timer** — Visual countdown
+
+#### Built: DmSkillCheckPopover (#1) + Passive Perception Display (#6)
+
+**New File:** `src/components/control-center/DmSkillCheckPopover.tsx` (500+ lines)
+- Skill/ability selector with 18 skills, each with description tooltips
+- 6 ability filter chips for quick grouping
+- Search bar for finding skills by name, ability, or description
+- DC slider (5-30) with quick-preset buttons (5/10/15/20/25/30)
+- Reference text: "Very Easy: 5 · Easy: 10 · Medium: 15 · Hard: 20"
+- Per-character roll with ability modifier + proficiency breakdown
+- Advantage/disadvantage toggle per character (mutually exclusive)
+- Group check mode (half must succeed for party success)
+- Roll All and Clear Results buttons
+- **Passive Scores table** showing Perception, Investigation, Insight for ALL party members
+- Color-coded: gold text with "prof" badge when proficient
+- Automatically reads characters from campaign store
+- Premium glass design: edge lights, staggered entrance, backdrop blur
+- 5e RAW: modifier = floor((stat-10)/2), proficiency = PB or PB×2 for expertise
+
+#### Files Wired:
+- `stores/uiStore.ts` — Added `showSkillCheck` state + `setSkillCheck` action
+- `components/layout/AppShell.tsx` — Added event listener + rendering
+- `components/layout/Sidebar.tsx` — Added "Skill Check" sidebar button with `toggle-dm-skill-check` custom event
+- All use ref-based stale-closure-safe patterns matching existing 6 DM popovers
+
+#### Build & Deploy
+- Build: **7.48s**, 2137 modules, 0 errors
+- Hash: `index-BZ0Mb9zE.js`, JS 2,052 KB, CSS 413 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+- No dice rollers (all simulation follows 5e RAW: d20 + mod)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
+
+---
