@@ -14989,3 +14989,63 @@ Upgraded the Token Image URL field in EnemyCreator:
 - **URL:** https://arkla.vercel.app — stable
 - **Git:** ✅ Sprint 33 checkpoint
 ---
+
+## Cycle 34 — QA & Stabilization (Cycle 4 of 5) (Updated: 2026-07-21 15:27)
+## Sprint 34 of 80 — QA & Stabilization — Cycle 4 of 5 ✅
+
+**Phase:** QA & Stabilization ✓ (Cycles 31-35)
+
+### 🔍 Deep 5.5e Mechanics QA — DM Battlemap & DM Popover Ecosystem
+
+| Check | Status | Findings |
+|:------|:------:|:---------|
+| **Canvas 10-Layer Pipeline** | ✅ RAW | Layer 1-10: Clear → Background → Grid → Fog → Lighting → Tokens → Initiative → Pings → Ruler → Drag. All verified in lighting-renderer.ts |
+| **Token Turn Highlighting** | ✅ Complete | `isCurrentTurn` flag: gold glow (shadowBlur 20) + pulsing outer ring (`sin(time*4)*2+4`) + gold border (3px) + gold label (#fde047) |
+| **Token HP Bars** | ✅ RAW | 3-tier color thresholds: >50% green, >25% amber, ≤25% red. Rounded rect with background |
+| **Grid Colors (DM-Defined)** | ✅ Complete | `gridColor: mapData.gridColor || "#808080"`, `gridOpacity: mapData.gridOpacity ?? 0.4` — read from MapCreatorModal |
+| **Vision Fog** | ✅ RAW | `showFog && !dmView` — fog applied after grid, before dynamic lighting. Uses `applyFogOfWar()` with visible/explored sets |
+| **Dynamic Lighting** | ✅ RAW | `lights.length > 0 && !dmView` — raycasting with `createWallGrid()` from WallSegment data |
+| **Status Markers (Token)** | ✅ 12 colors | Poisoned(green), Paralyzed(amber), Unconscious(red), Invisible(violet), Concentrating(gold), Restrained(orange), Prone(slate), etc. |
+| **Visual Overlays (Cycle 24)** | ✅ 6 states | Bloodied(cracks), Restrained(chains), Concentrating(halo), Prone(Zzz), Stunned(starburst), Invisible(shimmer) |
+| **Ping Effects** | ✅ Animated | Expanding gold rings (2s, ease-out), vertical beam, center dot, auto-clean expired |
+| **Measurement/Ruler** | ✅ Gold | Gold dashed line, grid-tick marks, distance readout pill ("X cells | Y ft"), origin dots |
+| **Drag Preview** | ✅ Gold | Ghost token + gold dashed trail + gold drop target + coordinate readout |
+
+### 🔍 DM Popover Ecosystem QA
+
+| Tool | Status | 5.5e RAW Compliance |
+|:-----|:------:|:---------------------|
+| **Legendary/Lair Tracker** | ✅ Verified | 3 legendary actions/round, resistances (0-5 pool), lair actions (init 20), mythic phase (50% HP), recharge 5-6 |
+| **Concentration Timer** | ✅ Verified | Live countdown (1s tick), 4 presets (1m/10m/1h/custom), color-coded progress bars, extend (+1m/+5m), auto-expired separation |
+| **Skill Check** | ✅ Verified | 18 skills with ability keys, per-character proficiency/mod tracking, DC slider (5-30), advantage/disadvantage, group check mode |
+| **Social Interaction** | ✅ Verified | DMG pg.244-245: 3 attitudes, 3 request tiers, attitude-adjusted DC shifts, monster knowledge check with CR-based DC |
+| **Treasure Generator** | ✅ Verified | DMG pg.136-139: 4 CR tiers, individual/hoard modes, magic item tables A-H, total GP estimate |
+| **Travel Wilderness Guide** | ✅ Verified | 10 terrains, 8 weather conditions, 3 travel paces, journey generator, navigation/forage DCs, encounter checks |
+| **Ship/Naval Combat** | ✅ Verified | 12 ship types (Keelboat→Spelljammer), 7 sea states, 6 maneuvers, 5 siege weapons, 9 encounter types |
+| **Wild Shape Tracker** | ✅ Verified | 7 beast presets (CR 1/4→4), dual HP pool, revert on KO, CR tier filters |
+| **Rest & Downtime** | ✅ Verified | 10 activity types (training, crafting, research, carousing, scribing, pitfighting, etc.) |
+| **Spell Reference** | ✅ Verified | Full SRD + homebrew library, level/school/class/name search, source badges (SRD/Homebrew) |
+
+### Production Verification
+
+| Route | Status | Notes |
+|:------|:------:|:-------|
+| `/campaign/dashboard` | ✅ | Active nav, sidebar, tools section, rendering clean |
+| `/campaign/maps` | ✅ | Battle Maps page, sidebar intact |
+| **Console errors** | ✅ **0** | Only benign Firestore deprecation |
+
+### System Compliance
+
+| Requirement | Status |
+|:------------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Console errors (production) | ✅ **0 errors** |
+| Overrrides aesthetic | ✅ Verified — glassmorphism, gold edge lights, PremiumIcon SVGs |
+| No dice rollers | ✅ Zero Math.random() in feature code |
+| No 'Tick race'/'Food machine' | ✅ Clean |
+| Arkla campaign lore | ✅ Wendy Swiftfoot, Kehrfuffle Ironheart |
+
+### Deployment Status
+- **URL:** https://arkla.vercel.app — stable
+- **Git:** ✅ Sprint 34 checkpoint
+---
