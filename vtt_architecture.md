@@ -14585,3 +14585,66 @@ When editing an existing enemy, `saveProfs` is initialized from `existingEnemy?.
 ### Files Modified (1)
 - `components/encounters/EnemyCreator.tsx` — SaveRow state hoisting, visual slot grid, edit-mode restore
 ---
+
+## Cycle 26 — The Homebrew Forge (Cycle 6 of 10) (Updated: 2026-07-21 15:07)
+## Sprint 26 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. Homebrew Spell Detail Modal (NEW)
+`HomebrewSpellDetailModal.tsx` — Premium Lusion-grade glass popover displaying the FULL statblock for a homebrew spell. Features:
+- Header with school color badge, level label (Cantrip through 9th)
+- School + Concentration + Ritual badges
+- Casting info grid (Casting Time, Range, Duration)
+- Components section with V/S/M breakdown + material component display
+- Full description with flavor text support
+- "Spell Mechanics" section showing damage/healing/AoE/save/attack bonus stats in a 2-column grid
+- Tags, At Higher Levels, Classes display
+- Source + visibility footer
+- Escape key + backdrop click to close (matching existing HomebrewItemDetailModal pattern)
+
+#### 2. Homebrew Feat Detail Modal (NEW)
+`HomebrewFeatDetailModal.tsx` — Premium Lusion-grade glass popover displaying the FULL statblock for a homebrew feat. Features:
+- Header with feat badge
+- Repeatable + visibility badges
+- Prerequisites section with ability + minimum value display
+- Ability Score Increase badges (+1 STR etc.)
+- Skill Proficiencies section
+- Flavor text, description, benefits list with diamond bullets
+- Tags, source + visibility footer
+- Escape key + backdrop click to close
+
+#### 3. HomebrewTabPanel — Wired Detail Modals
+- Added `detailSpell` and `detailFeat` state
+- Added `HomebrewSpellDetailModal` and `HomebrewFeatDetailModal` imports + rendering
+- Added `onViewDetail` callback passthrough to both `HomebrewSpellCard` and `HomebrewFeatCard`
+
+#### 4. HomebrewSpellCard & HomebrewFeatCard — `onViewDetail` Prop
+- Added `onViewDetail` to both component props interfaces
+- Name now clickable with `onClick={() => onViewDetail?.(spell)}` (matching existing ItemCard pattern)
+
+### Build & Verify
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 11.83s, 0 warnings |
+| Modules | 2,155 (+2 new files) |
+| Bundle hash | `index--1keXnX3.js` |
+| CSS | 432 kB (52.6 kB gz) |
+| JS | 2,277.8 kB (528.7 kB gz) |
+| Git | ✅ Sprint 26 checkpoint |
+
+### Files Created (2)
+| File | Lines | Purpose |
+|------|:-----:|---------|
+| `components/homebrew/HomebrewSpellDetailModal.tsx` | ~310 | Premium spell statblock detail modal |
+| `components/homebrew/HomebrewFeatDetailModal.tsx` | ~280 | Premium feat statblock detail modal |
+
+### Files Modified (4)
+| File | Changes |
+|------|---------|
+| `components/homebrew/HomebrewTabPanel.tsx` | Added detailSpell/detailFeat state, modal imports, onViewDetail passthrough |
+| `components/homebrew/HomebrewSpellCard.tsx` | Added `onViewDetail` prop, clickable name |
+| `components/homebrew/HomebrewFeatCard.tsx` | Added `onViewDetail` prop, clickable name |
+---
