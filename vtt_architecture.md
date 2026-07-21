@@ -14648,3 +14648,52 @@ When editing an existing enemy, `saveProfs` is initialized from `existingEnemy?.
 | `components/homebrew/HomebrewSpellCard.tsx` | Added `onViewDetail` prop, clickable name |
 | `components/homebrew/HomebrewFeatCard.tsx` | Added `onViewDetail` prop, clickable name |
 ---
+
+## Cycle 27 — The Homebrew Forge (Cycle 7 of 10) (Updated: 2026-07-21 15:11)
+## Sprint 27 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. Image URL Pipeline (All 3 Homebrew Types)
+Added `imageUrl?: string` field and form/card/detail UI to ALL homebrew entity types:
+
+**Homebrew Items (was missing from form):**
+- `HomebrewItemForm.tsx` — Added image URL input with live thumbnail preview (with `onError` hide fallback)
+- `HomebrewItemCard.tsx` — Added 32×32 thumbnail display when `imageUrl` is set
+- `HomebrewItemDetailModal.tsx` — Added 48px-high hero image banner with object-cover styling
+
+**Homebrew Spells (was missing from TYPE and form):**
+- `homebrew.ts` — Added `imageUrl?: string` to `HomebrewSpell` interface
+- `HomebrewSpellForm.tsx` — Added image URL input with live preview
+
+**Homebrew Feats (was missing from TYPE and form):**
+- `homebrew.ts` — Added `imageUrl?: string` to `HomebrewFeat` interface
+- `HomebrewFeatForm.tsx` — Added image URL input with live preview
+
+#### 2. Attunement & Curse Details (was missing from form)
+- `HomebrewItemForm.tsx` — Added conditional `attunementDetails` input (shown when "Requires Attunement" is checked)
+- `HomebrewItemForm.tsx` — Added conditional `curseDetails` input (shown when "Cursed" is checked)
+- These fields already existed in the `HomebrewItem` type and the `HomebrewItemDetailModal` display, but the form never exposed them — DMs could set attunement/cursed but couldn't describe them.
+
+### Build & Verify
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 11.68s, 0 warnings |
+| Modules | 2,155 |
+| Bundle hash | `index-CtNedhUd.js` |
+| JS | 2,281.4 kB (529 kB gz) |
+| CSS | 431.96 kB (52.6 kB gz) |
+| Git | ✅ Sprint 27 checkpoint |
+
+### Files Modified (7)
+| File | Changes |
+|------|---------|
+| `types/homebrew.ts` | Added `imageUrl` to `HomebrewSpell` and `HomebrewFeat` interfaces |
+| `components/homebrew/HomebrewItemForm.tsx` | Added imageUrl input, attunementDetails, curseDetails |
+| `components/homebrew/HomebrewItemCard.tsx` | Added image thumbnail display |
+| `components/homebrew/HomebrewItemDetailModal.tsx` | Added hero image banner |
+| `components/homebrew/HomebrewSpellForm.tsx` | Added imageUrl input with preview |
+| `components/homebrew/HomebrewFeatForm.tsx` | Added imageUrl input with preview |
+---
