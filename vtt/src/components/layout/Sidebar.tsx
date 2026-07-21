@@ -23,7 +23,7 @@
  *   - All sub-components are reusable (SidebarBrand, SidebarNavLink, SidebarFooter)
  */
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 import { useUIStore } from "@/stores/uiStore";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -249,6 +249,9 @@ export default function Sidebar() {
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const { isMobile, isDesktop } = useResponsive();
 
+  // ── DM Tools collapsible state (defaults to collapsed to prevent nav/tool overlap) ──
+  const [toolsOpen, setToolsOpen] = useState(false);
+
   // ── Mobile body scroll lock (extracted hook) ──
   useBodyScrollLock(sidebarOpen && isMobile);
 
@@ -338,22 +341,39 @@ export default function Sidebar() {
           </nav>
 
           {/* ── DM TOOLS SEPARATOR ──
-              Only visible when sidebar is open (expanded mode). */}
+              Only visible when sidebar is open (expanded mode).
+              Clicking the "Tools" label toggles the tools panel,
+              preventing 15 tool buttons from overlapping navigation.
+              Default state: collapsed (toolsOpen = false). */}
           {sidebarOpen && (
-            <div className="px-3 pt-4 pb-2">
-              <div className="flex items-center gap-2">
+            <div className="px-3 pt-4 pb-1">
+              <button
+                onClick={() => setToolsOpen(!toolsOpen)}
+                className="flex items-center gap-2 w-full group cursor-pointer"
+                title={toolsOpen ? "Collapse DM Tools" : "Expand DM Tools (15 tools)"}
+                aria-label={toolsOpen ? "Collapse DM Tools" : "Expand DM Tools"}
+              >
                 <div className="h-px flex-1 bg-gradient-to-r from-gold-500/15 to-transparent" />
-                <span className="text-[7px] uppercase tracking-[0.15em] font-bold text-gold-500/40">Tools</span>
+                <span className={`text-[7px] uppercase tracking-[0.15em] font-bold transition-all duration-200 ${
+                  toolsOpen ? "text-gold-500/60" : "text-gold-500/40 group-hover:text-gold-500/60"
+                }`}>
+                  Tools {toolsOpen ? "▾" : "▸"}
+                </span>
                 <div className="h-px flex-1 bg-gradient-to-l from-gold-500/15 to-transparent" />
-              </div>
+              </button>
             </div>
           )}
 
-          {/* ── ALL DM TOOLS ──
-              Rendered from data array. Each tool is a small button.
-              In collapsed mode, they stack vertically as icons.
-              In expanded mode, they show labels. */}
-          <div className={`flex flex-col ${!sidebarOpen ? "items-center" : ""} space-y-0.5`}>
+          {/* ── ALL DM TOOLS (COLLAPSIBLE) ──
+              Rendered from data array. Default collapsed (toolsOpen = false)
+              to prevent 15 tool buttons from pushing navigation offscreen.
+              In collapsed mode (w-16), tools ALWAYS show as icon-only since
+              the "Tools" toggle is hidden — this is intentional because
+              collapsed mode already has all items as icon-only.
+              In expanded mode, clicking "Tools" header toggles visibility. */}
+          <div className={`flex flex-col ${!sidebarOpen ? "items-center" : ""} space-y-0.5 ${
+            sidebarOpen && !toolsOpen ? "hidden" : sidebarOpen ? "" : ""
+          }`}>
             {dmTools.map((tool) => (
               <DmToolButton key={tool.eventName} tool={tool} isOpen={sidebarOpen} />
             ))}
