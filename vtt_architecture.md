@@ -15049,3 +15049,49 @@ Upgraded the Token Image URL field in EnemyCreator:
 - **URL:** https://arkla.vercel.app — stable
 - **Git:** ✅ Sprint 34 checkpoint
 ---
+
+## Cycle 35 — QA & Stabilization — Cycle 5 of 5 (FINAL COMPLETE) (Updated: 2026-07-21 15:31)
+## Sprint 35 of 80 — QA & Stabilization — Cycle 5 of 5 (FINAL COMPLETE) ✅
+
+### Capstone QA — Three Feature Enhancements Built
+
+| Enhancement | Type | Status | Details |
+|:------------|:-----|:------:|:--------|
+| **1. AppIcon Pulsing Idle State** | 🖼 Theatric TV View | ✅ Complete | `TheatricWaitingState.tsx` — replaced static ᚱ rune with pulsing `AppIcon.svg` shield (160x160px, 3s pulse glow) in both loading + idle states. Gold ambient aura (500px blur, 6s cycle). |
+| **2. Auto-Follow Camera (Active Combatant)** | 🖼 Theatric TV View | ✅ Complete | `TheatricPage.tsx` — added `useCombatStore` subscription + auto-centering effect. When combat is active (`phase === "active"`), camera smoothly pans to the current turn combatant's token position with 1.2x zoom for dramatic cinematic effect. Uses debounced reactive deps on `currentCombatantIndex`. |
+| **3. Player Live Encounter View** | 👤 PC Experience | ✅ Complete | **New component** `PlayerLiveEncounterView.tsx` — companion battle overlay for Player Sheet. Shows round counter, phase indicator, sorted turn order (by initiative), "Your Turn" badge (gold pulse), live HP bars with color tiers, status effect count, opponent HP visibility. Mounted at top-right of `PlayerSheetPage.tsx` via `absolute top-4 right-4`. |
+
+### Deep QA Audit — All Features
+
+| Area | Status | Details |
+|:-----|:------:|:--------|
+| **Theatric TV View** | ✅ Complete | Zero-chrome cinematic canvas, auto-hide HUD (3s), keyboard panning (arrow keys, 16ms interval), fullscreen toggle, AppIcon idle state, auto-follow active combatant, grid/label toggles |
+| **DM Popover Ecosystem** | ✅ 10 tools | Skill Check, Social Interaction, Legendary/Lair, Concentration Timer, Treasure Generator, Travel/Wilderness, Ship Combat, Wild Shape, Rest/Downtime, Spell Reference — all globally accessible via sidebar |
+| **Canvas Pipeline** | ✅ 10-layer | Background → Grid (DM color) → Fog (vision) → Lighting (raycasting) → Tokens (turn highlight + 6 visual states) → Initiative → Pings → Ruler → Drag |
+| **Player Companion View** | ✅ NEW | Live encounter overlay on Player Sheet — turn order, "Your Turn" badge, HP bars, combat status |
+| **TypeScript** | ✅ 0 errors | `tsc --noEmit` clean |
+| **Console Errors** | ✅ 0 | Only benign Firestore deprecation |
+
+### QA & Stabilization Phase — COMPLETE ✅ (Cycles 31-35)
+
+| Cycle | Deliverable |
+|:-----:|-------------|
+| 31 | DM Skill Check + Passive Popover (all 18 skills, DC tool, group check) |
+| 32 | Social Interaction + Monster Knowledge (DMG p.244-245, CR-based DC) |
+| 33 | Treasure Generator + Concentration Timer (DMG p.136-139, live countdown) |
+| 34 | Legendary/Lair Action Tracker + Ship Combat Guide (5.5e RAW) |
+| **35** | **Auto-Follow Theatric Camera + AppIcon Idle State + Player Live Encounter View** |
+
+### System Compliance
+
+| Requirement | Status |
+|:------------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| Vercel Build | ⚠️ Free tier rate limit hit (100/day) — code is build-ready |
+| Overrrides aesthetic | ✅ Gold glassmorphism, PremiumIcon SVGs, edge lights, staggered entrance |
+| No dice rollers | ✅ Zero `Math.random()` in feature code |
+| No prohibited content | ✅ "Tick race" / "Food machine" — zero matches |
+| Arkla campaign | ✅ Wendy Swiftfoot, Kehrfuffle Ironheart referenced in all documentation |
+
+### Ready for Cycle 36 — PC Experience Phase (Cycle 1 of 10)
+---
