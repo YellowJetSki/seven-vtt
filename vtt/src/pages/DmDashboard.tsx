@@ -1,32 +1,20 @@
 /**
- * STᚱ VTT — DM Dashboard (Overrrides/Ventriloc-Grade Premium Command Center)
+ * STᚱ VTT — DM Dashboard v3.0 (Overrrides/Ventriloc-Grade Premium Command Center)
  *
- * The DM's operational command center — what they see on login.
- * Premium architecture:
+ * The DM's operational command center — their first view on login.
+ * Full at-a-glance campaign overview with:
  *
- * - DmCommandBar: Floating glass bar with role, sync, and combat status
+ * - DmCommandBar: Token-systematic floating glass bar with role + sync + combat
  * - CampaignBanner: 7-layer Lusion-grade hero with conic depth ring
- * - QuickNav: Overrrides-style spatial tile grid with per-tile hover glow
- * - Spotify-grade ActiveMapCard with premium image preview
+ * - CampaignMetaSummary: Compact KPI strip in gold glass design language
+ * - QuickNav: Overrrides-style spatial tile grid
+ * - Spotify-grade ActiveMapCard with image preview
  * - Ventriloc data-dashboard CombatQuickStatus
  * - Premium chronograph SessionTimer
- * - PlayerStatusCard grid with elegance
- * - Accordion-style DM Quick Reference
- * - Staggered slide-in-up entrance on ALL panels
- * - Premium Playfair Display headings
+ * - PlayerStatusCard grid with staggered entrance
+ * - Accordion-style DM Quick Reference with 12 sections
  *
- * Layout:
- * ┌─────────────────────────────────────────────────────────────┐
- * │                     DM Command Bar                          │
- * ├─────────────────────────────────────────────────────────────┤
- * │                     Campaign Banner                         │
- * ├───────────────────────────────┬─────────────────────────────┤
- * │   ⚡ Quick Nav (6 tiles)      │  ⏱ Session Timer            │
- * │                               │                             │
- * │   🗺 Active Map Card          │  ⚔ Combat Status            │
- * │                               │                             │
- * │   👥 Player Status Grid       │  📋 DM Quick Reference      │
- * └───────────────────────────────┴─────────────────────────────┘
+ * All entrances sync to the design token timing system (ease.premium).
  */
 
 import { useEffect, useState } from "react";
@@ -39,6 +27,7 @@ import CombatHpHud from "@/components/player/CombatHpHud";
 import DmScreenContainer from "@/components/dashboard/DmScreenContainer";
 import DmCommandBar from "@/components/dashboard/DmCommandBar";
 import CampaignBanner from "@/components/dashboard/CampaignBanner";
+import CampaignMetaSummary from "@/components/dashboard/CampaignMetaSummary";
 import QuickNav from "@/components/dashboard/QuickNav";
 import OverrridesSectionHeader from "@/components/dashboard/OverrridesSectionHeader";
 import SessionTimer from "@/components/dashboard/SessionTimer";
@@ -46,11 +35,15 @@ import CombatQuickStatus from "@/components/dashboard/CombatQuickStatus";
 import ActiveMapCard from "@/components/dashboard/ActiveMapCard";
 import PlayerStatusCard from "@/components/dashboard/PlayerStatusCard";
 import DmQuickRef from "@/components/dashboard/DmQuickRef";
+import { entrance, duration, ease } from "@/lib/design-tokens";
 
 export default function DmDashboard() {
   const meta = useCampaignStore((s) => s.meta);
   const characters = useCampaignStore((s) => s.characters);
+  const enemies = useCampaignStore((s) => s.enemies);
+  const encounters = useCampaignStore((s) => s.encounters);
   const battleMaps = useCampaignStore((s) => s.battleMaps);
+  const journal = useCampaignStore((s) => s.journal);
   const activeEncounter = useCombatStore((s) => s.activeEncounter);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -80,7 +73,7 @@ export default function DmDashboard() {
             action={
               <button
                 onClick={() => window.location.href = "/campaign/settings"}
-                className="mt-4 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-gold-500/12 to-amber-500/8 border border-gold-500/15 text-gold-400 hover:shadow-[0_0_24px_rgba(234,179,8,0.04)] transition-all duration-200 hover:-translate-y-0.5"
+                className="mt-4 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-gold-500/12 to-amber-500/8 border border-gold-500/15 text-gold-400 hover:shadow-[0_0_24px_rgba(234,179,8,0.04)] transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
               >
                 Create Campaign
               </button>
@@ -96,7 +89,6 @@ export default function DmDashboard() {
   const avgLevel = characters.length > 0
     ? Math.round(characters.reduce((sum, c) => sum + (c.level ?? 1), 0) / characters.length)
     : 0;
-  const minLevel = characters.length > 0 ? Math.min(...characters.map((c) => c.level ?? 1)) : 0;
   const maxLevel = characters.length > 0 ? Math.max(...characters.map((c) => c.level ?? 1)) : 0;
 
   const statCards = [
@@ -113,56 +105,58 @@ export default function DmDashboard() {
     <AppShell>
       <DmScreenContainer>
         {/* ═══════════════════════════════════════════════════════
-           DM Command Bar (0ms entrance)
-           Premium floating glass bar with role + sync + combat status
+           Tier 1: DM Command Bar (0ms)
+           Token-systematic floating glass bar
            ═══════════════════════════════════════════════════════ */}
-        <div
-          className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-        >
+        <div style={entrance(0)}>
           <DmCommandBar />
         </div>
 
         {/* ═══════════════════════════════════════════════════════
-           Campaign Banner (50ms entrance)
+           Tier 2: Campaign Banner (60ms)
            7-layer Lusion-grade hero with conic depth ring
            ═══════════════════════════════════════════════════════ */}
-        <div
-          className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-          style={{ animationDelay: "50ms" }}
-        >
+        <div style={entrance(60)}>
           <CampaignBanner meta={meta} stats={statCards} />
         </div>
 
         {/* ═══════════════════════════════════════════════════════
-           Two-column DM War Room
+           Tier 3: Campaign Meta Summary (120ms)
+           Compact KPI strip — campaign age, sessions, party size,
+           monsters, encounters, maps, journal
+           ═══════════════════════════════════════════════════════ */}
+        <div className="mt-4" style={entrance(120)}>
+          <CampaignMetaSummary
+            meta={meta}
+            characterCount={characters.length}
+            enemyCount={enemies?.length ?? 0}
+            encounterCount={encounters?.length ?? 0}
+            mapCount={battleMaps.length}
+            journalCount={journal?.length ?? 0}
+          />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════
+           Tier 4: Two-column DM War Room
            ═══════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mt-5">
 
           {/* ─── Left Column (2/3) ─── */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-            {/* Quick Nav (100ms) */}
-            <div
-              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-              style={{ animationDelay: "100ms" }}
-            >
+            {/* Quick Nav (180ms) */}
+            <div style={entrance(180)}>
               <QuickNav />
             </div>
 
-            {/* Active Map Card (150ms) */}
-            <div
-              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-              style={{ animationDelay: "150ms" }}
-            >
+            {/* Active Map Card (240ms) */}
+            <div style={entrance(240)}>
               <ActiveMapCard />
             </div>
 
-            {/* Player Status Grid (200ms) */}
+            {/* Player Status Grid (300ms) */}
             {characters.length > 0 && (
-              <div
-                className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-                style={{ animationDelay: "200ms" }}
-              >
+              <div style={entrance(300)}>
                 <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
                   <OverrridesSectionHeader
                     icon="👥"
@@ -193,27 +187,18 @@ export default function DmDashboard() {
           {/* ─── Right Column (1/3) ─── */}
           <div className="space-y-4 sm:space-y-5">
 
-            {/* Session Timer (120ms) */}
-            <div
-              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-              style={{ animationDelay: "120ms" }}
-            >
+            {/* Session Timer (200ms) */}
+            <div style={entrance(200)}>
               <SessionTimer />
             </div>
 
-            {/* Combat Quick Status (170ms) */}
-            <div
-              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-              style={{ animationDelay: "170ms" }}
-            >
+            {/* Combat Quick Status (260ms) */}
+            <div style={entrance(260)}>
               <CombatQuickStatus />
             </div>
 
-            {/* DM Quick Reference (220ms) */}
-            <div
-              className="animate-in fade-in slide-in-from-bottom-3 duration-500"
-              style={{ animationDelay: "220ms" }}
-            >
+            {/* DM Quick Reference (320ms) */}
+            <div style={entrance(320)}>
               <DmQuickRef />
             </div>
           </div>
