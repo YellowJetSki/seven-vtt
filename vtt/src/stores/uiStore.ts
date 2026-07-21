@@ -46,6 +46,7 @@ interface UIState {
   showTravelPace: boolean;
   showShipCombat: boolean;
   showQuickNote: boolean;
+  showPartyInventory: boolean;
 }
 
 interface UIActions {
@@ -86,6 +87,7 @@ interface UIActions {
   setTravelPace: (show: boolean) => void;
   setShipCombat: (show: boolean) => void;
   setQuickNote: (show: boolean) => void;
+  setPartyInventory: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -117,6 +119,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showTravelPace: false,
   showShipCombat: false,
   showQuickNote: false,
+  showPartyInventory: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -145,6 +148,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setTravelPace: (show: boolean) => set({ showTravelPace: show }),
   setShipCombat: (show: boolean) => set({ showShipCombat: show }),
   setQuickNote: (show: boolean) => set({ showQuickNote: show }),
+  setPartyInventory: (show: boolean) => set({ showPartyInventory: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

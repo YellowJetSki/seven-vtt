@@ -42,6 +42,7 @@ import DmDowntimeTracker from "@/components/control-center/DmDowntimeTracker";
 import DmTravelPaceGuide from "@/components/control-center/DmTravelPaceGuide";
 import DmShipCombatGuide from "@/components/control-center/DmShipCombatGuide";
 import GlobalQuickNote from "@/components/ui/GlobalQuickNote";
+import PartyInventoryPanel from "@/components/player/PartyInventoryPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -83,6 +84,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setTravelPace = useUIStore((s) => s.setTravelPace);
   const showShipCombat = useUIStore((s) => s.showShipCombat);
   const setShipCombat = useUIStore((s) => s.setShipCombat);
+  const showPartyInventory = useUIStore((s) => s.showPartyInventory);
+  const setPartyInventory = useUIStore((s) => s.setPartyInventory);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -262,6 +265,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setShipCombatRef.current(!showShipCombatRef.current); };
     window.addEventListener("toggle-dm-ship-combat", handler);
     return () => window.removeEventListener("toggle-dm-ship-combat", handler);
+  }, []);
+
+  const showPartyInventoryRef = useRef(showPartyInventory);
+  showPartyInventoryRef.current = showPartyInventory;
+  const setPartyInventoryRef = useRef(setPartyInventory);
+  setPartyInventoryRef.current = setPartyInventory;
+
+  useEffect(() => {
+    const handler = () => { setPartyInventoryRef.current(!showPartyInventoryRef.current); };
+    window.addEventListener("toggle-dm-party-inventory", handler);
+    return () => window.removeEventListener("toggle-dm-party-inventory", handler);
   }, []);
 
   // ── Quick Note custom event: sidebar button / programmatic ──
@@ -448,6 +462,13 @@ export default function AppShell({ children }: AppShellProps) {
 
       {role === "dm" && (
         <DmShipCombatGuide />
+      )}
+
+      {/* ── DM Party Inventory Panel (Cycle 21) ──
+          Unified view of ALL characters' inventories in one panel.
+          Search items, see party wealth, drag items between characters. */}
+      {role === "dm" && (
+        <PartyInventoryPanel />
       )}
 
       {/* ── GLOBAL QUICK NOTE ──

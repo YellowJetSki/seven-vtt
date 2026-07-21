@@ -195,6 +195,14 @@ const dmTools: DmToolProps[] = [
     label: "Combat Wrap-Up",
     title: "Combat Wrap-Up — XP, Loot, Condition Clearing",
   },
+  {
+    eventName: "toggle-dm-party-inventory",
+    icon: "loot",
+    colorClass: "text-cyan-400",
+    hoverClass: "hover:bg-cyan-500/8 hover:border-cyan-500/10",
+    label: "Party Inventory",
+    title: "Party Inventory — View all characters' items, search, drag-and-drop transfer",
+  },
 ];
 
 /** Map of tool event name → hover text color class (Tailwind JIT-safe) */
@@ -214,6 +222,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-npc-quick-create": "group-hover:text-emerald-400",
   "toggle-dm-party-rest": "group-hover:text-emerald-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
+  "toggle-dm-party-inventory": "group-hover:text-cyan-400",
 };
 
 /** Renders a single DM tool button — reused for both expanded and collapsed modes */
