@@ -211,11 +211,11 @@ const CONDITIONS_MAP: Record<string, ConditionDef> = {
     description: "An unconscious creature is incapacitated.", icon: "💤",
   },
   exhaustion: {
-    id: "exhaustion", name: "Exhaustion", setsSpeed: null, halvesSpeed: true,
+    id: "exhaustion", name: "Exhaustion", setsSpeed: null, halvesSpeed: false,
     preventsActions: false, preventsBonusActions: false, preventsReactions: false,
     appliesDisadvantageTo: ["ability_checks", "saving_throws"],
     appliesAdvantageTo: [], autoFailsSaves: [], autoFailsAbilityChecks: [],
-    description: "Exhaustion reduces speed and hampers ability checks.", icon: "😩",
+    description: "Exhaustion (5.5e): 10 levels; odd levels −1 to d20 tests, even levels −10ft speed.", icon: "😩",
   },
   concentration: {
     id: "concentration", name: "Concentration", setsSpeed: null, halvesSpeed: false,
@@ -502,9 +502,9 @@ describe("Conditions Engine & Sync Layer — Sprint 26 QA", () => {
       expect(mods.abilityCheckMod).toBe("disadvantage");
     });
 
-    it("Exhaustion + Prone should keep speed halved (not quartered)", () => {
+    it("Exhaustion + Prone should halve speed from prone only (5.5e exhaustion no longer halves)", () => {
       const mods = computeConditionModifiers(["exhaustion", "prone"]);
-      // Both halvesSpeed: multiplier = Math.min(1, 0.5, 0.5) = 0.5
+      // 5.5e: exhaustion does NOT halve speed. Prone still halves.
       expect(mods.speedMultiplier).toBe(0.5);
     });
 
@@ -648,9 +648,10 @@ describe("Conditions Engine & Sync Layer — Sprint 26 QA", () => {
       expect(mods.attackRollMod).toBe("advantage"); // Attackers have advantage on unconscious
     });
 
-    it("Kehrfuffle gets exhausted while flying — speed halved, disadvantage on everything", () => {
+    it("Kehrfuffle gets exhausted while flying — no speed halving (5.5e), disadvantage on everything", () => {
       const mods = computeConditionModifiers(["exhaustion"]);
-      expect(mods.speedMultiplier).toBe(0.5);
+      // 5.5e: exhaustion does NOT halve speed
+      expect(mods.speedMultiplier).toBe(1);
       expect(mods.savingThrowMod).toBe("disadvantage");
       expect(mods.abilityCheckMod).toBe("disadvantage");
       // Concentration is NOT broken by exhaustion

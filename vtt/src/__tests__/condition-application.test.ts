@@ -106,12 +106,9 @@ describe("computeConditionModifiers", () => {
     expect(result.effectSummary.filter((e) => e.includes("deafened") || e.includes("hear")).length).toBe(0);
   });
 
-  // ── Exhaustion ──
-  it("Exhaustion: halves speed, disadvantage on ability checks", () => {
+  // ── Exhaustion (5.5e/2024 Rules) ──
+  it("Exhaustion: 5.5e rules — no halved speed, disadvantage on d20 tests", () => {
     const result = computeConditionModifiers(["exhaustion"]);
-    expect(result.speedMultiplier).toBe(0.5);
-    expect(result.abilityCheckMod).toBe("disadvantage");
-    // Should also affect saves and attacks per description
     expect(result.savingThrowMod).toBe("disadvantage");
     expect(result.attackRollMod).toBe("disadvantage");
   });
@@ -362,13 +359,13 @@ describe("applyConditionSpeed", () => {
     expect(result.notes).toEqual([]);
   });
 
-  // ── Halved speed ──
-  it("exhaustion halves all speeds", () => {
+  // ── 5.5e Exhaustion no longer halves speed ──
+  it("exhaustion (5.5e) does NOT halve speed", () => {
     const mods = computeConditionModifiers(["exhaustion"]);
     const result = applyConditionSpeed(baseSpeed, mods);
-    expect(result.walk).toBe(15); // 30 / 2
-    expect(result.fly).toBe(30);  // 60 / 2
-    expect(result.swim).toBe(10); // 20 / 2
+    expect(result.walk).toBe(30); // 5.5e: no speed halving from exhaustion alone
+    expect(result.fly).toBe(60);
+    expect(result.swim).toBe(20);
   });
 
   // ── Speed override (0) ──
@@ -391,14 +388,14 @@ describe("applyConditionSpeed", () => {
 
   // ── Default walk of 30 when not provided ──
   it("empty speed defaults walk to 30", () => {
-    const mods = computeConditionModifiers(["exhaustion"]);
+    const mods = computeConditionModifiers([]);
     const result = applyConditionSpeed(undefined, mods);
-    expect(result.walk).toBe(15);
+    expect(result.walk).toBe(30);
   });
 
-  // ── Very fast speed ──
-  it("high speed is halved correctly", () => {
-    const mods = computeConditionModifiers(["exhaustion"]);
+  // ── Very fast speed with restrained (5.5e compatible halving) ──
+  it("restrained halves speed correctly", () => {
+    const mods = computeConditionModifiers(["restrained"]);
     const result = applyConditionSpeed({ walk: 120 }, mods);
     expect(result.walk).toBe(60);
   });
@@ -472,13 +469,13 @@ describe("applyConditionsToDerivations (full integration)", () => {
     expect(result.conditionSummaries).toEqual([]);
   });
 
-  // ── Exhaustion ──
-  it("exhaustion halves speed and causes disadvantages", () => {
+  // ── Exhaustion (5.5e) ──
+  it("exhaustion (5.5e): no speed halving, disadvantage on d20 tests", () => {
     const char = createMinChar(["exhaustion"]);
     const base = makeBaseDerivations();
 
     const result = applyConditionsToDerivations(char, base);
-    expect(result.modifiedSpeed.walk).toBe(15);
+    expect(result.modifiedSpeed.walk).toBe(30); // 5.5e: no halving
     expect(result.conditionSummaries.length).toBeGreaterThan(0);
   });
 
