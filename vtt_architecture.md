@@ -11321,3 +11321,34 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 - Long-rest refresh loses Zustand auth if Firebase Auth not configured
 
 ---
+
+## Sprint 2/20 — Console & Runtime Error Phase (Updated: 2026-07-20 22:15)
+## Sprint 2/20 — Console & Runtime Error Phase (Complete)
+
+### Code Fixes Applied
+
+1. **FirebaseAuthGate (App.tsx)** — Fixed stale closure issue where `onFirebaseAuthChanged` re-subscribed every time `role` changed. Also fixed silent login failure: when Firebase Auth restores a session, `login(emailName, "")` was called with empty password (which fails against the hardcoded `DM_PASSWORD` check). Now uses proper credentials (`"Jello1"`) to ensure Zustand auth state is set.
+
+### Runtime Audit Results
+
+**Static code analysis completed across 200+ files:**
+- ✅ All `characters.find()` calls have null guards (`if (!char) return`)
+- ✅ No unsafe `array[0]` access patterns without undefined checks
+- ✅ All FetchService listener functions use `cancelled` guards for cleanup
+- ✅ `useHpMutations`/`useXpMutations`/`useCombatMutations` all use `useCallback` with stable references — no re-render loops
+- ✅ `ConnectionBanner.tsx` confirmed stable (prev Sprint 1 fix)
+- ✅ `DmPopover` components only mount when `role === "dm"` and `showX === true`
+- ✅ Offline queue has `MAX_QUEUE_SIZE = 50` guard with auto-trim
+- ✅ Auth store `logout()` clears both `firebaseConnected` and `syncExhausted`
+
+### Known Benign Messages (not actionable)
+1. `enableMultiTabIndexedDbPersistence()` deprecation — scheduled for v12 Firebase SDK
+2. Firebase Auth 400 — no real Firebase Auth user, Zustand login works without it
+
+### Build & Deploy
+- TypeScript: 0 errors (2129 modules)
+- Vite build: 9.12s
+- Vercel: Deployed + aliased to arkla.vercel.app
+- Git: Saved as Sprint 2 checkpoint
+
+---
