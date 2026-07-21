@@ -41,14 +41,19 @@ function FirebaseAuthGate() {
 
     const unsub = onFirebaseAuthChanged((user) => {
       if (user) {
-        // Firebase restored a user session — restore Zustand auth state
-        // by setting the store directly. The Zustand login() function
-        // checks a hardcoded password, so we bypass it here since
-        // Firebase Auth has already validated the user.
+        // Firebase restored a user session — restore Zustand auth state directly.
+        // DO NOT call Zustand login() here — it checks a hardcoded password
+        // which will fail if the Firebase email doesn't match "MikeJello".
+        // Firebase Auth has already validated the user, so we bypass the
+        // password check and set auth state directly.
         const state = useAuthStore.getState();
         if (state.state === "unauthenticated") {
-          const emailName = user.email?.split("@")[0] || "DM";
-          state.login(emailName, "Jello1");
+          useAuthStore.setState({
+            state: "authenticated" as const,
+            role: "dm" as const,
+            username: user.email?.split("@")[0] || "DM",
+            characterId: null,
+          });
         }
         state.setFirebaseConnected(true);
       }
