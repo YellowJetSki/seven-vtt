@@ -16599,3 +16599,58 @@ Total time: ~5 seconds for full combat awareness
 - Vite build: Clean
 - Git savepoint: Sprint 72
 ---
+
+## DM Initiative Quick-Draft (Cycle 28/35) (Updated: 2026-07-21 18:11)
+## Cycle 28 — DM Initiative Quick-Draft Panel — COMPLETE
+
+### New Component Created
+- **`DmInitiativeDraft.tsx`** (~470 lines) — Gold-accented glass popover for rapid initiative entry
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Auto-populate PCs** | Reads all player characters from campaign store, auto-calculates DEX-based initiative |
+| **5 quick-plus buttons** | 9/10/11/12/13 — common DEX bonus tiers for one-click entry |
+| **Manual numeric input** | Inline number input with 0-40 range clamping |
+| **Enemy typeahead** | Search/filter campaign enemies by name, auto-calculates DEX initiative from stored abilities |
+| **Lock/unlock per entry** | 🔒 prevents accidental overwrite on bulk operations |
+| **Sort** | Descending initiative with alpha tiebreaker |
+| **Set All** | Override all unlocked entries to a specific value |
+| **Clear / Repopulate** | Clear draft or re-populate from campaign characters |
+| **Encounter name input** | Naming the encounter before committing |
+| **Commit to Combat** | Creates encounter object in combat store (prep phase) |
+| **Start Combat shortcut** | Commit + start combat in one click (active phase) |
+| **Initiative tier key** | Color-coded range reference (Legendary 21+ → Slow 0-4) |
+| **Quick reference** | DMG-inspired initiative tier descriptions |
+| **Stats footer** | Combatant count, enemy/player split, average initiative |
+| **Empty state** | Premium icon + repopulate button when no draft entries |
+| **Player/Enemy badges** | P/Sky vs E/Rose type identification per row |
+| **No dice rolling required** | Pure manual entry with quick-plus buttons |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showInitiativeDraft` + `setInitiativeDraft` |
+| `AppShell.tsx` | Layout | Added import, ref, event listener (`toggle-dm-initiative-draft`), rendering |
+| `Sidebar.tsx` | Layout | Added "Init Draft" button (gold accent, `rollInitiative` icon) + hover mapping |
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `DmInitiativeDraft.tsx` | ~470 | DM Initiative Quick-Draft Panel |
+
+### Files Modified
+| File | Change |
+|:-----|:-------|
+| `uiStore.ts` | Added state + action |
+| `AppShell.tsx` | Added import, ref, event listener, rendering |
+| `Sidebar.tsx` | Added button + hover mapping |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 73
+
+### DM Tool Tally: 22 Globally Accessible Tools
++1 (new): Initiative Draft (gold, `rollInitiative` icon)
+---
