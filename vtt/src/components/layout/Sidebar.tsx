@@ -303,6 +303,27 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* ── DM TRAVEL PACE & WILDERNESS SURVIVAL TOGGLE (Sprint 39) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => { window.dispatchEvent(new CustomEvent("toggle-dm-travel-pace")); }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-sky-500/8 hover:border-sky-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Travel & Wilderness — Overland travel, navigation, foraging, weather, and random encounters"
+            aria-label="Toggle Travel & Wilderness Guide"
+          >
+            <span className="w-3.5 h-3.5 flex items-center justify-center text-[13px]">🗺️</span>
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-sky-400 transition-colors truncate">
+                Travel & Wilderness
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM SOCIAL INTERACTION & MONSTER KNOWLEDGE TOGGLE (Sprint 32) ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button

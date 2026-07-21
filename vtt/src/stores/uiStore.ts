@@ -43,6 +43,7 @@ interface UIState {
   showSpellReference: boolean;
   showWildShapeTracker: boolean;
   showDowntimeTracker: boolean;
+  showTravelPace: boolean;
 }
 
 interface UIActions {
@@ -80,6 +81,7 @@ interface UIActions {
   setSpellReference: (show: boolean) => void;
   setWildShapeTracker: (show: boolean) => void;
   setDowntimeTracker: (show: boolean) => void;
+  setTravelPace: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -108,6 +110,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showSpellReference: false,
   showWildShapeTracker: false,
   showDowntimeTracker: false,
+  showTravelPace: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -133,6 +136,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setSpellReference: (show: boolean) => set({ showSpellReference: show }),
   setWildShapeTracker: (show: boolean) => set({ showWildShapeTracker: show }),
   setDowntimeTracker: (show: boolean) => set({ showDowntimeTracker: show }),
+  setTravelPace: (show: boolean) => set({ showTravelPace: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

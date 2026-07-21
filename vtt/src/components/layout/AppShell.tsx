@@ -39,6 +39,7 @@ import DmLegendaryActionTracker from "@/components/control-center/DmLegendaryAct
 import DmSpellReferencePopover from "@/components/control-center/DmSpellReferencePopover";
 import DmWildShapeTracker from "@/components/control-center/DmWildShapeTracker";
 import DmDowntimeTracker from "@/components/control-center/DmDowntimeTracker";
+import DmTravelPaceGuide from "@/components/control-center/DmTravelPaceGuide";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -76,6 +77,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setWildShapeTracker = useUIStore((s) => s.setWildShapeTracker);
   const showDowntimeTracker = useUIStore((s) => s.showDowntimeTracker);
   const setDowntimeTracker = useUIStore((s) => s.setDowntimeTracker);
+  const showTravelPace = useUIStore((s) => s.showTravelPace);
+  const setTravelPace = useUIStore((s) => s.setTravelPace);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -235,6 +238,17 @@ export default function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener("toggle-dm-downtime", handler);
   }, []);
 
+  const showTravelPaceRef = useRef(showTravelPace);
+  showTravelPaceRef.current = showTravelPace;
+  const setTravelPaceRef = useRef(setTravelPace);
+  setTravelPaceRef.current = setTravelPace;
+
+  useEffect(() => {
+    const handler = () => { setTravelPaceRef.current(!showTravelPaceRef.current); };
+    window.addEventListener("toggle-dm-travel-pace", handler);
+    return () => window.removeEventListener("toggle-dm-travel-pace", handler);
+  }, []);
+
   // ── Keyboard shortcut: ? key to toggle ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -384,6 +398,10 @@ export default function AppShell({ children }: AppShellProps) {
 
       {role === "dm" && (
         <DmDowntimeTracker />
+      )}
+
+      {role === "dm" && (
+        <DmTravelPaceGuide />
       )}
     </div>
   );
