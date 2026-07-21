@@ -15377,3 +15377,57 @@ PlayerLiveEncounterView (w-72, top-right overlay)
 - ✅ Arkla campaign lore: character name/race/class display from PlayerCharacter
 - ✅ Modular architecture: 5 sub-components in companion view, no monolith risk
 ---
+
+## Cycle 44 — PC Experience Phase — Cycle 9 of 10 (Complete) (Updated: 2026-07-21 15:57)
+## Sprint 44 of 80 — PC Experience Phase — Cycle 9 of 10 (COMPLETE) ✅
+
+### Feature Enhancements
+
+| Enhancement | File | Lines | Details |
+|:------------|:-----|:-----:|:--------|
+| **1. PlayerActionHints (NEW)** | `PlayerActionHints.tsx` | 105 lines | Premium action signal panel for the companion view. 6 action types (Attack ⚔️, Cast 🧙, Heal ❤️, Dodge 🛡️, Dash 🏃, Item 🫱) displayed as color-coded grid buttons with per-type hover states (rose/violet/emerald/sky/amber/gold). Clicking fires a "Player intends to [action]" flash message to the DM's HUD. Active state glow with auto-dismiss after 2s. Staggered entrance (40ms per button). Overrrides/Ventriloc-grade design. |
+| **2. CompanionConsumablePanel (NEW)** | `CompanionConsumablePanel.tsx` | 220 lines | Quick-use consumable panel for the companion encounter view. Scans character inventory for potions/scrolls/food/oil/antidote items. Shows top 3 sorted by priority (potions first, scrolls second). Expands to show all on click. Per-type color-coded glass buttons (emerald potions, violet scrolls, amber food). One-click usage with animated ConsumptionAnimation overlay. Auto-estimated healing values (standard=7, greater=14, superior=28, supreme=45 HP). Staggered entrance (50ms per item). |
+| **3. Companion View — Enhanced** | `PlayerLiveEncounterView.tsx` | ~290 lines (modified) | Integrated both new components: PlayerActionHints replaces the generic "Act Now" callout with interactive action signals. CompanionConsumablePanel added between resources and turn order list. Both only render during the player's turn. |
+
+### Companion View Architecture (Cycle 44)
+
+```
+PlayerLiveEncounterView (w-72, top-right overlay)
+├── "Your Turn" Cinematic Pulse (gold triple-ring + ping)
+├── EncounterFlashToast (damage/heal debounced, now also shows action hints)
+├── Header — Character Portrait + Identity (Cycle 43)
+│   ├── 36×36 Avatar Ring (image or initial fallback)
+│   ├── Status Dot (emerald/red, alive/dead)
+│   ├── Character Name + "Your Turn" badge
+│   └── Race · Class Level subtitle
+├── Phase Bar (round counter + phase indicator)
+├── PlayerActionHints (NEW — Cycle 44)
+│   ├── 6 action pill buttons (Attack/Cast/Heal/Dodge/Dash/Item)
+│   ├── Color-coded per action type
+│   └── Signals intended action to DM via flash message
+├── PlayerCompanionResources (Cycle 42)
+│   ├── Spell Slot Grid (5-col gauges + DC/ATK)
+│   ├── Hit Dice Pill
+│   └── Class Resources (color-coded per type)
+├── CompanionConsumablePanel (NEW — Cycle 44)
+│   ├── Top 3 potions/scrolls quick-use buttons
+│   ├── Per-type color coding (emerald/violet/amber)
+│   ├── Expandable "Show all X items" toggle
+│   └── Triggers ConsumptionAnimation on use
+├── CombatantRowCard[] (sorted by initiative)
+└── Footer (alive/dead counts)
+```
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Vite build: ✅ Clean local build (Vercel free tier daily limit reached — deploy deferred to Cycle 45)
+- Production URL: ✅ https://arkla.vercel.app — still serving most recent build, verified live
+
+### Compliance
+- ✅ **ZERO Math.random** — all deterministic
+- ✅ No 'Tick race' or 'Food machine' references  
+- ✅ Overrrides premium design: color-coded action buttons, staggered entrances, glassmorphism consumable panel
+- ✅ Arkla campaign lore: Wendy/Kehrfuffle character data used throughout
+- ✅ 0 new ESLint errors (all pre-existing)
+- ✅ Modular: 2 new sub-components under 220 lines each, no monolith risk
+---
