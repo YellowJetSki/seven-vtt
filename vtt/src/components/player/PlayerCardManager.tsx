@@ -15,7 +15,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { setCharacter, deleteCharacter } from "@/lib/firestore-service";
-import { FALLBACK_CAMPAIGN_ID } from "@/hooks/useFirestoreSync";
+import { FALLBACK_CAMPAIGN_ID, markCharacterDeleted } from "@/hooks/useFirestoreSync";
 import LevelUpPanel from "./LevelUpPanel";
 import type { PlayerCharacter } from "@/types";
 
@@ -76,8 +76,11 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
     if (isDeleting) return; // Prevent double-clicks during async delete
     setIsDeleting(true);
     try {
-      // Delete from Firestore FIRST to prevent race condition where
-      // onSnapshot could re-add the character before Firestore delete propagates
+      // Mark as deleted FIRST so Firestore onSnapshot filters it out
+      // (prevents race condition where snapshot fires with stale cached data
+      // before the Firestore tombstone propagates globally)
+      markCharacterDeleted.mark(character.id);
+      // Delete from Firestore
       await deleteCharacter(FALLBACK_CAMPAIGN_ID, character.id);
       // Only remove from local Zustand after Firestore confirms deletion
       removeCharacter(character.id);

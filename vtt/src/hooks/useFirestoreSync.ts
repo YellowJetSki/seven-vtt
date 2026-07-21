@@ -25,6 +25,24 @@ const FALLBACK_CAMPAIGN_ID = "arkla-campaign";
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 
+/**
+ * Track characters explicitly deleted by the DM to prevent Firestore
+ * onSnapshot race conditions from re-adding them.
+ */
+export const markCharacterDeleted = (() => {
+  const deleted = new Set<string>();
+  const ref = { current: deleted };
+  return {
+    mark: (id: string) => {
+      deleted.add(id);
+      // Auto-clean after 10 seconds (worst-case Firestore propagation)
+      setTimeout(() => deleted.delete(id), 10_000);
+    },
+    has: (id: string) => deleted.has(id),
+    ref,
+  };
+})();
+
 export function useFirestoreSync(): void {
   const mountedRef = useRef(false);
   const unsubRef = useRef<(() => void) | null>(null);
@@ -56,7 +74,11 @@ export function useFirestoreSync(): void {
 
       const unsub = listenCharacters(FALLBACK_CAMPAIGN_ID, (characters) => {
         if (!mounted) return;
-        setCharacters(characters);
+        // Filter out characters the DM has explicitly deleted (prevents
+        // onSnapshot race conditions from re-adding them before the
+        // Firestore tombstone propagates globally)
+        const filtered = characters.filter((c) => !markCharacterDeleted.has(c.id));
+        setCharacters(filtered);
         setFirebaseConnected(true);
         retryCountRef.current = 0;
       });

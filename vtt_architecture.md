@@ -12231,3 +12231,35 @@ This meant the DM could open the Manage modal but had to click one of the explic
 - Bundle hash: `index-BqHCsxOv.js`
 - URL: https://arkla.vercel.app — HTTP 200 verified
 ---
+
+## Sprint 8/40 — Critical Bug Fix Phase (Character Deletion Race Condition Fix — `markCharacterDeleted`) (Updated: 2026-07-21 09:21)
+## Sprint 8/40 — Critical Bug Fix Phase (Character Deletion Race Condition — `markCharacterDeleted`) — Complete
+**Date:** 2026-07-21
+
+### Residual Bug #4 Fix: `onSnapshot` race condition re-adding deleted characters
+
+**Problem Detected:** `useFirestoreSync.ts`'s `onSnapshot` callback calls `setCharacters(characters)` which does a **full array replace** (`set({ characters })`). If Firestore's snapshot fires with stale cached data (before the Firestore tombstone propagates globally), the deleted character gets re-added. The `isDeleting` guard in `PlayerCardManager` only prevents double-clicks during the async `deleteCharacter` call — once `onClose()` fires, the guard is gone, and any subsequent `onSnapshot` can restore the character.
+
+**Fix Applied:**
+
+1. **`useFirestoreSync.ts`** — Added `markCharacterDeleted` module-scope closure:
+   - `mark(id: string)` — adds character ID to a `Set<string>` with 10s auto-clean timeout
+   - `has(id: string)` — checks if ID is in the deleted set
+   - The `onSnapshot` callback now filters: `characters.filter((c) => !markCharacterDeleted.has(c.id))`
+
+2. **`PlayerCardManager.tsx`** — Calls `markCharacterDeleted.mark(id)` **before** the Firestore delete (not after), creating a zero-gap window where the snapshot filter is already active.
+
+**Bug #4 Complete Status (Character Deletion):**
+| Fix Layer | Status | 
+|:----------|:------:|
+| Firestore-first delete ordering | ✅ Sprint 5 |
+| `isDeleting` guard prevents double-delete | ✅ Sprint 5 |
+| Zustand `removeCharacter` in catch block | ✅ Sprint 5 |
+| Entity transient-wipe hardening (no `setX([])` on error) | ✅ Sprint 6 |
+| `markCharacterDeleted` set prevents onSnapshot re-add | ✅ **Sprint 8 (NEW)** |
+
+### Production Build
+- Build: 7.28s, 2,129 modules, 0 errors, 0 warnings
+- Bundle hash: `index-rIA_JN6f.js`
+- URL: https://arkla.vercel.app — HTTP 200 verified
+---
