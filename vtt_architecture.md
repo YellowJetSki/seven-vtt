@@ -16041,3 +16041,56 @@ Systematically eliminated ALL `as any` type escapes across the codebase:
 
 ### Ready for Cycle 62 (17/35)
 ---
+
+## DM Tool ↔ Canvas Focus Bridge (Cycle 62) (Updated: 2026-07-21 17:37)
+## Cycle 62 — DM Tool ↔ Canvas Focus Bridge — COMPLETE
+
+### What Was Built
+A centralized canvas focus system that bridges DM popover tools with the battle map canvas:
+
+**1. `canvasFocusStore.ts` (NEW)**
+- Zustand store: `focusTokenId`, `shouldAutoPan`, `lastFocusAt`
+- `setFocusToken(tokenId, autoPan)` / `clearFocus()`
+- Auto-clear after 3 seconds via `subscribeFocusAutoClear()` helper
+- Exported for use by any DM tool or canvas component
+
+**2. DM Tool "Locate on Map" Buttons (3 popovers modified)**
+- `DmLegendaryActionTracker.tsx` — 🔍 search icon next to each legendary creature name
+- `DmConcentrationTimerPopover.tsx` — 🔍 search icon next to each concentration timer entry
+- `DmWildShapeTracker.tsx` — 🔍 search icon next to each transformation entry
+
+**3. Canvas Focus Rendering (token-renderer.ts + lighting-renderer.ts)**
+- `drawToken()` accepts new `isFocused` parameter
+- Golden pulsing double-ring rendered around focused token (sin(time*5)*3+8 radius)
+- Outer ring: 45% opacity gold; Inner ring: 15% opacity gold
+- `drawTokens()` accepts `focusTokenId` parameter and computes `isFocused` per token
+- `lighting-renderer.ts` destructures `focusTokenId` from render state and passes through
+
+**4. CanvasMapView Integration**
+- New `focusTokenId` prop on `CanvasMapView` interface
+- Ref-synced on every render to avoid stale closures
+- Passed through `DmControlCenter.tsx` → `useDmControlCenter.ts` from store
+
+### Flow
+DM clicks 🔍 in Legendary Tracker → `canvasFocusStore.setFocusToken(creature.id)`
+→ CanvasMapView reads `focusTokenId` → `drawTokens` renders golden pulsing ring
+→ After 3 seconds, auto-clears for clean gameplay
+
+### Files Created
+- `vtt/src/stores/canvasFocusStore.ts` (85 lines)
+
+### Files Modified
+- `vtt/src/components/control-center/DmLegendaryActionTracker.tsx` (focus button + store import)
+- `vtt/src/components/control-center/DmConcentrationTimerPopover.tsx` (focus button + store import)
+- `vtt/src/components/control-center/DmWildShapeTracker.tsx` (focus button + store import)
+- `vtt/src/components/control-center/useDmControlCenter.ts` (focusTokenId state + return)
+- `vtt/src/components/control-center/DmControlCenter.tsx` (prop passthrough to CanvasMapView)
+- `vtt/src/components/maps/CanvasMapView.tsx` (prop interface + ref sync)
+- `vtt/src/lib/canvas/token-renderer.ts` (isFocused parameter + golden ring rendering)
+- `vtt/src/lib/canvas/lighting-renderer.ts` (focusTokenId destructure + pass-through)
+
+### Build
+- TypeScript: 0 errors
+- Vite build: Clean
+- Production deploy: Successful
+---
