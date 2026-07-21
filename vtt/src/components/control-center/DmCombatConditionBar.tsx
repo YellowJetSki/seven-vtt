@@ -45,6 +45,7 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useUIStore } from "@/stores/uiStore";
 import { useConditionMutations } from "@/hooks/useCharacterMutations";
 import { useCombatStore } from "@/stores/combatStore";
+import PremiumIcon from "@/components/ui/PremiumIcon";
 import { CONDITIONS } from "@/types";
 import type { ConditionId } from "@/types";
 
@@ -261,8 +262,8 @@ export default function DmCombatConditionBar({ isOpen, onClose }: DmCombatCondit
             <div className="relative z-[1] p-4 pb-3 border-b border-white/[0.04]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-sm">
-                    ⚡
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                    <PremiumIcon name="conditions" className="w-4 h-4 text-amber-400" />
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-gold-400/90">

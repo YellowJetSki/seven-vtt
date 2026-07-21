@@ -24,6 +24,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatStore } from "@/stores/combatStore";
 import type { EnemyDoc, CreatureType, CreatureSize, EnemyAttack, AbilityScores } from "@/types/enemy";
+import PremiumIcon from "@/components/ui/PremiumIcon";
 import type { Combatant } from "@/types/combat";
 
 // ── Constants ──
@@ -349,8 +350,8 @@ export default function DmNpcQuickCreatePopover({ isOpen, onClose }: DmNpcQuickC
             <div className="relative z-[1] p-4 pb-3 border-b border-white/[0.04]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-sm">
-                    👾
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <PremiumIcon name="npcs" className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-gold-400/90">

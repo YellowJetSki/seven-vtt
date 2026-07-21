@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useCallback } from "react";
+import PremiumIcon from "@/components/ui/PremiumIcon";
 import { useUIStore } from "@/stores/uiStore";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
@@ -146,7 +147,7 @@ export default function Sidebar() {
             title="Combat Conditions"
             aria-label="Toggle Combat Conditions"
           >
-            <span className="text-sm">⚡</span>
+            <PremiumIcon name="conditions" className="w-3.5 h-3.5 text-amber-400" />
             {sidebarOpen && (
               <span className="text-[9px] text-surface-400 hover:text-amber-400 transition-colors truncate">
                 Conditions
@@ -169,7 +170,7 @@ export default function Sidebar() {
             title="Quick Actions — Damage, Heal, Temp HP, Gold"
             aria-label="Toggle Quick Actions"
           >
-            <span className="text-sm">⚡</span>
+            <PremiumIcon name="quickActions" className="w-3.5 h-3.5 text-rose-400" />
             {sidebarOpen && (
               <span className="text-[9px] text-surface-400 hover:text-rose-400 transition-colors truncate">
                 Quick Actions
@@ -192,7 +193,7 @@ export default function Sidebar() {
             title="NPC Quick Create — Build a monster & add to combat instantly"
             aria-label="Toggle NPC Quick Create"
           >
-            <span className="text-sm">👾</span>
+            <PremiumIcon name="npcs" className="w-3.5 h-3.5 text-emerald-400" />
             {sidebarOpen && (
               <span className="text-[9px] text-surface-400 hover:text-emerald-400 transition-colors truncate">
                 NPC Quick Create

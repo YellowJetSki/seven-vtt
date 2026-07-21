@@ -21,6 +21,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import PremiumIcon from "@/components/ui/PremiumIcon";
 import type { Combatant } from "@/types";
 
 // ── Types ──
@@ -182,7 +183,7 @@ export default function ConcentrationCheckPopover({
           <div className="flex items-center justify-between" style={{ animation: "slide-in-up 0.2s ease-out both" }}>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/15 flex items-center justify-center">
-                <span className="text-sm">🕯️</span>
+                <PremiumIcon name="sparkles" className="w-4 h-4 text-violet-400" />
               </div>
               <div>
                 <span className="text-xs font-bold text-surface-200">Concentration</span>

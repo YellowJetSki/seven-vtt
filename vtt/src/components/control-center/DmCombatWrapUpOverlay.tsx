@@ -28,6 +28,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCombatStore } from "@/stores/combatStore";
 import { useXpMutations, useInventoryMutations } from "@/hooks/useCharacterMutations";
+import PremiumIcon from "@/components/ui/PremiumIcon";
 import { useCombatHpMutations } from "@/hooks/useCombatMutations";
 import { analyzeEncounterDifficulty, getXpForCr } from "@/lib/mechanics/encounter-cr";
 import type { PlayerCharacter } from "@/types/character";
@@ -292,8 +293,8 @@ export default function DmCombatWrapUpOverlay({ isOpen, onClose }: DmCombatWrapU
             <div className="relative z-[1] p-4 pb-3 border-b border-white/[0.04]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-sm">
-                    🏆
+                  <div className="w-8 h-8 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center">
+                    <PremiumIcon name="encounterComplete" className="w-4 h-4 text-gold-400" />
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-gold-400/90">
