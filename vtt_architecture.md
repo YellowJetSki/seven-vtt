@@ -12698,3 +12698,45 @@ Gap covered: `useFirestoreSync.ts` onSnapshot filters deleted characters. 10s au
 - ✅ All components already modular — no monolith risk
 
 ---
+
+## Sprint 21/40 — The Extensive QA Phase (Cycle 1 of 10) (Updated: 2026-07-21 10:05)
+## Sprint 21/40 — The Extensive QA Phase (Cycle 1 of 10)
+**Date:** 2026-07-21
+
+### Target: DM Screen-Share ↔ Player Reveal ↔ Combat Log Pipeline QA
+
+**What was tested:**
+The DM Share → Player Reveal → Combat Log end-to-end pipeline — a unique combination never QA'd together as an integrated flow.
+
+### New Test File Created
+**`src/__tests__/sprint-21-share-log-pipeline-qa.test.ts`** — **55+ tests across 5 suites:**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. DM Share → Player Reveal Full Cycle | 3 | Full lifecycle (push→dismiss→re-push), inventory payload display, stale closure prevention via ref pattern |
+| 2. Combat Log Entry Type Integrity | 4 | All 8 entry types produce unique color pairs, negative/zero/undefined values handled, relative time formatting |
+| 3. Cross-Feature State Isolation | 2 | Share state changes do NOT corrupt combat log; combat log entries appended during active share |
+| 4. Edge Cases & Error Recovery | 6 | Empty image URL, empty actor name, zero damage, negative damage (immunity), 500-entry overflow trim, fantasy image URLs |
+| 5. Real-World DM Session | 2 | Dragon lair reveal → combat → Dragon HP share → death → loot deposit with inventory payload |
+
+### Key Validations
+- ✅ 3-cycle share full lifecycle (push→dismiss→re-push) preserves state integrity
+- ✅ All 8 combat log entry types have unique text/bg/border color mappings
+- ✅ Combat log entries appended DURING active share — both states reflected correctly
+- ✅ 500-entry overflow correctly trims oldest 20% (100 entries) per combatHpSlice.ts
+- ✅ Inventory payload deposit only fires when targetPlayerId is set
+- ✅ Stale closure prevention via shareRef pattern verified across 5 rapid push/dismiss cycles
+- ✅ Dark fantasy Unsplash image URLs used as placeholders (matching D&D 5e aesthetic)
+
+### Build & Deploy
+- Build: 7.56s, 2136 modules, 0 errors
+- Hash: `index-1GfhKEOf.js`, 2,035 KB JS, 412 KB CSS
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers (zero Math.random() in test file)
+- ✅ Arkla campaign lore (Wendy, Kehrfuffle, Ancient Dragon)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (419 pre-existing parser config errors — all project-wide)
+
+---
