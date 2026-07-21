@@ -14096,3 +14096,53 @@ Design:
 ### Git Savepoint
 - ✅ Sprint 16 checkpoint saved
 ---
+
+## Cycle 17 — QA & Stabilization (Cycle 2 of 5) (Updated: 2026-07-21 14:34)
+## Sprint 17 of 80 — QA & Stabilization Phase — Cycle 2 of 5 — COMPLETE ✅
+
+### Production Deployment
+- **URL:** https://arkla.vercel.app — Hash: `index-I5NzzyWy.js`
+- **Build:** 7.33s (Vercel), 2,152 modules, 0 TS errors, 0 warnings
+- **JS:** 2,234 KB (523 KB gzipped), **CSS:** 428 KB (52 KB gzipped)
+
+### Deep QA — 5.5e Exhaustion System Fix (Cycle 16 Residual)
+
+**Problem discovered:** The 5.5e exhaustion update from Cycle 16 (10-level system) needed test alignment. Old tests expected `speedMultiplier: 0.5` (speed halving), but 5.5e exhaustion no longer halves speed — it applies −10ft per even level.
+
+**Files updated (4 files, 8 locations):**
+| File | Changes |
+|:-----|:--------|
+| `condition-application.test.ts` | 4 test updates: exhaustion test expects `speedMultiplier: 1` (no halving); halving tests migrated to `restrained` condition; integration test updated |
+| `conditions-sync-qa.test.ts` | 3 test updates: exhaustion data (halvesSpeed: false); exhaustion+prone test; Kehrfuffle flying exhaustion test |
+| `condition-data-part1.ts` | ✅ (Already fixed Cycle 16 — 10-level exhaustion) |
+
+### Deep QA — Overrrides Aesthetic Fidelity
+
+Live DOM verification at arkla.vercel.app confirmed:
+
+| Pattern | Status | Evidence |
+|:--------|:------:|:---------|
+| Sidebar glass gradient | ✅ | `from-[#14151f]/[0.95] to-[#0f101a]/[0.98]` |
+| backdrop-blur-2xl | ✅ | Confirmed on sidebar |
+| Gold edge light | ✅ | `via-gold-500/15 to-transparent` right edge |
+| Gold active pill | ✅ | `bg-gold-500 shadow-[0_0_6px_rgba(234,179,8,0.3)]` on Dashboard |
+| 44px+ touch targets | ✅ | `min-h-[44px]` on all nav links |
+| Gold Tools separator | ✅ | "Tools ▸" with gradient divider arms |
+| 8 nav links | ✅ | All verified in DOM |
+| 15 DM tools | ✅ | All with color-coded hover states (amber/violet/rose/indigo/emerald) |
+| Staggered entrance animations | ✅ | `animate-in slide-in-from-bottom` patterns present |
+| Quick Note button | ✅ | Renders correctly with tooltip "Ctrl+N" |
+
+### Build Metrics
+
+| Metric | Value |
+|:-------|:------|
+| TypeScript | **0 errors** (2,152 modules) |
+| Vite Build | 7.33s, 0 warnings |
+| JS Bundle | 2,234 KB (523 KB gzipped) |
+| CSS Bundle | 428 KB (52 KB gzipped) |
+| Production URL | arkla.vercel.app — stable, 0 runtime errors |
+
+### Git Savepoint
+- ✅ Sprint 17 checkpoint created
+---
