@@ -14381,3 +14381,54 @@ spellcasting?: {
 - ✅ Overrrides/Lusion/Spotify premium design patterns
 - ✅ Glassmorphism enforced across all modified components
 ---
+
+## Cycle 22 — The Homebrew Forge (Cycle 2 of 10) (Updated: 2026-07-21 14:54)
+## Sprint 22 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. HomebrewItemCard — 7 New Stat Chips
+Added new chip displays for the expanded HomebrewItem fields:
+| Chip | Condition | Visual Style |
+|------|-----------|-------------|
+| Weapon Properties | `weaponProperties?.length > 0` | surface-400 comma-separated list |
+| Armor Type | `armorType` | surface-400 label |
+| STR Requirement | `strengthRequirement` | amber-400 chip with "STR X+" |
+| Stealth Disadvantage | `stealthDisadvantage` | rose-400 "Disadv Stealth" badge |
+| Healing Dice | `healingDice` | emerald-400 "❤ X" chip |
+| Temp HP | `temporaryHp` | amber-400 "X THP" chip |
+| Click-to-View Detail | `onViewDetail` prop | cursor-pointer on name triggers modal |
+
+#### 2. HomebrewItemDetailModal — NEW Component (220 lines)
+Premium Lusion-grade glass popover showing FULL item statblock:
+- Section layouts: Weapon Stats (damage, ATK, properties, versatile), Armor Stats (type, AC, DEX cap, STR req, stealth disadvantage), Potion Stats (healing, THP), Charges (current/max/recharge)
+- Rarity color-coded badge, attunement/cursed badges, flavor text, tags
+- Corner ornaments, gold edge lighting, Escape/backdrop dismiss
+- Damage type emoji references (🔥⚡💀 etc.)
+
+#### 3. HomebrewSpellCard — Fixed `as any` Type Safety
+- Replaced `(spell as any).saveDC` and `(spell as any).savingThrowAbility` with proper `spell.saveDC` and `spell.saveAbility` using the updated HomebrewSpell type
+- Added `spellAttackBonus` chip display ("🎯 +X ATK")
+
+#### 4. HomebrewTabPanel — Detail Modal Integration
+- Added `useState<HomebrewItem | null>` for detail modal state
+- Added `HomebrewItemDetailModal` import and conditional rendering
+- Wired `onViewDetail={setDetailItem}` through to each `HomebrewItemCard`
+
+### Build & Deploy
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 7.77s, 0 warnings |
+| Modules | 2,153 |
+| Bundle hash | `index-Cjhy3ng4.js` |
+| JS bundle | 2,253 KB (526 KB gzipped) |
+| Production URL | ✅ https://arkla.vercel.app |
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides/Lusion/Spotify premium design patterns
+- ✅ `as any` type safety violations eliminated (SpellCard)
+---
