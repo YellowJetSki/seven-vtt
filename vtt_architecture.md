@@ -10651,3 +10651,64 @@ Performed comprehensive **Visual QA** on the production deployment (arkla.vercel
 | New test files | 0 (no programmatic QA this sprint) |
 
 ---
+
+## Sprint 32/41 — Post-Feature QA Phase (Cycle 3 of 6): Visual QA on DM-Specific Globally Accessible Popovers (Updated: 2026-07-20 20:06)
+## Sprint 32/41 — Post-Feature QA Phase (Cycle 3 of 6): Visual QA on DM-Specific Global Popovers
+
+### Summary
+Performed comprehensive **Visual QA** on the 5 DM-specific globally accessible popover systems: Combat Wrap-Up, NPC Quick-Create, Quick Action Popover, Party Rest Overlay, and Combat Condition Bar.
+
+### Architecture Inspection Results
+
+#### All 5 DM Popovers — Mounting Verification
+
+| Popover | Component | File | Mounted In | Mechanism | Status |
+|---------|-----------|------|------------|-----------|:------:|
+| **Combat Wrap-Up** | `DmCombatWrapUpOverlay` | `control-center/DmCombatWrapUpOverlay.tsx` | `AppShell.tsx` (line 218) | Custom event: `toggle-dm-combat-wrapup` | ✅ |
+| **NPC Quick-Create** | `DmNpcQuickCreatePopover` | `control-center/DmNpcQuickCreatePopover.tsx` | `AppShell.tsx` (line 208) | Custom event: `toggle-dm-npc-quick-create` | ✅ |
+| **Quick Action** | `DmQuickActionPopover` | `control-center/DmQuickActionPopover.tsx` | `AppShell.tsx` (line 198) | Custom event: `toggle-dm-quick-actions` | ✅ |
+| **Party Rest** | `DmPartyRestOverlay` | `control-center/DmPartyRestOverlay.tsx` | `AppShell.tsx` (line 178) | Custom event: `toggle-dm-party-rest` | ✅ |
+| **Combat Condition Bar** | `DmCombatConditionBar` | `control-center/DmCombatConditionBar.tsx` | `AppShell.tsx` (line 188) | Custom event: `toggle-dm-combat-conditions` | ✅ |
+
+#### AppShell State Management Verification
+
+| State Flag | Store | Initial Value | Status |
+|------------|-------|:-------------:|:------:|
+| `showPartyRest` | uiStore | false | ✅ |
+| `showCombatConditions` | uiStore | false | ✅ |
+| `showQuickActions` | uiStore | false | ✅ |
+| `showNpcQuickCreate` | uiStore | false | ✅ |
+| `showCombatWrapUp` | uiStore | false | ✅ |
+
+#### Popover Component Quality Assessment
+
+| Component | Lines | Features | Premium Styling |
+|-----------|:-----:|----------|:---------------:|
+| `DmCombatWrapUpOverlay` | 318 | Combat stats (rounds, kills, deaths), XP calculation + distribution, loot suggestions (6 themes), condition clearing, short rest suggestion, individual XP, flash messages | Glass gradient, gold edge light, staggered entrance, 3-tab layout, footer with Firestore sync label |
+| `DmNpcQuickCreatePopover` | 390 | Full statblock builder (name, type, size, CR → auto-AC/HP), 6 ability scores with Standard Array, structured attack manager (add/remove), auto-computed CR values, live preview card, "Create & Add to Combat" | Glass gradient, emerald accent, gold edge light, staggered entrance, preview card |
+| `DmQuickActionPopover` | ~600+ | 4 action modes (damage/heal/temp HP/gold), party summary bar, live per-target preview, quantity presets, custom amount input, recent actions log with undo, gold distribution | Glass gradient, per-mode color coding, staggered entrance |
+| `DmPartyRestOverlay` | ~200+ | All-party rest, per-character HP preview, short rest/long rest buttons, uses rest-engine | Glass gradient, gold edge light |
+| `DmCombatConditionBar` | ~200+ | 16-condition toggle, target selector (party + combatants), uses useConditionMutations() for Firestore sync | Glass gradient, gold edge light |
+
+#### Code Hygiene
+| Check | Result |
+|-------|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ 0 errors |
+| ESLint (pre-existing parser config) | 408 errors — all pre-existing, 0 new from this sprint |
+| New test files | 0 (visual QA only this cycle) |
+
+#### Arkla Lore Compliance
+- ✅ All placeholder lore references appropriate for Arkla campaign
+- ✅ Wendy + Kehrfuffle character context preserved
+- ✅ No mention of 'Tick race' or 'Food machine'
+- ✅ No dice rollers
+
+### Key Finding
+All 5 DM popovers are:
+1. Properly mounted in AppShell at the top level (globally accessible from ANY page)
+2. Conditionally rendered with `{role === "dm" && ...}` guards
+3. Triggered via CustomEvent listeners with proper closure refs
+4. Using premium glass gold styling consistent with the design system
+5. All mutations properly wired to BOTH Zustand + Firestore via existing hooks
+
+---
