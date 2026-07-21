@@ -15135,3 +15135,31 @@ Upgraded the Token Image URL field in EnemyCreator:
 
 ### Ready for Cycle 37 — PC Experience Phase — Cycle 2 of 10
 ---
+
+## Cycle 37 — PC Experience Phase — Cycle 2 of 10 (Complete) (Updated: 2026-07-21 15:38)
+## Sprint 37 of 80 — PC Experience Phase — Cycle 2 of 10 (COMPLETE) ✅
+
+### Feature Enhancement: Visual Consumption Animation
+
+| Enhancement | Component | Status | Details |
+|:------------|:----------|:------:|:--------|
+| **1. ConsumptionAnimation** | `ConsumptionAnimation.tsx` (NEW — 210 lines) | ✅ Complete | Overrrides-grade animated overlay that plays when a consumable item is used. 6 visual variants (potion=emerald+🧪, scroll=violet+📜, food=amber+🍖, poison=emerald+☠️, oil=amber+🫗, antidote=sky+💊) with color-coded backgrounds, animated icon bounce, floating "+X HP" text, 8 ambient ping particles, enter → visible → exit (2s) lifecycle with staggered delays. Glass gradient card with backdrop blur. |
+
+### Feature Enhancements: PlayerCardCompact Overhaul
+
+| Enhancement | Component | Status | Details |
+|:------------|:----------|:------:|:--------|
+| **2. PlayerCardCompact refactor** | `PlayerCardCompact.tsx` (MODIFIED) | ✅ Complete | Complete Overrrides-grade rebuild: tier-based HP bar (5-tiers: Healthy/Scratched/Bloodied/Critical/Down with color coding emerald→amber→red→rose), temp HP overlay bar with gold tint, inline 6-button HP quick controls (-10/-5/-1/+1/+5/+10), condition dots with overflow, stat strip with flex-1 responsive sizing, quick gold deposit button, living gear manage button (SVG cog). Cleaner spacing with `·` separators on race/class line. |
+
+### TypeScript & Build
+- TypeScript: ✅ **0 errors** (`npx tsc --noEmit` clean)
+- Git: ✅ Sprint 37 checkpoint saved
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides/Ventriloc premium design patterns (5-tier HP color bars, glass gradient cards, directional glow sweeps, edge lights, staggered entrance, gold AC badges)
+
+### Ready for Cycle 38 — PC Experience Phase — Cycle 3 of 10
+---
