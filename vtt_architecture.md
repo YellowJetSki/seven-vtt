@@ -13956,3 +13956,52 @@ All same features as GlobalQuickNote (category chips, progress bar, corner ornam
 | CSS bundle | 425 KB (52 KB gzipped) |
 | Production URL | ✅ arkla.vercel.app
 ---
+
+## Cycle 10 — Foundation & Dashboards — Global Design Tokens System (Updated: 2026-07-21 14:13)
+## Cycle 10 — Global Design Tokens & Systematic Application — Complete
+**Date:** 2026-07-21
+
+### Deliverables
+
+#### 1. Global Design Token Expansion (index.css @theme block)
+Added **38 new CSS custom properties** across 6 token domains:
+
+**Motion & Animation (6 tokens):**
+`--ease-premium`, `--ease-spring`, `--ease-glass` (easing functions)
+`--duration-instant/fast/normal/slow/entrance/glass` (100ms-400ms)
+
+**Spacing (5 tokens):**
+`--spacing-section/cardGap/panelInset/elementGap/iconBox`
+
+**Radius (5 tokens):**
+`--radius-card/panel/button/pill/icon`
+
+**Shadow (10 tokens):**
+`--shadow-glass-sm/glass/glass-lg`, `--shadow-glow-gold/amber/emerald/rose`, `--shadow-card-hover`
+
+**Gold Opacity Presets (5 tokens):**
+`--gold-glow/border/fill/edge/surface`
+
+#### 2. Programmatic Design Token Module (lib/design-tokens.ts)
+Created **240-line TypeScript utility module** with exported constants:
+- `ease`, `duration`, `spacing`, `radius`, `shadows`, `gold`, `glass` — all as const objects
+- Helper functions: `staggerEntrance(index, delay)`, `entrance(delay)`, `glassCardWithEdge(variant)`, `goldCorner(position)`
+- `buttonVariant` — gold/emerald/rose/danger/ghost preset class strings
+- `focusRingGold`, `focusRingAmber` — focus ring class strings
+- `goldEdgeLight`, `goldEdgeLightBottom` — reusable edge light patterns
+
+#### 3. Token-Systematic Component Refactors
+| Component | Changes |
+|-----------|---------|
+| **DmCommandBar.tsx** | Uses `glassCardWithEdge("toolbar")`, `goldEdgeLight`, `ease.premium`, `duration.entrance`, `buttonVariant` — removes hardcoded shadow strings and glass gradients |
+| **OverrridesSectionHeader.tsx** | Uses `staggerEntrance(index, 30)` — adds index-based staggered entrance animation with design-system timing |
+
+### Build Metrics
+| Metric | Value |
+|--------|:------:|
+| TypeScript | ✅ 0 errors (2149 modules) |
+| Vite build | ✅ 7.75s Vercel |
+| JS bundle | 2,220 KB (520 KB gzipped) |
+| CSS bundle | 427 KB (52 KB gzipped) |
+| Production URL | ✅ arkla.vercel.app
+---
