@@ -14432,3 +14432,57 @@ Premium Lusion-grade glass popover showing FULL item statblock:
 - ✅ Overrrides/Lusion/Spotify premium design patterns
 - ✅ `as any` type safety violations eliminated (SpellCard)
 ---
+
+## Cycle 23 — The Homebrew Forge (Cycle 3 of 10) (Updated: 2026-07-21 14:57)
+## Sprint 23 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. HomebrewFeatForm — 3 New Fields
+| Field | Description |
+|-------|-------------|
+| Flavor Text | Italic flavor text input ("You are what you do...") |
+| Tags | Comma-separated tag input for categorization |
+| Source | Source attribution field (default "homebrew") |
+
+#### 2. emptyFeat — Fixed Missing Fields
+Added `flavorText`, `abilityScoreIncrease: undefined`, `skillProficiencies: undefined` to the `emptyFeat` object in `useHomebrewForms.ts`. Previously these fields were undefined-only, now explicitly set for type safety.
+
+#### 3. HomebrewFeatCard — Flavor Text + Source Display
+- Added italic gold flavor text with line-clamp
+- Added Source badge (hidden when "homebrew")
+
+#### 4. EnemyStatblock ReadView — Token Image Banner
+- Added full-width image banner (32 rows, object-cover)
+- Gradient fade overlay (bottom-to-top for text legibility)
+- Gold dot + "Token Preview" label
+- Only renders when `imageUrl` is present on `EnemyDoc`
+
+#### 5. EnemyStatblock ReadView — Spellcasting Detail Section
+- New violet-accented glass panel showing:
+  - Save DC, ATK Bonus, Caster Type (full/half/third/pact/innate)
+  - Spellcasting ability display
+  - Spell list (comma-separated)
+  - Per-level slot gauges (Lv1: 4/4, Lv2: 2/3, etc.)
+
+#### 6. EnemyStatblock Spellcasting — Already had in EnemyCreator
+Verified `EnemyCreator.tsx` already has `imageUrl` input with live preview, and `spellcasting` section with caster type, ability, DC, ATK, spells, and slot editor.
+
+### Build & Deploy
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 8.23s, 0 warnings |
+| Modules | 2,153 |
+| Bundle hash | `index-I4I9G_V1.js` |
+| CSS bundle | 429 kB (52.6 kB gzipped) |
+| JS bundle | 2,257 kB (527 kB gzipped) |
+| Production URL | ✅ https://arkla.vercel.app |
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Overrrides/Lusion premium design patterns
+- ✅ `emptyFeat` type safety fixed
+---
