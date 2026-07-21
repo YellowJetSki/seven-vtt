@@ -192,6 +192,29 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* ── DM CONCENTRATION DURATION TIMER TOGGLE (Sprint 34) ── */}
+        <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("toggle-dm-concentration-timer"));
+            }}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200 active:scale-95 hover:bg-violet-500/8 hover:border-violet-500/10 ${
+              sidebarOpen
+                ? "w-full px-2.5 py-1.5 border border-white/[0.04]"
+                : "w-9 h-9 justify-center border border-white/[0.04] mx-auto"
+            }`}
+            title="Concentration Timer — Real-time countdown for active concentration spells with expiry warnings"
+            aria-label="Toggle Concentration Timer"
+          >
+            <PremiumIcon name="sparkles" className="w-3.5 h-3.5 text-violet-400" />
+            {sidebarOpen && (
+              <span className="text-[9px] text-surface-400 hover:text-violet-400 transition-colors truncate">
+                Concentration
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* ── DM SOCIAL INTERACTION & MONSTER KNOWLEDGE TOGGLE (Sprint 32) ── */}
         <div className={`px-2 pb-1 ${!sidebarOpen ? "flex justify-center" : ""}`}>
           <button

@@ -38,6 +38,7 @@ interface UIState {
   showSkillCheck: boolean;
   showSocialInteraction: boolean;
   showTreasureGenerator: boolean;
+  showConcentrationTimer: boolean;
 }
 
 interface UIActions {
@@ -67,6 +68,8 @@ interface UIActions {
   setSocialInteraction: (show: boolean) => void;
   /** Set DM Treasure Generator overlay visibility */
   setTreasureGenerator: (show: boolean) => void;
+  /** Set DM Concentration Timer overlay visibility */
+  setConcentrationTimer: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -90,6 +93,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showSkillCheck: false,
   showSocialInteraction: false,
   showTreasureGenerator: false,
+  showConcentrationTimer: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -110,6 +114,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setSkillCheck: (show: boolean) => set({ showSkillCheck: show }),
   setSocialInteraction: (show: boolean) => set({ showSocialInteraction: show }),
   setTreasureGenerator: (show: boolean) => set({ showTreasureGenerator: show }),
+  setConcentrationTimer: (show: boolean) => set({ showConcentrationTimer: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

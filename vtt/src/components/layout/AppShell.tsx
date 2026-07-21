@@ -34,6 +34,7 @@ import DmCombatWrapUpOverlay from "@/components/control-center/DmCombatWrapUpOve
 import DmSkillCheckPopover from "@/components/control-center/DmSkillCheckPopover";
 import DmSocialInteractionPopover from "@/components/control-center/DmSocialInteractionPopover";
 import DmTreasureGeneratorPopover from "@/components/control-center/DmTreasureGeneratorPopover";
+import DmConcentrationTimerPopover from "@/components/control-center/DmConcentrationTimerPopover";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -61,6 +62,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setSocialInteraction = useUIStore((s) => s.setSocialInteraction);
   const showTreasureGenerator = useUIStore((s) => s.showTreasureGenerator);
   const setTreasureGenerator = useUIStore((s) => s.setTreasureGenerator);
+  const showConcentrationTimer = useUIStore((s) => s.showConcentrationTimer);
+  const setConcentrationTimer = useUIStore((s) => s.setConcentrationTimer);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -163,6 +166,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setTreasureGeneratorRef.current(!showTreasureGeneratorRef.current); };
     window.addEventListener("toggle-dm-treasure-generator", handler);
     return () => window.removeEventListener("toggle-dm-treasure-generator", handler);
+  }, []);
+
+  const showConcentrationTimerRef = useRef(showConcentrationTimer);
+  showConcentrationTimerRef.current = showConcentrationTimer;
+  const setConcentrationTimerRef = useRef(setConcentrationTimer);
+  setConcentrationTimerRef.current = setConcentrationTimer;
+
+  useEffect(() => {
+    const handler = () => { setConcentrationTimerRef.current(!showConcentrationTimerRef.current); };
+    window.addEventListener("toggle-dm-concentration-timer", handler);
+    return () => window.removeEventListener("toggle-dm-concentration-timer", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -285,6 +299,13 @@ export default function AppShell({ children }: AppShellProps) {
           with magic items, art, and gems per CR tier */}
       {role === "dm" && (
         <DmTreasureGeneratorPopover />
+      )}
+
+      {/* ── DM Concentration Duration Timer Popover (Sprint 34) ──
+          Real-time countdown for active concentration spells
+          with configurable durations and expiry warnings */}
+      {role === "dm" && (
+        <DmConcentrationTimerPopover />
       )}
     </div>
   );
