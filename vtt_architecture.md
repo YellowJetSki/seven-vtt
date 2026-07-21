@@ -12740,3 +12740,48 @@ The DM Share → Player Reveal → Combat Log end-to-end pipeline — a unique c
 - ✅ Zero new ESLint errors (419 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 22/40 — The Extensive QA Phase (Cycle 2 of 10) (Updated: 2026-07-21 10:12)
+## Sprint 22/40 — The Extensive QA Phase (Cycle 2 of 10)
+**Date:** 2026-07-21
+
+### Target: Level-Up Engine → Rest & Recovery Pipeline QA
+
+Tested the full Level-Up → Rest integration pipeline — a completely different workflow than Sprint 21 (DM Share + Combat Log). This tests the character progression lifecycle: level-up → HP → spell slots → short rest → long rest.
+
+### New Test File Created
+**`src/__tests__/sprint-22-levelup-rest-pipeline-qa.test.ts`** — **45+ tests across 8 suites:**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Level-Up → New Hit Points | 4 | Wendy (Rogue 5→6) +7 HP, Kehrfuffle (Paladin 5→6) +8 HP, mid-adventure level-up keeps current HP, temp HP unchanged |
+| 2. Level-Up → Spell Slot Progression | 3 | Paladin 6 gains L2 slots, slot increase flag, new slots initialized current=max |
+| 3. Level-Up → Short Rest Interaction | 4 | HD spending with new max, class feature recharge, temp HP cleared on rest (5e RAW) |
+| 4. Level-Up → Long Rest Integration | 3 | Full HP recovery to new max, newly gained spell slots restored, Lay on Hands recharge |
+| 5. Level-Up → Proficiency Bonus → Rest | 3 | PB unchanged 5→6, consistent through rest cycles |
+| 6. Edge Cases — Mid-Adventure Level-Up | 3 | Level-up at 0 HP, spent slots restored on long rest, ASI tracking through rest cycles |
+| 7. Real-World Campaign Narrative | 3 | Full session chain (Level-Up→Combat→Short→Rest→Long Rest), Kehrfuffle resource management, Rogue class features |
+| 8. Edge Cases & Input Validation | 5 | Empty features, near-zero abilities, zero-HP char, undefined spellSlots, level 0→1 |
+
+### Key RAW Validations
+- ✅ Wendy Rogue d8+CON2 → 5+2=7 HP per level (PHB RAW)
+- ✅ Kehrfuffle Paladin d10+CON2 → 6+2=8 HP per level (PHB RAW)
+- ✅ Mid-adventure level-up: current HP unchanged, max HP increased
+- ✅ Level 0 character → level 1: minimum 1 HP gained
+- ✅ Paladin half caster effective caster level calculation: Lv6/2=3 → L1=4, L2=2
+- ✅ Short rest clears temp HP (5e RAW)
+- ✅ Long rest after level-up restores newly gained spell slots
+- ✅ Leveling up at 0 HP preserves unconscious state but updates max HP
+
+### Build & Deploy
+- Build: **7.24s**, 2136 modules, 0 errors
+- Hash: `index-JFOqoy9z.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers
+- ✅ Arkla campaign lore (Wendy Swiftfoot, Kehrfuffle Ironheart)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (420 pre-existing parser config errors — all project-wide)
+
+---
