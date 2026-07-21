@@ -15956,3 +15956,26 @@ The codebase is mature and hardened. Remaining work for cycles 58-80 should focu
 - ✅ Vite build: 6 chunked files, clean CSS output
 - ✅ Saved as Sprint 58 checkpoint
 ---
+
+## Accessibility &amp; Final Hardening (Cycle 59) (Updated: 2026-07-21 17:19)
+## Cycle 59 — Accessibility Hardening — COMPLETE
+
+### Accessibility Fixes Applied
+
+**1. PremiumIcon — `aria-hidden="true"` on ALL SVG icons**
+- Added `aria-hidden="true"` to both the primary SVG rendering path (`IconBase` component) and the fallback empty-state SVG. This prevents screen readers from attempting to parse 28 complex SVG path definitions that are purely decorative.
+- **Impact**: 150+ SVG icon instances across all 16 DM popovers, all sidebar tools, and all UI components now properly hidden from screen readers.
+
+**2. PremiumIcon — `IconName` type exported**
+- Changed `type IconName` to `export type IconName` in `PremiumIcon.tsx`. This enables importing the typed union elsewhere without `as any` casts.
+
+**3. Sidebar — `as any` cast eliminated**
+- Replaced `PremiumIcon name={tool.icon as any}` with `PremiumIcon name={tool.icon}` by properly typing the `dmTools` array with the `IconName` import.
+- Added `import type { IconName } from "@/components/ui/PremiumIcon"` to `Sidebar.tsx`.
+- Changed `DmToolProps.icon` type from `string` to `IconName` — full type safety on all 16 DM tool icons.
+
+### Build Verification
+- ✅ TypeScript: 0 errors
+- ✅ Vite build: 6 chunked files (same architecture as Cycle 58), clean CSS
+- ✅ Saved as Sprint 59 checkpoint
+---
