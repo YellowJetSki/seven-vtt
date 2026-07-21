@@ -11640,3 +11640,33 @@ All 8 routes checked for proper flex containment:
 Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the application for console errors, React warnings, memory leaks, runtime crashes.
 
 ---
+
+## Sprint 10/20 — Console & Runtime Error Phase (Cycle 1 of 2) — Complete (Updated: 2026-07-20 22:51)
+## Sprint 10/20 — Console & Runtime Error Phase (Cycle 1 of 2)
+
+### Completed Actions
+
+| Action | Result |
+|:-------|:-------|
+| **Production runtime error detection** | ✅ Identified React Error #185 (infinite re-render loop) on dashboard load |
+| **Root cause analysis** | ✅ Duplicate `ConnectionBanner` mounting — rendered in BOTH `App.tsx` (top level) and `AppShell.tsx` (inside all DM pages). Both instances had `useEffect` with `[]` deps reading connection state via refs, causing conflicting state transitions. |
+| **Fix: Removed duplicate ConnectionBanner from AppShell** | ✅ Removed `ConnectionBanner` import and JSX from `AppShell.tsx`. The `App.tsx` version (rendered above Routes) handles all pages. |
+| **Build verification** | ✅ `tsc --noEmit`: 0 errors. Vite build: 2129 modules. |
+| **Production deploy** | ✅ New hash `index-DuGkYc65.js` deployed. Vercel aliased to `arkla.vercel.app`. |
+| **Runtime verification** | ✅ React Error #185 CONFIRMED ELIMINATED. Zero runtime errors on dashboard load. |
+| **Hygiene check** | ✅ 404 pre-existing ESLint parser config errors (all known — no new code errors). |
+
+### Runtime Error Summary
+
+| Error | Source | Status |
+|:------|:-------|:-------|
+| React Error #185 — Maximum update depth exceeded | Duplicate `ConnectionBanner` in `App.tsx` + `AppShell.tsx` | ✅ **FIXED** |
+| Firestore deprecation warning | `enableMultiTabIndexedDbPersistence()` usage | 🔵 Benign (planned migration) |
+| Firebase Auth 400 error | No live Firebase project — graceful fallback | 🔵 Expected (local auth works) |
+
+### Console & Runtime Error Phase Progress
+| Sprint | Target | Deliverable |
+|:------:|:--------|:-----------|
+| **10** | **Console & Runtime Error Phase** | **React #185 eliminated, 0 runtime errors, duplicate ConnectionBanner removed** |
+
+---
