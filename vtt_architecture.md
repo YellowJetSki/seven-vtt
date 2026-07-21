@@ -14486,3 +14486,57 @@ Verified `EnemyCreator.tsx` already has `imageUrl` input with live preview, and 
 - ✅ Overrrides/Lusion premium design patterns
 - ✅ `emptyFeat` type safety fixed
 ---
+
+## Cycle 24 — The Homebrew Forge (Cycle 4 of 10) (Updated: 2026-07-21 15:01)
+## Sprint 24 of 80 — The Homebrew Forge — COMPLETE ✅
+
+### Deliverables
+
+#### 1. HomebrewItemForm — 4 New Sections + Property Toggles
+
+| Feature | Detail |
+|---------|--------|
+| **Weapon Properties** | 13 toggle chips (Finesse, Heavy, Light, Loading, Reach, Thrown, Versatile, etc.) |
+| **Versatile Damage Dice** | Conditionally appears when "Versatile" property is selected |
+| **Armor Expanded** | Armor type (light/medium/heavy/shield), DEX cap, STR requirement, Stealth disadvantage |
+| **Consumable Stats** | Healing dice + Temp HP (visible for potion/poison/food/scroll categories) |
+| **Flavor Text** | New italic flavor text input |
+| **Source Field** | Source attribution input |
+
+#### 2. HomebrewSpellForm — 3 New Fields
+- `flavorText` (new type field on `HomebrewSpell`)
+- Tags (comma-separated input)
+- Source attribution
+
+#### 3. HomebrewSpellCard — Flavor Text + Source Display
+- Gold italic flavor quote with line-clamp
+- Source badge (hidden when "homebrew")
+
+#### 4. HomebrewItemCard — Flavor Text + Source Display
+- Gold italic flavor quote
+- Source badge (hidden when "homebrew")
+
+#### 5. Type Fixes
+- `HomebrewSpell` interface — added `flavorText?: string`
+- `emptySpell` in useHomebrewForms — added `flavorText: ""`
+
+### Build & Deploy
+
+| Metric | Value |
+|:-------|:------|
+| `tsc --noEmit` | ✅ 0 errors |
+| Vite Build | ✅ 8.36s, 0 warnings |
+| Modules | 2,153 |
+| Bundle hash | `index-HHAdaEA2.js` |
+| CSS | 429.6 kB (52.6 kB gz) |
+| JS | 2,263 kB (528 kB gz) |
+| Production | ✅ https://arkla.vercel.app |
+
+### Files Modified (6)
+- `types/homebrew.ts` — Added `flavorText` to `HomebrewSpell`
+- `components/homebrew/useHomebrewForms.ts` — Added `flavorText` to `emptySpell`
+- `components/homebrew/HomebrewItemForm.tsx` — Weapon properties, armor expanded, consumable stats, flavorText, source, dynamic versatile dice
+- `components/homebrew/HomebrewSpellForm.tsx` — flavorText, tags, source
+- `components/homebrew/HomebrewItemCard.tsx` — flavorText + source display
+- `components/homebrew/HomebrewSpellCard.tsx` — flavorText + source display
+---
