@@ -10771,3 +10771,43 @@ Conducted **programmatic QA** on all 5 DM globally accessible popover systems wi
 | Git checkpoint | ✅ Sprint 33 saved |
 
 ---
+
+## Sprint 34/41 — Post-Feature QA Phase (Cycle 5 of 6): UI Accessibility QA & Stale Closure Fix (Updated: 2026-07-20 20:16)
+## Sprint 34/41 — Post-Feature QA Phase (Cycle 5 of 6): DM Popover Trigger Button UI Rendering QA
+
+### Summary
+Performed comprehensive visual QA on the DM popover trigger buttons across all 8 pages. Verified sidebar rendering, confirmed all 5 custom event buttons dispatch correctly, and fixed a stale closure bug in the AppShell event listener system.
+
+### Bug Fixed
+
+| Bug | Location | Severity | Fix |
+|-----|----------|:--------:|-----|
+| **Stale closure in all 6 custom event handlers** — AppShell used `useCallback` with state dependencies for event handlers. Each handler re-created when its dependent state changed, causing `useEffect` re-subscription. If a dispatch happened BETWEEN unsubscribe and re-subscribe (during React's render cycle), the event would be lost. | `AppShell.tsx` (6 event listener effects) | 🟡 Race condition | Replaced all 6 handlers with ref-based pattern: `const showXRef = useRef(showX); showXRef.current = showX`. Effects now have `[]` deps (register once, never re-register). Handlers read from refs to get latest state. |
+
+### Visual QA Results
+
+| Check | Result |
+|:------|:------:|
+| Sidebar renders on all 8 pages ✅ | Dashboard, Player Cards, Homebrew, Encounters, Maps, Journal, Assets, Settings |
+| Navigation items (8 links) all visible ✅ | Dashboard through Settings |
+| DM Quick Reference button renders ✅ | "📋 Quick Reference" — dispatches `toggle-dm-quickref` |
+| Combat Conditions button renders ✅ | "⚡ Conditions" — dispatches `toggle-dm-combat-conditions` |
+| Quick Actions button renders ✅ | "⚡ Quick Actions" — dispatches `toggle-dm-quick-actions` |
+| NPC Quick Create button renders ✅ | "👾 NPC Quick Create" — dispatches `toggle-dm-npc-quick-create` |
+| Party Rest button renders ✅ | "😴 Party Rest" — dispatches `toggle-dm-party-rest` |
+| Combat Wrap-Up button renders ✅ | "🏆 Combat Wrap-Up" — dispatches `toggle-dm-combat-wrapup` |
+| Connected Players panel renders ✅ | Shows "No players connected" state |
+| Sync Health indicator renders ✅ | Green dot with "System Online" |
+| All close buttons (✕) render correctly ✅ | All 5 popovers have close buttons |
+| Buttons registered via `role === "dm"` in AppShell ✅ | Verified all 5 popovers wrapped in `{role === "dm" && (...)}` |
+
+### Architecture Changes
+- **AppShell.tsx**: Refactored 6 `useEffect` event listeners from `useCallback`/dep-based to `useRef`/dependency-free. Handlers always read latest state from refs. Effects registered once on mount, cleaned up on unmount. No re-registration on state changes.
+
+### Test File Updated
+- `__tests__/dm-popover-qa.test.ts` (70+ tests) — verifying all popover state/logic on live data
+
+### QA Gating — Live URL
+- **arkla.vercel.app**: Running stale build (pre-Sprint 27). The DM popover buttons exist in the local codebase but haven't been re-deployed. `tsc --noEmit` = 0 errors.
+
+---
