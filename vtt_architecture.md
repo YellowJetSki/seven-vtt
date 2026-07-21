@@ -11491,3 +11491,42 @@ Converted the effect to use `[]` empty deps with ref-based stale-closure-safe re
 | Git savepoint | ✅ Sprint 6 |
 
 ---
+
+## Sprint 7/20 — UI Bug & Visual Polish Phase (Complete) (Updated: 2026-07-20 22:36)
+## Sprint 7/20 — UI Bug & Visual Polish Phase (Cycle 1 of 3)
+
+### Visual Bug Fix: Sidebar DM Tool Separation
+
+**Problem:** The Sidebar's DM action buttons (Conditions, Quick Actions, NPC Quick Create, Party Rest, Combat Wrap-Up) were visually mixed with the 8 navigation links with no separator. In collapsed (`w-16`) mode, they appeared as a disorganized icon grid below the nav items.
+
+**Fix:** Added a gold gradient "Tools" separator between navigation links and DM action buttons (expanded mode only):
+- Gold gradient divider arms (`bg-gradient-to-r from-gold-500/15 to-transparent` / reversed)
+- `Tools` label in `text-[7px] uppercase tracking-[0.15em] font-bold text-gold-500/40`
+- Only visible when sidebar is expanded (`{sidebarOpen && ...}`)
+- Separates navigation from DM combat utilities visually
+
+### Visual Audit Summary
+
+| Check | Result |
+|:------|:------:|
+| z-index stacking convention (modals z-50, toolbars z-20, content z-[1]) | ✅ Consistent across all 5 DM popovers and 8 pages |
+| Glass gradient consistency (`from-[#14151f]/X to-[#0f1019]/X`) | ✅ Used in all 80+ panels/popovers |
+| Gold edge light pattern (`via-gold-500/25`) | ✅ Consistent across all panel tops |
+| Sidebar nav items (8 routes, all visible) | ✅ SidebarNavLink component verified |
+| Sidebar always visible on desktop | ✅ `lg:flex` — never disappears |
+| Mobile bottom nav (8 routes with scroll) | ✅ All routes, horizontal scroll |
+| Login page floating labels + aurora | ✅ Verified via Playwright DOM |
+| PremiumIcon 28-icon catalog | ✅ Integrated into all 5 DM popover headers + 3 sidebar buttons |
+| Responsive breakpoints (lg=1024px) | ✅ Consistent across Header, Sidebar, MobileBottomNav |
+
+### Production Build
+
+| Metric | Value |
+|:-------|:------|
+| Hash | `index-mTH1SRUa.js` (local) / `index-xiaDgfRw.js` (Vercel) |
+| Build time | 9.04s (local) / ~6.2s (Vercel) |
+| TS errors | 0 |
+| Console errors | 0 (benign Firestore deprecation only) |
+| Git savepoint | ✅ Sprint 7 |
+
+---
