@@ -12069,3 +12069,29 @@ The application is battle-ready for live D&D 5.5e sessions. From the LoginPage's
 - Assets confirmed serving HTTP 200 (AppIcon.png, all 32 PNG campaign assets)
 - TypeScript: 0 errors (`npx tsc --noEmit`)
 ---
+
+## Sprint 2/40 — Critical Bug Fix Phase (Hardening) (Updated: 2026-07-21 09:01)
+## Sprint 2/40 — Critical Bug Fix Phase (Hardening) — Complete
+**Date:** 2026-07-21
+
+### Deepened Fixes on All 4 Core Bugs
+
+| Bug | Sprint 1 Fix (Surface) | Sprint 2 Fix (Deep/Hardening) |
+|-----|----------------------|-------------------------------|
+| 1. Close Player Card view | Added Escape key + backdrop click to PlayerSheet.tsx | No additional changes needed — fix holding |
+| 2. Navigation disappearing on Fight tab | Changed DmControlCenter `h-full` to `height: 100% + min-height: 0` | **Added `useResponsive` — hid `ControlCenterSidebar` on mobile** via `isMobile ? "hidden" : "block"`. Mobile users now see only MobileBottomNav, not the inner map sidebar. |
+| 3. Dynamic viewport height/width | Replaced `h-screen w-screen` with `100dvh/100dvw` on 6 core layouts | **Extended to 3 more files:** AuthGuard.tsx (loading spinner), Modal.tsx (all modal backdrops), TheatricPage.tsx (theatric display viewport). |
+| 4. Deleted characters reappear | Added Firestore `deleteCharacter()` call after Zustand `removeCharacter()` | **Fixed race condition:** Changed to `async/await` — Firestore delete now happens **first** (awaited), THEN Zustand remove. Prevents onSnapshot from re-adding the character. Zustand remove still fires on Firestore failure as fallback. |
+
+### Additional Files Modified
+- **`DmControlCenter.tsx`** — Added `useResponsive` import, `ControlCenterSidebar` hidden on mobile to prevent double-sidebar confusion
+- **`AuthGuard.tsx`** — Loading viewport `min-h-screen` → `100dvh`
+- **`Modal.tsx`** — Modal backdrop `inset-0` → `100dvh` for consistent height on mobile
+- **`TheatricPage.tsx`** — Main container `fixed inset-0` → `100dvh/100dvw`
+
+### Production Deployment
+- Build: 2,129 modules, 10.33s, 0 errors
+- Bundle: JS 2,030 KB (481 KB gzipped), CSS 378 KB (38 KB gzipped)
+- URL: https://arkla.vercel.app — verified stable (HTTP 200)
+- TypeScript: 0 errors (`npx tsc --noEmit`)
+---

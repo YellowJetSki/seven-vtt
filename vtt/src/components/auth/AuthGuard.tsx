@@ -36,7 +36,8 @@ export default function AuthGuard({
 
   if (!isRehydrated) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-surface-950">
+      <div className="flex items-center justify-center bg-surface-950"
+        style={{ height: '100dvh', width: '100dvw' }}>
         <LoadingSpinner size="lg" label="Loading..." />
       </div>
     );

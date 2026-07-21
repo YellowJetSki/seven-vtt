@@ -71,12 +71,18 @@ export default function PlayerCardManager({ isOpen, character, onClose }: Player
     onClose();
   }, [character, addCharacter, onClose]);
 
-  const handleDelete = useCallback(() => {
-    removeCharacter(character.id);
-    // Also delete from Firestore so character doesn't reappear on refresh
-    deleteCharacter(FALLBACK_CAMPAIGN_ID, character.id).catch((err) => {
+  const handleDelete = useCallback(async () => {
+    try {
+      // Delete from Firestore FIRST to prevent race condition where
+      // onSnapshot could re-add the character before Firestore delete propagates
+      await deleteCharacter(FALLBACK_CAMPAIGN_ID, character.id);
+      // Only remove from local Zustand after Firestore confirms deletion
+      removeCharacter(character.id);
+    } catch (err) {
       console.warn("[PlayerCardManager] Firestore deletion failed:", err);
-    });
+      // Still remove locally even if Firestore fails
+      removeCharacter(character.id);
+    }
     onClose();
   }, [character.id, removeCharacter, onClose]);
 

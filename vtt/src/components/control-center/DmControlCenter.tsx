@@ -21,6 +21,7 @@
 
 import { useCallback, useState } from "react";
 import { useCombatStore } from "@/stores/combatStore";
+import { useResponsive } from "@/hooks/useResponsive";
 import CanvasMapView from "@/components/maps/CanvasMapView";
 import DmToolbar from "./DmToolbar";
 import ControlCenterSidebar from "./ControlCenterSidebar";
@@ -54,6 +55,8 @@ export default function DmControlCenter() {
     },
     [state]
   );
+
+  const { isMobile } = useResponsive();
 
   if (!state.activeMap) {
     return <ControlCenterEmptyState />;
@@ -93,11 +96,13 @@ export default function DmControlCenter() {
       <DmSharePicker isOpen={showSharePicker} onClose={() => setShowSharePicker(false)} />
 
       {/* ─── Left Sidebar ─────────────────────────── */}
-      <ControlCenterSidebar
-        activeMapId={state.activeMapId}
-        battleMaps={state.battleMaps}
-        onSelectMap={state.handleSelectMap}
-      />
+      <div className={isMobile ? "hidden" : "block"}>
+        <ControlCenterSidebar
+          activeMapId={state.activeMapId}
+          battleMaps={state.battleMaps}
+          onSelectMap={state.handleSelectMap}
+        />
+      </div>
 
       {/* ─── Center: Canvas + Floating Toolbar ─────── */}
       <div className="flex-1 flex flex-col min-w-0 relative">

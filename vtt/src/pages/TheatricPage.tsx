@@ -155,6 +155,7 @@ export default function TheatricPage() {
   return (
     <div
       className="fixed inset-0 bg-[#0a0b12] overflow-hidden select-none"
+      style={{ height: '100dvh', width: '100dvw' }}
       onMouseMove={handleMouseMove}
       onTouchStart={() => setShowControls(true)}
     >
