@@ -14,6 +14,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useCombatStore } from "@/stores/combatStore";
+import DashboardPanel from "@/components/ui/DashboardPanel";
 import type { LiveSessionState } from "@/types";
 
 const PHASES = ["exploration", "combat", "rest", "social"] as const;
@@ -94,38 +95,29 @@ export default function SessionTimer() {
   const phaseCfg = PHASE_CONFIG[currentPhase] || PHASE_CONFIG.exploration;
 
   return (
-    <div className="relative group">
-      {/* Glass gradient background */}
-      <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">⏱</span>
-            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
-              Session Timer
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {!isActive ? (
-              <button
-                onClick={startSession}
-                className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15 hover:shadow-[0_0_12px_rgba(52,211,153,0.1)] active:scale-95 transition-all duration-150"
-              >
-                ▶ Start
-              </button>
-            ) : (
-              <button
-                onClick={endSession}
-                className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/15 hover:shadow-[0_0_12px_rgba(239,68,68,0.1)] active:scale-95 transition-all duration-150"
-              >
-                ■ End
-              </button>
-            )}
-          </div>
+    <DashboardPanel
+      icon="⏱"
+      title="Session Timer"
+      action={
+        <div className="flex items-center gap-1.5">
+          {!isActive ? (
+            <button
+              onClick={startSession}
+              className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15 hover:shadow-[0_0_12px_rgba(52,211,153,0.1)] active:scale-95 transition-all duration-150"
+            >
+              ▶ Start
+            </button>
+          ) : (
+            <button
+              onClick={endSession}
+              className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/15 hover:shadow-[0_0_12px_rgba(239,68,68,0.1)] active:scale-95 transition-all duration-150"
+            >
+              ■ End
+            </button>
+          )}
         </div>
-
-        <div className="p-4 space-y-3">
+      }
+    >
           {/* ── Timer display (chronograph dial) ── */}
           <div className="relative text-center py-2">
             {/* Subtle dial glow */}
@@ -191,8 +183,6 @@ export default function SessionTimer() {
               })}
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </DashboardPanel>
   );
 }

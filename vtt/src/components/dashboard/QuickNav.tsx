@@ -14,6 +14,7 @@
  */
 
 import { useNavigate } from "react-router-dom";
+import DashboardPanel from "@/components/ui/DashboardPanel";
 
 interface NavTile {
   icon: string;
@@ -111,24 +112,16 @@ export default function QuickNav() {
   const navigate = useNavigate();
 
   return (
-    <div className="relative group/panel">
-      {/* Glass gradient background */}
-      <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">⚡</span>
-            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
-              Quick Navigation
-            </span>
-          </div>
-          <span className="text-[9px] text-surface-600 font-mono">
-            {NAV_TILES.length} shortcuts
-          </span>
-        </div>
-
-        {/* Nav grid — 6 premium tiles */}
-        <div className="p-3">
+    <DashboardPanel
+      icon="⚡"
+      title="Quick Navigation"
+      action={
+        <span className="text-[9px] text-surface-500 font-mono">
+          {NAV_TILES.length} shortcuts
+        </span>
+      }
+    >
+      {/* Nav grid — 6 premium tiles */}
           <div className="grid grid-cols-2 gap-2">
             {NAV_TILES.map((tile, idx) => {
               const classes = ACCENT_CLASSES[tile.accent] || ACCENT_CLASSES.gold;
@@ -180,8 +173,6 @@ export default function QuickNav() {
               );
             })}
           </div>
-        </div>
-      </div>
-    </div>
+    </DashboardPanel>
   );
 }

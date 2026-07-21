@@ -15,6 +15,7 @@
 import { useCallback } from "react";
 import { useCombatStore } from "@/stores/combatStore";
 import { useNavigate } from "react-router-dom";
+import DashboardPanel from "@/components/ui/DashboardPanel";
 
 export default function CombatQuickStatus() {
   const navigate = useNavigate();
@@ -38,26 +39,18 @@ export default function CombatQuickStatus() {
   }, [navigate]);
 
   return (
-    <div className="relative group">
-      {/* Glass gradient background */}
-      <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">⚔</span>
-            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
-              Combat Status
-            </span>
-          </div>
-          {isActive && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-500/15 border border-red-500/20 text-red-400">
-              <span className="w-1 h-1 rounded-full bg-red-400 animate-pulse-soft" />
-              LIVE
-            </span>
-          )}
-        </div>
-
-        <div className="p-4">
+    <DashboardPanel
+      icon="⚔"
+      title="Combat Status"
+      action={
+        isActive ? (
+          <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-500/15 border border-red-500/20 text-red-400">
+            <span className="w-1 h-1 rounded-full bg-red-400 animate-pulse-soft" />
+            LIVE
+          </span>
+        ) : undefined
+      }
+    >
           {!isActive || !activeEncounter ? (
             /* ── Inactive state ── */
             <div className="text-center py-4">
@@ -164,8 +157,6 @@ export default function CombatQuickStatus() {
               )}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </DashboardPanel>
   );
 }

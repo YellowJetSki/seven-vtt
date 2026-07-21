@@ -14,6 +14,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { useCampaignStore } from "@/stores/campaignStore";
+import DashboardPanel from "@/components/ui/DashboardPanel";
 import LaunchTheatricButton from "./LaunchTheatricButton";
 
 export default function ActiveMapCard() {
@@ -25,20 +26,10 @@ export default function ActiveMapCard() {
   const tokenCount = activeMap ? (mapTokens[activeMap.id]?.length ?? 0) : 0;
 
   return (
-    <div className="relative group">
-      {/* Glass gradient background */}
-      <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">🗺</span>
-            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
-              Active Map
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4">
+    <DashboardPanel
+      icon="🗺"
+      title="Active Map"
+    >
           {!activeMap ? (
             /* ── Empty state ── */
             <div className="text-center py-4">
@@ -111,8 +102,6 @@ export default function ActiveMapCard() {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </DashboardPanel>
   );
 }

@@ -91,8 +91,19 @@ export default function DmDashboard() {
     );
   }
 
+  // ── Campaign-level computed metrics ──
+  const totalXp = characters.reduce((sum, c) => sum + (c.experiencePoints ?? 0), 0);
+  const avgLevel = characters.length > 0
+    ? Math.round(characters.reduce((sum, c) => sum + (c.level ?? 1), 0) / characters.length)
+    : 0;
+  const minLevel = characters.length > 0 ? Math.min(...characters.map((c) => c.level ?? 1)) : 0;
+  const maxLevel = characters.length > 0 ? Math.max(...characters.map((c) => c.level ?? 1)) : 0;
+
   const statCards = [
     { label: "Player Characters", value: characters.length, icon: "👥" },
+    { label: "Total XP", value: totalXp, icon: "⭐" },
+    { label: "Avg Level", value: avgLevel, icon: "📈" },
+    { label: "Max Level", value: maxLevel, icon: "🎯" },
     { label: "Active Maps", value: battleMaps.length, icon: "🗺" },
   ];
 

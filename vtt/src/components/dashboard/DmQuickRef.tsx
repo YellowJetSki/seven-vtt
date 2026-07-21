@@ -13,6 +13,7 @@
  */
 
 import { useState } from "react";
+import DashboardPanel from "@/components/ui/DashboardPanel";
 
 // ── Sub-components ──
 
@@ -73,19 +74,10 @@ function QuickRefRow({ label, value }: { label: string; value: string }) {
 
 export default function DmQuickRef() {
   return (
-    <div className="relative group">
-      <div className="bg-gradient-to-b from-[#141520] to-[#0f1019] border border-white/[0.04] rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">📋</span>
-            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
-              DM Quick Reference
-            </span>
-          </div>
-        </div>
-
-        <div className="p-3 space-y-1">
+    <DashboardPanel
+      icon="📋"
+      title="DM Quick Reference"
+    >
           {/* Difficulty Class */}
           <QuickRefSection title="Difficulty Class" icon="🎯" defaultOpen>
             <QuickRefRow label="Very Easy" value="DC 5" />
@@ -159,8 +151,6 @@ export default function DmQuickRef() {
               ))}
             </div>
           </QuickRefSection>
-        </div>
-      </div>
-    </div>
+    </DashboardPanel>
   );
 }
