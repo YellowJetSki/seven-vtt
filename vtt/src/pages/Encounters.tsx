@@ -175,9 +175,8 @@ export default function Encounters() {
             </p>
 
             {/* Getting Started Guide */}
-            <div className="glass-gold rounded-2xl border border-gold/5 p-5 max-w-lg w-full text-left">
-              <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
-              <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
+            <div className="relative bg-gradient-to-b from-[#14151f]/85 to-[#0f1019]/90 border border-white/[0.04] rounded-2xl p-5 max-w-lg w-full text-left shadow-[0_8px_32px_rgba(0,0,0,0.2)] overflow-hidden">
+              <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none" />
               <h4 className="text-[10px] uppercase tracking-widest font-black text-gold-500/50 mb-4">
                 Getting Started
               </h4>

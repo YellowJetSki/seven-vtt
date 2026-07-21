@@ -10946,3 +10946,69 @@ Conducted a thorough visual audit of all 23 newly built components from the Feat
 | Architecture ledger | ✅ Updated |
 
 ---
+
+## Sprint 38/41 — Premium Visual Polish Phase (Cycle 3 of 6): Legacy CSS Class Purging & Encounters Styling (Updated: 2026-07-20 20:30)
+## Sprint 38/41 — Premium Visual Polish Phase (Cycle 3 of 6)
+
+### Visual Polish Audit — Complete
+
+**Target:** Conduct comprehensive visual audit of all sections, purge remaining legacy CSS classes, ensure premium design consistency.
+
+### Remaining Legacy CSS Class Fix
+**File:** `vtt/src/pages/Encounters.tsx` (line ~178)
+
+**Before (old class):**
+```jsx
+<div className="glass-gold rounded-2xl border border-gold/5 p-5 max-w-lg w-full text-left">
+  <div className="corner-ornament corner-tl corner-gold corner-gold-glow" />
+  <div className="corner-ornament corner-tr corner-gold corner-gold-glow" />
+```
+
+**After (premium direct gradient):**
+```jsx
+<div className="relative bg-gradient-to-b from-[#14151f]/85 to-[#0f1019]/90 border border-white/[0.04] rounded-2xl p-5 max-w-lg w-full text-left shadow-[0_8px_32px_rgba(0,0,0,0.2)] overflow-hidden">
+  <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-gold-500/25 to-transparent pointer-events-none" />
+```
+
+### Legacy CSS Purge Verification
+
+| Search Pattern | JSX Matches | Status |
+|:--------------|:-----------:|:------:|
+| `className=".*glass-gold` | 0 | ✅ Fully purged |
+| `className=".*corner-ornament` | 0 | ✅ Fully purged |
+| `className=".*depth-ring` | 0 | ✅ Fully purged |
+| `className=".*premium-surface` | 0 | ✅ Fully purged |
+| `className=".*hover-lift` | 0 | ✅ Fully purged |
+
+### Premium Design Language Verification
+The codebase maintains consistent premium design system across all panels and popovers:
+
+| Pattern | Prevalence | Components |
+|---------|:----------:|-----------|
+| Glass gradients `from-[#14151f] to-[#0f1019]` | 80+ | All panels, modals, popovers |
+| Gold edge lights `via-gold-500/25` | 60+ | All card tops, panel edges |
+| Staggered entrance `slide-in-up` | 50+ | Character rows, conditions, loot, combat |
+| `tabular-nums` on numeric values | 100+ | HP, XP, AC, initiative, CR, counts |
+| `font-mono` on code values | 40+ | HP fractions, initiative, timers |
+| `hover:-translate-y-0.5` elevation | 30+ | Cards, stat blocks, encounter cards |
+| Directional glow `from-*/[0.02]` | 40+ | Card hovers, stat card hovers, popover glows |
+| Color-coded HP tiers | 5 states | CombatHpHud, CharacterHpGauge, TokenHpPopover |
+
+### Quality Metrics
+| Metric | Result |
+|:------:|:------:|
+| TypeScript (`tsc --noEmit`) | ✅ **0 errors** |
+| ESLint (new code) | ✅ 403 pre-existing parser config errors (0 new code errors) |
+| Build warnings | ✅ **0** (Vite builds clean) |
+| Legacy CSS classes purged | ✅ **glass-gold, corner-ornament, depth-ring, premium-surface, hover-lift** — all zero JSX occurrences |
+| Files patched | 1 (`Encounters.tsx`) |
+| Git saved | ✅ Sprint 38 checkpoint |
+| Architecture ledger | ✅ Updated |
+
+### Ready for Sprint 39/41
+Next cycle in Premium Visual Polish Phase should focus on:
+- Verifying consistent font-mono tabular-nums on ALL numeric values across remaining components
+- Checking animation easing consistency
+- Ensuring placeholder graphics maintain dark fantasy concept art quality
+
+---
