@@ -33,13 +33,24 @@ export const CONDITIONS_PART1: Partial<Record<ConditionId, ConditionInfo>> = {
   },
   exhaustion: {
     id: "exhaustion", name: "Exhaustion",
-    description: "Exhaustion has 6 levels. Each level imposes cumulative penalties.",
+    description: "Exhaustion has 10 levels (2024 rules). Odd levels apply -1 to d20 tests; even levels reduce speed by 10 ft cumulatively.",
     icon: "😰", color: "#f59e0b",
-    mechanicalEffects: ["Level 1: Disadvantage on ability checks", "Level 2: Speed halved", "Level 3: Disadvantage on attacks/saves", "Level 4: Max HP halved", "Level 5: Speed 0", "Level 6: Death"],
+    mechanicalEffects: [
+      "Level 1: −1 to d20 tests",
+      "Level 2: Speed −10 ft",
+      "Level 3: −2 to d20 tests",
+      "Level 4: Speed −20 ft",
+      "Level 5: −3 to d20 tests",
+      "Level 6: Speed −30 ft",
+      "Level 7: −4 to d20 tests",
+      "Level 8: Speed −40 ft",
+      "Level 9: −5 to d20 tests",
+      "Level 10: Death"
+    ],
     appliesAdvantageTo: [], appliesDisadvantageTo: ["ability_checks", "saving_throws", "attack_rolls"],
     preventsActions: false, preventsMovement: false, preventsBonusActions: false, preventsReactions: false,
-    autoFailsSaves: [], halvesSpeed: true, setsSpeed: null, autoFailsAbilityChecks: [],
-    allowsSaveEnd: false, stackable: true, maxStacks: 6, durationType: "permanent",
+    autoFailsSaves: [], halvesSpeed: false, setsSpeed: null, autoFailsAbilityChecks: [],
+    allowsSaveEnd: false, stackable: true, maxStacks: 10, durationType: "permanent",
   },
   frightened: {
     id: "frightened", name: "Frightened",
