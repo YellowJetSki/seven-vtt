@@ -180,6 +180,14 @@ const dmTools: DmToolProps[] = [
     title: "Session Tracker — Active quests, named NPCs, key locations with inline editing",
   },
   {
+    eventName: "toggle-dm-time-tracker",
+    icon: "restRecovery",
+    colorClass: "text-gold-400",
+    hoverClass: "hover:bg-gold-500/8 hover:border-gold-500/10",
+    label: "Time & Calendar",
+    title: "Time & Calendar — In-game clock, calendar dates, and event timers with countdowns",
+  },
+  {
     eventName: "toggle-dm-damage-calculator",
     icon: "attack",
     colorClass: "text-rose-400",
@@ -289,6 +297,7 @@ const TOOL_HOVER_TEXT: Record<string, string> = {
   "toggle-dm-party-resources": "group-hover:text-gold-400",
   "toggle-dm-encounter-analyzer": "group-hover:text-amber-400",
   "toggle-dm-quest-tracker": "group-hover:text-emerald-400",
+  "toggle-dm-time-tracker": "group-hover:text-gold-400",
   "toggle-dm-combat-wrapup": "group-hover:text-gold-400",
   "toggle-dm-party-inventory": "group-hover:text-cyan-400",
   "toggle-dm-party-spell-slots": "group-hover:text-violet-400",

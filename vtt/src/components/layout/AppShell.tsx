@@ -50,6 +50,7 @@ import DmCombatantMover from "@/components/control-center/DmCombatantMover";
 import DmPartyResourcesQuickView from "@/components/control-center/DmPartyResourcesQuickView";
 import DmEncounterAnalyzer from "@/components/control-center/DmEncounterAnalyzer";
 import DmQuestTracker from "@/components/control-center/DmQuestTracker";
+import DmTimeTracker from "@/components/control-center/DmTimeTracker";
 import PartySpellSlotsPanel from "@/components/player/PartySpellSlotsPanel";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -110,6 +111,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setEncounterAnalyzer = useUIStore((s) => s.setEncounterAnalyzer);
   const showQuestTracker = useUIStore((s) => s.showQuestTracker);
   const setQuestTracker = useUIStore((s) => s.setQuestTracker);
+  const showTimeTracker = useUIStore((s) => s.showTimeTracker);
+  const setTimeTracker = useUIStore((s) => s.setTimeTracker);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -366,6 +369,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setQuestTrackerRef.current(!showQuestTrackerRef.current); };
     window.addEventListener("toggle-dm-quest-tracker", handler);
     return () => window.removeEventListener("toggle-dm-quest-tracker", handler);
+  }, []);
+
+  const showTimeTrackerRef = useRef(showTimeTracker);
+  showTimeTrackerRef.current = showTimeTracker;
+  const setTimeTrackerRef = useRef(setTimeTracker);
+  setTimeTrackerRef.current = setTimeTracker;
+
+  useEffect(() => {
+    const handler = () => { setTimeTrackerRef.current(!showTimeTrackerRef.current); };
+    window.addEventListener("toggle-dm-time-tracker", handler);
+    return () => window.removeEventListener("toggle-dm-time-tracker", handler);
   }, []);
 
   const showPartyInventoryRef = useRef(showPartyInventory);
@@ -631,6 +645,15 @@ export default function AppShell({ children }: AppShellProps) {
           searchable across all 3 categories, color-coded statuses. */}
       {role === "dm" && (
         <DmQuestTracker onClose={() => setQuestTracker(false)} />
+      )}
+
+      {/* ── DM Time & Calendar Tracker (Cycle 33) ──
+          In-game time management: calendar dates, time of day,
+          speed-controlled clock, event timers with countdowns.
+          Helps DMs track spell durations, rest timing, and
+          ticking time-based events. */}
+      {role === "dm" && (
+        <DmTimeTracker onClose={() => setTimeTracker(false)} />
       )}
 
       {/* ── DM Party Inventory Panel (Cycle 21) ──
