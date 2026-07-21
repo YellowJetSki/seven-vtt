@@ -16483,3 +16483,68 @@ Total time: ~8 seconds vs navigating through full character sheet
 - Vite build: Clean
 - Git savepoint: Sprint 70
 ---
+
+## DM Combat Progress Panel (Cycle 26/35) (Updated: 2026-07-21 18:05)
+## Cycle 26 — DM Combat Progress Dashboard: Full Encounter Status Panel — COMPLETE
+
+### New Component Created
+- **`DmCombatProgressPanel.tsx`** (~530 lines) — Gold-accented glass popover
+
+### Features
+| Feature | Detail |
+|:--------|:--------|
+| **Round counter + phase indicator** | Shows current round, Active/Paused/Prep status, elapsed combat time (mm:ss) |
+| **Turn timer** | Seconds since current turn started, color-coded (>60s amber, >120s rose) |
+| **Current turn banner** | Gold-accented card showing name, HP, gold pulse indicator |
+| **Full combatant list** | Sorted by initiative, per-row: initiative, type icon, name, AC, status effect dots, HP bar with fraction, damage/healing totals, inline -5/+5 HP controls |
+| **5-tier HP color coding** | Healthy (emerald), Scratched (emerald-300), Bloodied (amber), Critical (rose), Down (rose-500) |
+| **Status effect dots** | 16 condition types mapped to unique colors, up to 3 shown with +N overflow |
+| **Damage/healing tracking** | Computed from combat log — per-combatant damage dealt and healing received |
+| **Status dot legend** | Collapsible legend showing all condition colors |
+| **Combat flow controls** | Prev Turn, Next Turn, End Combat buttons in footer |
+| **Summary footer** | Alive count (emerald), dead count (rose), total, total damage, total healing |
+| **Empty state** | "No Active Combat" with close button |
+| **No dice rolling** | Pure state display with quick controls |
+
+### Integration Points
+| Component | File | Change |
+|:----------|:-----|:-------|
+| `uiStore.ts` | Store | Added `showCombatProgress` + `setCombatProgress` |
+| `AppShell.tsx` | Layout | Added import, ref, event listener (`toggle-dm-combat-progress`), rendering |
+| `Sidebar.tsx` | Layout | Added "Combat Progress" button (gold accent, `encounterComplete` icon) |
+
+### DM Workflow
+```
+During active combat:
+1. DM opens sidebar → clicks "Combat Progress" button
+2. Full encounter status popover opens:
+   - Round 3 · Active · 12:34 elapsed
+   - Current turn: Dragon (43/178 HP) ⏲ 1m 23s (amber — taking too long!)
+   - 6 combatants sorted by initiative, each with:
+     - HP bar with tier color, fraction, damage/healing totals
+     - Status dots: poisoned, concentrating, stunned
+     - Quick -5/+5 HP buttons
+   - Footer: 4 Alive · 2 Dead · 6 Total · -287 DMG · +42 Heal
+3. Clicks Next Turn → advances combat without leaving panel
+4. Sees combatant taking too long (rose timer) → coaches player
+5. Clicks End Combat → closes automatically
+Total time: ~5 seconds for full combat awareness
+```
+
+### Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `DmCombatProgressPanel.tsx` | ~530 | DM Combat Progress Dashboard |
+
+### Files Modified
+| File | Change |
+|:-----|:-------|
+| `uiStore.ts` | Added state + action |
+| `AppShell.tsx` | Added import, ref, event listener, rendering |
+| `Sidebar.tsx` | Added sidebar button |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 71
+---
