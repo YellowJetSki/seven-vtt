@@ -158,7 +158,7 @@ export default function AssetGallery() {
                   <span className="text-xl">🎨</span>
                 </div>
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-white/95">Asset Gallery</h1>
+                  <h1 className="text-xl sm:text-2xl font-black text-white/98 tracking-tight font-display">Asset Gallery</h1>
                   <p className="text-xs text-surface-400 mt-1">
                     Browse built-in fantasy assets for your campaign — portraits, tokens, maps, and items.
                   </p>
@@ -198,7 +198,7 @@ export default function AssetGallery() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={`Search ${activeCategory} assets...`}
-                className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-700"
+                className="w-full py-2 px-3 rounded-lg text-xs bg-[#07080d] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-500"
               />
             </div>
 

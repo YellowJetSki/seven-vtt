@@ -96,7 +96,7 @@ export default function AssetBrowser({
     <div className={`space-y-3 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">
           {CATEGORY_LABELS[category] ?? category}
         </p>
         <p className="text-[9px] text-surface-500">{assets.length} assets</p>
@@ -113,7 +113,7 @@ export default function AssetBrowser({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search assets..."
-            className="w-full py-1.5 pl-7 pr-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-700"
+            className="w-full py-1.5 pl-7 pr-2 rounded-lg text-[10px] bg-[#07080d] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-500"
           />
         </div>
         {showUrlMode && (
@@ -141,7 +141,7 @@ export default function AssetBrowser({
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="https://i.imgur.com/example.jpg"
-            className="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-mono bg-[#07080d] border border-white/[0.06] text-white/60 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-700"
+            className="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-mono bg-[#07080d] border border-white/[0.06] text-white/80 focus:outline-none focus:border-gold-500/25 placeholder:text-surface-500"
             onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}
           />
           <button
