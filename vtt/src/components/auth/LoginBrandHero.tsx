@@ -1,9 +1,14 @@
 /**
- * STᚱ VTT — LoginBrandHero
+ * STᚱ VTT — LoginBrandHero (Overrrides-Grade Premium)
  *
- * Left-panel brand hero with app icon, typography, feature highlights,
- * and footer. Desktop-only (hidden on mobile).
- * Staggered entrance animations create Lusion-grade premium feel.
+ * Left-panel brand hero with:
+ * - Gold decorative ring behind brand mark (conic gradient)
+ * - Staggered entrance animations — Lusion-grade premium
+ * - Feature items with hover elevation + directional gold glow sweep
+ * - Premium typographic contrast (light/bold weight split)
+ * - Sophisticated footer with gold divider accents
+ *
+ * Hidden on mobile. Desktop-only (lg+).
  */
 
 const FEATURES = [
@@ -22,11 +27,19 @@ export default function LoginBrandHero() {
           style={{ animation: "slide-in-up 0.7s ease-out 0.1s forwards" }}
         >
           <div className="flex items-center gap-4 mb-6">
-            <img
-              src="/AppIcon.png"
-              alt="STᚱ VTT"
-              className="w-11 h-11 sm:w-12 sm:h-12 drop-shadow-[0_0_24px_rgba(234,179,8,0.3)]"
-            />
+            {/* Gold decorative ring behind brand icon */}
+            <div className="relative shrink-0">
+              <div
+                className="absolute -inset-3 rounded-xl opacity-[0.15] bg-[conic-gradient(from_0deg,transparent_0%,rgba(234,179,8,0.3)_25%,transparent_50%,rgba(234,179,8,0.2)_75%,transparent_100%)]"
+                style={{ animation: "spin 20s linear infinite" }}
+              />
+              <div className="absolute -inset-1.5 rounded-lg bg-gold-500/5 blur-[6px]" />
+              <img
+                src="/AppIcon.png"
+                alt="STᚱ VTT"
+                className="relative w-11 h-11 sm:w-12 sm:h-12 drop-shadow-[0_0_24px_rgba(234,179,8,0.3)]"
+              />
+            </div>
             <div>
               <h1 className="text-[28px] font-black tracking-tight text-white leading-none">
                 ST<span className="text-gold-400">ᚱ</span>{" "}
@@ -55,15 +68,24 @@ export default function LoginBrandHero() {
             A premium virtual tabletop for Dungeon Masters and adventurers. Build worlds, command encounters, and tell epic stories.
           </p>
 
-          {/* Feature highlights */}
+          {/* Feature highlights — with hover elevation + directional sweep */}
           <div className="mt-10 space-y-[14px]">
             {FEATURES.map((item, i) => (
-              <div key={i} className="flex items-center gap-4 group cursor-default">
-                <span className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-lg shrink-0 group-hover:border-gold-500/20 group-hover:bg-gold-500/5 transition-all duration-300">
-                  {item.icon}
+              <div
+                key={i}
+                className="group/feat relative flex items-center gap-4 cursor-default rounded-xl p-1 -ml-1 transition-all duration-200 hover:-translate-y-0.5"
+              >
+                {/* Directional glow sweep on hover */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-gold-500/[0.02] to-transparent opacity-0 group-hover/feat:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                {/* Icon container */}
+                <span className="relative w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-lg shrink-0 group-hover/feat:border-gold-500/20 group-hover/feat:bg-gold-500/5 group-hover/feat:shadow-[0_0_16px_rgba(234,179,8,0.04)] transition-all duration-300">
+                  {/* Inner glow on hover */}
+                  <span className="absolute inset-0 rounded-xl bg-gold-500/5 opacity-0 group-hover/feat:opacity-100 transition-opacity duration-300 blur-[4px]" />
+                  <span className="relative">{item.icon}</span>
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-white/80 group-hover:text-gold-400 transition-colors duration-300">
+                  <p className="text-sm font-semibold text-white/80 group-hover/feat:text-gold-400 transition-colors duration-300">
                     {item.label}
                   </p>
                   <p className="text-[11px] text-surface-500 mt-0.5">{item.desc}</p>
@@ -83,9 +105,15 @@ export default function LoginBrandHero() {
             <span className="text-[8px] text-gold-500/40 uppercase tracking-[0.25em] font-mono">✦ ✦ ✦</span>
             <span className="w-8 h-px bg-gradient-to-l from-transparent to-gold-500/40" />
           </div>
-          <p className="text-[9px] text-surface-700 uppercase tracking-[0.2em] mt-4 font-medium">
-            Arkla Campaign &mdash; Premium VTT
-          </p>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-[9px] text-surface-700 uppercase tracking-[0.2em] font-medium">
+              Arkla Campaign
+            </span>
+            <span className="text-[6px] text-surface-700">·</span>
+            <span className="text-[9px] text-surface-700 uppercase tracking-[0.2em] font-medium">
+              Premium VTT
+            </span>
+          </div>
         </div>
       </div>
     </div>
