@@ -19,7 +19,7 @@
 import { useMemo, useCallback } from "react";
 import { useCompendiumStore } from "@/stores/compendium/compendiumStore";
 import { useCampaignStore } from "@/stores/campaignStore";
-import type { PlayerCharacter } from "@/types";
+import type { PlayerCharacter, Feature } from "@/types";
 import {
   resolveWeaponWithFallback,
   resolveSpell,
@@ -120,7 +120,7 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
   }, [character.equipment, itemCatalog]);
 
   const spells = useMemo<ResolvedSpellInfo[]>(() => {
-    const preparedNames: string[] = (character as any).preparedSpells || [];
+    const preparedNames: string[] = character.preparedSpells || [];
     const knownNames: string[] = (character as any).knownSpells || [];
     const names = [...new Set([...preparedNames, ...knownNames])];
 
@@ -139,8 +139,8 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
 
   const feats = useMemo<ResolvedFeatInfo[]>(() => {
     const featRefs: Array<{ featId?: string; featName?: string; isActive?: boolean }> =
-      (character as any).activeFeats || [];
-    const features: string[] = (character.features || []).map((f: any) =>
+      character.activeFeats || [];
+    const features: string[] = (character.features || []).map((f: Feature) =>
       typeof f === "string" ? f : f.name
     );
 
@@ -204,7 +204,7 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
           notes: resolved.entity.description || "",
         },
       ],
-    } as any);
+    } as Partial<PlayerCharacter>);
   }, [character, itemCatalog, updateCharacter, characterId]);
 
   const unequipItem = useCallback((itemName: string) => {
@@ -216,7 +216,7 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
   }, [character, updateCharacter, characterId]);
 
   const prepareSpell = useCallback((spellName: string) => {
-    const current: string[] = (character as any).preparedSpells || [];
+    const current: string[] = character.preparedSpells || [];
     if (current.some((s) => normalizeName(s) === normalizeName(spellName))) return;
     updateCharacter(characterId, {
       preparedSpells: [...current, spellName],
@@ -224,7 +224,7 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
   }, [character, updateCharacter, characterId]);
 
   const unprepareSpell = useCallback((spellName: string) => {
-    const current: string[] = (character as any).preparedSpells || [];
+    const current: string[] = character.preparedSpells || [];
     updateCharacter(characterId, {
       preparedSpells: current.filter(
         (s) => normalizeName(s) !== normalizeName(spellName)
@@ -234,7 +234,7 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
 
   const toggleFeat = useCallback((featName: string) => {
     const current: Array<{ featId: string; featName: string; isActive: boolean }> =
-      (character as any).activeFeats || [];
+      character.activeFeats || [];
     const existing = current.find(
       (f) => normalizeName(f.featName) === normalizeName(featName)
     );
@@ -246,11 +246,11 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
             ? { ...f, isActive: !f.isActive }
             : f
         ),
-      } as any);
+      } as Partial<PlayerCharacter>);
     } else {
       updateCharacter(characterId, {
         activeFeats: [...current, { featId: featName, featName, isActive: true }],
-      } as any);
+      } as Partial<PlayerCharacter>);
     }
   }, [character, updateCharacter, characterId]);
 
@@ -261,7 +261,7 @@ export function useCompendiumBridge(character: PlayerCharacter): CompendiumBridg
   }, [character]);
 
   const isSpellPrepared = useCallback((spellName: string): boolean => {
-    const current: string[] = (character as any).preparedSpells || [];
+    const current: string[] = character.preparedSpells || [];
     return current.some((s) => normalizeName(s) === normalizeName(spellName));
   }, [character]);
 
