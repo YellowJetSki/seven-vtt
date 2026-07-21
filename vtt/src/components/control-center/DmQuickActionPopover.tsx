@@ -112,7 +112,8 @@ function getStatusLabel(current: number, max: number): { label: string; color: s
 // ── Main Component ──
 export default function DmQuickActionPopover({ isOpen, onClose }: DmQuickActionPopoverProps) {
   const characters = useCampaignStore((s) => s.characters);
-  const combatants = useCombatStore((s) => s.activeEncounter?.combatants ?? []);
+  const activeEncounter = useCombatStore((s) => s.activeEncounter);
+  const combatants = activeEncounter?.combatants ?? [];
   const { handleHpChange, handleSetTempHp } = useHpMutations();
   const { handleAddItem } = useInventoryMutations();
   const { damageCombatant, healCombatant, setTempHP } = useCombatHpMutations();

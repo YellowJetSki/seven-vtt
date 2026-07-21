@@ -19,9 +19,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Determine the correct root. When called as prebuild from vtt/package.json,
+// __dirname is scripts/ which lives at project root. The public/ dir should
+// be inside vtt/ since that's where Vite looks for static assets.
 const root = path.resolve(__dirname, "..");
+
+// If a .vtt-root marker exists, we're at the project root and should target vtt/public/
+const projectRoot = fs.existsSync(path.join(root, "vtt")) ? path.join(root, "vtt") : root;
+// Source images are always at the repo root /images/ directory
 const srcDir = path.join(root, "images");
-const dstDir = path.join(root, "public", "images");
+// Destination must be inside vtt/ since Vite's publicDir defaults to vtt/public/
+const dstDir = path.join(projectRoot, "public", "images");
 
 const SUFFIX_MAP = {
   "_portrait.png": "portraits",

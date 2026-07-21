@@ -103,7 +103,8 @@ interface TargetInfo {
 // ── Main Component ──
 export default function DmCombatConditionBar({ isOpen, onClose }: DmCombatConditionBarProps) {
   const characters = useCampaignStore((s) => s.characters);
-  const combatants = useCombatStore((s) => s.activeEncounter?.combatants ?? []);
+  const activeEncounter = useCombatStore((s) => s.activeEncounter);
+  const combatants = activeEncounter?.combatants ?? [];
   const {
     handleToggleCondition: handleToggleConditionMutation,
     handleClearAllConditions,

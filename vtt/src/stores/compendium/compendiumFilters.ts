@@ -30,53 +30,68 @@ export function getCompendiumItems(
   userItems: HomebrewItem[],
   filters: CompendiumFilterState
 ): HomebrewItem[] {
-  let items = filters.showSRD ? [...SRD_ITEMS, ...userItems] : [...userItems];
+  // When showSRD is true, SRD_ITEMS are prepended statically, so we must
+  // exclude any SRD items that may already exist in the persisted userItems
+  // to prevent duplicate key errors in React rendering.
+  const items = filters.showSRD
+    ? [...SRD_ITEMS, ...userItems.filter((i) => !i.id.startsWith("srd_"))]
+    : [...userItems];
   const q = filters.searchQuery.toLowerCase().trim();
 
-  if (q) {
-    items = items.filter(
-      (i) =>
-        i.name.toLowerCase().includes(q) ||
-        i.description.toLowerCase().includes(q) ||
-        i.tags.some((t) => t.includes(q))
-    );
-  }
+  const filtered = q
+    ? items.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          i.description.toLowerCase().includes(q) ||
+          i.tags.some((t) => t.includes(q))
+      )
+    : items;
+
   if (filters.categoryFilter) {
-    items = items.filter((i) => i.category === filters.categoryFilter);
+    return filtered.filter((i) => i.category === filters.categoryFilter);
   }
-  return items;
+  return filtered;
 }
 
 export function getCompendiumSpells(
   userSpells: HomebrewSpell[],
   filters: CompendiumFilterState
 ): HomebrewSpell[] {
-  let spells = filters.showSRD ? [...SRD_SPELLS, ...userSpells] : [...userSpells];
+  // Exclude SRD-prefixed spells from userSpells when showSRD is true
+  // to prevent duplicate IDs during React reconciliation.
+  const spells = filters.showSRD
+    ? [...SRD_SPELLS, ...userSpells.filter((s) => !s.id.startsWith("srd_"))]
+    : [...userSpells];
   const q = filters.searchQuery.toLowerCase().trim();
 
-  if (q) {
-    spells = spells.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
-        s.school.toLowerCase().includes(q)
-    );
-  }
+  const filtered = q
+    ? spells.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.description.toLowerCase().includes(q) ||
+          s.school.toLowerCase().includes(q)
+      )
+    : spells;
+
   if (filters.schoolFilter) {
-    spells = spells.filter((s) => s.school === filters.schoolFilter);
+    return filtered.filter((s) => s.school === filters.schoolFilter);
   }
-  return spells;
+  return filtered;
 }
 
 export function getCompendiumFeats(
   userFeats: HomebrewFeat[],
   filters: CompendiumFilterState
 ): HomebrewFeat[] {
-  let feats = filters.showSRD ? [...SRD_FEATS, ...userFeats] : [...userFeats];
+  // Exclude SRD-prefixed feats from userFeats when showSRD is true
+  // to prevent duplicate IDs during React reconciliation.
+  const feats = filters.showSRD
+    ? [...SRD_FEATS, ...userFeats.filter((f) => !f.id.startsWith("srd_"))]
+    : [...userFeats];
   const q = filters.searchQuery.toLowerCase().trim();
 
   if (q) {
-    feats = feats.filter(
+    return feats.filter(
       (f) =>
         f.name.toLowerCase().includes(q) ||
         f.description.toLowerCase().includes(q) ||
