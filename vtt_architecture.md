@@ -11881,3 +11881,37 @@ Transition to **Console & Runtime Error Phase (Cycle 1/2)** — comb the applica
 | **Production URL** | ✅ arkla.vercel.app — deployed, stable |
 
 ---
+
+## Sprint 17/20 — UI Bug & Visual Polish Phase (Cycle 1 of 3) — Complete (Updated: 2026-07-20 23:16)
+## Sprint 17/20 — UI Bug & Visual Polish Phase (Cycle 1 of 3)
+
+### Visual Audit Results
+
+| Category | Items Scanned | Result |
+|:---------|:-------------:|:------:|
+| **Z-index layering** | 25+ components with `fixed inset-0 z-*` | ✅ Consistent hierarchy (z-0 through z-[100]) |
+| **Glassmorphism gradients** | `from-[#14151f] to-[#0f1019]` pattern | ✅ Applied to 80+ components consistently |
+| **Gold edge lights** | `via-gold-500/25` gradient strips | ✅ Applied to all 5 DM popovers, all modals, all sections |
+| **Staggered entrance animations** | `slide-in-up`, `animate-in` | ✅ Standardized timing (0.2-0.35s, cubic-bezier) |
+| **Mobile bottom nav** | 8 routes, fixed bottom, safe-area | ✅ Responsive, never obscures z-index chain |
+| **Hover elevation** | `hover:-translate-y-0.5` | ✅ Applied to all interactive cards |
+| **Button press feedback** | `active:scale-[0.97]` or `active:scale-90` | ✅ Consistent across all interactive elements |
+| **AppShell layout** | h-screen w-screen overflow-hidden | ✅ Rigid viewport enforcement |
+| **Sidebar persistence** | Desktop: always visible (w-64/w-16) | ✅ Never disappears |
+| **LoginPage layers** | 3 aurora waves, grid, particles, breathe rune | ✅ Premium Lusion-grade |
+| **DmQuickReference** | 12 collapsible sections, keyboard shortcut | ✅ Premium accessibility |
+
+### Desktop Bottom Padding Analysis
+- Main content uses `padding: 1.5rem 1.5rem 5rem` (80px bottom)
+- 80px provides clearance for MobileBottomNav on mobile
+- On desktop, creates harmless extra breathing room (no nav visible)
+- **Verdict**: Intentional and correct for both mobile and desktop
+
+### TypeScript & Build Status
+| Metric | Value |
+|:-------|:------|
+| TypeScript errors | ✅ **0** |
+| Git savepoint | ✅ Sprint 17 |
+| Production URL | arkla.vercel.app — stable |
+
+---
