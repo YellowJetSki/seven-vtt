@@ -13460,3 +13460,39 @@ Globally accessible in-game spell reference tool with Lusion-grade premium glass
 - No 'Tick race' or 'Food machine' references
 - Arkla campaign compliant
 ---
+
+## Sprint 37/40 — The Intensive VTT Analysis Phase — CYCLE 7 OF 10 (Updated: 2026-07-21 11:34)
+## Sprint 37/40 — The Intensive VTT Analysis Phase — CYCLE 7 OF 10 (Complete)
+**Date:** 2026-07-21
+
+### Mission: Build missing D&D 5.5e VTT tool — Wild Shape / Polymorph Statblock Tracker
+
+#### Built: DmWildShapeTracker (650+ lines)
+Globally accessible DM tool for tracking shape-changed creature statblocks with premium emerald-accented glassmorphism UI:
+
+**Core Features:**
+- **7 beast presets** covering CR 1/4 through CR 4: Wolf, Brown Bear, Giant Spider, Dire Wolf, Giant Elk, Giant Scorpion, Elephant — full statblocks with ability scores, attacks, AC/HP/speed, CR, and special traits
+- **Target selector** — Pick from ANY combatant or player character in the active encounter
+- **Multi-field search** — Filter beasts by name or type
+- **CR tier filter chips** — All, 0, 1/8, 1/4, 1/2, 1, 2, 3, 4
+- **Dual HP pool tracking** — Original character HP preserved separately from shape HP
+- **Auto-revert on KO** — Shape HP reaches 0 → transformation marked inactive, reverts to original form
+- **Quick HP controls** — -5/-10 damage, +5/+10 heal per active transformation
+- **Revert/Reactivate/Remove** — Full lifecycle management per transformation entry
+- **Expandable detail panels** — Per-transformation: 6-ability score grid, AC/speed/CR, attack list with +ATK/DMG/type, special traits with bullet points
+- **Active/inactive separation** — Active transformations sorted first with emerald pulse indicator; reverted ones shown at reduced opacity with "Reverted" badge
+- **HP bar visualization** — Color-coded (emerald/amber/rose) by HP percentage, animated width transition
+- **Count badges** — "X active · Y reverted" header, "X beasts · Y transformations" footer
+
+**Integration:**
+- `stores/uiStore.ts` — Added `showWildShapeTracker` + `setWildShapeTracker`
+- `components/layout/AppShell.tsx` — Event listener for `toggle-dm-wild-shape`, DM-role rendering block
+- `components/layout/Sidebar.tsx` — "Wild Shape" button with emerald-accent styling
+
+#### Build & Deploy
+- **Build:** 7.60s, 2143 modules, 0 TypeScript errors
+- **Hash:** `index-BOERvguM.js`, deployed to arkla.vercel.app
+- No dice rollers (pure tracking tool, zero RNG)
+- No 'Tick race' or 'Food machine' references
+- Arkla campaign compliant
+---
