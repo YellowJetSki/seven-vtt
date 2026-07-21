@@ -12883,3 +12883,57 @@ Tested the DM's end-to-end encounter-building workflow — a completely differen
 - ✅ Zero new ESLint errors (422 pre-existing parser config errors — all project-wide)
 
 ---
+
+## Sprint 25/40 — The Extensive QA Phase (Cycle 5 of 10) (Updated: 2026-07-21 10:24)
+## Sprint 25/40 — The Extensive QA Phase (Cycle 5 of 10)
+**Date:** 2026-07-21
+
+### Target: Player-facing Spellcasting UI Pipeline
+
+Tested the caster experience workflow — a completely different system than Sprints 21 (DM Share), 22 (Level-Up), 23 (Player Sheet Tabs), and 24 (Encounter/Initiative). This covers the Spell Point Engine (DMG 288-289), Concentration tracking, slot tier coloring, caster type detection, and spell preparation limits.
+
+### Key Gap Identified
+- **Spell Point Engine (`spell-point-engine.ts`) had ZERO test coverage** — `slotsToSpellPoints()`, `spendSpellPoints()`, `restoreSpellPoints()`, `getMaxSpellPoints()`, `getAvailableSpellLevelsFromPoints()`, `SPELL_POINT_COSTS`, and `SPELL_POINTS_BY_LEVEL` were completely untested
+- `getSlotTier()` logic (used by SpellSlotStatus for visual color coding) had no boundary verification
+- Caster type detection lists had never been verified for completeness or exclusivity
+
+### New Test File Created
+**`src/__tests__/sprint-25-spellcasting-ui-pipeline-qa.test.ts`** — **60+ tests across 13 suites**
+
+| Suite | Tests | What It Validates |
+|:-----:|:-----:|-------------------|
+| 1. Cost Table (DMG 289) | 2 | All 9 level costs, increasing cost curve |
+| 2. Max Points by Level | 6 | Kaelen(27), Kehrfuffle(27), Lv1(4), Lv20(133), all 20 levels defined, getMaxSpellPoints |
+| 3. Slots → Points Conversion | 4 | Kaelen(4/3/2=27), Kehrfuffle(4/2=14), zero slots(0), partial(4/8) |
+| 4. spendSpellPoints | 4 | Kaelen casts Lv3(22 remaining), full depletion, above max level rejection, cantrip-level rejection |
+| 5. restoreSpellPoints / Available Levels | 3 | Add points back, cannot exceed max, affordable level detection |
+| 6. Concentration Save DC | 4 | DC = max(10, floor(dmg/2)), 0 damage min, odd rounding |
+| 7. Incapacitation Detection | 8 | All 5 incapacitating conditions, 3 non-incapacitating (prone, restrained, blinded) |
+| 8. getSlotTier Thresholds | 9 | None, Exhausted, Low(≤25%), Partial(≤50%), Available(<100%), Full(=100%), boundary tests |
+| 9. Caster Type Filtering | 6 | All 4 categories, no duplicate classifications |
+| 10. Spell Prep Limits | 4 | Wizard(level+INT), Paladin(CHA+half-lv), Cleric(WIS+level), Sorcerer(known table) |
+| 11. Edge Cases | 4 | Non-caster zero slots, undefined fallback, usage tier colors |
+| 12. Full Wizard Cycle (Kaelen) | 2 | Full adventuring day: prep → MM → Fireball → short rest(Arcane Recovery) → Shield → long rest |
+| 13. Half Caster (Kehrfuffle) | 4 | Paladin DC14/ATK+6, Divine Smite, full adventuring day |
+
+### Key RAW Validations
+- ✅ DMG 289 Spell Point costs: Lv1(2)→Lv3(5)→Lv5(7)→Lv9(13)
+- ✅ Kaelen(Lv5 Wizard, INT18): DC 15, ATK +7, prepares 5+4=9 spells
+- ✅ Kehrfuffle(Lv5 Paladin, CHA16): DC 14, ATK +6, prepares 3+3=6 spells
+- ✅ Concentration DC = max(10, floor(damage/2)) — odd damage rounds down
+- ✅ 5 incapacitating conditions break concentration: incapacitated, stunned, petrified, paralyzed, unconscious
+- ✅ Arcane Recovery at Lv5 = 3 levels of recovered slots
+- ✅ Fireball at Lv3 = 5 SP from 27 → 22 remaining
+
+### Build & Deploy
+- Build: **7.86s**, 2136 modules, 0 errors
+- Hash: `index-MOfPJo0g.js`, JS 2,035 KB, CSS 412 KB
+- Deployed: ✅ https://arkla.vercel.app — HTTP 200
+
+### Compliance
+- ✅ No virtual dice rollers (Math.random usage documented as convenience)
+- ✅ Arkla campaign lore (Kaelen Starweaver, Kehrfuffle Ironheart, Wendy Swiftfoot)
+- ✅ No 'Tick race' or 'Food machine' references
+- ✅ Zero new ESLint errors (423 pre-existing parser config errors — all project-wide)
+
+---
