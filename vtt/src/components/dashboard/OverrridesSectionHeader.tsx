@@ -1,10 +1,12 @@
 /**
- * STᚱ VTT — Overrrides-Style Section Header
+ * STᚱ VTT — Overrrides-Style Section Header (Token-Systematic v2.0)
  *
- * Premium section header with gold accent tabs and typographic hierarchy.
- * Uses Playfair Display for headings, Plus Jakarta Sans for metadata.
- * Inspired by Overrrides' content section headers.
+ * Premium section header with gold accent icon container, Playfair Display
+ * typography, count badge, and optional action slot.
+ * Uses global design tokens from lib/design-tokens.ts.
  */
+
+import { glassCardWithEdge, goldEdgeLight, staggerEntrance } from "@/lib/design-tokens";
 
 interface OverrridesSectionHeaderProps {
   icon: string;
@@ -12,6 +14,7 @@ interface OverrridesSectionHeaderProps {
   description?: string;
   count?: number;
   action?: React.ReactNode;
+  index?: number;
 }
 
 export default function OverrridesSectionHeader({
@@ -20,11 +23,15 @@ export default function OverrridesSectionHeader({
   description,
   count,
   action,
+  index = 0,
 }: OverrridesSectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+    <div
+      className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]"
+      style={staggerEntrance(index, 30)}
+    >
       <div className="flex items-center gap-2.5 min-w-0">
-        {/* Icon container */}
+        {/* Premium gold-accented icon container */}
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-500/10 to-amber-500/5 border border-gold-500/15 flex items-center justify-center shrink-0">
           <span className="text-xs">{icon}</span>
         </div>

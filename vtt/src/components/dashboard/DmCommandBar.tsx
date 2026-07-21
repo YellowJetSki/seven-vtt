@@ -1,19 +1,20 @@
 /**
- * STᚱ VTT — DM Command Bar (Overrrides/Ventriloc-Grade)
+ * STᚱ VTT — DM Command Bar (Token-Systematic Overrrides-Grade v3.0)
  *
- * Premium floating sticky command bar giving the DM instant access
- * to session status, sync state, and quick controls.
- * Positioned at the top of the dashboard, below the header.
+ * Premium floating sticky command bar. Uses the global design token system
+ * from lib/design-tokens.ts for consistent shadows, glass gradients,
+ * animation easings, and spacing.
  *
- * Features:
- * - Role badge with animated online indicator
- * - Session active/inactive status
- * - Sync state indicator
- * - Quick time-since-updated
+ * Gives the DM instant at-a-glance awareness of:
+ * — Identity (username + DM role badge)
+ * — Sync state (Firebase connected/syncing)
+ * — Combat state (active/inactive with animated pulse)
+ * — Campaign context (Arkla badge)
  */
 
 import { useAuthStore } from "@/stores/authStore";
 import { useCombatStore } from "@/stores/combatStore";
+import { ease, duration, buttonVariant, goldEdgeLight, glassCardWithEdge } from "@/lib/design-tokens";
 
 export default function DmCommandBar() {
   const username = useAuthStore((s) => s.username);
@@ -23,20 +24,26 @@ export default function DmCommandBar() {
 
   return (
     <div className="relative mb-5">
-      {/* Glass bar */}
-      <div className="relative bg-gradient-to-b from-[#14151f]/[0.85] to-[#0f1019]/[0.90] backdrop-blur-xl border border-white/[0.06] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,215,0,0.02)_inset]">
+      {/* Glass bar with premium shadow + edge light */}
+      <div
+        className={`relative ${glassCardWithEdge("toolbar")}`}
+        style={{
+          animation: `slide-in-up ${duration.entrance}ms ${ease.premium} 0.1s forwards`,
+          opacity: 0,
+        }}
+      >
         {/* Gold edge light */}
-        <div className="absolute top-0 left-[8%] right-[8%] h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
+        <div className={goldEdgeLight} />
 
         <div className="relative z-10 flex items-center justify-between px-4 py-2.5 sm:px-5">
           {/* Left: DM Identity + Status */}
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Avatar placeholder */}
+            {/* DM Avatar */}
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-500/15 to-amber-500/8 border border-gold-500/20 flex items-center justify-center text-xs font-bold text-gold-400 font-serif drop-shadow-[0_0_6px_rgba(234,179,8,0.15)]">
               ᚱ
             </div>
 
-            {/* Name + Role */}
+            {/* Name + Role + Sync */}
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-white/90">{username || "Dungeon Master"}</span>
@@ -45,11 +52,14 @@ export default function DmCommandBar() {
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className={`w-1 h-1 rounded-full ${
-                  firebaseConnected
-                    ? "bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]"
-                    : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)]"
-                }`} />
+                {/* Sync status dot */}
+                <span
+                  className={`w-1 h-1 rounded-full transition-all ${duration.fast}ms ${
+                    firebaseConnected
+                      ? "bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.3)]"
+                      : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.3)]"
+                  }`}
+                />
                 <span className="text-[9px] text-surface-500 tracking-wide">
                   {firebaseConnected ? "Connected" : "Syncing..."}
                 </span>
