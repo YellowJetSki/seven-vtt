@@ -40,6 +40,7 @@ interface UIState {
   showTreasureGenerator: boolean;
   showConcentrationTimer: boolean;
   showLegendaryTracker: boolean;
+  showSpellReference: boolean;
 }
 
 interface UIActions {
@@ -73,6 +74,8 @@ interface UIActions {
   setConcentrationTimer: (show: boolean) => void;
   /** Set DM Legendary Action Tracker overlay visibility */
   setLegendaryTracker: (show: boolean) => void;
+  /** Set DM Spell Reference overlay visibility */
+  setSpellReference: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
   showToast: (message: string, type: Toast["type"], duration?: number) => void;
@@ -98,6 +101,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showTreasureGenerator: false,
   showConcentrationTimer: false,
   showLegendaryTracker: false,
+  showSpellReference: false,
 
   toggleSidebar: () => {
     const current = get().sidebarOpen;
@@ -120,6 +124,7 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   setTreasureGenerator: (show: boolean) => set({ showTreasureGenerator: show }),
   setConcentrationTimer: (show: boolean) => set({ showConcentrationTimer: show }),
   setLegendaryTracker: (show: boolean) => set({ showLegendaryTracker: show }),
+  setSpellReference: (show: boolean) => set({ showSpellReference: show }),
 
   ensureSidebarForDesktop: () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {

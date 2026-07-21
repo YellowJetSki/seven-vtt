@@ -36,6 +36,7 @@ import DmSocialInteractionPopover from "@/components/control-center/DmSocialInte
 import DmTreasureGeneratorPopover from "@/components/control-center/DmTreasureGeneratorPopover";
 import DmConcentrationTimerPopover from "@/components/control-center/DmConcentrationTimerPopover";
 import DmLegendaryActionTracker from "@/components/control-center/DmLegendaryActionTracker";
+import DmSpellReferencePopover from "@/components/control-center/DmSpellReferencePopover";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -67,6 +68,8 @@ export default function AppShell({ children }: AppShellProps) {
   const setConcentrationTimer = useUIStore((s) => s.setConcentrationTimer);
   const showLegendaryTracker = useUIStore((s) => s.showLegendaryTracker);
   const setLegendaryTracker = useUIStore((s) => s.setLegendaryTracker);
+  const showSpellReference = useUIStore((s) => s.showSpellReference);
+  const setSpellReference = useUIStore((s) => s.setSpellReference);
   const role = useAuthStore((s) => s.role);
 
   // ── Ref-based handlers for stale-closure safety ──
@@ -191,6 +194,17 @@ export default function AppShell({ children }: AppShellProps) {
     const handler = () => { setLegendaryTrackerRef.current(!showLegendaryTrackerRef.current); };
     window.addEventListener("toggle-dm-legendary-tracker", handler);
     return () => window.removeEventListener("toggle-dm-legendary-tracker", handler);
+  }, []);
+
+  const showSpellReferenceRef = useRef(showSpellReference);
+  showSpellReferenceRef.current = showSpellReference;
+  const setSpellReferenceRef = useRef(setSpellReference);
+  setSpellReferenceRef.current = setSpellReference;
+
+  useEffect(() => {
+    const handler = () => { setSpellReferenceRef.current(!showSpellReferenceRef.current); };
+    window.addEventListener("toggle-dm-spell-reference", handler);
+    return () => window.removeEventListener("toggle-dm-spell-reference", handler);
   }, []);
 
   // ── Keyboard shortcut: ? key to toggle ──
@@ -327,6 +341,13 @@ export default function AppShell({ children }: AppShellProps) {
           mythic phases, and recharge abilities per creature */}
       {role === "dm" && (
         <DmLegendaryActionTracker />
+      )}
+
+      {/* ── DM Spell Reference Popover (Sprint 36) ──
+          In-game spell rules reference. Searches SRD + homebrew spells.
+          Filter by level, school, class. Full 5e statblock details. */}
+      {role === "dm" && (
+        <DmSpellReferencePopover />
       )}
     </div>
   );
