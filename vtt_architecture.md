@@ -16286,3 +16286,44 @@ A globally accessible DM-facing popover showing ALL player characters' inventori
 - Vite build: Clean
 - Git savepoint: Sprint 66
 ---
+
+## Party Inventory Panel v2: Batch Operations (Cycle 67) (Updated: 2026-07-21 17:54)
+## Cycle 67 — Party Inventory Panel v2: Batch Operations — COMPLETE
+
+### Upgrade Summary
+Transformed the Party Inventory Panel from a passive viewer into a full inventory command center with multi-item batch operations.
+
+### New Features
+
+| Feature | Activation | Detail |
+|:--------|:-----------|:-------|
+| **Batch Mode Toggle** | ☑ Batch button in header | Enables checkboxes on all items + batch action toolbar |
+| **Batch Select All/Clear** | Toolbar buttons | Selects all items in expanded characters, or clears |
+| **Batch Toggle Equip** | ⚔ Toggle Equip button | Mass-equip/unequip all selected items across characters |
+| **Batch Delete** | 🗑 Delete button | Removes all selected items with confirmation flash |
+| **Batch Transfer** | Transfer to... dropdown + 📤 Transfer | Moves selected items to a chosen character in one click |
+| **Quick-Use Consumable** | ▶ Use button on hover | One-click use of potions/scrolls/food from panel |
+| **Quick Equip/Unequip** | ⚔/📦 button on hover | Instant toggle per item without navigating character sheet |
+| **Remove Single Item** | ✕ button on hover | Self-serve junk removal from any character's inventory |
+
+### DM Workflow
+
+```
+Party loot distribution after battle:
+1. Open "Party Inventory" from sidebar
+2. Toggle ☑ Batch mode
+3. Search for "potion" → filters all characters
+4. Check all potions found on the dead dragon's pile character
+5. Open Transfer dropdown → select Wendy
+6. Click 📤 Transfer → "Transferred 3 item(s) to Wendy Swiftfoot"
+7. Clear selection → search for "armor"
+8. Check plate armor → Toggle Equip to finalize
+9. Check junk items → 🗑 Delete (removes 6 vendor trash items)
+10. Close panel — done in ~20 seconds vs 3 minutes of individual sheets
+```
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 67
+---
