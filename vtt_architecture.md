@@ -14908,3 +14908,38 @@ Upgraded the Token Image URL field in EnemyCreator:
 - ✅ Zero TypeScript compilation errors
 - ✅ Zero production console runtime errors
 ---
+
+## Cycle 32 — QA & Stabilization (Cycle 2 of 5) (Updated: 2026-07-21 15:24)
+## Sprint 32 of 80 — QA & Stabilization — Cycle 2 of 5 ✅
+
+**Phase:** QA & Stabilization ✓ (Cycles 31-35)
+
+### 🔍 Deep 5.5e Mechanics QA — PC Experience & DM Battlemap
+
+| Engine Check | Status | Findings |
+|:-------------|:------:|:---------|
+| **Multi-class Spell Slots (PHB 164)** | ✅ RAW | Full/half/third caster contributions, Warlock Pact Magic separated, effective caster level capped at 20, `ExtendedCasterType` with pact/none |
+| **Rest Engine (Short/Long)** | ✅ RAW | `applyShortRest`: hit dice spending, HP clamping, short-reset resource recharge, temp HP cleared. `applyLongRest`: full HP recovery, HD recovery, spell slots restored |
+| **Combat Flow — nextTurn()** | ✅ RAW | Dead-skip loop (`while isDead`), all-dead auto-end combat with "💀 Combat Over", round tracking with log entries |
+| **Combat HP Pipeline** | ✅ RAW | `clampHP()` handles temp HP absorption, damage floors at 0, healing capped at max. `damageCombatant` with undo payload snapshots, AoE batch revert, 500-entry log overflow protection |
+| **Token Renderer** | ✅ 6 state overlays | Bloodied cracks (HP≤50%), restrained chains, concentrating halo, prone Zzz, stunned starburst (8-ray + 3 ✦), invisible shimmer — all imported via `drawVisualStateOverlays` |
+| **Combat Log** | ✅ Overflow safe | `MAX_COMBAT_LOG = 500`, `trimCombatLog` culls oldest 20% on overflow |
+| **Encounter CR (DMG pg. 82-83)** | ✅ RAW | XP_THRESHOLDS correct for levels 1-20, party size adjusted multipliers |
+| **`as any` cast audit** | ⚠️ 4 remaining | All in `useOfflineMutationReplay.ts` — intentional for JSON deserialization from unknown payload type. Zero `as any` in stores or engines. |
+| **TypeScript compilation** | ✅ **0 errors** | `tsc --noEmit` clean |
+
+### Production Rendering Verification
+| Route | Status | Notes |
+|:------|:------:|:-------|
+| `/campaign/dashboard` | ✅ Verified | Premium glass panels, Quick Nav, Session Timer, Combat Status |
+| `/campaign/homebrew` | ✅ Verified | 4-tab system (Items/Spells/Feats/Monsters) with search, filters |
+| `/campaign/encounters` | ✅ Verified | Bestiary + Encounters tabs, search, sort, CR filter, empty states |
+| `/campaign/maps` | ✅ Verified | Battle Maps with Compendium drawer, sidebar intact |
+| `/campaign/settings` | ✅ Verified | Active nav indicator, Settings page rendering |
+
+### Deployment Status
+- **URL:** https://arkla.vercel.app
+- **TypeScript:** ✅ 0 errors
+- **Git:** ✅ Sprint 32 checkpoint
+- **Prohibited content:** ✅ Zero 'Tick race' or 'Food machine'
+---
