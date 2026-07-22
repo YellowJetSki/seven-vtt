@@ -26,6 +26,7 @@ import DerivedStatsPreview from "@/components/player/DerivedStatsPreview";
 import CharacterFormFields from "@/components/player/CharacterFormFields";
 import RaceClassSelector from "@/components/player/RaceClassSelector";
 import PortraitPicker from "@/components/player/PortraitPicker";
+import BackgroundSelector from "@/components/player/BackgroundSelector";
 import type { PlayerCharacter } from "@/types";
 import { SRD_RACES } from "@/data/srd-races";
 import type { RaceDefinition } from "@/types/race-class";
@@ -122,6 +123,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
   const [alias, setAlias] = useState("");
   const [level, setLevel] = useState(1);
   const [imageUrl, setImageUrl] = useState("");
+  const [backgroundName, setBackgroundName] = useState("Custom");
 
   const [abilityScores, setAbilityScores] = useState({
     strength: DEFAULT_STATS_BY_CLASS.Fighter.str,
@@ -142,6 +144,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
     setClassName("Fighter");
     setLevel(1);
     setImageUrl("");
+    setBackgroundName("Custom");
     const def = DEFAULT_STATS_BY_CLASS.Fighter;
     setAbilityScores({
       strength: def.str, dexterity: def.dex, constitution: def.con,
@@ -222,6 +225,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
     ];
     char.features = [...char.traits];
     char.languages = ["Common", ...(raceDef?.languages.filter((l) => l !== "Common") || [])];
+    char.background = backgroundName;
     char.imageUrl = imageUrl.trim() || undefined;
 
     addCharacter(char);
@@ -229,7 +233,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
       console.warn("[Firestore] Failed to write new character:", err);
     });
     handleClose();
-  }, [name, playerName, raceName, className, level, imageUrl, abilityScores, addCharacter, handleClose, allRaces, subraceIndex]);
+  }, [name, playerName, raceName, className, level, imageUrl, abilityScores, addCharacter, handleClose, allRaces, subraceIndex, backgroundName]);
 
   const isValid = name.trim().length > 0;
 
@@ -245,6 +249,9 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
           playerName={playerName}
           onPlayerNameChange={setPlayerName}
         />
+
+        {/* Background */}
+        <BackgroundSelector value={backgroundName} onChange={(name) => setBackgroundName(name)} />
 
         {/* Race / Class / Level */}
         <RaceClassSelector

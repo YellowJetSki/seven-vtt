@@ -48,6 +48,7 @@ import SpellSlotStatus from "./SpellSlotStatus";
 import PlayerSheetConditions from "./PlayerSheetConditions";
 import PlayerSheetDeathSaves from "./PlayerSheetDeathSaves";
 import PlayerSheetCharacterStats from "./PlayerSheetCharacterStats";
+import SaveRollButton from "./SaveRollButton";
 import RestBreakdown from "./RestBreakdown";
 import ShortRestDialog from "./ShortRestDialog";
 import LongRestDialog from "./LongRestDialog";
@@ -288,6 +289,32 @@ export default function PlayerSheetCombatTab({ character }: PlayerSheetCombatTab
         ) : (
           <PlayerSheetConditions character={character} />
         )}
+      </div>
+
+      {/* Saving Throws (rollable) */}
+      <div className="space-y-1.5">
+        <CombatSectionHeader label="Saving Throws" count={6} accentColor="bg-violet-500/40" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+          {["strength","dexterity","constitution","intelligence","wisdom","charisma"].map((ability) => {
+            const score = c[ability as keyof typeof c] as number;
+            const mod = Math.floor((score - 10) / 2);
+            const prof = Math.ceil(1 + c.level / 4);
+            const saveInfo = c.savingThrows?.[ability];
+            const isProf = saveInfo?.proficient ?? false;
+            const bonus = saveInfo?.bonus ?? 0;
+            const totalMod = mod + (isProf ? prof : 0) + bonus;
+            return (
+              <SaveRollButton
+                key={ability}
+                label={ability.substring(0, 3).toUpperCase()}
+                modifier={totalMod}
+                dc={15}
+                icon={ability === "dexterity" ? "💨" : ability === "constitution" ? "❤️" : ability === "wisdom" ? "👁️" : "🛡️"}
+                compact
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Character Stats Panel */}

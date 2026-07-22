@@ -17,6 +17,7 @@
 
 import type { CombatEntity } from "@/types/unified-entities";
 import { getSourceBadge, type EntitySource } from "@/lib/combat/compendium-bridge";
+import WeaponMasteryBadge from "@/components/player/WeaponMasteryBadge";
 
 interface CombatWeaponCardProps {
   entity: CombatEntity;
@@ -108,6 +109,11 @@ export default function CombatWeaponCard({ entity, showSource = false }: CombatW
                 </div>
               </>
             )}
+          </div>
+
+          {/* Weapon Mastery (5.5e) */}
+          <div className="mt-1">
+            <WeaponMasteryBadge weaponName={name} />
           </div>
 
           {/* Properties */}

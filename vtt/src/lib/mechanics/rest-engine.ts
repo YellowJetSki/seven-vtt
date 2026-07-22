@@ -21,6 +21,30 @@
 import type { ClassResource, SpellSlots, HitPoints, Feature } from "@/types/character-core";
 import type { PlayerCharacter } from "@/types/character";
 
+// ── Rest Variants (DMG 267) ────────────────────────────────────
+
+export type RestVariant = "standard" | "epic_heroism" | "gritty_realism";
+
+export const REST_VARIANT_DURATIONS: Record<RestVariant, { short: string; long: string }> = {
+  standard:       { short: "1 hour",       long: "8 hours" },
+  epic_heroism:   { short: "5 minutes",    long: "1 hour" },
+  gritty_realism: { short: "8 hours",      long: "7 days" },
+};
+
+/**
+ * Adjusts hit dice recovery for long rest based on variant.
+ * Epic Heroism: recover ALL hit dice.
+ * Gritty Realism: recover 1/4 total (min 0).
+ * Standard: recover 1/2 total (min 1).
+ */
+export function computeHdRecovery(level: number, variant: RestVariant = "standard"): number {
+  switch (variant) {
+    case "epic_heroism": return level; // recover all
+    case "gritty_realism": return Math.max(0, Math.floor(level / 4));
+    case "standard": return Math.max(1, Math.floor(level / 2));
+  }
+}
+
 // ── Result Types ───────────────────────────────────────────────
 
 export interface RestSummary {

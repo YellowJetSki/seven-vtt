@@ -387,7 +387,7 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
           >Set 10</button>
           <button onClick={handleRepopulate}
             className="px-1.5 py-0.5 rounded text-[7px] bg-surface-800/20 border border-white/[0.03] text-surface-400 hover:text-surface-200 transition-colors"
-          ⟳</button>
+          >⟳</button>
           <button onClick={handleClearAll}
             className="px-1.5 py-0.5 rounded text-[7px] bg-surface-800/20 border border-white/[0.03] text-rose-400/60 hover:text-rose-400 transition-colors"
           >Clear</button>
