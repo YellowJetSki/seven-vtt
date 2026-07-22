@@ -300,6 +300,7 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
       statusEffects: [],
       isDead: false,
       isConcentrating: false,
+      notes: "",
     }));
 
     const encounter = {

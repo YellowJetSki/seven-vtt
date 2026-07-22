@@ -43,7 +43,8 @@ function getHpTier(current: number, max: number): { label: string; color: string
 }
 
 /** Map status effect to color dot */
-function getStatusDot(effect: string): { bg: string; label: string } {
+function getStatusDot(effect: string | { id?: string; effect: string }): { bg: string; label: string } {
+  const effectName = typeof effect === "string" ? effect : effect.effect || effect.id || "";
   const map: Record<string, { bg: string; label: string }> = {
     poisoned: { bg: "bg-emerald-500", label: "Poisoned" },
     paralyzed: { bg: "bg-amber-500", label: "Paralyzed" },
@@ -62,7 +63,7 @@ function getStatusDot(effect: string): { bg: string; label: string } {
     petrified: { bg: "bg-surface-500", label: "Petrified" },
     grappled: { bg: "bg-amber-500", label: "Grappled" },
   };
-  return map[effect.toLowerCase()] || { bg: "bg-surface-500", label: effect };
+  return map[effectName.toLowerCase()] || { bg: "bg-surface-500", label: effectName };
 }
 
 /** Format seconds as mm:ss */

@@ -99,23 +99,6 @@ export default function DmLegendaryActionTracker() {
     return () => window.removeEventListener("keydown", hk);
   }, [show]);
 
-  // Cycle 18: Canvas token click → auto-expand matching creature
-  useEffect(() => {
-    if (!show) return;
-    const unsub = useDMSelectionStore.subscribe((state) => {
-      const selectedId = state.selectedCombatantId;
-      if (!selectedId) return;
-
-      // Check if any legendary creature matches the selected combatant ID
-      const allCreatures = [...customCombatants, ...encounterLegendaries];
-      const match = allCreatures.find((c) => c.id === selectedId);
-      if (match) {
-        setExpandedId(match.id);
-      }
-    });
-    return () => unsub();
-  }, [show, customCombatants, encounterLegendaries]);
-
   const handleClose = useCallback(() => {
     setAnimPhase("exiting");
     setTimeout(() => { setShow(false); setShowAddForm(false); }, 150);
@@ -158,6 +141,22 @@ export default function DmLegendaryActionTracker() {
     for (const cc of customCombatants) map.set(cc.id, cc);
     return Array.from(map.values());
   }, [encounterLegendaries, customCombatants]);
+
+  // Cycle 18: Canvas token click → auto-expand matching creature
+  useEffect(() => {
+    if (!show) return;
+    const unsub = useDMSelectionStore.subscribe((state) => {
+      const selectedId = state.selectedCombatantId;
+      if (!selectedId) return;
+
+      const allCreatures = [...customCombatants, ...encounterLegendaries];
+      const match = allCreatures.find((c) => c.id === selectedId);
+      if (match) {
+        setExpandedId(match.id);
+      }
+    });
+    return () => unsub();
+  }, [show, customCombatants, encounterLegendaries]);
 
   const roundNumber = activeEncounter?.round || 1;
 

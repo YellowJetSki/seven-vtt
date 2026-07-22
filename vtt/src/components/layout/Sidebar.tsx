@@ -360,6 +360,7 @@ function DmToolButton({ tool, isOpen }: { tool: DmToolProps; isOpen: boolean }) 
 export default function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const { isMobile, isDesktop } = useResponsive();
 
   // ── DM Tools collapsible state (defaults to collapsed to prevent nav/tool overlap) ──

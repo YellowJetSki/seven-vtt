@@ -12,7 +12,7 @@ export function calculateEncumbrance(
   strength: number,
   equipment: { item: string; quantity: number; weight: number }[],
   inventory: { name: string; quantity: number; weight: number }[],
-  currency: { copper: number; silver: number; electrum: number; gold: number; platinum: number },
+  currency: { leptons: number; quadrants: number; assarions: number; copper?: number; silver?: number; electrum?: number; gold?: number; platinum?: number; },
   variant: "standard" | "variant" = "standard"
 ): EncumbranceResult {
   const weight = computeTotalWeight(equipment, inventory, currency);

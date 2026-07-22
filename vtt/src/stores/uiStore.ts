@@ -55,6 +55,8 @@ interface UIState {
   showPartyResources: boolean;
   showEncounterAnalyzer: boolean;
   showQuestTracker: boolean;
+  showTimeTracker: boolean;
+  showSessionRecap: boolean;
   showFactionTracker: boolean;
 }
 
@@ -104,6 +106,8 @@ interface UIActions {
   setPartyResources: (show: boolean) => void;
   setEncounterAnalyzer: (show: boolean) => void;
   setQuestTracker: (show: boolean) => void;
+  setTimeTracker: (show: boolean) => void;
+  setSessionRecap: (show: boolean) => void;
   setFactionTracker: (show: boolean) => void;
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
@@ -147,7 +151,6 @@ export const useUIStore = create<UIState & UIActions>()((set, get) => ({
   showQuestTracker: false,
   showTimeTracker: false,
   showSessionRecap: false,
-  showFactionTracker: false,
   showFactionTracker: false,
 
   toggleSidebar: () => {

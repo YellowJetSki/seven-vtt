@@ -91,7 +91,7 @@ export default function CompanionSpellRefPanel({ character, onClose }: Companion
     const result: KnownSpell[] = [];
 
     // Helper: add spell if not already in result
-    const addIfMissing = (spell: { name: string; level: number; school: string; description: string; castingTime?: string; range?: string; components?: string; duration?: string; ritual?: boolean; concentration?: boolean; damageDice?: string; damageType?: string; healDice?: string; saveDC?: number; saveAbility?: string; attackRoll?: boolean; tags?: string[]; }) => {
+    const addIfMissing = (spell: { name: string; level: number; school: string; description: string; castingTime?: string; range?: string; components?: string | string[]; duration?: string; ritual?: boolean; concentration?: boolean; damageDice?: string; damageType?: string; healDice?: string; saveDC?: number; saveAbility?: string; attackRoll?: boolean; tags?: string[]; }) => {
       if (!result.some((r) => r.name.toLowerCase() === spell.name.toLowerCase())) {
         result.push({
           name: spell.name,
@@ -99,11 +99,11 @@ export default function CompanionSpellRefPanel({ character, onClose }: Companion
           school: spell.school || "Unknown",
           castingTime: spell.castingTime || "1 action",
           range: spell.range || "Self",
-          components: spell.components || "V, S",
+          components: Array.isArray(spell.components) ? (spell.components as string[]).join(", ") : (spell.components || "V, S"),
           duration: spell.duration || "Instantaneous",
           description: spell.description,
-          ritual: spell.ritual || false,
-          concentration: spell.concentration || false,
+          ritual: (spell as any).ritual || false,
+          concentration: (spell as any).concentration || false,
           damageDice: spell.damageDice,
           damageType: spell.damageType,
           healDice: spell.healDice,

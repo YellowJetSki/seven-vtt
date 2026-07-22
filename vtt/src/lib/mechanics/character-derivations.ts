@@ -234,7 +234,11 @@ export interface DerivedSpellcasting {
   isCaster: boolean;
   spellSlots: SpellSlotsFull | null;
   spellSaveDC: number;
+  /** @deprecated Use spellSaveDC */
+  saveDC: number;
   spellAttackBonus: number;
+  /** @deprecated Use spellAttackBonus */
+  attackBonus: number;
   spellcastingAbility: string;
   spellcastingMod: number;
 }
@@ -296,12 +300,16 @@ export function computeSpellcasting(character: PlayerCharacter): DerivedSpellcas
     }
   }
 
+  const saveDC = mcState.spellSaveDC;
+  const atkBonus = mcState.spellAttackBonus;
   return {
     casterType: mcState.isCaster ? (mcState.effectiveCasterLevel > 0 ? "full" : mcState.pactSlots.hasPactMagic ? "pact" : "none") : null,
     isCaster: mcState.isCaster,
     spellSlots,
-    spellSaveDC: mcState.spellSaveDC,
-    spellAttackBonus: mcState.spellAttackBonus,
+    spellSaveDC: saveDC,
+    saveDC,
+    spellAttackBonus: atkBonus,
+    attackBonus: atkBonus,
     spellcastingAbility: abilityName,
     spellcastingMod: mcState.spellcastingAbilityMod,
   };

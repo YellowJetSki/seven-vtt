@@ -10,7 +10,7 @@
 
 // ── XP Thresholds per Character Level ──
 
-const XP_THRESHOLDS: Record<number, { easy: number; medium: number; hard: number; deadly: number }> = {
+export const XP_THRESHOLDS: Record<number, { easy: number; medium: number; hard: number; deadly: number }> = {
   1:  { easy: 25, medium: 50, hard: 75, deadly: 100 },
   2:  { easy: 50, medium: 100, hard: 150, deadly: 200 },
   3:  { easy: 75, medium: 150, hard: 225, deadly: 400 },
@@ -130,7 +130,7 @@ function getEncounterMultiplier(enemyCount: number): number {
  * "use the next higher multiplier," which we implement as shifting the bracket.
  * For parties of <3, we multiply the standard multiplier by 1.5 (solo) or 2 (duo).
  */
-function getEffectiveMultiplier(enemyCount: number, partySize: number): number {
+export function getEffectiveMultiplier(enemyCount: number, partySize: number): number {
   const base = getEncounterMultiplier(enemyCount);
 
   if (partySize < 3) {

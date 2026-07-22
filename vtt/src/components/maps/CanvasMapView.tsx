@@ -431,10 +431,11 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
 
-    // Hit-test tokens
-    const tokens = props.tokens || [];
+    // Hit-test tokens — use the destructured `tokens` from component props
+    const tokenList = tokens || [];
     // Iterate in reverse (topmost first)
-    for (let i = tokens.length - 1; i >= 0; i--) {
+    for (let i = tokenList.length - 1; i >= 0; i--) {
+      const token = tokenList[i];
       const token = tokens[i];
       const tokenGridX = (token.x || 0) * s.gridSize;
       const tokenGridY = (token.y || 0) * s.gridSize;
@@ -451,7 +452,7 @@ const CanvasMapView = forwardRef<CanvasMapHandle, CanvasMapViewProps>(({
         return;
       }
     }
-  }, [viewOnly, props.tokens]);
+  }, [viewOnly, tokens]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();

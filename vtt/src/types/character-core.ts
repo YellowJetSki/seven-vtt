@@ -76,6 +76,40 @@ export interface Currency {
   leptons: number;    // Common coin (50 = 1 Quadrant)
   quadrants: number;  // Silver-standard (4 = 1 Assarion)
   assarions: number;  // Gold-standard (highest denomination)
+  /** @deprecated Use leptons/quadrants/assarions */
+  copper?: number;
+  /** @deprecated Use leptons/quadrants/assarions */
+  silver?: number;
+  /** @deprecated Use leptons/quadrants/assarions */
+  electrum?: number;
+  /** @deprecated Use leptons/quadrants/assarions */
+  gold?: number;
+  /** @deprecated Use leptons/quadrants/assarions */
+  platinum?: number;
+}
+
+/** Converts legacy {copper,silver,gold} to {leptons,quadrants,assarions} */
+export function convertLegacyCurrency(c: Record<string, number>): Currency {
+  const cu = c as any;
+  return {
+    leptons: cu.leptons ?? (cu.copper ?? 0) + (cu.silver ?? 0) * 10 + (cu.electrum ?? 0) * 50 + (cu.gold ?? 0) * 100 + (cu.platinum ?? 0) * 1000,
+    quadrants: cu.quadrants ?? (cu.silver ?? 0) * 10 + (cu.gold ?? 0) * 100,
+    assarions: cu.assarions ?? (cu.gold ?? 0) + (cu.platinum ?? 0) * 10,
+  };
+}
+
+/** Converts {leptons,quadrants,assarions} to readable gold value */
+export function currencyToGold(c: Currency): number {
+  return c.assarions + Math.floor(c.quadrants / 4) + Math.floor(c.leptons / 200);
+}
+
+/** Human-readable currency string */
+export function formatCurrency(c: Currency): string {
+  const parts: string[] = [];
+  if (c.assarions > 0) parts.push(`${c.assarions} A`);
+  if (c.quadrants > 0) parts.push(`${c.quadrants} Q`);
+  if (c.leptons > 0) parts.push(`${c.leptons} L`);
+  return parts.join(" ") || "0 L";
 }
 
 export interface SpellSlots {
