@@ -28,6 +28,7 @@ import { buildAoEHPUpdates, createAoELogEntry } from "@/lib/combat/aoe-damage-en
 import { FALLBACK_CAMPAIGN_ID } from "./useFirestoreSync";
 import { generateId, clampHP, createLogEntry } from "@/stores/combat/combat-helpers";
 import { enqueueMutation, dequeueMutation } from "@/hooks/useOfflineQueue";
+import { useCampaignStore } from "@/stores/campaignStore";
 
 // ── Helper: Read current encounter + write to both stores ──
 // Fixed (Sprint 6): Microtask accumulator — eliminates dropped mutations.
@@ -95,6 +96,28 @@ function mapCombatants(
 
 // ── Hooks ──────────────────────────────────────────────────
 
+// ── Bridge: sync combatant HP back to campaign character ──
+// Ensures the player sheet, DM dashboard, and player cards
+// always reflect the same HP as the combat tracker.
+function syncCombatantToCharacter(combatant: Combatant) {
+  // Only sync player-type combatants — enemies are tracked in combat only
+  if (combatant.type !== "player") return;
+  const characters = useCampaignStore.getState().characters;
+  const match = characters.find((c) =>
+    c.name.toLowerCase() === combatant.name.toLowerCase() ||
+    c.alias?.toLowerCase() === combatant.name.toLowerCase()
+  );
+  if (!match) return;
+  // Write HP and death saves to the campaign store (single source of truth)
+  useCampaignStore.getState().updateCharacter(match.id, {
+    hitPoints: {
+      current: combatant.hitPoints.current,
+      max: combatant.hitPoints.max,
+      temporary: combatant.hitPoints.temporary || 0,
+    },
+  });
+}
+
 /**
  * HP-related combat mutations.
  */
@@ -108,6 +131,7 @@ export function useCombatHpMutations() {
         if (!c) return enc;
         const hp = clampHP(c.hitPoints, -amount);
         const dead = hp.current <= 0;
+        syncCombatantToCharacter({ ...c, hitPoints: hp, isDead: dead });
         return {
           ...enc,
           combatants: mapCombatants(enc.combatants, combatantId, {
@@ -127,6 +151,7 @@ export function useCombatHpMutations() {
         if (!c) return enc;
         const hp = clampHP(c.hitPoints, amount);
         const alive = hp.current > 0;
+        syncCombatantToCharacter({ ...c, hitPoints: hp, isDead: !alive });
         return {
           ...enc,
           combatants: mapCombatants(enc.combatants, combatantId, {
@@ -141,17 +166,19 @@ export function useCombatHpMutations() {
 
   const setTempHP = useCallback(
     (combatantId: string, amount: number) => {
-      write((enc) => ({
-        ...enc,
-        combatants: mapCombatants(enc.combatants, combatantId, {
-          hitPoints: {
-            ...(enc.combatants.find((x) => x.id === combatantId)?.hitPoints ?? {
-              current: 0, max: 0, temporary: 0,
-            }),
-            temporary: Math.max(0, amount),
-          },
-        }),
-      }));
+      write((enc) => {
+        const c = enc.combatants.find((x) => x.id === combatantId);
+        if (c) syncCombatantToCharacter({ ...c, hitPoints: { ...c.hitPoints, temporary: Math.max(0, amount) } });
+        return {
+          ...enc,
+          combatants: mapCombatants(enc.combatants, combatantId, {
+            hitPoints: {
+              ...(c?.hitPoints ?? { current: 0, max: 0, temporary: 0 }),
+              temporary: Math.max(0, amount),
+            },
+          }),
+        };
+      });
     },
     [write]
   );
@@ -196,6 +223,12 @@ export function useCombatHpMutations() {
         );
         logEntries.push(aoeEntry);
         logEntries.push(...result.deathEntries);
+
+        // Sync player characters
+        for (const update of updates) {
+          const combatant = combatants.find((c) => c.id === update.combatantId);
+          if (combatant) syncCombatantToCharacter(combatant);
+        }
 
         return {
           ...enc,

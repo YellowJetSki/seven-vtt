@@ -156,6 +156,9 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
   const startCombatAction = useCombatStore((s) => s.startCombat);
 
   // ── State ──
+  // Track which PCs are included (all by default — DM can toggle absent players)
+  const [includedPcIds, setIncludedPcIds] = useState<Set<string>>(() => new Set(characters.map((c) => c.id)));
+
   const [draft, setDraft] = useState<DraftEntry[]>(() => {
     // Auto-populate player characters
     return characters.map((c) => ({
@@ -242,8 +245,36 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
     setDraft([]);
   }, []);
 
+  // ── Toggle PC inclusion ──
+  const handleTogglePc = useCallback((charId: string) => {
+    setIncludedPcIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(charId)) {
+        next.delete(charId);
+        // Remove from draft
+        setDraft((d) => d.filter((e) => e.id !== charId));
+      } else {
+        next.add(charId);
+        // Add back to draft
+        const c = characters.find((ch) => ch.id === charId);
+        if (c) {
+          setDraft((d) => [...d, {
+            id: c.id,
+            name: c.name,
+            initiative: 10 + Math.floor((Math.max(0, (c.dexterity || 10) - 10)) / 2),
+            isEnemy: false,
+            locked: false,
+          }]);
+        }
+      }
+      return next;
+    });
+  }, [characters]);
+
   // ── Re-populate from campaign ──
   const handleRepopulate = useCallback(() => {
+    const newIncluded = new Set(characters.map((c) => c.id));
+    setIncludedPcIds(newIncluded);
     setDraft(characters.map((c) => ({
       id: c.id,
       name: c.name,
@@ -253,12 +284,13 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
     })));
   }, [characters]);
 
-  // ── Commit to combat ──
+  // ── Commit to combat (only included PCs + all drafted enemies) ──
   const handleCommit = useCallback((alsoStart: boolean) => {
-    if (draft.length === 0) return;
+    const filteredDraft = draft.filter((e) => e.isEnemy || includedPcIds.has(e.id));
+    if (filteredDraft.length === 0) return;
     setIsCommitting(true);
 
-    const combatants = draft.map((entry) => ({
+    const combatants = filteredDraft.map((entry) => ({
       id: `combatant_${Date.now()}_${entry.id}`,
       name: entry.name,
       type: entry.isEnemy ? "enemy" as const : "player" as const,
@@ -290,7 +322,7 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
     }
     setIsCommitting(false);
     onClose();
-  }, [draft, encounterName, setEncounter, startCombatAction, onClose]);
+  }, [draft, includedPcIds, encounterName, setEncounter, startCombatAction, onClose]);
 
   // ── Stats ──
   const avgInit = useMemo(() => {
@@ -360,8 +392,38 @@ export default function DmInitiativeDraft({ onClose }: DmInitiativeDraftProps) {
             className="px-1.5 py-0.5 rounded text-[7px] bg-surface-800/20 border border-white/[0.03] text-rose-400/60 hover:text-rose-400 transition-colors"
           >Clear</button>
 
+          {/* PC presence toggles */}
+          {characters.length > 1 && (
+            <details className="ml-auto">
+              <summary className="text-[6px] text-surface-500 cursor-pointer hover:text-surface-300 transition-colors list-none flex items-center gap-0.5 px-1 py-0.5 rounded hover:bg-white/[0.03]">
+                <span className="text-[7px]">👥</span>
+                <span className="text-[7px] tabular-nums">{includedPcIds.size}/{characters.length}</span>
+              </summary>
+              <div className="absolute right-0 top-full mt-0.5 z-10 bg-[#0f1019]/98 border border-white/[0.06] rounded-lg shadow-xl p-1 min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-100">
+                <p className="text-[6px] text-surface-500 px-1 pb-0.5 uppercase tracking-wider">Exclude absent PCs</p>
+                {characters.map((c) => (
+                  <button key={c.id} onClick={() => handleTogglePc(c.id)}
+                    className={`w-full flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[8px] transition-colors ${
+                      includedPcIds.has(c.id)
+                        ? "text-surface-200 hover:bg-gold-500/5"
+                        : "text-surface-500 hover:text-surface-300 hover:bg-rose-500/5"
+                    }`}
+                  >
+                    <span className={`text-[6px] ${includedPcIds.has(c.id) ? "text-emerald-400" : "text-rose-400"}`}>
+                      {includedPcIds.has(c.id) ? "●" : "○"}
+                    </span>
+                    <span className="truncate flex-1 text-left">{c.name}</span>
+                    {!includedPcIds.has(c.id) && (
+                      <span className="text-[5px] uppercase text-rose-400/60">absent</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </details>
+          )}
+
           {/* Stats */}
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-1">
             <span className="text-[7px] text-surface-500 tabular-nums">{sorted.length}</span>
             <span className="text-[6px] text-surface-600">/</span>
             <span className="text-[7px] text-surface-500 tabular-nums">{characters.length}</span>

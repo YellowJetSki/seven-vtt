@@ -137,19 +137,9 @@ export default function TheatricPage() {
   // ── Auto-follow camera onto active combatant ──
   // Reads active encounter from combatStore and centers camera
   // on the current turn token, using grid coordinates
-  const autoFollowRef = useRef(activeEncounter);
-  autoFollowRef.current = activeEncounter;
-  const tokensFromStore = useRef(mapTokens);
-  tokensFromStore.current = mapTokens;
-  const activeMapIdRef = useRef(activeMapId);
-  activeMapIdRef.current = activeMapId;
-  const setCameraRef2 = useRef(setCamera);
-  setCameraRef2.current = setCamera;
-
   useEffect(() => {
-    // Only activate auto-follow when combat is active and a map is selected
-    const enc = autoFollowRef.current;
-    if (!enc || enc.phase !== "active" || !activeMapIdRef.current) return;
+    const enc = activeEncounter;
+    if (!enc || enc.phase !== "active" || !activeMapId) return;
 
     const currentIdx = enc.currentCombatantIndex;
     if (currentIdx < 0 || currentIdx >= enc.combatants.length) return;
@@ -158,7 +148,7 @@ export default function TheatricPage() {
     if (!currentCombatant) return;
 
     // Find the matching token for this combatant by name
-    const mapTokenArray = tokensFromStore.current[activeMapIdRef.current];
+    const mapTokenArray = mapTokens[activeMapId];
     if (!mapTokenArray) return;
 
     const matchingToken = mapTokenArray.find(
@@ -167,13 +157,13 @@ export default function TheatricPage() {
     if (!matchingToken) return;
 
     // Smoothly center camera on the token's grid position
-    // We only auto-follow once when the turn changes, not every frame
-    setCameraRef2.current({
+    // Uses camera store to avoid stale closures
+    setCamera({
       x: -(matchingToken.x * 50), // approximate gridSize = 50
       y: -(matchingToken.y * 50),
       zoom: 1.2, // slight zoom-in for dramatic effect
     });
-  }, [activeEncounter?.currentCombatantIndex]); // Runs when turn changes
+  }, [activeEncounter, activeMapId, mapTokens, setCamera]); // Re-runs when encounter, map, or tokens change
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
