@@ -30,11 +30,9 @@ interface CoinDef {
 }
 
 const COINS: CoinDef[] = [
-  { label: "PP", key: "platinum",   color: "text-cyan-300",  glowColor: "rgba(103,232,249,0.15)", icon: "💎", valueToNext: 10, nextKey: null,                sortOrder: 5, denominationLabel: "1 PP = 10 GP" },
-  { label: "GP", key: "gold",       color: "text-amber-400", glowColor: "rgba(251,191,36,0.15)",  icon: "🪙", valueToNext: 10, nextKey: "platinum",          sortOrder: 4, denominationLabel: "1 GP = 10 SP" },
-  { label: "EP", key: "electrum",   color: "text-gold-500/60",glowColor: "rgba(234,179,8,0.08)",  icon: "💠", valueToNext: 2,  nextKey: "gold",              sortOrder: 3, denominationLabel: "1 EP = 2 SP" },
-  { label: "SP", key: "silver",     color: "text-surface-300",glowColor: "rgba(203,213,225,0.08)",icon: "🥈", valueToNext: 10, nextKey: "electrum",           sortOrder: 2, denominationLabel: "1 SP = 10 CP" },
-  { label: "CP", key: "copper",     color: "text-amber-600", glowColor: "rgba(217,119,6,0.08)",  icon: "🟤", valueToNext: 10, nextKey: "silver",             sortOrder: 1, denominationLabel: "most common" },
+  { label: "AS", key: "assarions",  color: "text-amber-400", glowColor: "rgba(251,191,36,0.15)",  icon: "🪙", valueToNext: 1,  nextKey: null,               sortOrder: 3, denominationLabel: "1 AS = 4 QD = 200 LP" },
+  { label: "QD", key: "quadrants",  color: "text-surface-300",glowColor: "rgba(203,213,225,0.08)", icon: "🥈", valueToNext: 4,  nextKey: "assarions",         sortOrder: 2, denominationLabel: "1 QD = 50 LP" },
+  { label: "LP", key: "leptons",    color: "text-amber-600", glowColor: "rgba(217,119,6,0.08)",   icon: "🟤", valueToNext: 50, nextKey: "quadrants",         sortOrder: 1, denominationLabel: "most common" },
 ];
 
 interface InventoryCurrencyBarProps {
@@ -101,11 +99,7 @@ export default function InventoryCurrencyBar({ currency, characterId, character 
     setEditKey(null);
   }, [editKey, editValue, updateCurrency]);
 
-  const totalGp = useCallback(() => {
-    return currency.platinum * 10 + currency.gold + currency.electrum * 0.5 + currency.silver * 0.1 + currency.copper * 0.01;
-  }, [currency])();
-
-  const totalInCopper = currency.platinum * 1000 + currency.gold * 100 + currency.electrum * 50 + currency.silver * 10 + currency.copper;
+  const totalInLeptons = currency.assarions * 200 + currency.quadrants * 50 + currency.leptons;
 
   return (
     <div className="relative rounded-xl bg-gradient-to-b from-[#14151f]/90 to-[#0f1019]/95 border border-white/[0.04] p-3 overflow-hidden">
@@ -125,7 +119,7 @@ export default function InventoryCurrencyBar({ currency, characterId, character 
             {showDenomination ? "Hide" : "Info"}
           </button>
           <span className="text-[8px] text-surface-600 tabular-nums">
-            ~{totalGp.toFixed(1)} GP
+            ~{(totalInLeptons).toLocaleString()} LP
           </span>
         </div>
       </div>
@@ -133,8 +127,8 @@ export default function InventoryCurrencyBar({ currency, characterId, character 
       {/* Denomination reference card */}
       {showDenomination && (
         <div className="mb-2.5 p-2 rounded-lg bg-surface-800/40 border border-surface-700/20 animate-in slide-in-from-top-1 duration-200">
-          <p className="text-[8px] text-surface-500 mb-1.5">Coin Values (Standard 5.5e)</p>
-          <div className="grid grid-cols-5 gap-1">
+          <p className="text-[8px] text-surface-500 mb-1.5">Arkla Currency</p>
+          <div className="grid grid-cols-3 gap-1">
             {COINS.map((coin) => (
               <div key={coin.key} className="text-center">
                 <p className={`text-[9px] font-bold ${coin.color}`}>{coin.icon} {coin.label}</p>
@@ -144,7 +138,7 @@ export default function InventoryCurrencyBar({ currency, characterId, character 
           </div>
           <div className="mt-1.5 pt-1.5 border-t border-surface-700/20">
             <p className="text-[7px] text-surface-600">
-              Total: <span className="text-gold-400 font-semibold">{totalGp.toFixed(1)} GP</span> ({totalInCopper.toLocaleString()} CP equivalent)
+              Total: <span className="text-gold-400 font-semibold">{totalInLeptons.toLocaleString()} LP</span> ({Math.floor(totalInLeptons / 200)} AS, {Math.floor((totalInLeptons % 200) / 50)} QD, {totalInLeptons % 50} LP)
             </p>
           </div>
         </div>
@@ -212,22 +206,22 @@ export default function InventoryCurrencyBar({ currency, characterId, character 
       {/* Quick-add presets */}
       <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
         <span className="text-[7px] uppercase text-surface-600 tracking-wider font-semibold">Quick add:</span>
-        {[1, 5, 10, 25, 50, 100].map((amt) => (
+        {[1, 5, 10, 25, 50, 100, 500].map((amt) => (
           <button
             key={amt}
-            onClick={() => addCurrency("gold", amt)}
+            onClick={() => addCurrency("leptons", amt)}
             className="relative px-2 py-0.5 rounded-lg text-[8px] font-semibold bg-gradient-to-b from-gold-500/8 to-gold-500/4 border border-gold/10 text-gold-500/70 hover:from-gold-500/15 hover:to-gold-500/8 active:scale-95 transition-all duration-150 overflow-hidden"
           >
-            <span className="relative z-[1]">+{amt} GP</span>
+            <span className="relative z-[1]">+{amt} LP</span>
           </button>
         ))}
-        {[1, 10, 100].map((amt) => (
+        {[1, 5].map((amt) => (
           <button
-            key={`sp-${amt}`}
-            onClick={() => addCurrency("silver", amt)}
+            key={`qd-${amt}`}
+            onClick={() => addCurrency("quadrants", amt)}
             className="px-2 py-0.5 rounded-lg text-[8px] font-semibold bg-gradient-to-b from-surface-700/30 to-surface-700/15 border border-surface-600/30 text-surface-400 hover:from-surface-700/50 hover:to-surface-700/30 active:scale-95 transition-all duration-150"
           >
-            +{amt} SP
+            +{amt} QD
           </button>
         ))}
       </div>
@@ -235,16 +229,16 @@ export default function InventoryCurrencyBar({ currency, characterId, character 
       {/* Total wealth visualization */}
       <div className="mt-2 pt-2 border-t border-white/[0.03]">
         <div className="flex items-center justify-between">
-          <span className="text-[7px] uppercase tracking-wider text-surface-600">Estimated Wealth</span>
+          <span className="text-[7px] uppercase tracking-wider text-surface-600">Total Wealth</span>
           <span className="text-[10px] font-bold text-gold-400 tabular-nums">
-            {totalGp.toFixed(1)} GP
+            {totalInLeptons.toLocaleString()} LP
           </span>
         </div>
         {/* Wealth density bar */}
         <div className="mt-1 h-1 rounded-full bg-surface-800/60 overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-amber-500/40 via-gold-500/50 to-cyan-400/40 transition-all duration-500"
-            style={{ width: `${Math.min(100, (totalGp / 500) * 100)}%` }}
+            style={{ width: `${Math.min(100, (totalInLeptons / 10000) * 100)}%` }}
           />
         </div>
       </div>

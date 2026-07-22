@@ -16911,3 +16911,33 @@ Total time: ~5 seconds for full combat awareness
 
 ### One Sprint Remaining (Cycle 35/35)
 ---
+
+## DM Faction & Relationship Tracker (Cycle 35/35 — FINAL) (Updated: 2026-07-21 18:29)
+## Cycle 35 — DM Faction & Relationship Tracker — FINAL CYCLE COMPLETE ✅
+
+### New Files Created
+| File | Lines | Purpose |
+|:-----|:-----:|:--------|
+| `control-center/DmFactionTracker.tsx` | ~490 | DM Faction & Relationship Web — track NPC factions, inter-faction relations, party attitudes, influence, and key NPC members |
+
+### Features
+| Section | Detail |
+|:--------|:--------|
+| **🏛️ Factions Tab** | Create/edit/delete factions with name, 9-axis alignment selector (LG→CE), influence slider (1-10) with labels (Marginal→Global), party attitude selector (Allied→War), notes textarea, inline NPC management |
+| **🕸️ Relations Tab** | Auto-generated relationship matrix between all faction pairs, inter-faction attitude selector (Allied→War), relation stats footer with count per attitude type |
+| **👥 NPCs Tab** | All NPCs grouped by faction with name, role, and notes inline editing, delete per NPC |
+| **Visual Design** | Per-faction color-coded gradient cards (10 unique colors), alignment badges with emoji icons, attitude color coding (emerald→gold→amber→rose→red), premium glassmorphism |
+| **Persistence** | localStorage — `str-vtt-dm-factions` and `str-vtt-dm-factions-relations` keys |
+| **Defaults** | Three quick-start factions: The Crown (LG), Guild of Artificers (TN), Crimson Hand (NE) |
+| **Integration** | uiStore (showFactionTracker/setFactionTracker), AppShell (ref/listener/rendering), Sidebar (violet-accented button) |
+
+### Build
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Vite build: Clean
+- Git savepoint: Sprint 80
+
+### DM Tool Tally: 30 Globally Accessible Tools
++1 (new): Faction & Relationship Tracker (violet, `encounterComplete` icon)
+
+### 35-Cycle Development Program — COMPLETE ✅
+---

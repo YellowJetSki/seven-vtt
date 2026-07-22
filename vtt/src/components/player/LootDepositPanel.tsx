@@ -39,11 +39,9 @@ interface LootPreset {
   item: Omit<InventoryItem, "isEquipped">;
   /** If set, adds to currency instead of inventory */
   currency?: Partial<{
-    copper: number;
-    silver: number;
-    electrum: number;
-    gold: number;
-    platinum: number;
+    leptons: number;
+    quadrants: number;
+    assarions: number;
   }>;
 }
 
@@ -68,22 +66,22 @@ const LOOT_PRESETS: LootPreset[] = [
     },
   },
   {
-    label: "Gold (10)",
+    label: "Leptons (50)",
     icon: "\uD83E\uDE99",
-    item: { name: "Gold Coins", quantity: 10, weight: 0.2, description: "" },
-    currency: { gold: 10 },
+    item: { name: "Lepton Coins", quantity: 50, weight: 1.0, description: "" },
+    currency: { leptons: 50 },
   },
   {
-    label: "Gold (50)",
+    label: "Quadrants (1)",
     icon: "\uD83D\uDCB0",
-    item: { name: "Gold Coins", quantity: 50, weight: 1.0, description: "" },
-    currency: { gold: 50 },
+    item: { name: "Quadrant Coin", quantity: 1, weight: 0.02, description: "" },
+    currency: { quadrants: 1 },
   },
   {
-    label: "Gold (100)",
+    label: "Assarions (1)",
     icon: "\uD83D\uDCB5",
-    item: { name: "Gold Coins", quantity: 100, weight: 2.0, description: "" },
-    currency: { gold: 100 },
+    item: { name: "Assarion Coin", quantity: 1, weight: 0.02, description: "Highest denomination — 200 leptons." },
+    currency: { assarions: 1 },
   },
   {
     label: "Torch",
@@ -184,22 +182,21 @@ export default function LootDepositPanel({ className = "" }: LootDepositPanelPro
 
       if (preset.currency) {
         // Currency deposit
-        const updatedCurrency = { ...targetChar.currency };
-        if (preset.currency.copper) updatedCurrency.copper += preset.currency.copper;
-        if (preset.currency.silver) updatedCurrency.silver += preset.currency.silver;
-        if (preset.currency.electrum) updatedCurrency.electrum += preset.currency.electrum;
-        if (preset.currency.gold) updatedCurrency.gold += preset.currency.gold;
-        if (preset.currency.platinum) updatedCurrency.platinum += preset.currency.platinum;
+        const updatedCurrency = { ...targetChar.currency, leptons: targetChar.currency?.leptons || 0, quadrants: targetChar.currency?.quadrants || 0, assarions: targetChar.currency?.assarions || 0 };
+        if (preset.currency.leptons) updatedCurrency.leptons += preset.currency.leptons;
+        if (preset.currency.quadrants) updatedCurrency.quadrants += preset.currency.quadrants;
+        if (preset.currency.assarions) updatedCurrency.assarions += preset.currency.assarions;
         updateCharacter(targetCharId, { currency: updatedCurrency });
 
-        const goldAmount = preset.currency.gold ?? 0;
+        const coinAmount = preset.currency.assarions ?? preset.currency.quadrants ?? preset.currency.leptons ?? 0;
+        const coinLabel = preset.currency.assarions ? "AS" : preset.currency.quadrants ? "QD" : "LP";
         setRecentDeposits((prev) =>
           [
-            { charName: targetChar.name, itemName: `${goldAmount} GP`, quantity: 1, timestamp: Date.now() },
+            { charName: targetChar.name, itemName: `${coinAmount} ${coinLabel}`, quantity: 1, timestamp: Date.now() },
             ...prev,
           ].slice(0, 3)
         );
-        showFlash(`\uD83E\uDE99 Added ${goldAmount} GP to ${targetChar.name.split(" ")[0]}`, "info");
+        showFlash(`\uD83E\uDE99 Added ${coinAmount} ${coinLabel} to ${targetChar.name.split(" ")[0]}`, "info");
         return;
       }
 
@@ -328,7 +325,7 @@ export default function LootDepositPanel({ className = "" }: LootDepositPanelPro
           ...prev,
         ].slice(0, 3)
       );
-      showFlash(`\uD83E\uDE99 Added ${amount} GP to ${char.name.split(" ")[0]}`, "info");
+      showFlash(`\uD83E\uDE99 Added ${amount} AS to ${char.name.split(" ")[0]}`, "info");
     },
     [characters, updateCharacter, showFlash]
   );

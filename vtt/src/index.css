@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   STᚱ VTT — Tailwind Entry Point
+   Arkla — Tailwind Entry Point
    @import "tailwindcss" MUST be in a plain CSS file for the Vite plugin.
    @theme and @source MUST be in the same file as @import "tailwindcss".
    SCSS custom classes are imported separately in main.tsx.

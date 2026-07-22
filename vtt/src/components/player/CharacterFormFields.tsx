@@ -8,6 +8,8 @@
 interface CharacterFormFieldsProps {
   name: string;
   onNameChange: (val: string) => void;
+  alias: string;
+  onAliasChange: (val: string) => void;
   playerName: string;
   onPlayerNameChange: (val: string) => void;
 }
@@ -15,6 +17,8 @@ interface CharacterFormFieldsProps {
 export default function CharacterFormFields({
   name,
   onNameChange,
+  alias,
+  onAliasChange,
   playerName,
   onPlayerNameChange,
 }: CharacterFormFieldsProps) {
@@ -31,6 +35,19 @@ export default function CharacterFormFields({
           placeholder="e.g. Aldric Stormwind"
           className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3.5 py-2.5 text-sm text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all"
           autoFocus
+        />
+      </div>
+
+      {/* Alias (Login Name) */}
+      <div>
+        <label className="block text-[10px] uppercase tracking-widest font-black text-gold-500/60 mb-1.5">
+          Login Alias <span className="text-gold-400/60">(first name or alias — case-insensitive)</span>
+        </label>
+        <input
+          value={alias}
+          onChange={(e) => onAliasChange(e.target.value)}
+          placeholder="e.g. wendy"
+          className="w-full bg-obsidian-mid/60 border border-surface-700/30 rounded-xl px-3.5 py-2.5 text-sm text-surface-200 placeholder-surface-600 focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all"
         />
       </div>
 

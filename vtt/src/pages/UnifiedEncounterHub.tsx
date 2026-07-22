@@ -23,6 +23,7 @@
 
 import { useState, useCallback } from "react";
 import { useCampaignStore } from "@/stores/campaignStore";
+import AppShell from "@/components/layout/AppShell";
 import BestiaryPanel from "@/components/encounters/BestiaryPanel";
 import EncounterComposer from "@/components/encounters/EncounterComposer";
 
@@ -42,6 +43,7 @@ export default function UnifiedEncounterHub() {
   );
 
   return (
+    <AppShell>
     <div className="flex flex-col" style={{ minHeight: "0", flex: 1 }}>
       {/* ═══════════════════════════════════════════════════
           LUSION 7-LAYER CINEMATIC HERO HEADER
@@ -171,5 +173,6 @@ export default function UnifiedEncounterHub() {
         )}
       </div>
     </div>
+    </AppShell>
   );
 }

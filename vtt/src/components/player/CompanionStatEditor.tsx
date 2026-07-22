@@ -106,17 +106,17 @@ export default function CompanionStatEditor({ character, onStatChange }: Compani
 
   /* ── Currency Handler ── */
   const addGoldPreset = useCallback((amount: number) => {
-    const cur = character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
-    const newCurrency: Currency = { ...cur, gold: (cur.gold || 0) + amount };
-    handleHpChange(character, character.hitPoints.current); // use hpChange as stand-in for currency mutation
+    const cur = character.currency || { leptons: 0, quadrants: 0, assarions: 0 };
+    const newCurrency: Currency = { ...cur, assarions: (cur.assarions || 0) + amount };
+    handleHpChange(character, character.hitPoints.current);
     closeEditor();
   }, [character, handleHpChange, closeEditor]);
 
   const addGoldCustom = useCallback(() => {
     const val = parseInt(customGp, 10);
     if (!isNaN(val) && val > 0) {
-      const cur = character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
-      const newCurrency: Currency = { ...cur, gold: (cur.gold || 0) + val };
+      const cur = character.currency || { leptons: 0, quadrants: 0, assarions: 0 };
+      const newCurrency: Currency = { ...cur, assarions: (cur.assarions || 0) + val };
       handleHpChange(character, character.hitPoints.current);
     }
     closeEditor();
@@ -176,9 +176,9 @@ export default function CompanionStatEditor({ character, onStatChange }: Compani
           onClick={() => setActiveEditor(activeEditor === "currency" ? null : "currency")}
           className="group relative flex flex-col items-center gap-0.5 px-1.5 py-2 rounded-lg bg-gold-500/5 border border-gold-500/10 hover:bg-gold-500/8 transition-all duration-200"
         >
-          <span className="text-[7px] uppercase tracking-wider text-gold-400/60 font-semibold">GP</span>
+          <span className="text-[7px] uppercase tracking-wider text-gold-400/60 font-semibold">AS</span>
           <span className="text-[12px] font-black tabular-nums text-gold-300">
-            {gp.toLocaleString()}
+            {(character.currency?.assarions || 0).toLocaleString()}
           </span>
         </motion.button>
       </div>
@@ -290,14 +290,14 @@ export default function CompanionStatEditor({ character, onStatChange }: Compani
             className="overflow-hidden"
           >
             <div className="pt-1 space-y-1.5">
-              {/* GP preset buttons */}
+              {/* AS preset buttons */}
               <div className="grid grid-cols-4 gap-1">
-                {[10, 25, 50, 100].map((n) => (
+                {[1, 5, 10, 50].map((n) => (
                   <button
                     key={n}
                     onClick={() => addGoldPreset(n)}
                     className="px-1 py-1.5 rounded-md bg-gold-500/10 border border-gold-500/15 text-[9px] font-bold text-gold-300 hover:bg-gold-500/15 active:scale-[0.95] transition-all"
-                  >+{n} GP</button>
+                  >+{n} AS</button>
                 ))}
               </div>
               {/* Custom input */}
@@ -308,7 +308,7 @@ export default function CompanionStatEditor({ character, onStatChange }: Compani
                   value={customGp}
                   onChange={(e) => setCustomGp(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") addGoldCustom(); }}
-                  placeholder="Custom GP"
+                  placeholder="Custom AS"
                   className="flex-1 px-2 py-1 rounded-md bg-surface-800/40 border border-surface-700/30 text-[9px] text-white/80 placeholder:text-surface-600 focus:outline-none focus:border-gold-500/25 tabular-nums"
                 />
                 <button

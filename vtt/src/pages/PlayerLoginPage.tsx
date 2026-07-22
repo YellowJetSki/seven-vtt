@@ -125,7 +125,7 @@ export default function PlayerLoginPage() {
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-3">
                   <img
                     src="/AppIcon.png"
-                    alt="STᚱ VTT"
+                    alt="Arkla"
                     className="w-9 h-9 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]"
                   />
                 </div>
@@ -251,7 +251,7 @@ export default function PlayerLoginPage() {
                         key={char.id}
                         onClick={() => {
                           setSelectedCharId(char.id);
-                          if (!playerName) setPlayerName(char.playerName || "");
+                          if (!playerName) setPlayerName(char.alias || char.name.split(" ")[0] || "");
                         }}
                         className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 group ${
                           selectedCharId === char.id
@@ -318,7 +318,7 @@ export default function PlayerLoginPage() {
               {selectedCharId && (
                 <div className="space-y-1.5 mb-5 animate-slide-in-up">
                   <label className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-gold-400/60">
-                    Your Name
+                    Your Alias
                   </label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500 pointer-events-none">
@@ -330,7 +330,7 @@ export default function PlayerLoginPage() {
                       type="text"
                       value={playerName}
                       onChange={(e) => setPlayerName(e.target.value)}
-                      placeholder="Enter your name for this session"
+                      placeholder="Enter your alias (case-insensitive)"
                       className="w-full h-11 pl-9 pr-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-sm text-white placeholder-surface-600 focus:outline-none focus:border-gold-500/25 focus:bg-white/[0.05] transition-all duration-200"
                       autoFocus
                       onKeyDown={(e) => { if (e.key === "Enter" && canSignIn) handleSignIn(); }}

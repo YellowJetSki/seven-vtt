@@ -31,7 +31,7 @@ export default function SidebarBrand({ isOpen }: SidebarBrandProps) {
       {/* AppIcon brand mark — always visible */}
       <img
         src="/AppIcon.png"
-        alt="STᚱ VTT"
+        alt="Arkla"
         className={`select-none transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           isOpen
             ? "w-7 h-7 drop-shadow-[0_0_8px_rgba(234,179,8,0.25)]"

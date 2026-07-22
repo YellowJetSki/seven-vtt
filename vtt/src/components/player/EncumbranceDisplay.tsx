@@ -18,7 +18,7 @@ interface EncumbranceDisplayProps {
   strength: number;
   equipment: { item: string; quantity: number; weight: number }[];
   inventory: { name: string; quantity: number; weight: number }[];
-  currency: { copper: number; silver: number; electrum: number; gold: number; platinum: number };
+  currency: { leptons: number; quadrants: number; assarions: number };
   baseSpeed?: number;
   variant?: "standard" | "variant";
 }

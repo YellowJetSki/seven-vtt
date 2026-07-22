@@ -27,7 +27,7 @@ export default function TheatricWaitingState({
           <div className="mb-6 flex justify-center">
             <img
               src="/AppIcon.svg"
-              alt="STᚱ VTT"
+              alt="Arkla"
               className="w-24 h-24 animate-pulse-glow drop-shadow-[0_0_40px_rgba(234,179,8,0.4)]"
               style={{ animationDuration: "3s" }}
             />
@@ -38,7 +38,7 @@ export default function TheatricWaitingState({
               Awakening the theatric display...
             </p>
             <p className="text-surface-600 text-[10px] uppercase tracking-[0.2em]">
-              STᚱ VTT — Arkla
+              Arkla — Premium VTT
             </p>
           </div>
         </div>
@@ -55,13 +55,13 @@ export default function TheatricWaitingState({
         <div className="mb-6 flex justify-center">
           <img
             src="/AppIcon.svg"
-            alt="STᚱ VTT"
+            alt="Arkla"
             className="w-28 h-28 animate-pulse-glow drop-shadow-[0_0_50px_rgba(234,179,8,0.25)]"
             style={{ animationDuration: "4s" }}
           />
         </div>
         <h1 className="text-2xl font-bold text-gold-300/90 mb-3 tracking-tight">
-          STᚱ VTT
+          Arkla
         </h1>
 
         <div className="flex items-center justify-center gap-3 mb-4">

@@ -13,7 +13,7 @@
  * Replaced glass-gold with direct glass gradient + corner ornaments.
  */
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import type { JournalEntry, JournalEntryType } from "@/types";
 import JournalMarkdownPreview from "./JournalMarkdownPreview";
 
@@ -49,6 +49,35 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
   const [tags, setTags] = useState<string[]>(entry?.tags || []);
   const [tagInput, setTagInput] = useState("");
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [lastSaved, setLastSaved] = useState<number>(Date.now());
+
+  // Auto-save: 3 seconds after the user stops typing
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const entryIdRef = useRef(entry?.id || null);
+  entryIdRef.current = entry?.id || null;
+
+  useEffect(() => {
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    if (!entryIdRef.current) return; // only auto-save existing entries
+    if (!isEditing) return;
+    if (!title.trim()) return;
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      onSave({
+        id: entryIdRef.current!,
+        title: title.trim(),
+        content,
+        type,
+        sessionNumber,
+        tags,
+      });
+      setLastSaved(Date.now());
+    }, 3000);
+
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [title, content, type, sessionNumber, tags, isEditing, onSave]);
 
   // Reset form when entry changes
   useEffect(() => {
@@ -382,6 +411,11 @@ export default function JournalEditor({ entry, onSave, onDelete, onCreate, isNew
         <div className="text-[9px] text-surface-500 flex items-center gap-3">
           <span>{wordCount} words</span>
           <span>{charCount} characters</span>
+          {entryIdRef.current && (
+            <span className="text-[7px] text-gold-500/50 ml-auto">
+              {Date.now() - lastSaved < 4000 ? "Saving..." : "Auto-saved"}
+            </span>
+          )}
         </div>
 
         {/* Tags */}

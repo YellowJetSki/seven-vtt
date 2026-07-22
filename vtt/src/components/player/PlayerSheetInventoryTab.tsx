@@ -76,7 +76,7 @@ export default function PlayerSheetInventoryTab({ character }: PlayerSheetInvent
 
   // ── Derived data ──
   const inventory = character.inventory || [];
-  const currency = character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
+  const currency = character.currency || { leptons: 0, quadrants: 0, assarions: 0 };
   const equipment = character.equipment || [];
 
   const encResult = useMemo(

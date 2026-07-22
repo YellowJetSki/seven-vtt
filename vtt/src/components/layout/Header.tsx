@@ -46,18 +46,6 @@ export default function Header() {
   const username = useAuthStore((s) => s.username);
   const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
-  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
-  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
-  const { isMobile, isDesktop } = useResponsive();
-
-  // Tooltip text changes based on context
-  const hamburgerLabel = isDesktop
-    ? sidebarOpen
-      ? "Collapse sidebar"
-      : "Expand sidebar"
-    : sidebarOpen
-      ? "Close menu"
-      : "Open menu";
 
   return (
     <header className="relative z-10 shrink-0">
@@ -74,35 +62,7 @@ export default function Header() {
 
         {/* ── LEFT GROUP ── */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Hamburger — hidden on mobile (bottom nav handles navigation) */}
-          <button
-            onClick={toggleSidebar}
-            className="relative items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl hover:bg-white/[0.04] text-surface-400 hover:text-gold-400 transition-all duration-200 active:scale-90 group"
-            style={{ display: isDesktop ? 'flex' : 'none' }}
-            aria-label={hamburgerLabel}
-            title={hamburgerLabel}
-          >
-            <div className="flex flex-col items-center justify-center w-5 h-5 gap-[3px]">
-              {/* Top bar — rotates 45° when open */}
-              <span
-                className={`block w-5 h-px bg-current transition-all duration-300 ease-in-out origin-center ${
-                  sidebarOpen ? "rotate-45 translate-y-[3.5px]" : ""
-                }`}
-              />
-              {/* Middle bar — fades when open */}
-              <span
-                className={`block w-5 h-px bg-current transition-all duration-200 ease-in-out ${
-                  sidebarOpen ? "opacity-0 scale-x-0" : ""
-                }`}
-              />
-              {/* Bottom bar — rotates -45° when open */}
-              <span
-                className={`block w-5 h-px bg-current transition-all duration-300 ease-in-out origin-center ${
-                  sidebarOpen ? "-rotate-45 -translate-y-[3.5px]" : ""
-                }`}
-              />
-            </div>
-          </button>
+          {/* Hamburger — REMOVED from Header. Now located at the top of the sidebar. */}
 
           {/* Vertical divider */}
           <div className="w-px h-5 bg-white/[0.06] shrink-0" />
@@ -112,7 +72,7 @@ export default function Header() {
             {/* App Icon — brand mark */}
             <img
               src="/AppIcon.png"
-              alt="STᚱ VTT"
+              alt="Arkla"
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 drop-shadow-[0_0_8px_rgba(234,179,8,0.15)]"
             />
             <div className="flex flex-col">

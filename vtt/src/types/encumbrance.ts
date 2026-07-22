@@ -47,8 +47,8 @@ export const ITEM_WEIGHTS: Record<string, number> = {
   arrows: 0.05, bolts: 0.075, "blowgun_needles": 0.02, "sling_bullets": 0.075,
 };
 
-export function computeCurrencyWeight(currency: { copper: number; silver: number; electrum: number; gold: number; platinum: number }): number {
-  const totalCoins = currency.copper + currency.silver + currency.electrum + currency.gold + currency.platinum;
+export function computeCurrencyWeight(currency: { leptons: number; quadrants: number; assarions: number }): number {
+  const totalCoins = currency.leptons + currency.quadrants + currency.assarions;
   return totalCoins * COIN_WEIGHT_LB;
 }
 
@@ -61,7 +61,7 @@ export function computeItemWeight(itemName: string, quantity: number): number {
 export function computeTotalWeight(
   equipment: { item: string; quantity: number; weight: number }[],
   inventory: { name: string; quantity: number; weight: number }[],
-  currency: { copper: number; silver: number; electrum: number; gold: number; platinum: number }
+  currency: { leptons: number; quadrants: number; assarions: number }
 ): EquipmentWeight {
   const baseItems = equipment.reduce((sum, e) => sum + (e.weight ?? computeItemWeight(e.item, e.quantity)), 0);
   const invItems = inventory.reduce((sum, i) => sum + (i.weight ?? computeItemWeight(i.name, i.quantity)), 0);

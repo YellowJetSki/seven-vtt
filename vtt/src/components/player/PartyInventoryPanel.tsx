@@ -26,16 +26,14 @@ import type { InventoryItem, PlayerCharacter } from "@/types";
 import PremiumIcon from "@/components/ui/PremiumIcon";
 
 // ── 5.5e Coin Conversion ──
-const COIN_VALUES = { platinum: 10, gold: 1, electrum: 0.5, silver: 0.1, copper: 0.01 };
+const COIN_VALUES = { assarions: 200, quadrants: 50, leptons: 1 };
 
 function totalGoldValue(char: PlayerCharacter): number {
   const c = char.currency;
   return (
-    c.platinum * COIN_VALUES.platinum +
-    c.gold * COIN_VALUES.gold +
-    c.electrum * COIN_VALUES.electrum +
-    c.silver * COIN_VALUES.silver +
-    c.copper * COIN_VALUES.copper
+    c.assarions * COIN_VALUES.assarions +
+    c.quadrants * COIN_VALUES.quadrants +
+    c.leptons * COIN_VALUES.leptons
   );
 }
 

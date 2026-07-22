@@ -36,7 +36,7 @@ export default function LoginBrandHero() {
               <div className="absolute -inset-1.5 rounded-lg bg-gold-500/5 blur-[6px]" />
               <img
                 src="/AppIcon.png"
-                alt="STᚱ VTT"
+                alt="Arkla"
                 className="relative w-11 h-11 sm:w-12 sm:h-12 drop-shadow-[0_0_24px_rgba(234,179,8,0.3)]"
               />
             </div>

@@ -366,11 +366,9 @@ export default function InlineStatsEditor({ character, className = "" }: InlineS
           {/* Compact coin display */}
           <div className="grid grid-cols-5 gap-1.5">
             {[
-              { label: "PP", key: "platinum" as const, color: "text-cyan-300", icon: "💎" },
-              { label: "GP", key: "gold" as const, color: "text-amber-400", icon: "🪙" },
-              { label: "EP", key: "electrum" as const, color: "text-gold-500/60", icon: "💠" },
-              { label: "SP", key: "silver" as const, color: "text-surface-300", icon: "🥈" },
-              { label: "CP", key: "copper" as const, color: "text-amber-600", icon: "🟤" },
+              { label: "AS", key: "assarions" as const, color: "text-amber-400", icon: "🪙" },
+              { label: "QD", key: "quadrants" as const, color: "text-surface-300", icon: "🥈" },
+              { label: "LP", key: "leptons" as const, color: "text-amber-600", icon: "🟤" },
             ].map((coin) => (
               <div
                 key={coin.key}
@@ -390,7 +388,7 @@ export default function InlineStatsEditor({ character, className = "" }: InlineS
           {showCurrency && (
             <div className="animate-in slide-in-from-top-1 duration-200">
               <InventoryCurrencyBar
-                currency={character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 }}
+                currency={character.currency || { leptons: 0, quadrants: 0, assarions: 0 }}
                 characterId={character.id}
                 character={character}
               />

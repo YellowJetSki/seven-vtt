@@ -85,7 +85,7 @@ function createBlankCharacter(): PlayerCharacter {
     features: [],
     equipment: [],
     inventory: [],
-    currency: { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 },
+    currency: { leptons: 0, quadrants: 0, assarions: 0 },
     appearance: "",
     backstory: "",
     allies: "",
@@ -119,6 +119,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
   const [raceName, setRaceName] = useState("Human");
   const [subraceIndex, setSubraceIndex] = useState<number | undefined>(undefined);
   const [className, setClassName] = useState("Fighter");
+  const [alias, setAlias] = useState("");
   const [level, setLevel] = useState(1);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -134,6 +135,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
   // ── Handlers ──
   const handleReset = useCallback(() => {
     setName("");
+    setAlias("");
     setPlayerName("");
     setRaceName("Human");
     setSubraceIndex(undefined);
@@ -196,6 +198,7 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
     const char = createBlankCharacter();
     char.id = `pc_${Date.now()}`;
     char.name = name.trim();
+    char.alias = alias.trim() || undefined;
     char.playerName = playerName.trim() || "Player";
     char.race = raceName;
     char.class = className;
@@ -237,6 +240,8 @@ export default function PlayerCreateModal({ isOpen, onClose, homebrewRaces = [] 
         <CharacterFormFields
           name={name}
           onNameChange={setName}
+          alias={alias}
+          onAliasChange={setAlias}
           playerName={playerName}
           onPlayerNameChange={setPlayerName}
         />

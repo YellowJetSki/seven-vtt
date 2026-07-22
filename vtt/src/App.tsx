@@ -18,7 +18,6 @@ import BattleMaps from "./pages/BattleMaps";
 import DmJournal from "./pages/DmJournal";
 import CampaignSettings from "./pages/CampaignSettings";
 import TheatricPage from "./pages/TheatricPage";
-import AssetGallery from "./pages/AssetGallery";
 import AuthGuard from "@/components/auth/AuthGuard";
 
 function FirestoreSyncGate() {
@@ -98,7 +97,6 @@ export default function App() {
       <Route path="/campaign/maps" element={<AuthGuard requiredRole="dm"><BattleMaps /></AuthGuard>} />
       <Route path="/campaign/journal" element={<AuthGuard requiredRole="dm"><DmJournal /></AuthGuard>} />
       <Route path="/campaign/settings" element={<AuthGuard requiredRole="dm"><CampaignSettings /></AuthGuard>} />
-      <Route path="/campaign/assets" element={<AuthGuard requiredRole="dm"><AssetGallery /></AuthGuard>} />
 
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

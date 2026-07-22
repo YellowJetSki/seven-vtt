@@ -511,7 +511,7 @@ export function useInventoryMutations() {
   const handleQuickSell = useCallback(
     (character: PlayerCharacter, index: number) => {
       const inventory = character.inventory || [];
-      const currency = character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
+      const currency = character.currency || { leptons: 0, quadrants: 0, assarions: 0 };
       if (index >= 0 && index < inventory.length) {
         const item = inventory[index];
         const value = Math.max(1, Math.round((item.weight || 1) * 5));

@@ -219,9 +219,9 @@ export default function DmQuickActionPopover({ isOpen, onClose }: DmQuickActionP
         }
       } else if (actionMode === "gold") {
         if (character) {
-          const cur = character.currency || { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 };
+          const cur = character.currency || { leptons: 0, quadrants: 0, assarions: 0 };
           handleAddItem(character, {
-            name: "Gold Coins",
+            name: "Assarion Coins",
             quantity: Math.abs(amount),
             weight: Math.abs(amount) * 0.02, // 50 coins = 1 lb
             description: `Quick deposit of ${Math.abs(amount)} GP`,

@@ -23,6 +23,7 @@ export interface ActiveFeatRef {
 export interface PlayerCharacter {
   id: string;
   name: string;
+  alias?: string;
   playerName: string;
   race: string;
   class: string;

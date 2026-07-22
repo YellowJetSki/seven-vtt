@@ -12,7 +12,7 @@ export default function LoginMobileBrand() {
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-4">
         <img
           src="/AppIcon.png"
-          alt="STᚱ VTT"
+          alt="Arkla"
           className="w-10 h-10 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]"
         />
       </div>

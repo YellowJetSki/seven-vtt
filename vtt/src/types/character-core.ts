@@ -73,11 +73,9 @@ export interface InventoryItem {
 }
 
 export interface Currency {
-  copper: number;
-  silver: number;
-  electrum: number;
-  gold: number;
-  platinum: number;
+  leptons: number;    // Common coin (50 = 1 Quadrant)
+  quadrants: number;  // Silver-standard (4 = 1 Assarion)
+  assarions: number;  // Gold-standard (highest denomination)
 }
 
 export interface SpellSlots {
