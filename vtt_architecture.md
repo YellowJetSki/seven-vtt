@@ -16941,3 +16941,14 @@ Total time: ~5 seconds for full combat awareness
 
 ### 35-Cycle Development Program — COMPLETE ✅
 ---
+
+## Connection Banner Redesign (Updated: 2026-07-22 09:07)
+## ConnectionBanner — Redesigned (Sprint 90)
+
+**Before:** Full-width fixed banner at top (`fixed top-0 left-0 right-0 z-50`) that pushed all content down and persisted overlapping everything.
+
+**After:** Compact floating pill at `fixed bottom-4 left-4 z-[60]` — zero layout shift. Connected state shows "Synced" briefly (2s) then auto-dismisses. Offline/exhausted is a small colored dot + label with a dismiss ✕ button. Uses premium glass gradient styling matching design system.
+
+**File:** `vtt/src/components/ui/ConnectionBanner.tsx` — reduced from ~200 lines to ~110 lines.
+
+---
