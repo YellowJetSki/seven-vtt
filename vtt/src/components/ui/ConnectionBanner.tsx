@@ -1,33 +1,31 @@
 /**
- * STᚱ VTT — ConnectionBanner (Sprint 6: Retry Exhaustion)
+ * STᚱ VTT — ConnectionBanner (Redesigned — Non-Intrusive Floating Toast)
  *
- * Premium sync status banner that slides in when Firebase connection drops.
- * Shows on ALL authenticated pages (DM + Player views).
+ * A discreet, floating snackbar/toast-style indicator that appears in the
+ * bottom-left corner of the screen — never overlapping sidebar, header,
+ * or content. It auto-dismisses when connected and stays subtle when offline.
  *
- * States (Sprint 6):
- *   connected      → emerald, auto-dismiss after 1.2s
- *   offline        → rose, "Connection lost" + pending count
- *   exhausted      → amber, "Sync Unavailable" — persistent until retry succeeds
- *
- * Visual Design:
- *   - Premium glass gradient backdrop
- *   - Edge light matching the design system
- *   - Animated slide-in from top with spring easing
- *   - Color-coded status dot (emerald/rose/amber)
- *   - Pending mutation count badge
+ * Design:
+ *   - Small, floating, non-overlapping (positioned at bottom-4 left-4)
+ *   - Only a colored dot + brief label (no full banner bar)
+ *   - "connected" → shows briefly then dismisses
+ *   - "offline"/"exhausted" → shows persistently as compact dot
+ *   - Zero layout shift — uses `fixed` positioning outside flow
+ *   - Won't overlap sidebar (left-4 avoids sidebar area)
  */
 
 import { useEffect, useState, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { getPendingMutations } from "@/hooks/useOfflineQueue";
 
 type ConnectionState = "connected" | "offline" | "exhausted";
 
 export default function ConnectionBanner() {
   const firebaseConnected = useAuthStore((s) => s.firebaseConnected);
   const syncExhausted = useAuthStore((s) => s.syncExhausted);
-  const [animState, setAnimState] = useState<"entering" | "visible" | "exiting">("exiting");
-  const lastPingRef = useRef(Date.now());
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState("");
+  const dismissTimer = useRef<ReturnType<typeof setTimeout>>();
+  const prevConnected = useRef(firebaseConnected);
 
   // Derive connection state
   const connectionState: ConnectionState = !firebaseConnected && syncExhausted
@@ -36,153 +34,85 @@ export default function ConnectionBanner() {
       ? "connected"
       : "offline";
 
-  // Track last ping — use ref to avoid re-renders
   useEffect(() => {
-    if (firebaseConnected) {
-      lastPingRef.current = Date.now();
-    }
-  }, [firebaseConnected]);
+    // Clear any pending dismiss timer
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
 
-  // Animate banner in/out — with stale-closure-safe refs
-  const connectionStateRef = useRef(connectionState);
-  const animStateRef = useRef(animState);
-  connectionStateRef.current = connectionState;
-  animStateRef.current = animState;
+    const wasConnected = prevConnected.current;
+    prevConnected.current = firebaseConnected;
 
-  useEffect(() => {
-    const cs = connectionStateRef.current;
-    const as = animStateRef.current;
-
-    if (cs === "connected") {
-      if (as === "visible") {
-        const timeout = setTimeout(() => setAnimState("exiting"), 1200);
-        return () => clearTimeout(timeout);
+    if (connectionState === "connected") {
+      // Transitioning TO connected — show briefly then dismiss
+      if (!wasConnected) {
+        setMessage("Synced");
+        setVisible(true);
+        dismissTimer.current = setTimeout(() => {
+          setVisible(false);
+        }, 2000);
+      } else {
+        // Already connected — hide
+        setVisible(false);
       }
-      return;
+    } else if (connectionState === "offline") {
+      setMessage("Offline");
+      setVisible(true);
+    } else if (connectionState === "exhausted") {
+      setMessage("Sync unavailable");
+      setVisible(true);
     }
 
-    // Offline or exhausted — animate in
-    if (as === "exiting") {
-      setAnimState("entering");
-      const timeout = setTimeout(() => setAnimState("visible"), 50);
-      return () => clearTimeout(timeout);
-    }
-  }, []); // Empty deps — use refs to read latest values
+    return () => {
+      if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    };
+  }, [connectionState, firebaseConnected]);
 
-  if (animState === "exiting") return null;
+  if (!visible) return null;
 
-  const pendingMutations = getPendingMutations();
-
-  // ── Styling per state ──
   const isExhausted = connectionState === "exhausted";
   const isOffline = connectionState === "offline";
 
-  const bannerBg = isExhausted
-    ? "from-amber-950/60 to-rose-950/30 border-amber-500/20 shadow-amber-500/5"
-    : isOffline
-      ? "from-rose-950/60 to-amber-950/40 border-rose-500/20 shadow-rose-500/5"
-      : "from-emerald-950/50 to-gold-950/30 border-emerald-500/15 shadow-emerald-500/5";
-
-  const edgeColor = isExhausted
-    ? "via-amber-500/20"
-    : isOffline
-      ? "via-rose-500/20"
-      : "via-emerald-500/20";
-
   const dotColor = isExhausted
-    ? "bg-amber-500"
+    ? "bg-amber-400"
     : isOffline
-      ? "bg-rose-500"
-      : "bg-emerald-500";
+      ? "bg-rose-400"
+      : "bg-emerald-400";
 
-  const labelColor = isExhausted
-    ? "text-amber-200"
+  const textColor = isExhausted
+    ? "text-amber-200/80"
     : isOffline
-      ? "text-rose-200"
-      : "text-emerald-200";
+      ? "text-rose-200/80"
+      : "text-emerald-200/80";
 
-  const subColor = isExhausted
-    ? "text-amber-300/50"
-    : isOffline
-      ? "text-rose-300/50"
-      : "text-emerald-300/50";
-
-  const label = isExhausted
-    ? "Sync Unavailable"
-    : isOffline
-      ? "Connection lost"
-      : "Synced";
-
-  const subtext = isExhausted
-    ? `Last successful sync ${formatTimeSince(lastPingRef.current)} ago${pendingMutations.length > 0 ? ` · ${pendingMutations.length} pending updates` : ""}`
-    : isOffline
-      ? `Last synced ${formatTimeSince(lastPingRef.current)} ago${pendingMutations.length > 0 ? ` · ${pendingMutations.length} pending updates` : ""}`
-      : "All data synced";
+  const bgGlass = "bg-gradient-to-b from-[#14151f]/[0.92] to-[#0f101a]/[0.95] backdrop-blur-2xl border border-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        animState === "entering"
-          ? "-translate-y-full opacity-0"
-          : "translate-y-0 opacity-100"
+      className={`fixed bottom-4 left-4 z-[60] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        visible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0 pointer-events-none"
       }`}
     >
-      <div className={`mx-auto max-w-2xl mt-2 rounded-xl border shadow-lg backdrop-blur-2xl bg-gradient-to-r ${bannerBg}`}>
-        {/* Edge light */}
-        <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${edgeColor} to-transparent`} />
-
-        <div className="flex items-center gap-3 px-4 py-2.5">
-          {/* Connection dot */}
-          <div className="relative shrink-0">
-            <span className={`w-2 h-2 rounded-full block ${dotColor}`} />
-            {isExhausted && (
-              <span className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500 animate-ping opacity-60" />
-            )}
-            {isOffline && (
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            )}
-          </div>
-
-          {/* Message */}
-          <div className="flex-1 min-w-0">
-            <p className={`text-xs font-semibold ${labelColor}`}>{label}</p>
-            <p className={`text-[10px] mt-0.5 ${subColor}`}>{subtext}</p>
-          </div>
-
-          {/* Pending count badge */}
-          {pendingMutations.length > 0 && (
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md border ${
-              isExhausted
-                ? "bg-amber-500/10 border-amber-500/10"
-                : "bg-rose-500/10 border-rose-500/10"
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                isExhausted ? "bg-amber-500" : "bg-rose-500"
-              }`} />
-              <span className={`text-[10px] font-mono ${
-                isExhausted ? "text-amber-300/80" : "text-rose-300/80"
-              }`}>{pendingMutations.length}</span>
-            </div>
-          )}
-
-          {/* Sync indicator — only shows when connected */}
-          {connectionState === "connected" && (
-            <svg className="w-4 h-4 text-emerald-400/50 shrink-0 animate-in fade-in duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${bgGlass}`}>
+        {/* Colored dot */}
+        <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor} ${
+          isExhausted || isOffline ? "animate-pulse-soft" : ""
+        }`} />
+        {/* Text */}
+        <span className={`text-[11px] font-medium ${textColor} leading-none`}>
+          {message}
+        </span>
+        {/* Subtle dismiss X for persistent states */}
+        {(isExhausted || isOffline) && (
+          <button
+            onClick={() => setVisible(false)}
+            className="ml-1 w-4 h-4 flex items-center justify-center rounded-full text-surface-600 hover:text-surface-400 hover:bg-white/[0.04] transition-all duration-200 active:scale-90"
+            aria-label="Dismiss"
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          )}
-        </div>
+          </button>
+        )}
       </div>
     </div>
   );
-}
-
-/** Format a timestamp as a human-readable "time since" string */
-function formatTimeSince(ts: number): string {
-  const seconds = Math.floor((Date.now() - ts) / 1000);
-  if (seconds < 5) return "moments";
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
-  return `${Math.floor(minutes / 60)}h`;
 }
