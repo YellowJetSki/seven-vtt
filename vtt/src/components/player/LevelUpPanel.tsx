@@ -26,7 +26,6 @@ import {
   type LevelUpPreview,
 } from "@/lib/mechanics/level-up-engine";
 import { useCampaignStore } from "@/stores/campaignStore";
-import type { PlayerCharacter } from "@/types";
 
 interface LevelUpPanelProps {
   character: PlayerCharacter;

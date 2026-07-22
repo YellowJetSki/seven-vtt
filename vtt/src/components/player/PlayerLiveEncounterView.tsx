@@ -41,6 +41,7 @@ import PlayerActionHints from "./PlayerActionHints";
 import CompanionStatEditor from "./CompanionStatEditor";
 import CompanionSpellRefPanel from "./CompanionSpellRefPanel";
 import CompanionAttackRefPanel from "./CompanionAttackRefPanel";
+import PremiumIcon from "@/components/ui/PremiumIcon";
 
 interface PlayerLiveEncounterViewProps {
   /** The current player's character ID to highlight */

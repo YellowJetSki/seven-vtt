@@ -26,7 +26,6 @@ import {
   computeHitDieType,
 } from "@/lib/mechanics/rest-engine";
 import { useCampaignStore } from "@/stores/campaignStore";
-import type { PlayerCharacter } from "@/types";
 
 interface RestBreakdownProps {
   /** The character to rest */
